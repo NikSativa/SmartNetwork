@@ -7,7 +7,7 @@ class FakeQueue: Queue, Spryable {
     enum ClassFunction: String, StringRepresentable {
         case empty
     }
-    
+
     enum Function: String, StringRepresentable {
         case async = "async(_:)"
     }
