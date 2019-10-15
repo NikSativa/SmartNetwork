@@ -119,7 +119,7 @@ class Request<R: InternalDecodable>: Requestable {
 
             parameters.queue.async {
                 self.completeCallback?(.success(response.content))
-                
+
                 self.plugins.forEach {
                     $0.didComplete(self.info, response: response.content, error: nil)
                 }
@@ -128,7 +128,7 @@ class Request<R: InternalDecodable>: Requestable {
             parameters.queue.async {
                 Configuration.log("failed request: \(resultError)")
                 self.completeCallback?(.failure(resultError))
-                
+
                 self.plugins.forEach {
                     $0.didComplete(self.info, response: nil, error: resultError)
                 }

@@ -10,7 +10,7 @@ public enum Plugins {
 
         public init(authToken: Token<T>) {
             self.authToken = authToken
-            
+
             super.init(type: .header("Authorization"), tokenProvider: { [weak authToken] () -> String? in
                 if let token = authToken?.value {
                     return "Bearer " + token

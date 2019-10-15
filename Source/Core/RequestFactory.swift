@@ -9,11 +9,11 @@ public class RequestFactory {
     public func request(with parameters: Parameters) -> Callback<UIImage?, Error> {
         return request(try Request<ImageContent>(parameters))
     }
-    
+
     public func request(with parameters: Parameters) -> Callback<Data?, Error> {
         return request(try Request<DataContent>(parameters))
     }
-    
+
     public func request<T: Decodable>(with parameters: Parameters) -> Callback<T?, Error> {
         return request(try Request<DecodableContent>(parameters))
     }
