@@ -107,8 +107,8 @@ class Request<R: InternalDecodable>: Requestable {
             }
 
             Configuration.log({
-                let obj = try? JSONSerialization.jsonObject(with: modifiedData ?? Data(), options: JSONSerialization.ReadingOptions())
-                return "response: " + (obj.map({ String(describing: $0) }) ?? String(data: modifiedData ?? Data(), encoding: .utf8) ?? "nil")
+                let obj = { try? JSONSerialization.jsonObject(with: modifiedData ?? Data(), options: JSONSerialization.ReadingOptions())}
+                return "response: " + (String(data: modifiedData ?? Data(), encoding: .utf8) ?? obj().map({ String(describing: $0) }) ?? "nil")
             }())
 
             try plugins.forEach {

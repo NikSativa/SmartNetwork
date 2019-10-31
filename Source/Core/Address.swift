@@ -3,12 +3,12 @@ import Foundation
 public struct Address: Equatable {
     public let address: String
     public let endpoint: String?
-    public let components: [String: String]
+    public let queryItems: [String: String]
 
-    public init(address: String, endpoint: String? = nil, components: [String: String] = [:]) {
+    public init(address: String, endpoint: String? = nil, queryItems: [String: String] = [:]) {
         self.address = address
         self.endpoint = endpoint
-        self.components = components
+        self.queryItems = queryItems
     }
 }
 
@@ -22,13 +22,13 @@ extension Address {
             url.appendPathComponent(endpoint)
         }
 
-        if components.isEmpty {
+        if queryItems.isEmpty {
             return url
         }
 
         var query = URLComponents(url: url, resolvingAgainstBaseURL: false)
         var result = query?.queryItems ?? []
-        for (key, value) in components {
+        for (key, value) in queryItems {
             result.append(URLQueryItem(name: key, value: value))
         }
         query?.queryItems = result
