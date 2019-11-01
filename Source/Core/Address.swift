@@ -1,38 +1,45 @@
 import Foundation
 
-public struct Address: Equatable {
-    public let address: String
-    public let endpoint: String?
-    public let queryItems: [String: String]
+public enum Address: Equatable {
+    case url(URL)
+    case address(host: String, endpoint: String?, queryItems: [String: String])
 
-    public init(address: String, endpoint: String? = nil, queryItems: [String: String] = [:]) {
-        self.address = address
-        self.endpoint = endpoint
-        self.queryItems = queryItems
+    public init(host: String,
+                endpoint: String? = nil,
+                queryItems: [String: String] = [:]) {
+        self = .address(host: host,
+                        endpoint: endpoint,
+                        queryItems: queryItems)
     }
 }
 
 extension Address {
     func url() throws -> URL {
-        guard var url = URL(string: address) else {
-            throw EncodingError.lackAdress
-        }
-
-        if let endpoint = endpoint {
-            url.appendPathComponent(endpoint)
-        }
-
-        if queryItems.isEmpty {
+        switch self {
+        case .url(let url):
             return url
-        }
 
-        var query = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        var result = query?.queryItems ?? []
-        for (key, value) in queryItems {
-            result.append(URLQueryItem(name: key, value: value))
-        }
-        query?.queryItems = result
+        case let .address(host, endpoint, queryItems):
+            guard var url = URL(string: host) else {
+                throw EncodingError.lackAdress
+            }
 
-        return query?.url ?? url
+            if let endpoint = endpoint {
+                url.appendPathComponent(endpoint)
+            }
+
+            if queryItems.isEmpty {
+                return url
+            }
+
+            var query = URLComponents(url: url, resolvingAgainstBaseURL: false)
+            var result = query?.queryItems ?? []
+            for (key, value) in queryItems {
+                result.append(URLQueryItem(name: key, value: value))
+            }
+            query?.queryItems = result
+
+            return query?.url ?? url
+        }
     }
 }
