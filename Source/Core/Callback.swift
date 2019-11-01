@@ -6,6 +6,7 @@ public class Callback<Response, Error: Swift.Error> {
     private var start: () -> Void
     private var stop: () -> Void
     private var completeCallback: CompleteCallback?
+    private var deferredCallback: CompleteCallback?
     private let original: Any?
 
     public init() {
@@ -26,7 +27,7 @@ public class Callback<Response, Error: Swift.Error> {
         }
 
         request.onComplete { [weak self] result in
-            self?.completeCallback?(result)
+            self?.complete(result)
         }
     }
 
@@ -53,6 +54,7 @@ public class Callback<Response, Error: Swift.Error> {
 
     public func complete(_ result: Result<Response, Error>) {
         completeCallback?(result)
+        deferredCallback?(result)
     }
 
     public func cancel() {
@@ -64,36 +66,6 @@ public class Callback<Response, Error: Swift.Error> {
         completeCallback = callback
 
         start()
-    }
-
-    public func flatMap<NewResponse, NewError>(_ mapper: @escaping (Result<Response, Error>) -> Result<NewResponse, NewError>) -> Callback<NewResponse, NewError> where NewError: Swift.Error {
-        let copy = Callback<NewResponse, NewError>(self)
-        let originalCallback = completeCallback
-        self.completeCallback = { result in
-            originalCallback?(result)
-            copy.completeCallback?(mapper(result))
-        }
-        return copy
-    }
-
-    public func map<NewResponse>(_ mapper: @escaping (Response) -> NewResponse) -> Callback<NewResponse, Error> {
-        let copy = Callback<NewResponse, Error>(self)
-        let originalCallback = completeCallback
-        self.completeCallback = { result in
-            originalCallback?(result)
-            copy.completeCallback?(result.map(mapper))
-        }
-        return copy
-    }
-
-    public func mapError<NewError>(_ mapper: @escaping (Error) -> NewError) -> Callback<Response, NewError> where NewError: Swift.Error {
-        let copy = Callback<Response, NewError>(self)
-        let originalCallback = completeCallback
-        self.completeCallback = { result in
-            originalCallback?(result)
-            copy.completeCallback?(result.mapError(mapper))
-        }
-        return copy
     }
 }
 
@@ -118,5 +90,60 @@ extension Callback {
         return Callback { () -> Result<Response, Error> in
             return .failure(result())
         }
+    }
+}
+
+extension Callback {
+    public func flatMap<NewResponse, NewError>(_ mapper: @escaping (Result<Response, Error>) -> Result<NewResponse, NewError>) -> Callback<NewResponse, NewError> where NewError: Swift.Error {
+        let copy = Callback<NewResponse, NewError>(self)
+        let originalCallback = completeCallback
+        self.completeCallback = { result in
+            originalCallback?(result)
+            copy.complete(mapper(result))
+        }
+        return copy
+    }
+
+    public func map<NewResponse>(_ mapper: @escaping (Response) -> NewResponse) -> Callback<NewResponse, Error> {
+        let copy = Callback<NewResponse, Error>(self)
+        let originalCallback = completeCallback
+        self.completeCallback = { result in
+            originalCallback?(result)
+            copy.complete(result.map(mapper))
+        }
+        return copy
+    }
+
+    public func mapError<NewError>(_ mapper: @escaping (Error) -> NewError) -> Callback<Response, NewError> where NewError: Swift.Error {
+        let copy = Callback<Response, NewError>(self)
+        let originalCallback = completeCallback
+        self.completeCallback = { result in
+            originalCallback?(result)
+            copy.complete(result.mapError(mapper))
+        }
+        return copy
+    }
+}
+
+extension Callback {
+    @discardableResult
+    public func deferred(_ callback: @escaping CompleteCallback) -> Callback {
+        let originalCallback = deferredCallback
+        self.deferredCallback = { result in
+            originalCallback?(result)
+            callback(result)
+        }
+
+        return self
+    }
+
+    public func andThen() -> Callback {
+        let copy = Callback()
+
+        _ = deferred {
+            copy.complete($0)
+        }
+
+        return copy
     }
 }
