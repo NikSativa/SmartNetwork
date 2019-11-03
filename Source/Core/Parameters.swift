@@ -22,6 +22,7 @@ public struct Parameters {
     public let cacheSettings: CacheSettings
     public let queue: Queue
     public let plugins: [Plugin]
+    public let isLoggingEnabled: Bool
 
     public init(address: Address,
                 header: [String: String] = [:],
@@ -29,7 +30,8 @@ public struct Parameters {
                 plugins: [Plugin] = [],
                 cacheSettings: CacheSettings = .init(),
                 timeoutInterval: TimeInterval = 60,
-                queue: Queue = DispatchQueue.main) {
+                queue: Queue = DispatchQueue.main,
+                isLoggingEnabled: Bool = false) {
         self.address = address
         self.header = header
         self.method = method
@@ -37,6 +39,7 @@ public struct Parameters {
         self.timeoutInterval = timeoutInterval
         self.cacheSettings = cacheSettings
         self.queue = queue
+        self.isLoggingEnabled = isLoggingEnabled
     }
 
     private init(_ original: Parameters, plugins: [Plugin]) {
@@ -47,6 +50,7 @@ public struct Parameters {
         self.timeoutInterval = original.timeoutInterval
         self.cacheSettings = original.cacheSettings
         self.queue = original.queue
+        self.isLoggingEnabled = original.isLoggingEnabled
     }
 }
 
