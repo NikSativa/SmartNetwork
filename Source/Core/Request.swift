@@ -30,15 +30,13 @@ class Request<R: InternalDecodable>: Requestable {
             return
         }
 
-        Configuration.log(
-            "sending \(parameters.method.toString()) request: " +
+        tolog("sending \(parameters.method.toString()) request: " +
             "\n" +
             "\(sdkRequest.url?.absoluteString ?? "<url is nil>")" +
             "\n" +
             "with headers: " +
             "\n" +
-            "\(String(describing: sdkRequest.allHTTPHeaderFields ?? [:]))"
-        )
+            "\(String(describing: sdkRequest.allHTTPHeaderFields ?? [:]))")
 
         task = Configuration.session.dataTask(with: sdkRequest) { [weak self] (data, response, error) -> Void in
             guard let self = self else {
@@ -84,9 +82,18 @@ class Request<R: InternalDecodable>: Requestable {
         return parameters.plugins
     }
 
+    private func tolog(_ text: @autoclosure () -> String) {
+        guard parameters.isLoggingEnabled else {
+            return
+        }
+
+        Configuration.log("\(self)")
+        Configuration.log(text())
+    }
+
     private func fire(data: Data?, response: URLResponse?, error: Error?) {
         if isStopped {
-            Configuration.log("canceled request: \(self)")
+            tolog("canceled request")
             return
         }
 
@@ -106,7 +113,7 @@ class Request<R: InternalDecodable>: Requestable {
                 modifiedData = tData
             }
 
-            Configuration.log({
+            tolog({
                 let obj = { try? JSONSerialization.jsonObject(with: modifiedData ?? Data(), options: JSONSerialization.ReadingOptions())}
                 return "response: " + (String(data: modifiedData ?? Data(), encoding: .utf8) ?? obj().map({ String(describing: $0) }) ?? "nil")
             }())
@@ -116,7 +123,6 @@ class Request<R: InternalDecodable>: Requestable {
             }
 
             let response = try R(with: modifiedData)
-
             parameters.queue.async {
                 self.completeCallback?(.success(response.content))
 
@@ -126,7 +132,7 @@ class Request<R: InternalDecodable>: Requestable {
             }
         } catch let resultError {
             parameters.queue.async {
-                Configuration.log("failed request: \(resultError)")
+                self.tolog("failed request: \(resultError)")
                 self.completeCallback?(.failure(resultError))
 
                 self.plugins.forEach {
