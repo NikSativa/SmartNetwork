@@ -10,14 +10,14 @@ class FakeCallback<Response, Error: Swift.Error>: Callback<Response, Error>, Spr
 
     enum Function: String, StringRepresentable {
         case onComplete = "onComplete()"
-        case complete = "complete(_:)"
+        case complete = "complete(kind:_:)"
         case cancel = "cancel()"
     }
 
     var callback: CompleteCallback?
-    override func onComplete(_ callback: @escaping CompleteCallback) {
+    override public func onComplete(kind: CallbackRetainCycle = .selfRetained, _ callback: @escaping CompleteCallback) {
         self.callback = callback
-        return spryify(arguments: callback)
+        return spryify(arguments: kind, callback)
     }
 
     override func complete(_ result: Result<Response, Error>) {
