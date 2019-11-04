@@ -66,6 +66,8 @@ public class Callback<Response, Error: Swift.Error> {
 
     public func cancel() {
         stop()
+        completeCallback = nil
+        strongyfy = nil
     }
 
     public func onComplete(kind: CallbackRetainCycle = .selfRetained, _ callback: @escaping CompleteCallback) {
