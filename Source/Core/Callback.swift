@@ -1,5 +1,10 @@
 import Foundation
 
+public enum CallbackRetainCycle {
+    case selfRetained
+    case weakness
+}
+
 public class Callback<Response, Error: Swift.Error> {
     public typealias CompleteCallback = (_ result: Result<Response, Error>) -> Void
 
@@ -8,6 +13,7 @@ public class Callback<Response, Error: Swift.Error> {
     private var completeCallback: CompleteCallback?
     private var deferredCallback: CompleteCallback?
     private let original: Any?
+    private var strongyfy: Callback?
 
     public init() {
         original = nil
@@ -55,13 +61,21 @@ public class Callback<Response, Error: Swift.Error> {
     public func complete(_ result: Result<Response, Error>) {
         completeCallback?(result)
         deferredCallback?(result)
+        strongyfy = nil
     }
 
     public func cancel() {
         stop()
     }
 
-    public func onComplete(_ callback: @escaping CompleteCallback) {
+    public func onComplete(kind: CallbackRetainCycle = .selfRetained, _ callback: @escaping CompleteCallback) {
+        switch kind {
+        case .selfRetained:
+            strongyfy = self
+        case .weakness:
+            strongyfy = nil
+        }
+
         assert(completeCallback == nil)
         completeCallback = callback
 
@@ -97,9 +111,9 @@ extension Callback {
     public func flatMap<NewResponse, NewError>(_ mapper: @escaping (Result<Response, Error>) -> Result<NewResponse, NewError>) -> Callback<NewResponse, NewError> where NewError: Swift.Error {
         let copy = Callback<NewResponse, NewError>(self)
         let originalCallback = completeCallback
-        self.completeCallback = { result in
+        self.completeCallback = { [weak copy] result in
             originalCallback?(result)
-            copy.complete(mapper(result))
+            copy?.complete(mapper(result))
         }
         return copy
     }
@@ -107,9 +121,9 @@ extension Callback {
     public func map<NewResponse>(_ mapper: @escaping (Response) -> NewResponse) -> Callback<NewResponse, Error> {
         let copy = Callback<NewResponse, Error>(self)
         let originalCallback = completeCallback
-        self.completeCallback = { result in
+        self.completeCallback = { [weak copy] result in
             originalCallback?(result)
-            copy.complete(result.map(mapper))
+            copy?.complete(result.map(mapper))
         }
         return copy
     }
@@ -117,9 +131,9 @@ extension Callback {
     public func mapError<NewError>(_ mapper: @escaping (Error) -> NewError) -> Callback<Response, NewError> where NewError: Swift.Error {
         let copy = Callback<Response, NewError>(self)
         let originalCallback = completeCallback
-        self.completeCallback = { result in
+        self.completeCallback = { [weak copy] result in
             originalCallback?(result)
-            copy.complete(result.mapError(mapper))
+            copy?.complete(result.mapError(mapper))
         }
         return copy
     }
@@ -140,8 +154,8 @@ extension Callback {
     public func andThen() -> Callback {
         let copy = Callback()
 
-        _ = deferred {
-            copy.complete($0)
+        _ = deferred { [weak copy] in
+            copy?.complete($0)
         }
 
         return copy
