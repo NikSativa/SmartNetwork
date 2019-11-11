@@ -25,7 +25,7 @@ public class Token<T: TokenKey> {
     }
 
     public var isEmpty: Bool {
-        return value.flatMap { $0.isEmpty } ?? true
+        return value.map { $0.isEmpty } ?? true
     }
 }
 
