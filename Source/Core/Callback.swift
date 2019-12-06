@@ -64,6 +64,14 @@ public class Callback<Response, Error: Swift.Error> {
         strongyfy = nil
     }
 
+    public func complete(_ response: Response) {
+        complete(.success(response))
+    }
+
+    public func complete(_ error: Error) {
+        complete(.failure(error))
+    }
+
     public func cancel() {
         stop()
         completeCallback = nil
@@ -161,5 +169,17 @@ extension Callback {
         }
 
         return copy
+    }
+}
+
+public extension Callback where Response == IgnorableResult {
+    func completeSuccessfully() {
+        complete(.success(IgnorableResult()))
+    }
+}
+
+public extension Callback {
+    func mapSuccess() -> Callback<IgnorableResult, Error> {
+        return map(IgnorableResult.init)
     }
 }
