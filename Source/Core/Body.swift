@@ -26,6 +26,7 @@ public enum Body {
         }
 
         public enum MimeType: String {
+            case binary = "application/x-binary"
             case jpg = "image/jpg"
             case png = "image/png"
         }
@@ -128,7 +129,7 @@ extension Body {
             }
         case .form(let form):
             let data = FormEncoder.createBody(form)
-            // Configuration.log(String(data: FormEncoder.createBody(form, isLogging: true), encoding: .utf8) ?? "")
+            Configuration.log(String(data: FormEncoder.createBody(form, isLogging: true), encoding: .utf8) ?? "")
 
             tempRequest.httpBody = data
 
@@ -171,7 +172,7 @@ private enum FormEncoder {
         appendString(&body, "Content-Type: \(form.mimeType.rawValue)\r\n\r\n")
 
         if isLogging {
-            appendString(&body, "---- DATA ----")
+            appendString(&body, form.data.base64EncodedString())
         } else {
             body.append(form.data)
         }
@@ -216,8 +217,8 @@ private enum XFormEncoder {
         return parameters
             .map { (key, value) -> String in
                 return "\(key)=\(self.percentEscapeString(value))"
-            }
-            .joined(separator: "&").data(using: String.Encoding.utf8) ?? Data()
+        }
+        .joined(separator: "&").data(using: String.Encoding.utf8) ?? Data()
     }
 }
 
