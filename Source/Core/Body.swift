@@ -81,6 +81,7 @@ extension Body {
             do {
                 let data = try JSONSerialization.data(withJSONObject: json, options: [])
                 tempRequest.httpBody = data
+                Configuration.log("JSON object:" + String(describing: try? JSONSerialization.jsonObject(with: data, options: [])))
 
                 if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
                     tempRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -116,6 +117,7 @@ extension Body {
                 let data = try encoder.encode(object)
 
                 tempRequest.httpBody = data
+                Configuration.log("Encodable object:" + String(describing: try? JSONSerialization.jsonObject(with: data, options: [])))
 
                 if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
                     tempRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
