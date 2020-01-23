@@ -26,7 +26,7 @@ public struct Parameters {
 
     public init(address: Address,
                 header: [String: String] = [:],
-                method: HTTPMethod,
+                method: HTTPMethod = .get,
                 plugins: [Plugin] = [],
                 cacheSettings: CacheSettings = .init(),
                 timeoutInterval: TimeInterval = 60,
