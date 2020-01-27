@@ -91,6 +91,10 @@ public class Callback<Response, Error: Swift.Error> {
 
         start()
     }
+
+    public func oneWay(kind: CallbackRetainCycle = .selfRetained) {
+        onComplete(kind: kind, { _ in })
+    }
 }
 
 extension Callback: Hashable {
