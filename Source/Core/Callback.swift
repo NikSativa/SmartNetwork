@@ -95,6 +95,17 @@ public class Callback<Response, Error: Swift.Error> {
     public func oneWay(kind: CallbackRetainCycle = .selfRetained) {
         onComplete(kind: kind, { _ in })
     }
+
+    public func onSuccess(kind: CallbackRetainCycle = .selfRetained, _ callback: @escaping (_ result: Response) -> Void) {
+        onComplete {
+            switch $0 {
+            case .success(let value):
+                callback(value)
+            case .failure:
+                break
+            }
+        }
+    }
 }
 
 extension Callback: Hashable {
