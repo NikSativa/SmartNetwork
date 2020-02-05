@@ -82,13 +82,13 @@ class Request<R: InternalDecodable>: Requestable {
         return parameters.plugins
     }
 
-    private func tolog(_ text: @autoclosure () -> String) {
+    private func tolog(_ text: @autoclosure () -> String, file: String = #file, method: String = #function) {
         guard parameters.isLoggingEnabled else {
             return
         }
 
-        Configuration.log("\(self)")
-        Configuration.log(text())
+        Configuration.log("\(self)", file: file, method: method)
+        Configuration.log(text(), file: file, method: method)
     }
 
     private func fire(data: Data?, response: URLResponse?, error: Error?) {
