@@ -13,6 +13,8 @@ class Request<R: InternalDecodable>: Requestable {
     private var sdkRequest: URLRequest
     private var isStopped: Bool = false
 
+    public internal(set) var retryCount: UInt = 0
+
     func start() {
         stop()
         isStopped = false
@@ -131,13 +133,29 @@ class Request<R: InternalDecodable>: Requestable {
                 }
             }
         } catch let resultError {
-            parameters.queue.async {
-                self.tolog("failed request: \(resultError)")
-                self.completeCallback?(.failure(resultError))
+            let completionHandler = { [weak self] in
+                guard let self = self else { return }
+                self.parameters.queue.async {
+                    self.tolog("failed request: \(resultError)")
+                    self.completeCallback?(.failure(resultError))
 
-                self.plugins.forEach {
-                    $0.didComplete(self.info, response: nil, error: resultError)
+                    self.plugins.forEach {
+                        $0.didComplete(self.info, response: nil, error: resultError)
+                    }
                 }
+            }
+            let retryCompletion: (Bool) -> Void = { [weak self] shouldRetry in
+                guard shouldRetry else {
+                    completionHandler()
+                    return
+                }
+                self?.retryCount += 1
+                self?.start()
+            }
+
+            guard plugins.first(where: { $0.should(wait: sdkRequest, response: response, with: resultError, forRetryCompletion: retryCompletion) }) != nil else {
+                completionHandler()
+                return
             }
         }
     }
