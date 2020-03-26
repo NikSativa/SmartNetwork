@@ -13,8 +13,6 @@ class Request<R: InternalDecodable>: Requestable {
     private var sdkRequest: URLRequest
     private var isStopped: Bool = false
 
-    public internal(set) var retryCount: UInt = 0
-
     func start() {
         stop()
         isStopped = false
@@ -118,7 +116,7 @@ class Request<R: InternalDecodable>: Requestable {
             tolog({
                 let obj = { try? JSONSerialization.jsonObject(with: modifiedData ?? Data(), options: JSONSerialization.ReadingOptions())}
                 return "response: " + (String(data: modifiedData ?? Data(), encoding: .utf8) ?? obj().map({ String(describing: $0) }) ?? "nil")
-            }())
+                }())
 
             try plugins.forEach {
                 try $0.verify(httpStatusCode: httpStatusCode, header: header, data: modifiedData, error: error)
@@ -134,7 +132,10 @@ class Request<R: InternalDecodable>: Requestable {
             }
         } catch let resultError {
             let completionHandler = { [weak self] in
-                guard let self = self else { return }
+                guard let self = self else {
+                    return
+                }
+
                 self.parameters.queue.async {
                     self.tolog("failed request: \(resultError)")
                     self.completeCallback?(.failure(resultError))
@@ -144,18 +145,17 @@ class Request<R: InternalDecodable>: Requestable {
                     }
                 }
             }
+
             let retryCompletion: (Bool) -> Void = { [weak self] shouldRetry in
-                guard shouldRetry else {
+                if shouldRetry {
+                    self?.start()
+                } else {
                     completionHandler()
-                    return
                 }
-                self?.retryCount += 1
-                self?.start()
             }
 
-            guard plugins.first(where: { $0.should(wait: sdkRequest, response: response, with: resultError, forRetryCompletion: retryCompletion) }) != nil else {
+            if plugins.first(where: { $0.should(wait: info, response: response, with: resultError, forRetryCompletion: retryCompletion) }) == nil {
                 completionHandler()
-                return
             }
         }
     }
