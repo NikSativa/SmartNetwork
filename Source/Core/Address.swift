@@ -24,7 +24,7 @@ extension Address {
                 throw EncodingError.lackAdress
             }
 
-            if let endpoint = endpoint {
+            if let endpoint = endpoint, !endpoint.isEmpty {
                 url.appendPathComponent(endpoint)
             }
 

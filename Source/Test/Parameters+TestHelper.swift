@@ -25,8 +25,8 @@ extension Parameters: SpryEquatable {
 
 extension Parameters.CacheSettings: SpryEquatable {
     public static func testMake(cache: URLCache? = nil,
-                                storagePolicy: URLCache.StoragePolicy = .notAllowed,
-                                requestPolicy: URLRequest.CachePolicy = .reloadIgnoringLocalAndRemoteCacheData) -> Parameters.CacheSettings {
+                                storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
+                                requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy) -> Parameters.CacheSettings {
         return Parameters.CacheSettings(cache: cache,
                                         storagePolicy: storagePolicy,
                                         requestPolicy: requestPolicy)
