@@ -58,6 +58,7 @@ public class Callback<Response, Error: Swift.Error> {
         stop()
     }
 
+    // MARK: - completion
     public func complete(_ result: Result<Response, Error>) {
         completeCallback?(result)
         deferredCallback?(result)
@@ -106,33 +107,8 @@ public class Callback<Response, Error: Swift.Error> {
             }
         }
     }
-}
 
-extension Callback: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(self))
-    }
-
-    public static func == (lhs: Callback, rhs: Callback) -> Bool {
-        return lhs === rhs
-    }
-}
-
-extension Callback {
-    public static func success(_ result: @escaping @autoclosure () -> Response) -> Callback<Response, Error> {
-        return Callback { () -> Result<Response, Error> in
-            return .success(result())
-        }
-    }
-
-    public static func failure(_ result: @escaping @autoclosure () -> Error) -> Callback<Response, Error> {
-        return Callback { () -> Result<Response, Error> in
-            return .failure(result())
-        }
-    }
-}
-
-extension Callback {
+    // MARK: - mapping
     public func flatMap<NewResponse, NewError>(_ mapper: @escaping (Result<Response, Error>) -> Result<NewResponse, NewError>) -> Callback<NewResponse, NewError> where NewError: Swift.Error {
         let copy = Callback<NewResponse, NewError>(self)
         let originalCallback = completeCallback
@@ -162,9 +138,8 @@ extension Callback {
         }
         return copy
     }
-}
 
-extension Callback {
+    // MARK: - defer
     @discardableResult
     public func deferred(_ callback: @escaping CompleteCallback) -> Callback {
         let originalCallback = deferredCallback
@@ -184,6 +159,30 @@ extension Callback {
         }
 
         return copy
+    }
+}
+
+extension Callback: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+
+    public static func == (lhs: Callback, rhs: Callback) -> Bool {
+        return lhs === rhs
+    }
+}
+
+extension Callback {
+    public static func success(_ result: @escaping @autoclosure () -> Response) -> Callback<Response, Error> {
+        return Callback { () -> Result<Response, Error> in
+            return .success(result())
+        }
+    }
+
+    public static func failure(_ result: @escaping @autoclosure () -> Error) -> Callback<Response, Error> {
+        return Callback { () -> Result<Response, Error> in
+            return .failure(result())
+        }
     }
 }
 
