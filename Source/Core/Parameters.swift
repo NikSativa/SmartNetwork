@@ -1,7 +1,7 @@
 import Foundation
 
 public struct Parameters {
-    public struct CacheSettings {
+    public struct CacheSettings: Equatable {
         public let cache: URLCache?
         public let storagePolicy: URLCache.StoragePolicy
         public let requestPolicy: URLRequest.CachePolicy

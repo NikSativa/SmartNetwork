@@ -1,7 +1,18 @@
 import Foundation
 
+public struct PluginInfo {
+    public let request: URLRequest
+    public let parameters: Parameters
+
+    public init(request: URLRequest,
+                parameters: Parameters) {
+        self.request = request
+        self.parameters = parameters
+    }
+}
+
 public protocol Plugin {
-    typealias Info = (request: URLRequest, parameters: Parameters)
+    typealias Info = PluginInfo
 
     func prepare(_ info: Info) -> URLRequest
     func willSend(_ info: Info)
