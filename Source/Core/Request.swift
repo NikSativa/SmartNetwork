@@ -74,8 +74,8 @@ class Request<R: InternalDecodable>: Requestable {
         task = nil
     }
 
-    private var info: Plugin.Info {
-        return (sdkRequest, parameters)
+    private var info: PluginInfo {
+        return .init(request: sdkRequest, parameters: parameters)
     }
 
     private var plugins: [Plugin] {

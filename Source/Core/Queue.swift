@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol Queue {
+public protocol Queue: class {
     func async(_ workItem: @escaping () -> Void)
 }
 

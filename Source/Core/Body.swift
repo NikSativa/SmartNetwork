@@ -14,12 +14,12 @@ public enum Body {
         }
     }
 
-    public enum Image {
+    public enum Image: Equatable {
         case png(UIImage)
         case jpeg(UIImage, compressionQuality: CGFloat)
     }
 
-    public struct Form {
+    public struct Form: Equatable {
         public enum Name: String {
             case file
             case photo
