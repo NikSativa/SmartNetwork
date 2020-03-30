@@ -21,7 +21,7 @@ public protocol Plugin {
     /// including 'cancel'
     func didStop(_ info: Info)
 
-    func should(wait info: Info, response: URLResponse?, with error: Error, forRetryCompletion: @escaping (_ shouldRetry: Bool) -> Void) -> Bool
+    func should(wait info: Info, response: URLResponse?, with error: Error?, forRetryCompletion: @escaping (_ shouldRetry: Bool) -> Void) -> Bool
 
     func verify(httpStatusCode code: Int?, header: [AnyHashable: Any], data: Data?, error: Error?) throws
     func map(data: Data) -> Data
@@ -36,7 +36,7 @@ public extension Plugin {
     func didComplete(_ info: Info, response: Any?, error: Error?) { }
     func didStop(_ info: Info) { }
 
-    func should(wait info: Info, response: URLResponse?, with error: Error, forRetryCompletion: @escaping (_ shouldRetry: Bool) -> Void) -> Bool {
+    func should(wait info: Info, response: URLResponse?, with error: Error?, forRetryCompletion: @escaping (_ shouldRetry: Bool) -> Void) -> Bool {
         return false
     }
 

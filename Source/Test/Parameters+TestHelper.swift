@@ -40,7 +40,7 @@ extension Parameters: Equatable {
             && lhs.header == rhs.header
             && lhs.isLoggingEnabled == rhs.isLoggingEnabled
             && lhs.method == rhs.method
-            && lhs.plugins.map({ String(describing: type(of: $0)) }) == rhs.plugins.map({ String(describing: type(of: $0)) })
+            && Set(lhs.plugins.map({ String(describing: type(of: $0)) })) == Set(rhs.plugins.map({ String(describing: type(of: $0)) }))
             && lhs.queue === rhs.queue
             && lhs.timeoutInterval == rhs.timeoutInterval
     }
