@@ -48,7 +48,11 @@ public extension Plugin {
 
 open class TokenPlugin: Plugin {
     public enum TokenType {
-        case header(String)
+        public enum Operation {
+            case set(String)
+            case add(String)
+        }
+        case header(Operation)
         case queryParam(String)
     }
 
@@ -69,8 +73,13 @@ open class TokenPlugin: Plugin {
         var urlRequest = info.request
 
         switch type {
-        case .header(let keyName):
-            urlRequest.addValue(apiKey, forHTTPHeaderField: keyName)
+        case .header(let operation):
+            switch operation {
+            case .set(let keyName):
+                urlRequest.setValue(apiKey, forHTTPHeaderField: keyName)
+            case .add(let keyName):
+                urlRequest.addValue(apiKey, forHTTPHeaderField: keyName)
+            }
             return urlRequest
 
         case .queryParam(let keyName):
