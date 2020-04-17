@@ -10,6 +10,7 @@ public class Callback<Response, Error: Swift.Error> {
 
     private var start: () -> Void
     private var stop: () -> Void
+    private var beforeCallback: CompleteCallback?
     private var completeCallback: CompleteCallback?
     private var deferredCallback: CompleteCallback?
     private let original: Any?
@@ -60,6 +61,7 @@ public class Callback<Response, Error: Swift.Error> {
 
     // MARK: - completion
     public func complete(_ result: Result<Response, Error>) {
+        beforeCallback?(result)
         completeCallback?(result)
         deferredCallback?(result)
         strongyfy = nil
@@ -159,6 +161,17 @@ public class Callback<Response, Error: Swift.Error> {
         }
 
         return copy
+    }
+
+    @discardableResult
+    public func beforeComplete(_ callback: @escaping CompleteCallback) -> Callback {
+        let originalCallback = beforeCallback
+        self.beforeCallback = { result in
+            originalCallback?(result)
+            callback(result)
+        }
+
+        return self
     }
 }
 
