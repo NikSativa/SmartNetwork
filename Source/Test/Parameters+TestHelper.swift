@@ -9,7 +9,7 @@ extension Parameters: SpryEquatable {
                                 method: HTTPMethod = .get,
                                 plugins: [Plugin] = [],
                                 cacheSettings: CacheSettings = .testMake(),
-                                timeoutInterval: TimeInterval = 0,
+                                timeoutInterval: TimeInterval = 60,
                                 queue: Queue = DispatchQueue.main,
                                 isLoggingEnabled: Bool = false) -> Parameters {
         return Parameters(address: address,
