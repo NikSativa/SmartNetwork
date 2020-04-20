@@ -1,21 +1,16 @@
 import Foundation
 import Spry
+import Nimble
 
 import NRequest
 
 extension Body: Equatable, SpryEquatable {
     private static func compare(_ lhs: Any, _ rhs: Any) -> Bool {
-        guard JSONSerialization.isValidJSONObject(lhs) else {
-            return false
+        if let lhs = lhs as? SpryEquatable, let rhs = rhs as? SpryEquatable {
+            return lhs._isEqual(to: rhs)
         }
 
-        guard JSONSerialization.isValidJSONObject(rhs) else {
-            return false
-        }
-
-        let dataA = try? JSONSerialization.data(withJSONObject: lhs, options: [])
-        let dataB = try? JSONSerialization.data(withJSONObject: rhs, options: [])
-        return dataA == dataB
+        fatalError("some of your parameters are not conforms to 'SpryEquatable'")
     }
 
     public static func ==(lhs: Body, rhs: Body) -> Bool {
