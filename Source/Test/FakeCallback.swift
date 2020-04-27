@@ -9,7 +9,7 @@ class FakeCallback<Response, Error: Swift.Error>: Callback<Response, Error>, Spr
     }
 
     enum Function: String, StringRepresentable {
-        case onComplete = "onComplete()"
+        case onComplete = "onComplete(kind:_:)"
         case complete = "complete(kind:_:)"
         case cancel = "cancel()"
 
@@ -18,9 +18,9 @@ class FakeCallback<Response, Error: Swift.Error>: Callback<Response, Error>, Spr
         case mapError = "mapError(_:)"
     }
 
-    var callback: CompleteCallback?
+    var onCompleteCallback: CompleteCallback?
     override public func onComplete(kind: CallbackRetainCycle = .selfRetained, _ callback: @escaping CompleteCallback) {
-        self.callback = callback
+        self.onCompleteCallback = callback
         return spryify(arguments: kind, callback)
     }
 
