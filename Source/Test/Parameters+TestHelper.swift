@@ -4,14 +4,14 @@ import Spry
 import NRequest
 
 extension Parameters: SpryEquatable {
-    public static func testMake(address: Address = .testMake(),
-                                header: [String: String] = [:],
-                                method: HTTPMethod = .get,
-                                plugins: [Plugin] = [],
-                                cacheSettings: CacheSettings = .testMake(),
-                                timeoutInterval: TimeInterval = 60,
-                                queue: Queue = DispatchQueue.main,
-                                isLoggingEnabled: Bool = false) -> Parameters {
+    static func testMake(address: Address = .testMake(),
+                         header: [String: String] = [:],
+                         method: HTTPMethod = .get,
+                         plugins: [Plugin] = [],
+                         cacheSettings: CacheSettings = .testMake(),
+                         timeoutInterval: TimeInterval = 60,
+                         queue: Queue = DispatchQueue.main,
+                         isLoggingEnabled: Bool = false) -> Parameters {
         return Parameters(address: address,
                           header: header,
                           method: method,
@@ -24,9 +24,9 @@ extension Parameters: SpryEquatable {
 }
 
 extension Parameters.CacheSettings: SpryEquatable {
-    public static func testMake(cache: URLCache? = nil,
-                                storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
-                                requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy) -> Parameters.CacheSettings {
+    static func testMake(cache: URLCache? = nil,
+                         storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
+                         requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy) -> Parameters.CacheSettings {
         return Parameters.CacheSettings(cache: cache,
                                         storagePolicy: storagePolicy,
                                         requestPolicy: requestPolicy)
