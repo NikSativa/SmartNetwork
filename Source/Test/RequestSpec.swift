@@ -10,7 +10,7 @@ class RequestSpec: QuickSpec {
     override func spec() {
         describe("Request") {
             it("should be a real test") {
-                expect(true).to(beTrue())
+                expect(false).to(beTrue())
             }
         }
     }
