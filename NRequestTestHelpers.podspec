@@ -26,7 +26,6 @@ Pod::Spec.new do |spec|
     spec.dependency 'Swinject'
 
     spec.dependency 'NRequest'
-    spec.dependency 'NRequestSwinject'
 
     spec.frameworks = 'XCTest', 'Foundation', 'UIKit'
 
