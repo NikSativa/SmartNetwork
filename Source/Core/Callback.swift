@@ -210,3 +210,46 @@ public extension Callback {
         return map(IgnorableResult.init)
     }
 }
+
+public func zip<ResponseA, ErrorA: Swift.Error, ResponseB, ErrorB: Swift.Error>(_ lhs: Callback<ResponseA, ErrorA>,
+                                                                                _ rhs: Callback<ResponseB, ErrorB>,
+                                                                                _ completion: @escaping (Result<ResponseA, ErrorA>, Result<ResponseB, ErrorB>) -> Void) {
+    let task = {
+        var a: Result<ResponseA, ErrorA>?
+        var b: Result<ResponseB, ErrorB>?
+
+        let check = {
+            guard let a = a, let b = b else {
+                return
+            }
+            completion(a, b)
+        }
+
+        lhs.onComplete { result in
+            a = result
+            check()
+        }
+
+        rhs.onComplete { result in
+            b = result
+            check()
+        }
+    }
+
+    task()
+}
+
+public func zip<ResponseA, ResponseB, Error: Swift.Error>(_ lhs: Callback<ResponseA, Error>,
+                                                          _ rhs: Callback<ResponseB, Error>,
+                                                          _ completion: @escaping (Result<(ResponseA, ResponseB), Error>) -> Void) {
+    zip(lhs, rhs) {
+        switch ($0, $1) {
+        case (.success(let a), .success(let b)):
+            completion(.success((a, b)))
+        case (.failure(let error), _):
+            completion(.failure(error))
+        case (_, .failure(let error)):
+            completion(.failure(error))
+        }
+    }
+}
