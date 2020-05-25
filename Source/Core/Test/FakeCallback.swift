@@ -3,6 +3,7 @@ import Spry
 
 @testable import NRequest
 
+final
 class FakeCallback<Response, Error: Swift.Error>: Callback<Response, Error>, Spryable {
     enum ClassFunction: String, StringRepresentable {
         case empty

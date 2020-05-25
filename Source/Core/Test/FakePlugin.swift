@@ -3,6 +3,7 @@ import Spry
 
 import NRequest
 
+final
 class FakePlugin: Plugin, Spryable {
     enum ClassFunction: String, StringRepresentable {
         case empty
