@@ -3,6 +3,7 @@ import Spry
 
 @testable import NRequest
 
+final
 class FakeRequest<ResponseType>: Requestable, Spryable {
     enum ClassFunction: String, StringRepresentable {
         case empty
