@@ -1,7 +1,8 @@
 import Foundation
 
-class Request<R: InternalDecodable>: Requestable {
+class Request<R: InternalDecodable, E: Swift.Error>: Requestable {
     typealias ResponseType = R.Response
+    typealias ErrorType = E
 
     private var completeCallback: CompleteCallback?
     func onComplete(_ callback: @escaping CompleteCallback) {
@@ -174,7 +175,7 @@ class Request<R: InternalDecodable>: Requestable {
         }
 
         if case .post(let body) = parameters.method {
-            try body.fill(&request)
+            try body.fill(&request, isLoggingEnabled: parameters.isLoggingEnabled)
         }
 
         sdkRequest = request

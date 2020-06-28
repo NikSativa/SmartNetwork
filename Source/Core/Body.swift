@@ -67,7 +67,15 @@ public enum Body {
 }
 
 extension Body {
-    func fill(_ tempRequest: inout URLRequest) throws {
+    private func tolog(_ isLoggingEnabled: Bool, _ text: @autoclosure () -> String, file: String = #file, method: String = #function) {
+        guard isLoggingEnabled else {
+            return
+        }
+
+        Configuration.log(text(), file: file, method: method)
+    }
+
+    func fill(_ tempRequest: inout URLRequest, isLoggingEnabled: Bool) throws {
         switch self {
         case .empty:
             break
@@ -81,7 +89,7 @@ extension Body {
             do {
                 let data = try JSONSerialization.data(withJSONObject: json, options: [])
                 tempRequest.httpBody = data
-                Configuration.log("JSON object:" + String(describing: try? JSONSerialization.jsonObject(with: data, options: [])))
+                tolog(isLoggingEnabled, "JSON object:" + String(describing: try? JSONSerialization.jsonObject(with: data, options: [])))
 
                 if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
                     tempRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -117,7 +125,7 @@ extension Body {
                 let data = try encoder.encode(object)
 
                 tempRequest.httpBody = data
-                Configuration.log("Encodable object:" + String(describing: try? JSONSerialization.jsonObject(with: data, options: [])))
+                tolog(isLoggingEnabled, "Encodable object:" + String(describing: try? JSONSerialization.jsonObject(with: data, options: [])))
 
                 if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
                     tempRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -131,7 +139,7 @@ extension Body {
             }
         case .form(let form):
             let data = FormEncoder.createBody(form)
-            Configuration.log(String(data: FormEncoder.createBody(form, isLogging: true), encoding: .utf8) ?? "")
+            tolog(isLoggingEnabled, String(data: FormEncoder.createBody(form, isLogging: true), encoding: .utf8) ?? "")
 
             tempRequest.httpBody = data
 

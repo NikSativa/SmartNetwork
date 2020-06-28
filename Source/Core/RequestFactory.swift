@@ -6,45 +6,45 @@ public class RequestFactory {
     }
 
     // MARK: - weak
-    public func request(with parameters: Parameters) -> Callback<UIImage?, Error> {
-        return request(try Request<ImageContent>(parameters))
+    public func request(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {
+        return request(try Request<ImageContent, Error>(parameters))
     }
 
-    public func request(with parameters: Parameters) -> Callback<Data?, Error> {
-        return request(try Request<DataContent>(parameters))
+    public func request(with parameters: Parameters) -> ResultCallback<Data?, Error> {
+        return request(try Request<DataContent, Error>(parameters))
     }
 
-    public func request<T: Decodable>(with parameters: Parameters) -> Callback<T?, Error> {
-        return request(try Request<DecodableContent>(parameters))
+    public func request<T: Decodable>(with parameters: Parameters) -> ResultCallback<T?, Error> {
+        return request(try Request<DecodableContent, Error>(parameters))
     }
 
-    public func request(with parameters: Parameters) -> Callback<IgnorableResult, Error> {
-        return request(try Request<IgnorableContent>(parameters))
+    public func request(with parameters: Parameters) -> ResultCallback<IgnorableResult, Error> {
+        return request(try Request<IgnorableContent, Error>(parameters))
     }
 
-    public func request(with parameters: Parameters) -> Callback<Any?, Error> {
-        return request(try Request<JSONContent>(parameters))
+    public func request(with parameters: Parameters) -> ResultCallback<Any?, Error> {
+        return request(try Request<JSONContent, Error>(parameters))
     }
 
     // MARK: - strong
-    public func request(with parameters: Parameters) -> Callback<UIImage, Error> {
-        return request(try Request<ImageContent>(parameters)).flatMap(RequestFactory.strongify)
+    public func request(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
+        return request(try Request<ImageContent, Error>(parameters)).flatMap(RequestFactory.strongify)
     }
 
-    public func request(with parameters: Parameters) -> Callback<Data, Error> {
-        return request(try Request<DataContent>(parameters)).flatMap(RequestFactory.strongify)
+    public func request(with parameters: Parameters) -> ResultCallback<Data, Error> {
+        return request(try Request<DataContent, Error>(parameters)).flatMap(RequestFactory.strongify)
     }
 
-    public func request<T: Decodable>(with parameters: Parameters) -> Callback<T, Error> {
-        return request(try Request<DecodableContent>(parameters)).flatMap(RequestFactory.strongify)
+    public func request<T: Decodable>(with parameters: Parameters) -> ResultCallback<T, Error> {
+        return request(try Request<DecodableContent, Error>(parameters)).flatMap(RequestFactory.strongify)
     }
 
-    public func request(with parameters: Parameters) -> Callback<Any, Error> {
-        return request(try Request<JSONContent>(parameters)).flatMap(RequestFactory.strongify)
+    public func request(with parameters: Parameters) -> ResultCallback<Any, Error> {
+        return request(try Request<JSONContent, Error>(parameters)).flatMap(RequestFactory.strongify)
     }
 
     // MARK: - helpers
-    private func request<T, R: Requestable>(_ throwable: @autoclosure () throws -> R) -> Callback<T, Error> where R.ResponseType == T {
+    private func request<T, R: Requestable>(_ throwable: @autoclosure () throws -> R) -> ResultCallback<T, Error> where R.ResponseType == T {
         do {
             return Callback(request: try throwable())
         }

@@ -5,46 +5,40 @@ public enum CallbackRetainCycle {
     case weakness
 }
 
-public class Callback<Response, Error: Swift.Error> {
-    public typealias CompleteCallback = (_ result: Result<Response, Error>) -> Void
+public typealias ResultCallback<Response, Error: Swift.Error> = Callback<Result<Response, Error>>
+
+public class Callback<ResultType> {
+    public typealias Completion = (_ result: ResultType) -> Void
 
     private var start: () -> Void
     private var stop: () -> Void
-    private var beforeCallback: CompleteCallback?
-    private var completeCallback: CompleteCallback?
-    private var deferredCallback: CompleteCallback?
+    private var beforeCallback: Completion?
+    private var completeCallback: Completion?
+    private var deferredCallback: Completion?
     private let original: Any?
     private var strongyfy: Callback?
 
-    public init() {
-        original = nil
-        start = { }
-        stop = { }
+    public required init(start: @escaping () -> Void = { },
+                         stop: @escaping () -> Void = { },
+                         beforeCallback: Completion? = nil,
+                         completeCallback: Completion? = nil,
+                         deferredCallback: Completion? = nil,
+                         original: Any? = nil) {
+        self.start = start
+        self.stop = stop
+        self.beforeCallback = beforeCallback
+        self.completeCallback = completeCallback
+        self.deferredCallback = deferredCallback
+        self.original = original
     }
 
-    init<R: Requestable>(request: R) where R.ResponseType == Response, Error == Swift.Error {
-        original = request
-
-        start = {
-            request.start()
-        }
-
-        stop = {
-            request.stop()
-        }
-
-        request.onComplete { [weak self] result in
-            self?.complete(result)
-        }
-    }
-
-    private init<T, E>(_ original: Callback<T, E>) {
+    private init<T>(_ original: Callback<T>) {
         self.original = original
         start = original.start
         stop = original.stop
     }
 
-    private init(result: @escaping () -> Result<Response, Error>) {
+    private init(result: @escaping () -> ResultType) {
         original = nil
 
         start = { }
@@ -60,19 +54,11 @@ public class Callback<Response, Error: Swift.Error> {
     }
 
     // MARK: - completion
-    public func complete(_ result: Result<Response, Error>) {
+    public func complete(_ result: ResultType) {
         beforeCallback?(result)
         completeCallback?(result)
         deferredCallback?(result)
         strongyfy = nil
-    }
-
-    public func complete(_ response: Response) {
-        complete(.success(response))
-    }
-
-    public func complete(_ error: Error) {
-        complete(.failure(error))
     }
 
     public func cancel() {
@@ -81,7 +67,7 @@ public class Callback<Response, Error: Swift.Error> {
         strongyfy = nil
     }
 
-    public func onComplete(kind: CallbackRetainCycle = .selfRetained, _ callback: @escaping CompleteCallback) {
+    public func onComplete(kind: CallbackRetainCycle = .selfRetained, _ callback: @escaping Completion) {
         switch kind {
         case .selfRetained:
             strongyfy = self
@@ -99,20 +85,9 @@ public class Callback<Response, Error: Swift.Error> {
         onComplete(kind: kind, { _ in })
     }
 
-    public func onSuccess(kind: CallbackRetainCycle = .selfRetained, _ callback: @escaping (_ result: Response) -> Void) {
-        onComplete {
-            switch $0 {
-            case .success(let value):
-                callback(value)
-            case .failure:
-                break
-            }
-        }
-    }
-
     // MARK: - mapping
-    public func flatMap<NewResponse, NewError>(_ mapper: @escaping (Result<Response, Error>) -> Result<NewResponse, NewError>) -> Callback<NewResponse, NewError> where NewError: Swift.Error {
-        let copy = Callback<NewResponse, NewError>(self)
+    public func flatMap<NewResponse>(_ mapper: @escaping (ResultType) -> NewResponse) -> Callback<NewResponse> {
+        let copy = Callback<NewResponse>(self)
         let originalCallback = completeCallback
         self.completeCallback = { [weak copy] result in
             originalCallback?(result)
@@ -121,29 +96,9 @@ public class Callback<Response, Error: Swift.Error> {
         return copy
     }
 
-    public func map<NewResponse>(_ mapper: @escaping (Response) -> NewResponse) -> Callback<NewResponse, Error> {
-        let copy = Callback<NewResponse, Error>(self)
-        let originalCallback = completeCallback
-        self.completeCallback = { [weak copy] result in
-            originalCallback?(result)
-            copy?.complete(result.map(mapper))
-        }
-        return copy
-    }
-
-    public func mapError<NewError>(_ mapper: @escaping (Error) -> NewError) -> Callback<Response, NewError> where NewError: Swift.Error {
-        let copy = Callback<Response, NewError>(self)
-        let originalCallback = completeCallback
-        self.completeCallback = { [weak copy] result in
-            originalCallback?(result)
-            copy?.complete(result.mapError(mapper))
-        }
-        return copy
-    }
-
     // MARK: - defer
     @discardableResult
-    public func deferred(_ callback: @escaping CompleteCallback) -> Callback {
+    public func deferred(_ callback: @escaping Completion) -> Self {
         let originalCallback = deferredCallback
         self.deferredCallback = { result in
             originalCallback?(result)
@@ -153,8 +108,8 @@ public class Callback<Response, Error: Swift.Error> {
         return self
     }
 
-    public func andThen() -> Callback {
-        let copy = Callback()
+    public func andThen() -> Self {
+        let copy = Self()
 
         _ = deferred { [weak copy] in
             copy?.complete($0)
@@ -164,7 +119,7 @@ public class Callback<Response, Error: Swift.Error> {
     }
 
     @discardableResult
-    public func beforeComplete(_ callback: @escaping CompleteCallback) -> Callback {
+    public func beforeComplete(_ callback: @escaping Completion) -> Self {
         let originalCallback = beforeCallback
         self.beforeCallback = { result in
             originalCallback?(result)
@@ -185,38 +140,24 @@ extension Callback: Hashable {
     }
 }
 
-extension Callback {
-    public static func success(_ result: @escaping @autoclosure () -> Response) -> Callback<Response, Error> {
-        return Callback { () -> Result<Response, Error> in
-            return .success(result())
-        }
-    }
-
-    public static func failure(_ result: @escaping @autoclosure () -> Error) -> Callback<Response, Error> {
-        return Callback { () -> Result<Response, Error> in
-            return .failure(result())
-        }
-    }
-}
-
-public extension Callback where Response == IgnorableResult {
-    func completeSuccessfully() {
-        complete(.success(IgnorableResult()))
+public extension Callback where ResultType == IgnorableResult {
+    func complete() {
+        complete(IgnorableResult())
     }
 }
 
 public extension Callback {
-    func mapSuccess() -> Callback<IgnorableResult, Error> {
-        return map(IgnorableResult.init)
+    func map() -> Callback<IgnorableResult> {
+        return flatMap(IgnorableResult.init)
     }
 }
 
-public func zip<ResponseA, ErrorA: Swift.Error, ResponseB, ErrorB: Swift.Error>(_ lhs: Callback<ResponseA, ErrorA>,
-                                                                                _ rhs: Callback<ResponseB, ErrorB>,
-                                                                                _ completion: @escaping (Result<ResponseA, ErrorA>, Result<ResponseB, ErrorB>) -> Void) {
+public func zip<ResponseA, ResponseB>(_ lhs: Callback<ResponseA>,
+                                      _ rhs: Callback<ResponseB>,
+                                      _ completion: @escaping (ResponseA, ResponseB) -> Void) {
     let task = {
-        var a: Result<ResponseA, ErrorA>?
-        var b: Result<ResponseB, ErrorB>?
+        var a: ResponseA?
+        var b: ResponseB?
 
         let check = {
             guard let a = a, let b = b else {
@@ -239,8 +180,100 @@ public func zip<ResponseA, ErrorA: Swift.Error, ResponseB, ErrorB: Swift.Error>(
     task()
 }
 
-public func zip<ResponseA, ResponseB, Error: Swift.Error>(_ lhs: Callback<ResponseA, Error>,
-                                                          _ rhs: Callback<ResponseB, Error>,
+extension Callback {
+    convenience init<R: Requestable>(request: R) where ResultType == Result<R.ResponseType, Swift.Error> {
+        let start: () -> Void = {
+            request.start()
+        }
+
+        let stop: () -> Void = {
+            request.stop()
+        }
+
+        self.init(start: start,
+                  stop: stop,
+                  original: request)
+
+        request.onComplete { [weak self] result in
+            self?.complete(result)
+        }
+    }
+
+    // MARK: - completion
+    public func complete<Response, Error: Swift.Error>(_ response: Response) where ResultType == Result<Response, Error> {
+        complete(.success(response))
+    }
+
+    public func complete<Response, Error: Swift.Error>(_ error: Error) where ResultType == Result<Response, Error> {
+        complete(.failure(error))
+    }
+
+    public func onSuccess<Response, Error: Swift.Error>(kind: CallbackRetainCycle = .selfRetained,
+                                                        _ callback: @escaping (_ result: Response) -> Void) where ResultType == Result<Response, Error> {
+        onComplete(kind: kind) {
+            switch $0 {
+            case .success(let value):
+                callback(value)
+            case .failure:
+                break
+            }
+        }
+    }
+
+    // MARK: - mapping
+    public func map<NewResponse, Response, Error: Swift.Error>(_ mapper: @escaping (Response) -> NewResponse) -> ResultCallback<NewResponse, Error>
+        where ResultType == Result<Response, Error> {
+            let copy = ResultCallback<NewResponse, Error>(self)
+            let originalCallback = completeCallback
+            self.completeCallback = { [weak copy] result in
+                originalCallback?(result)
+                copy?.complete(result.map(mapper))
+            }
+            return copy
+    }
+
+    public func mapError<Response, Error: Swift.Error, NewError: Swift.Error>(_ mapper: @escaping (Error) -> NewError) -> ResultCallback<Response, NewError>
+        where ResultType == Result<Response, Error> {
+            let copy = ResultCallback<Response, NewError>(self)
+            let originalCallback = completeCallback
+            self.completeCallback = { [weak copy] result in
+                originalCallback?(result)
+                copy?.complete(result.mapError(mapper))
+            }
+            return copy
+    }
+}
+
+extension Callback {
+    public static func success<Response, Error>(_ result: @escaping @autoclosure () -> Response) -> ResultCallback<Response, Error>
+        where ResultType == Result<Response, Error> {
+            return Callback { () -> Result<Response, Error> in
+                return .success(result())
+            }
+    }
+
+    public static func failure<Response, Error>(_ result: @escaping @autoclosure () -> Error) -> ResultCallback<Response, Error>
+        where ResultType == Result<Response, Error> {
+            return Callback { () -> Result<Response, Error> in
+                return .failure(result())
+            }
+    }
+}
+
+public extension Callback {
+    func completeSuccessfully<Error: Swift.Error>() where ResultType == Result<IgnorableResult, Error> {
+        complete(.success(IgnorableResult()))
+    }
+}
+
+public extension Callback {
+    func mapSuccess<T, Error: Swift.Error>() -> ResultCallback<IgnorableResult, Error> where ResultType == Result<T, Error> {
+        return map(IgnorableResult.init)
+    }
+}
+
+public func zip<ResponseA, ResponseB, Error: Swift.Error>(_ lhs: ResultCallback<ResponseA, Error>,
+                                                          _ rhs: ResultCallback<ResponseB, Error>,
                                                           _ completion: @escaping (Result<(ResponseA, ResponseB), Error>) -> Void) {
     zip(lhs, rhs) {
         switch ($0, $1) {
