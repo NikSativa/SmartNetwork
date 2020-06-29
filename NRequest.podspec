@@ -13,6 +13,8 @@ Pod::Spec.new do |spec|
     spec.ios.deployment_target = "11.0"
     spec.swift_version = '5.0'
 
+    spec.dependency 'NCallback'
+
     spec.resources = ['Source/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
     spec.source_files  = 'Source/Core/**/*.swift'
     spec.exclude_files = 'Source/**/Test/**/*.*'

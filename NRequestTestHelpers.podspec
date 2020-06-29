@@ -25,6 +25,8 @@ Pod::Spec.new do |spec|
     spec.dependency 'Spry+Nimble'
 
     spec.dependency 'NRequest'
+    spec.dependency 'NCallback'
+    spec.dependency 'NCallbackTestHelpers'
 
     spec.frameworks = 'XCTest', 'Foundation', 'UIKit'
 
