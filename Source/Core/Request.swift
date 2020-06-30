@@ -1,8 +1,7 @@
 import Foundation
 
-class Request<R: InternalDecodable, E: Swift.Error>: Requestable {
+class Request<R: InternalDecodable>: Requestable {
     typealias ResponseType = R.Response
-    typealias ErrorType = E
 
     private var completeCallback: CompleteCallback?
     func onComplete(_ callback: @escaping CompleteCallback) {
