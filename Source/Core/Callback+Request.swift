@@ -15,11 +15,11 @@ public extension Callback {
 
 extension Callback {
     convenience init<R: Requestable>(request: R) where ResultType == Result<R.ResponseType, Swift.Error> {
-        let start: () -> Void = {
+        let start: ServiceClosure = { _ in
             request.start()
         }
 
-        let stop: () -> Void = {
+        let stop: ServiceClosure = { _ in
             request.stop()
         }
 
