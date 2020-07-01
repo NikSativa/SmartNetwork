@@ -23,9 +23,7 @@ extension Callback {
             request.stop()
         }
 
-        self.init(start: start,
-                  stop: stop,
-                  original: request)
+        self.init(start: start, stop: stop)
 
         request.onComplete { [weak self] result in
             self?.complete(result)
