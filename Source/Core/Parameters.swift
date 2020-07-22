@@ -20,7 +20,7 @@ public struct Parameters {
     public let method: HTTPMethod
     public let timeoutInterval: TimeInterval
     public let cacheSettings: CacheSettings
-    public let queue: Queue
+    public let queue: ResponseQueue
     public let plugins: [Plugin]
     public let isLoggingEnabled: Bool
 
@@ -30,7 +30,7 @@ public struct Parameters {
                 plugins: [Plugin] = [],
                 cacheSettings: CacheSettings = .init(),
                 timeoutInterval: TimeInterval = 60,
-                queue: Queue = DispatchQueue.main,
+                queue: ResponseQueue = DispatchQueue.main,
                 isLoggingEnabled: Bool = false) {
         self.address = address
         self.header = header

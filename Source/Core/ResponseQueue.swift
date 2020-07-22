@@ -1,10 +1,10 @@
 import Foundation
 
-public protocol Queue: class {
+public protocol ResponseQueue: class {
     func async(_ workItem: @escaping () -> Void)
 }
 
-extension DispatchQueue: Queue {
+extension DispatchQueue: ResponseQueue {
     public func async(_ workItem: @escaping () -> Void) {
         async(execute: workItem)
     }
