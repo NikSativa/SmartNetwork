@@ -4,7 +4,7 @@ import Spry
 @testable import NRequest
 
 final
-class FakeQueue: Queue, Spryable {
+class FakeResponseQueue: ResponseQueue, Spryable {
     enum ClassFunction: String, StringRepresentable {
         case empty
     }
