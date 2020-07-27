@@ -10,7 +10,7 @@ import Spry_Nimble
 class QueueSpec: QuickSpec {
     override func spec() {
         describe("Queue") {
-            var subject: Queue!
+            var subject: ResponseQueue!
 
             beforeEach {
                 subject = DispatchQueue.main
