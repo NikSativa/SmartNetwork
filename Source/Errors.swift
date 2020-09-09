@@ -5,6 +5,7 @@ public enum EncodingError: Error {
         case cantSerialize(Error)
         case cantEncode(Error)
         case cantEncodeImage
+        case invalidJSON
     }
 
     case lackAdress

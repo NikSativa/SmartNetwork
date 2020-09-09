@@ -54,7 +54,7 @@ public enum Body {
     }
 
     case empty
-    case json(Any)
+    case json(Any, options: JSONSerialization.WritingOptions)
     case data(Data)
     case image(Image)
     case encodable(AnyEncodable)
@@ -85,9 +85,13 @@ extension Body {
             if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
                 tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
             }
-        case .json(let json):
+        case .json(let json, let options):
+            guard JSONSerialization.isValidJSONObject(json) else {
+                throw EncodingError.body(.invalidJSON)
+            }
+
             do {
-                let data = try JSONSerialization.data(withJSONObject: json, options: [])
+                let data = try JSONSerialization.data(withJSONObject: json, options: options)
                 tempRequest.httpBody = data
                 tolog(isLoggingEnabled, "JSON object:" + String(describing: try? JSONSerialization.jsonObject(with: data, options: [])))
 
