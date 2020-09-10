@@ -1,7 +1,7 @@
 import Foundation
 
-class Request<R: InternalDecodable>: Requestable {
-    typealias ResponseType = R.Response
+class Request<Response: InternalDecodable, Error: AnyError> {
+    typealias CompleteCallback = (Result<Response.Object, Error>) -> Void
 
     private var completeCallback: CompleteCallback?
     func onComplete(_ callback: @escaping CompleteCallback) {
@@ -91,7 +91,7 @@ class Request<R: InternalDecodable>: Requestable {
         Configuration.log(text(), file: file, method: method)
     }
 
-    private func fire(data: Data?, response: URLResponse?, error: Error?) {
+    private func fire(data: Data?, response: URLResponse?, error: Swift.Error?) {
         if isStopped {
             tolog("canceled request")
             return
@@ -122,7 +122,7 @@ class Request<R: InternalDecodable>: Requestable {
                 try $0.verify(httpStatusCode: httpStatusCode, header: header, data: modifiedData, error: error)
             }
 
-            let response = try R(with: modifiedData)
+            let response = try Response(with: modifiedData)
             parameters.queue.async {
                 self.completeCallback?(.success(response.content))
 
@@ -138,7 +138,7 @@ class Request<R: InternalDecodable>: Requestable {
 
                 self.parameters.queue.async {
                     self.tolog("failed request: \(resultError)")
-                    self.completeCallback?(.failure(resultError))
+                    self.completeCallback?(.failure(Error.wrap(resultError)))
 
                     self.plugins.forEach {
                         $0.didComplete(self.info, response: nil, error: resultError)
@@ -183,6 +183,6 @@ class Request<R: InternalDecodable>: Requestable {
 
 extension Request: CustomDebugStringConvertible {
     var debugDescription: String {
-        return "<Request: \(sdkRequest)"
+        return "<Request: \(sdkRequest)>"
     }
 }

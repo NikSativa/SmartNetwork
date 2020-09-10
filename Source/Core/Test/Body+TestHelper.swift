@@ -17,8 +17,8 @@ extension Body: Equatable, SpryEquatable {
         switch (lhs, rhs) {
         case (.empty, .empty):
             return true
-        case (.json(let a), .json(let b)):
-            return compare(a, b)
+        case (.json(let a1, let a2), .json(let b1, let b2)):
+            return compare(a1, b1) && a2 == b2
         case (.data(let a), .data(let b)):
             return a == b
         case (.image(let a), .image(let b)):

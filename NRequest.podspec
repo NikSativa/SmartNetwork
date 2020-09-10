@@ -13,11 +13,23 @@ Pod::Spec.new do |spec|
     spec.ios.deployment_target = "10.0"
     spec.swift_version = '5.0'
 
+    spec.frameworks = 'Foundation', 'UIKit'
+
+    spec.default_subspec = 'Core'
     spec.dependency 'NCallback'
 
-    spec.resources = ['Source/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
-    spec.source_files  = 'Source/**/*.swift'
-    spec.exclude_files = 'Source/**/Test/**/*.*'
+    spec.subspec 'Core' do |cs|
+        cs.resources = ['Source/Core/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
+        cs.source_files  = 'Source/Core/**/*.swift'
+        cs.exclude_files = 'Source/Core/**/Test/**/*.*'
+    end
 
-    spec.frameworks = 'Foundation', 'UIKit'
+    spec.subspec 'Inject' do |is|
+        is.resources = ['Source/Inject/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
+        is.source_files  = 'Source/Inject/**/*.swift'
+        is.exclude_files = 'Source/Inject/**/Test/**/*.*'
+
+        is.dependency 'NInject'
+        is.dependency 'NRequest/Core'
+    end
 end
