@@ -22,10 +22,15 @@ class QueueSpec: QuickSpec {
 
             describe("async") {
                 var didCall = false
+
                 beforeEach {
                     subject.async {
                         didCall = true
                     }
+                }
+
+                it("should not call task immediately") {
+                    expect(didCall).to(beFalse())
                 }
 
                 it("should call task") {

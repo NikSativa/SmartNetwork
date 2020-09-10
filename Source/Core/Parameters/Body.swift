@@ -87,7 +87,7 @@ extension Body {
             }
         case .json(let json, let options):
             guard JSONSerialization.isValidJSONObject(json) else {
-                throw EncodingError.body(.invalidJSON)
+                throw EncodingError.invalidJSON
             }
 
             do {
@@ -103,15 +103,15 @@ extension Body {
                     tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
                 }
             } catch let error {
-                throw EncodingError.body(.cantSerialize(error))
+                throw EncodingError(error)
             }
         case .image(let image):
             let data: Data
             switch image {
             case .png(let image):
-                data = try image.pngData().unwrap(EncodingError.body(.cantEncodeImage))
+                data = try image.pngData().unwrap(EncodingError.cantEncodeImage)
             case .jpeg(let image, let quality):
-                data = try image.jpegData(compressionQuality: quality).unwrap(EncodingError.body(.cantEncodeImage))
+                data = try image.jpegData(compressionQuality: quality).unwrap(EncodingError.cantEncodeImage)
             }
 
             tempRequest.httpBody = data
@@ -139,7 +139,7 @@ extension Body {
                     tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
                 }
             } catch let error {
-                throw EncodingError.body(.cantEncode(error))
+                throw EncodingError(error)
             }
         case .form(let form):
             let data = FormEncoder.createBody(form)

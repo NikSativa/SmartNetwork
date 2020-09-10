@@ -13,28 +13,60 @@ Pod::Spec.new do |spec|
     spec.ios.deployment_target = "10.0"
     spec.swift_version = '5.0'
 
-    spec.resources = ['Source/**/Test*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
-    spec.source_files  = 'Source/**/Test*.swift',
-                         'Source/**/Fake*.swift',
-                         'Source/**/*+TestHelper.swift'
-    spec.exclude_files = 'Source/**/*Spec.*'
+    spec.frameworks = 'XCTest', 'Foundation', 'UIKit'
+
+    spec.default_subspec = 'Core'
+
+    spec.dependency 'NRequest'
+
+    spec.dependency 'NCallback'
+    spec.dependency 'NCallbackTestHelpers'
 
     spec.dependency 'Nimble'
     spec.dependency 'Spry'
     spec.dependency 'Quick'
     spec.dependency 'Spry+Nimble'
 
-    spec.dependency 'NRequest'
-    spec.dependency 'NCallback'
-    spec.dependency 'NCallbackTestHelpers'
+    spec.scheme = {
+      :code_coverage => true
+    }
 
-    spec.frameworks = 'XCTest', 'Foundation', 'UIKit'
+    spec.subspec 'Core' do |cs|
+        cs.resources = ['Source/Core/**/Test/**/*.{xcassets,json,imageset,png,strings,stringsdict}']
+        cs.source_files = 'Source/Core/**/Test*.{storyboard,xib,swift}',
+                          'Source/Core/**/Fake*.*',
+                          'Source/Core/**/*+TestHelper.*'
+        cs.exclude_files = 'Source/Core/**/*Spec.*',
+                           'Source/Core/**/*Tests.*'
 
-    spec.test_spec 'Tests' do |tests|
-        #        tests.requires_app_host = true
-        tests.source_files = 'Source/**/*Spec.swift'
-        tests.exclude_files = 'Source/**/Test*.*',
-                              'Source/**/Fake*.*',
-                              'Source/**/*+TestHelper.*'
+        cs.test_spec 'Tests' do |tests|
+            #        tests.requires_app_host = true
+            tests.source_files = 'Source/Core/**/*Spec.swift'
+            tests.exclude_files = 'Source/Core/**/Test*.*',
+                                  'Source/Core/**/Fake*.*',
+                                  'Source/Core/**/*+TestHelper.*'
+        end
+    end
+
+    spec.subspec 'Inject' do |is|
+        is.resources = ['Source/Inject/**/Test/**/*.{xcassets,json,imageset,png,strings,stringsdict}']
+        is.source_files = 'Source/Inject/**/Test*.{storyboard,xib,swift}',
+                          'Source/Inject/**/Fake*.*',
+                          'Source/Inject/**/*+TestHelper.*'
+        is.exclude_files = 'Source/Inject/**/*Spec.*',
+                           'Source/Inject/**/*Tests.*'
+
+        is.dependency 'NInject'
+        is.dependency 'NInjectTestHelpers'
+
+        is.dependency 'NRequestTestHelpers/Core'
+
+        is.test_spec 'Tests' do |tests|
+            #        tests.requires_app_host = true
+            tests.source_files = 'Source/Inject/**/*Spec.swift'
+            tests.exclude_files = 'Source/Inject/**/Test*.*',
+                                  'Source/Inject/**/Fake*.*',
+                                  'Source/Inject/**/*+TestHelper.*'
+        end
     end
 end

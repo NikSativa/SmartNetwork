@@ -1,15 +1,16 @@
 import Foundation
 import UIKit
+import NCallback
 
 protocol InternalDecodable {
-    associatedtype Response
-    var content: Response { get }
+    associatedtype Object
+    var content: Object { get }
 
     init(with data: Data?) throws
 }
 
 struct IgnorableContent: InternalDecodable {
-    let content = IgnorableResult()
+    let content = Ignorable()
     init(with data: Data?) throws { }
 }
 
@@ -22,7 +23,7 @@ struct DecodableContent<Response: Decodable>: InternalDecodable {
                 let decoder = (Response.self as? CustomizedDecodable.Type)?.decoder ?? JSONDecoder()
                 content = try decoder.decode(Response.self, from: data)
             } catch let error {
-                throw DecodingError.cantDecode(error)
+                throw DecodingError(error)
             }
         } else {
             content = nil
@@ -58,7 +59,7 @@ struct JSONContent: InternalDecodable {
             do {
                 content = try JSONSerialization.jsonObject(with: data)
             } catch let error {
-                throw DecodingError.cantSerialize(error)
+                throw DecodingError(error)
             }
         } else {
             content = nil
