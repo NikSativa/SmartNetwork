@@ -90,8 +90,5 @@ public enum Plugins {
 
             return urlRequest
         }
-
-        public func verify(httpStatusCode code: Int?, header: [AnyHashable : Any], data: Data?, error: Error?) throws {
-        }
     }
 }

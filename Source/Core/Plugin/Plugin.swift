@@ -48,7 +48,9 @@ public extension Plugin {
         return false
     }
 
-
+    func verify(httpStatusCode code: Int?, header: [AnyHashable: Any], data: Data?, error: Error?) throws {
+    }
+    
     func map(response data: Data) -> Data {
         return data
     }
