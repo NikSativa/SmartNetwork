@@ -68,8 +68,44 @@ class BaseRequestFactorySpec: QuickSpec {
                     }
                 }
 
+                describe("optional image response") {
+                    var actualCallback: ResultCallback<UIImage?, Error>!
+                    var parameters: Parameters!
+
+                    beforeEach {
+                        parameters = .testMake()
+                        actualCallback = subject.request(with: parameters)
+                    }
+
+                    it("should make request") {
+                        expect(actualCallback).toNot(beNil())
+                    }
+
+                    it("should add required plugins") {
+                        expect(pluginProvider).to(haveReceived(.plugins))
+                    }
+                }
+
                 describe("decodable response") {
                     var actualCallback: ResultCallback<TestInfo, Error>!
+                    var parameters: Parameters!
+
+                    beforeEach {
+                        parameters = .testMake()
+                        actualCallback = subject.request(with: parameters)
+                    }
+
+                    it("should make request") {
+                        expect(actualCallback).toNot(beNil())
+                    }
+
+                    it("should add required plugins") {
+                        expect(pluginProvider).to(haveReceived(.plugins))
+                    }
+                }
+
+                describe("optional decodable response") {
+                    var actualCallback: ResultCallback<TestInfo?, Error>!
                     var parameters: Parameters!
 
                     beforeEach {
@@ -106,6 +142,60 @@ class BaseRequestFactorySpec: QuickSpec {
 
                 describe("data response") {
                     var actualCallback: ResultCallback<Data, Error>!
+                    var parameters: Parameters!
+
+                    beforeEach {
+                        parameters = .testMake()
+                        actualCallback = subject.request(with: parameters)
+                    }
+
+                    it("should make request") {
+                        expect(actualCallback).toNot(beNil())
+                    }
+
+                    it("should add required plugins") {
+                        expect(pluginProvider).to(haveReceived(.plugins))
+                    }
+                }
+
+                describe("optional data response") {
+                    var actualCallback: ResultCallback<Data?, Error>!
+                    var parameters: Parameters!
+
+                    beforeEach {
+                        parameters = .testMake()
+                        actualCallback = subject.request(with: parameters)
+                    }
+
+                    it("should make request") {
+                        expect(actualCallback).toNot(beNil())
+                    }
+
+                    it("should add required plugins") {
+                        expect(pluginProvider).to(haveReceived(.plugins))
+                    }
+                }
+
+                describe("any response") {
+                    var actualCallback: ResultCallback<Any, Error>!
+                    var parameters: Parameters!
+
+                    beforeEach {
+                        parameters = .testMake()
+                        actualCallback = subject.request(with: parameters)
+                    }
+
+                    it("should make request") {
+                        expect(actualCallback).toNot(beNil())
+                    }
+
+                    it("should add required plugins") {
+                        expect(pluginProvider).to(haveReceived(.plugins))
+                    }
+                }
+
+                describe("optional any response") {
+                    var actualCallback: ResultCallback<Any?, Error>!
                     var parameters: Parameters!
 
                     beforeEach {

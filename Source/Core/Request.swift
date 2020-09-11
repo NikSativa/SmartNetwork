@@ -108,7 +108,7 @@ class Request<Response: InternalDecodable, Error: AnyError> {
             var modifiedData: Data?
             if var tData = data {
                 plugins.forEach {
-                    tData = $0.map(data: tData)
+                    tData = $0.map(response: tData)
                 }
                 modifiedData = tData
             }

@@ -24,6 +24,9 @@ public protocol Plugin {
     func should(wait info: Info, response: URLResponse?, with error: Error?, forRetryCompletion: @escaping (_ shouldRetry: Bool) -> Void) -> Bool
 
     func verify(httpStatusCode code: Int?, header: [AnyHashable: Any], data: Data?, error: Error?) throws
+    func map(response data: Data) -> Data
+
+    @available(*, deprecated, message: "renamed to `map(response:)`")
     func map(data: Data) -> Data
 }
 
@@ -32,16 +35,26 @@ public extension Plugin {
         return info.request
     }
 
-    func willSend(_ info: Info) { }
-    func didComplete(_ info: Info, response: Any?, error: Error?) { }
-    func didStop(_ info: Info) { }
+    func willSend(_ info: Info) {
+    }
+
+    func didComplete(_ info: Info, response: Any?, error: Error?) {
+    }
+
+    func didStop(_ info: Info) {
+    }
 
     func should(wait info: Info, response: URLResponse?, with error: Error?, forRetryCompletion: @escaping (_ shouldRetry: Bool) -> Void) -> Bool {
         return false
     }
 
-    func verify(httpStatusCode code: Int?, header: [AnyHashable: Any], data: Data?, error: Error?) throws { }
-    func map(data: Data) -> Data {
+
+    func map(response data: Data) -> Data {
         return data
+    }
+
+    @available(*, deprecated, message: "renamed to `map(response:)`")
+    func map(data: Data) -> Data {
+        return map(response: data)
     }
 }

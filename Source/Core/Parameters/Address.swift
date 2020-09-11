@@ -32,14 +32,22 @@ extension Address {
                 return url
             }
 
-            var query = URLComponents(url: url, resolvingAgainstBaseURL: false)
-            var result = query?.queryItems ?? []
+            var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+            var result = components?.queryItems ?? []
+
+            let keys = queryItems.keys
+            result = result.filter({ !keys.contains($0.name) })
+
             for (key, value) in queryItems {
                 result.append(URLQueryItem(name: key, value: value))
             }
-            query?.queryItems = result
+            components?.queryItems = result
 
-            return query?.url ?? url
+            if let componentsUrl = components?.url {
+                url = componentsUrl
+            }
+            
+            return url
         }
     }
 }

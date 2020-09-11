@@ -9,15 +9,15 @@ import Spry_Nimble
 @testable import NRequest
 @testable import NRequestTestHelpers
 
-class Plugins_Bearer_ProviderSpec: QuickSpec {
+class Plugins_Bearer_StorageSpec: QuickSpec {
     override func spec() {
-        describe("AuthPlugin") {
-            var subject: Plugins.Bearer.Provider!
-            var authTokenProvider: FakeAuthTokenProvider!
+        describe("Plugins.Bearer.Storage") {
+            var subject: Plugins.Bearer.Storage!
+            var authToken: FakeTokenStorage!
 
             beforeEach {
-                authTokenProvider = .init()
-                subject = .init(authTokenProvider: authTokenProvider)
+                authToken = .init()
+                subject = .init(authToken: authToken)
             }
 
             describe("prepare") {
@@ -29,7 +29,7 @@ class Plugins_Bearer_ProviderSpec: QuickSpec {
                     originalRequest = .testMake(url: .testMake(string: "http://www.dodo.com"))
                     info = .testMake(request: originalRequest)
 
-                    authTokenProvider.stub(.token).andReturn("my_token_string")
+                    authToken.stub(.token).andReturn("my_token_string")
 
                     actualUrlRequest = subject.prepare(info)
                 }
@@ -61,7 +61,7 @@ class Plugins_Bearer_ProviderSpec: QuickSpec {
 
                 beforeEach {
                     original = "some".data(using: .utf8)
-                    actual = subject.map(data: original)
+                    actual = subject.map(response: original)
                 }
 
                 it("should not modify request") {

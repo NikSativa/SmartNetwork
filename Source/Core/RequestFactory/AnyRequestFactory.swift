@@ -11,16 +11,6 @@ public class AnyRequestFactory<Error: AnyError> {
     }
 }
 
-public extension RequestFactory {
-    func toAny() -> AnyRequestFactory<Error> {
-        if let self = self as? AnyRequestFactory<Error> {
-            return self
-        }
-
-        return AnyRequestFactory(self)
-    }
-}
-
 extension AnyRequestFactory: RequestFactory {
     public func request(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
         return box.request(with: parameters)

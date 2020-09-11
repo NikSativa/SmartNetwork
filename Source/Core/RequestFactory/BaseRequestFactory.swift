@@ -58,11 +58,6 @@ extension BaseRequestFactory: RequestFactory {
         return request(try Request<DataContent, Error>(parameters))
     }
 
-    public func request<T: Decodable>(with parameters: Parameters) -> ResultCallback<T?, Error> {
-        let parameters = modify(parameters)
-        return request(try Request<DecodableContent, Error>(parameters))
-    }
-
     public func request(with parameters: Parameters) -> ResultCallback<Any?, Error> {
         let parameters = modify(parameters)
         return request(try Request<JSONContent, Error>(parameters))
