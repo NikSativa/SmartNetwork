@@ -28,4 +28,12 @@ public extension RequestFactory {
     func request<T: Decodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T, Error> {
         request(with: parameters)
     }
+
+    func toAny() -> AnyRequestFactory<Error> {
+        if let self = self as? AnyRequestFactory<Error> {
+            return self
+        }
+
+        return AnyRequestFactory(self)
+    }
 }

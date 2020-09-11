@@ -75,26 +75,23 @@ public enum Plugins {
                 case .add(let keyName):
                     urlRequest.addValue(apiKey, forHTTPHeaderField: keyName)
                 }
-                return urlRequest
-
             case .queryParam(let keyName):
-                guard let requestURL = urlRequest.url, var urlComponents = URLComponents(url: requestURL, resolvingAgainstBaseURL: false) else {
-                    assert(false, "Failed to create URLComponents from URLRequest")
-                    return urlRequest
+                if let requestURL = urlRequest.url, var urlComponents = URLComponents(url: requestURL, resolvingAgainstBaseURL: false) {
+                    var queryItems: [URLQueryItem] = urlComponents.queryItems ?? []
+                    queryItems = queryItems.filter({ $0.name != keyName })
+                    queryItems.append(URLQueryItem(name: keyName, value: apiKey))
+                    urlComponents.queryItems = queryItems
+
+                    if let url = urlComponents.url {
+                        urlRequest.url = url
+                    }
                 }
-
-                var queryItems: [URLQueryItem] = urlComponents.queryItems ?? []
-                queryItems.append(URLQueryItem(name: keyName, value: apiKey))
-                urlComponents.queryItems = queryItems
-
-                guard let url = urlComponents.url else {
-                    assert(false, "Failed to create new URLRequest")
-                    return urlRequest
-                }
-
-                urlRequest.url = url
-                return urlRequest
             }
+
+            return urlRequest
+        }
+
+        public func verify(httpStatusCode code: Int?, header: [AnyHashable : Any], data: Data?, error: Error?) throws {
         }
     }
 }
