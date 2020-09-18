@@ -2,7 +2,7 @@ import Foundation
 
 public protocol AnyError: Error, Equatable {
     init?(_ error: Swift.Error)
-    init(_ error: GenericError)
+    init(_ error: EquatableError)
 }
 
 public extension AnyError {
@@ -12,6 +12,6 @@ public extension AnyError {
         } else if let error = Self.init(error) {
             return error
         }
-        return Self.init(GenericError(error))
+        return Self.init(EquatableError(error))
     }
 }

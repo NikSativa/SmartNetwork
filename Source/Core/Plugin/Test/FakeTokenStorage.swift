@@ -3,52 +3,58 @@ import Spry
 
 @testable import NRequest
 
-final
+public final
 class FakeTokenStorage: TokenStorage, Spryable {
-    enum ClassFunction: String, StringRepresentable {
+    public enum ClassFunction: String, StringRepresentable {
         case empty
     }
 
-    enum Function: String, StringRepresentable {
+    public enum Function: String, StringRepresentable {
         case token
         case isEmpty
     }
 
-    var token: String? {
+    public init() {
+    }
+
+    public var token: String? {
         return spryify()
     }
 
-    var isEmpty: Bool {
+    public var isEmpty: Bool {
         return spryify()
     }
 }
 
-final
+public final
 class FakeMutatedTokenStorage: MutatedTokenStorage, Spryable {
-    enum ClassFunction: String, StringRepresentable {
+    public enum ClassFunction: String, StringRepresentable {
         case empty
     }
 
-    enum Function: String, StringRepresentable {
+    public enum Function: String, StringRepresentable {
         case token
         case isEmpty
         case setToken = "set(_:)"
         case clear = "clear()"
     }
 
-    var token: String? {
+    public init() {
+    }
+
+    public var token: String? {
         return spryify()
     }
 
-    var isEmpty: Bool {
+    public var isEmpty: Bool {
         return spryify()
     }
 
-    func set(_ token: String) {
+    public func set(_ token: String) {
         return spryify(arguments: token)
     }
 
-    func clear() {
+    public func clear() {
         return spryify()
     }
 }

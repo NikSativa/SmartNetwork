@@ -6,7 +6,7 @@ import Foundation
 
  see **RequestError**
  */
-public struct GenericError: Equatable {
+public struct EquatableError: Equatable {
     public let error: Error
 
     public init(_ error: Error) {

@@ -1,7 +1,7 @@
 import Foundation
 
 public enum DecodingError: AnyError {
-    case generic(GenericError)
+    case generic(EquatableError)
     case brokenResponse
     case nilResponse
 
@@ -10,11 +10,11 @@ public enum DecodingError: AnyError {
         case let error as Self:
             self = error
         default:
-            self = .init(GenericError(error))
+            self = .init(EquatableError(error))
         }
     }
 
-    public init(_ error: GenericError) {
+    public init(_ error: EquatableError) {
         self = .generic(error)
     }
 }

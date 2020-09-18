@@ -4,17 +4,20 @@ import NRequest
 
 @testable import NRequest
 
-final
+public final
 class FakePluginProvider: PluginProvider, Spryable {
-    enum ClassFunction: String, StringRepresentable {
+    public enum ClassFunction: String, StringRepresentable {
         case empty
     }
 
-    enum Function: String, StringRepresentable {
+    public enum Function: String, StringRepresentable {
         case plugins = "plugins()"
     }
 
-    func plugins() -> [Plugin] {
+    public init() {
+    }
+
+    public func plugins() -> [Plugin] {
         return spryify()
     }
 }
