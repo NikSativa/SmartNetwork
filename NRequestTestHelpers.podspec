@@ -17,8 +17,6 @@ Pod::Spec.new do |spec|
 
     spec.default_subspec = 'Core'
 
-    spec.dependency 'NRequest'
-
     spec.dependency 'NCallback'
     spec.dependency 'NCallbackTestHelpers'
 
@@ -38,6 +36,8 @@ Pod::Spec.new do |spec|
                           'Source/Core/**/*+TestHelper.*'
         cs.exclude_files = 'Source/Core/**/*Spec.*',
                            'Source/Core/**/*Tests.*'
+
+		cs.dependency 'NRequest/Core'
 
         cs.test_spec 'Tests' do |tests|
             #        tests.requires_app_host = true
@@ -59,6 +59,7 @@ Pod::Spec.new do |spec|
         is.dependency 'NInject'
         is.dependency 'NInjectTestHelpers'
 
+		is.dependency 'NRequest/Inject'
         is.dependency 'NRequestTestHelpers/Core'
 
         is.test_spec 'Tests' do |tests|

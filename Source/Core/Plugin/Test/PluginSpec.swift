@@ -21,7 +21,7 @@ class PluginSpec: QuickSpec {
 
     private struct OverriddenPlugin: Plugin {
         func prepare(_ info: Info) -> URLRequest {
-            return .testMake(url: .testMake(string: "other.com"))
+            return .testMake(url: .testMake("other.com"))
         }
 
         func willSend(_ info: Info) { }
@@ -35,10 +35,6 @@ class PluginSpec: QuickSpec {
 
         func verify(httpStatusCode code: Int?, header: [AnyHashable : Any], data: Data?, error: Error?) throws {
             throw TestError.case1
-        }
-
-        func map(response data: Data) -> Data {
-            return "some2".data(using: .utf8)!
         }
     }
 
@@ -79,17 +75,7 @@ class PluginSpec: QuickSpec {
             }
 
             it("should not verify") {
-                expect { try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }.toNot(throwError())
-            }
-
-            it("should not modify data") {
-                let data = "some".data(using: .utf8)!
-                expect(subject.map(response: data)).to(equal(data))
-            }
-
-            it("should not modify data (deprecated)") {
-                let data = "some".data(using: .utf8)!
-                expect(subject.map(data: data)).to(equal(data))
+                expect(expression: { try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }).toNot(throwError())
             }
         }
 
@@ -130,16 +116,6 @@ class PluginSpec: QuickSpec {
 
             it("should verify and throw error") {
                 expect(expression: { try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }).to(throwError(TestError.case1))
-            }
-
-            it("should modify data") {
-                let data = "some".data(using: .utf8)!
-                expect(subject.map(response: data)).toNot(equal(data))
-            }
-
-            it("should modify data (deprecated)") {
-                let data = "some".data(using: .utf8)!
-                expect(subject.map(data: data)).toNot(equal(data))
             }
         }
     }
