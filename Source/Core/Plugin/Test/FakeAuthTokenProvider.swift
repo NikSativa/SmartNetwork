@@ -3,17 +3,20 @@ import Spry
 
 @testable import NRequest
 
-final
+public final
 class FakeAuthTokenProvider: AuthTokenProvider, Spryable {
-    enum ClassFunction: String, StringRepresentable {
+    public enum ClassFunction: String, StringRepresentable {
         case empty
     }
 
-    enum Function: String, StringRepresentable {
+    public enum Function: String, StringRepresentable {
         case token = "token()"
     }
 
-    func token() -> String? {
+    public init() {
+    }
+
+    public func token() -> String? {
         return spryify()
     }
 }

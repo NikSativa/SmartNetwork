@@ -1,7 +1,7 @@
 import Foundation
 
 public enum EncodingError: AnyError {
-    case generic(GenericError)
+    case generic(EquatableError)
     case lackParameters
     case lackAdress
     case cantEncodeImage
@@ -12,11 +12,11 @@ public enum EncodingError: AnyError {
         case let error as Self:
             self = error
         default:
-            self = .init(GenericError(error))
+            self = .init(EquatableError(error))
         }
     }
 
-    public init(_ error: GenericError) {
+    public init(_ error: EquatableError) {
         self = .generic(error)
     }
 }

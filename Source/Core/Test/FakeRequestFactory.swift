@@ -4,21 +4,24 @@ import Spry
 import NCallback
 @testable import NRequest
 
-final
+public final
 class FakeRequestFactory<Error: AnyError>: RequestFactory, Spryable {
-    enum ClassFunction: String, StringRepresentable {
+    public enum ClassFunction: String, StringRepresentable {
         case empty
     }
 
-    enum Function: String, StringRepresentable {
+    public enum Function: String, StringRepresentable {
         case request = "request(with:)"
     }
 
-    func request(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {
+    public init() {
+    }
+
+    public func request(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {
         return spryify(arguments: parameters)
     }
 
-    func request(with parameters: Parameters) -> ResultCallback<Data?, Error> {
+    public func request(with parameters: Parameters) -> ResultCallback<Data?, Error> {
         return spryify(arguments: parameters)
     }
 
@@ -26,28 +29,28 @@ class FakeRequestFactory<Error: AnyError>: RequestFactory, Spryable {
         return spryify(arguments: parameters)
     }
 
-    func request(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
+    public func request(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
         return spryify(arguments: parameters)
     }
 
-    func request(with parameters: Parameters) -> ResultCallback<Any?, Error> {
+    public func request(with parameters: Parameters) -> ResultCallback<Any?, Error> {
         return spryify(arguments: parameters)
     }
 
     // MARK: - strong
-    func request(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
+    public func request(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
         return spryify(arguments: parameters)
     }
 
-    func request(with parameters: Parameters) -> ResultCallback<Data, Error> {
+    public func request(with parameters: Parameters) -> ResultCallback<Data, Error> {
         return spryify(arguments: parameters)
     }
 
-    func request<T: Decodable>(with parameters: Parameters) -> ResultCallback<T, Error> {
+    public func request<T: Decodable>(with parameters: Parameters) -> ResultCallback<T, Error> {
         return spryify(arguments: parameters)
     }
 
-    func request(with parameters: Parameters) -> ResultCallback<Any, Error> {
+    public func request(with parameters: Parameters) -> ResultCallback<Any, Error> {
         return spryify(arguments: parameters)
     }
 }

@@ -1,7 +1,7 @@
 import Foundation
 
 public enum RequestError: AnyError {
-    case generic(GenericError)
+    case generic(EquatableError)
     case encoding(EncodingError)
     case decoding(DecodingError)
     case statusCode(StatusCode)
@@ -21,7 +21,7 @@ public enum RequestError: AnyError {
         }
     }
 
-    public init(_ error: GenericError) {
+    public init(_ error: EquatableError) {
         self = .generic(error)
     }
 }
