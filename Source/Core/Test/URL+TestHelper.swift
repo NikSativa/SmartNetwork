@@ -4,7 +4,7 @@ import Spry
 import NRequest
 
 extension URL: SpryEquatable {
-    static func testMake(_ string: String = "http://www.some.com") -> URL {
+    public static func testMake(_ string: String = "http://www.some.com") -> URL {
         return URL(string: string)!
     }
 }

@@ -6,8 +6,8 @@ import Spry_Nimble
 import NRequest
 
 extension URLRequest: SpryEquatable, TestOutputStringConvertible {
-    static func testMake(url: URL = .testMake(),
-                         headers: [String: String] = [:]) -> URLRequest {
+    public static func testMake(url: URL = .testMake(),
+                                headers: [String: String] = [:]) -> URLRequest {
         var request = URLRequest(url: url)
         for (key, value) in headers {
             request.addValue(value, forHTTPHeaderField: key)

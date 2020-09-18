@@ -4,7 +4,7 @@ import Spry
 import NRequest
 
 /// make NRequest hidden from main app, but all helpers can be visible via `public typealias Helpers = NRequestTestHelpers.Helpers`
-enum Helpers {
+public enum Helpers {
     public typealias FakePlugin = NRequestTestHelpers.FakePlugin
     public typealias FakeAuthTokenProvider = NRequestTestHelpers.FakeAuthTokenProvider
     public typealias FakePluginProvider = NRequestTestHelpers.FakePluginProvider
