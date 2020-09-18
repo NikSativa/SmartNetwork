@@ -16,11 +16,11 @@ class AddressSpec: QuickSpec {
 
             describe("url") {
                 beforeEach {
-                    subject = .url(.testMake(string: "some.com"))
+                    subject = .url(.testMake("some.com"))
                 }
 
                 it("should pass the url") {
-                    expect(expression: { try subject.url() }).to(equal(.testMake(string: "some.com")))
+                    expect(expression: { try subject.url() }).to(equal(.testMake("some.com")))
                 }
             }
 
@@ -31,7 +31,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake(string: "some.com")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com")))
                     }
                 }
 
@@ -51,7 +51,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake(string: "some.com/endpoint")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com/endpoint")))
                     }
                 }
 
@@ -61,7 +61,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake(string: "some.com/endpoint/")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com/endpoint/")))
                     }
                 }
 
@@ -71,7 +71,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake(string: "some.com/endpoint?item=value")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com/endpoint?item=value")))
                     }
                 }
 
@@ -81,7 +81,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake(string: "some.com/endpoint?item=value")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com/endpoint?item=value")))
                     }
                 }
 
@@ -91,7 +91,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake(string: "some.com/endpoint/?item=value")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com/endpoint/?item=value")))
                     }
                 }
             }

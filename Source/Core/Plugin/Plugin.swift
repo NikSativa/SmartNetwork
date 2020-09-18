@@ -24,10 +24,6 @@ public protocol Plugin {
     func should(wait info: Info, response: URLResponse?, with error: Error?, forRetryCompletion: @escaping (_ shouldRetry: Bool) -> Void) -> Bool
 
     func verify(httpStatusCode code: Int?, header: [AnyHashable: Any], data: Data?, error: Error?) throws
-    func map(response data: Data) -> Data
-
-    @available(*, deprecated, message: "renamed to `map(response:)`")
-    func map(data: Data) -> Data
 }
 
 public extension Plugin {
@@ -49,14 +45,5 @@ public extension Plugin {
     }
 
     func verify(httpStatusCode code: Int?, header: [AnyHashable: Any], data: Data?, error: Error?) throws {
-    }
-    
-    func map(response data: Data) -> Data {
-        return data
-    }
-
-    @available(*, deprecated, message: "renamed to `map(response:)`")
-    func map(data: Data) -> Data {
-        return map(response: data)
     }
 }

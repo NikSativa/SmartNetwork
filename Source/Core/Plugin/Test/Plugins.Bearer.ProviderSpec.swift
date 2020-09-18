@@ -84,13 +84,7 @@ class Plugins_TokenPluginSpec: QuickSpec {
                     }
 
                     it("should not verify anything") {
-                        expect { try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }.toNot(throwError())
-                    }
-
-                    it("should not map anything") {
-                        let original = "some".data(using: .utf8)!
-                        let actual = subject.map(response: original)
-                        expect(actual).to(equal(original))
+                        expect(expression: { try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }).toNot(throwError())
                     }
 
                     describe("prepare") {
@@ -114,48 +108,48 @@ class Plugins_TokenPluginSpec: QuickSpec {
         // MARK: queryParam
         itBehavesLike(Constant.sharedName) {
             return [Constant.type: TokenType.queryParam(Constant.key),
-                    Constant.originalURLRequest: URLRequest.testMake(url: .testMake(string: Constant.url)),
-                    Constant.expectedURLRequest: URLRequest.testMake(url: .testMake(string: Constant.url + "?my_token_key=my_token_string"))]
+                    Constant.originalURLRequest: URLRequest.testMake(url: .testMake(Constant.url)),
+                    Constant.expectedURLRequest: URLRequest.testMake(url: .testMake(Constant.url + "?my_token_key=my_token_string"))]
         }
 
         itBehavesLike(Constant.sharedName) {
             return [Constant.type: TokenType.queryParam(Constant.key),
                     Constant.sufixKey: Constant.sufixValue,
-                    Constant.originalURLRequest: URLRequest.testMake(url: .testMake(string: Constant.url + "?my_token_key=my_token_string_original")),
-                    Constant.expectedURLRequest: URLRequest.testMake(url: .testMake(string: Constant.url + "?my_token_key=my_token_string"))]
+                    Constant.originalURLRequest: URLRequest.testMake(url: .testMake(Constant.url + "?my_token_key=my_token_string_original")),
+                    Constant.expectedURLRequest: URLRequest.testMake(url: .testMake(Constant.url + "?my_token_key=my_token_string"))]
         }
 
         // MARK: header.set
         itBehavesLike(Constant.sharedName) {
             return [Constant.type: TokenType.header(.set(Constant.key)),
-                    Constant.originalURLRequest: URLRequest.testMake(url: .testMake(string: Constant.url)),
-                    Constant.expectedURLRequest: URLRequest.testMake(url: .testMake(string: Constant.url),
+                    Constant.originalURLRequest: URLRequest.testMake(url: .testMake(Constant.url)),
+                    Constant.expectedURLRequest: URLRequest.testMake(url: .testMake(Constant.url),
                                                                      headers: [Constant.key: Constant.value])]
         }
 
         itBehavesLike(Constant.sharedName) {
             return [Constant.type: TokenType.header(.set(Constant.key)),
                     Constant.sufixKey: Constant.sufixValue,
-                    Constant.originalURLRequest: URLRequest.testMake(url: .testMake(string: Constant.url),
+                    Constant.originalURLRequest: URLRequest.testMake(url: .testMake(Constant.url),
                                                                      headers: [Constant.key: Constant.value + "_original"]),
-                    Constant.expectedURLRequest: URLRequest.testMake(url: .testMake(string: Constant.url),
+                    Constant.expectedURLRequest: URLRequest.testMake(url: .testMake(Constant.url),
                                                                      headers: [Constant.key: Constant.value])]
         }
 
         // MARK: header.add
         itBehavesLike(Constant.sharedName) {
             return [Constant.type: TokenType.header(.add(Constant.key)),
-                    Constant.originalURLRequest: URLRequest.testMake(url: .testMake(string: Constant.url)),
-                    Constant.expectedURLRequest: URLRequest.testMake(url: .testMake(string: Constant.url),
+                    Constant.originalURLRequest: URLRequest.testMake(url: .testMake(Constant.url)),
+                    Constant.expectedURLRequest: URLRequest.testMake(url: .testMake(Constant.url),
                                                                      headers: [Constant.key: Constant.value])]
         }
 
         itBehavesLike(Constant.sharedName) {
             return [Constant.type: TokenType.header(.add(Constant.key)),
                     Constant.sufixKey: Constant.sufixValue,
-                    Constant.originalURLRequest: URLRequest.testMake(url: .testMake(string: Constant.url),
+                    Constant.originalURLRequest: URLRequest.testMake(url: .testMake(Constant.url),
                                                                      headers: [Constant.key: Constant.value + "_original"]),
-                    Constant.expectedURLRequest: URLRequest.testMake(url: .testMake(string: Constant.url),
+                    Constant.expectedURLRequest: URLRequest.testMake(url: .testMake(Constant.url),
                                                                      headers: [Constant.key: Constant.value + "_original" + "," + Constant.value])]
         }
     }

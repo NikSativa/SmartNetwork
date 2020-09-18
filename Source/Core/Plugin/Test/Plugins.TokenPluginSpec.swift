@@ -26,7 +26,7 @@ class Plugins_Bearer_ProviderSpec: QuickSpec {
                 var actualUrlRequest: URLRequest!
 
                 beforeEach {
-                    originalRequest = .testMake(url: .testMake(string: "http://www.dodo.com"))
+                    originalRequest = .testMake(url: .testMake("http://www.some.com"))
                     info = .testMake(request: originalRequest)
 
                     authTokenProvider.stub(.token).andReturn("my_token_string")
@@ -37,8 +37,8 @@ class Plugins_Bearer_ProviderSpec: QuickSpec {
                 it("should modify request") {
                     expect(actualUrlRequest).toNot(equal(originalRequest))
 
-                    let expectedRequest = URLRequest.testMake(url: .testMake(string: "http://www.dodo.com"),
-                                                              headers: ["Authorization": "Bearer my_token_string"])
+                    let expectedRequest: URLRequest = .testMake(url: .testMake("http://www.some.com"),
+                                                                headers: ["Authorization": "Bearer my_token_string"])
                     expect(actualUrlRequest).to(equal(expectedRequest))
                 }
             }
@@ -52,20 +52,6 @@ class Plugins_Bearer_ProviderSpec: QuickSpec {
 
                 it("should not modify request") {
                     expect(actual).to(beFalse())
-                }
-            }
-
-            describe("should not map anything") {
-                var actual: Data!
-                var original: Data!
-
-                beforeEach {
-                    original = "some".data(using: .utf8)
-                    actual = subject.map(response: original)
-                }
-
-                it("should not modify request") {
-                    expect(actual).to(equal(original))
                 }
             }
         }

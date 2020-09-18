@@ -105,24 +105,16 @@ class Request<Response: InternalDecodable, Error: AnyError> {
         }
 
         do {
-            var modifiedData: Data?
-            if var tData = data {
-                plugins.forEach {
-                    tData = $0.map(response: tData)
-                }
-                modifiedData = tData
-            }
-
             tolog({
-                let obj = { try? JSONSerialization.jsonObject(with: modifiedData ?? Data(), options: JSONSerialization.ReadingOptions())}
-                return "response: " + (String(data: modifiedData ?? Data(), encoding: .utf8) ?? obj().map({ String(describing: $0) }) ?? "nil")
+                let obj = { try? JSONSerialization.jsonObject(with: data ?? Data(), options: JSONSerialization.ReadingOptions())}
+                return "response: " + (String(data: data ?? Data(), encoding: .utf8) ?? obj().map({ String(describing: $0) }) ?? "nil")
                 }())
 
             try plugins.forEach {
-                try $0.verify(httpStatusCode: httpStatusCode, header: header, data: modifiedData, error: error)
+                try $0.verify(httpStatusCode: httpStatusCode, header: header, data: data, error: error)
             }
 
-            let response = try Response(with: modifiedData)
+            let response = try Response(with: data)
             parameters.queue.async {
                 self.completeCallback?(.success(response.content))
 
