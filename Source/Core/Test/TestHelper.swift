@@ -9,8 +9,7 @@ public enum Helpers {
     public typealias FakeAuthTokenProvider = NRequestTestHelpers.FakeAuthTokenProvider
     public typealias FakePluginProvider = NRequestTestHelpers.FakePluginProvider
     public typealias FakeStorage = NRequestTestHelpers.FakeStorage
-    public typealias FakeTokenStorage = NRequestTestHelpers.FakeTokenStorage
-    public typealias FakeMutatedTokenStorage = NRequestTestHelpers.FakeMutatedTokenStorage
+    public typealias FakeTokenStorage = NRequestTestHelpers.FakeKeyedStorage
     public typealias FakeRequestFactory<Error: AnyError> = NRequestTestHelpers.FakeRequestFactory<Error>
     public typealias FakeResponseQueue = NRequestTestHelpers.FakeResponseQueue
 

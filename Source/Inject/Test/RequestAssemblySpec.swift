@@ -27,8 +27,10 @@ class RequestAssemblySpec: QuickSpec {
                                                     .register(Plugins.StatusCode.self, .transient),
                                                     .register(Plugins.Bearer.Provider.self, .transient),
                                                     .register(Plugins.Bearer.Storage.self, .transient),
-                                                    .register(TokenStorage.self, .transient),
-                                                    .register(NRequest.Storage.self, .transient + .open)]
+                                                    .register(UserDefaults.self, .container + .open),
+                                                    .register(Storages.UserDefaults.self, .transient + .open),
+                                                    .register(Storages.Keyed<String>.self, .container + .open),
+                                                    .register(AnyStorage<String, String>.self, .transient + .open),]
                 expect(registrator.registered).to(equal(expected))
             }
 
@@ -57,15 +59,9 @@ class RequestAssemblySpec: QuickSpec {
                 expect(value).toNot(beNil())
             }
 
-            it("should create TokenStorage") {
-                let value = container.optionalResolve(TokenStorage.self, with: ["key"])
+            it("should create KeyedStorage") {
+                let value = container.optionalResolve(Storages.Keyed<String>.self, with: ["key"])
                 expect(value).toNot(beNil())
-            }
-
-            it("should create TokenStorage") {
-                let value = container.optionalResolve(NRequest.Storage.self)
-                expect(value).toNot(beNil())
-                expect(value).to(beAKindOf(UserDefaults.self))
             }
         }
     }

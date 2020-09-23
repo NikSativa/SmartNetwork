@@ -235,14 +235,3 @@ private enum XFormEncoder {
         .joined(separator: "&").data(using: String.Encoding.utf8) ?? Data()
     }
 }
-
-private extension Optional {
-    func unwrap<T: Error>(_ error: T) throws -> Wrapped {
-        switch self {
-        case .none:
-            throw error
-        case .some(let t):
-            return t
-        }
-    }
-}
