@@ -22,7 +22,7 @@ class Plugins_TokenPluginSpec: QuickSpec {
         static let key = "my_token_key"
     }
 
-    private typealias TokenType = Plugins.TokenPlugin.TokenType
+    private typealias TokenType = Plugins.TokenType
 
     override func spec() {
         sharedExamples(Constant.sharedName) { contextInfo in
@@ -155,7 +155,7 @@ class Plugins_TokenPluginSpec: QuickSpec {
     }
 }
 
-private extension Plugins.TokenPlugin.TokenType {
+private extension Plugins.TokenType {
     var name: String {
         switch self {
         case .queryParam:

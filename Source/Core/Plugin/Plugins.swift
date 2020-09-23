@@ -9,11 +9,20 @@ public protocol AuthTokenProvider {
 }
 
 public enum Plugins {
+    public enum TokenType {
+        public enum Operation {
+            case set(String)
+            case add(String)
+        }
+        case header(Operation)
+        case queryParam(String)
+    }
+
     public enum Bearer {
         public final class Storage: TokenPlugin {
-            public init(authToken: TokenStorage) {
-                super.init(type: .header(.set("Authorization")), tokenProvider: { () -> String? in
-                    return authToken.token.map {
+            public init(authToken: Storages.Keyed<String>, type: TokenType = .header(.set("Authorization"))) {
+                super.init(type: type, tokenProvider: { () -> String? in
+                    return authToken.value.map {
                         return "Bearer " + $0
                     }
                 })
@@ -21,8 +30,8 @@ public enum Plugins {
         }
 
         public final class Provider: TokenPlugin {
-            required init(authTokenProvider: AuthTokenProvider) {
-                super.init(type: .header(.set("Authorization"))) { () -> String? in
+            required init(authTokenProvider: AuthTokenProvider, type: TokenType = .header(.set("Authorization"))) {
+                super.init(type: type) { () -> String? in
                     return authTokenProvider.token().map {
                         return "Bearer " + $0
                     }
@@ -42,15 +51,6 @@ public enum Plugins {
     public typealias StatusCode = AutoError<NRequest.StatusCode>
 
     public class TokenPlugin: Plugin {
-        public enum TokenType {
-            public enum Operation {
-                case set(String)
-                case add(String)
-            }
-            case header(Operation)
-            case queryParam(String)
-        }
-
         public typealias TokenProviderClosure = () -> String?
         private let tokenProvider: TokenProviderClosure
         private let type: TokenType

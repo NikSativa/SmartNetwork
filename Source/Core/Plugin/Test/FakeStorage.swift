@@ -4,29 +4,29 @@ import Spry
 @testable import NRequest
 
 public final
-class FakeStorage: Storage, Spryable {
+class FakeStorage<Key: Hashable, Value>: Storage, Spryable {
     public enum ClassFunction: String, StringRepresentable {
         case empty
     }
 
     public enum Function: String, StringRepresentable {
-        case tokenForKey = "token(forKey:)"
-        case saveToken = "saveToken(_:forKey:)"
-        case removeToken = "removeToken(forKey:)"
+        case set = "set(_:for)"
+        case value = "value(for:)"
+        case remove = "remove(by:)"
     }
 
     public init() {
     }
 
-    public func token(forKey key: String) -> String? {
+    public func set(_ value: Value, for key: Key) {
+        return spryify(arguments: value, key)
+    }
+
+    public func value(for key: Key) -> Value? {
         return spryify(arguments: key)
     }
 
-    public func saveToken(_ token: String, forKey key: String) {
-        return spryify(arguments: token, key)
-    }
-
-    public func removeToken(forKey key: String) {
+    public func remove(by key: Key) {
         return spryify(arguments: key)
     }
 }
