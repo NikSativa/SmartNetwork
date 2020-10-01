@@ -5,6 +5,7 @@ public enum StatusCode: Error, Equatable, ErrorMapping {
     case badRequest   // 400
     case unauthorized // 401
     case notFound     // 404
+    case timeout     // 408
     case serverError  // 500
     case other(Int)
 
@@ -24,6 +25,8 @@ public enum StatusCode: Error, Equatable, ErrorMapping {
             throw unauthorized
         case 404:
             throw notFound
+        case 408:
+            throw timeout
         case 500:
             throw serverError
         default:
