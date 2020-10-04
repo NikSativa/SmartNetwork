@@ -38,7 +38,7 @@ public class RequestAssembly: Assembly {
             .init(storage: $0.resolve())
         }
 
-        registrator.register(Storages.Keyed<String>.self, options: .container + .open) { resolver, args in
+        registrator.register(Storages.Keyed<String>.self, options: .transient + .open) { resolver, args in
             let key: String = args[0]
             return Storages.Keyed(storage: resolver.resolve(), key: key)
         }
