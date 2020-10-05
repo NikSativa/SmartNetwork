@@ -60,13 +60,8 @@ class PluginSpec: QuickSpec {
                 expect(subject).toNot(beNil())
             }
 
-            it("should didComplete") {
-                subject.didComplete(info, response: nil, error: nil)
-                expect(subject).toNot(beNil())
-            }
-
-            it("should didStop") {
-                subject.didStop(info)
+            it("should didFinish") {
+                subject.didFinish(info, response: nil, with: nil, statusCode: nil)
                 expect(subject).toNot(beNil())
             }
 
@@ -80,7 +75,7 @@ class PluginSpec: QuickSpec {
         }
 
         describe("overridden implementation of Plugin") {
-            var subject: OverriddenPlugin!
+            var subject: Plugin!
             var request: URLRequest!
             var info: PluginInfo!
 
@@ -88,7 +83,7 @@ class PluginSpec: QuickSpec {
                 request = .testMake()
                 info = .testMake(request: request)
 
-                subject = .init()
+                subject = OverriddenPlugin()
             }
 
             it("should prepare and modify request") {
@@ -100,13 +95,8 @@ class PluginSpec: QuickSpec {
                 expect(subject).toNot(beNil())
             }
 
-            it("should didComplete") {
-                subject.didComplete(info, response: nil, error: nil)
-                expect(subject).toNot(beNil())
-            }
-
-            it("should didStop") {
-                subject.didStop(info)
+            it("should didFinish") {
+                subject.didFinish(info, response: nil, with: nil, statusCode: nil)
                 expect(subject).toNot(beNil())
             }
 

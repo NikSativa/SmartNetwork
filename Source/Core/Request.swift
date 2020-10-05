@@ -61,16 +61,16 @@ class Request<Response: InternalDecodable, Error: AnyError> {
     func stop() {
         isStopped = true
 
-        task?.cancel()
-        task = nil
-
-        plugins.forEach {
-            $0.didStop(info)
+        if task?.state == .running {
+            task?.cancel()
         }
+        task = nil
     }
 
     deinit {
-        task?.cancel()
+        if task?.state == .running {
+            task?.cancel()
+        }
     }
 
     private var info: PluginInfo {
@@ -103,6 +103,12 @@ class Request<Response: InternalDecodable, Error: AnyError> {
             header = response.allHeaderFields
         }
 
+        let didfinish = {
+            self.plugins.forEach {
+                $0.didFinish(self.info, response: response, with: error, statusCode: httpStatusCode)
+            }
+        }
+
         do {
             tolog({
                 let obj = { try? JSONSerialization.jsonObject(with: data ?? Data(), options: JSONSerialization.ReadingOptions())}
@@ -113,13 +119,10 @@ class Request<Response: InternalDecodable, Error: AnyError> {
                 try $0.verify(httpStatusCode: httpStatusCode, header: header, data: data, error: error)
             }
 
-            let response = try Response(with: data)
+            let resultResponse = try Response(with: data)
             parameters.queue.async {
-                self.completeCallback?(.success(response.content))
-
-                self.plugins.forEach {
-                    $0.didComplete(self.info, response: response.content, error: nil)
-                }
+                self.completeCallback?(.success(resultResponse.content))
+                didfinish()
             }
         } catch let resultError {
             let completionHandler = { [weak self] in
@@ -130,10 +133,7 @@ class Request<Response: InternalDecodable, Error: AnyError> {
                 self.parameters.queue.async {
                     self.tolog("failed request: \(resultError)")
                     self.completeCallback?(.failure(Error.wrap(resultError)))
-
-                    self.plugins.forEach {
-                        $0.didComplete(self.info, response: nil, error: resultError)
-                    }
+                    didfinish()
                 }
             }
 
