@@ -27,9 +27,6 @@ class QueueSpec: QuickSpec {
                     subject.async {
                         didCall = true
                     }
-                }
-
-                it("should not call task immediately") {
                     expect(didCall).to(beFalse())
                 }
 

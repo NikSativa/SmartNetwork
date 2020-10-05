@@ -71,7 +71,6 @@ class Request<Response: InternalDecodable, Error: AnyError> {
 
     deinit {
         task?.cancel()
-        task = nil
     }
 
     private var info: PluginInfo {

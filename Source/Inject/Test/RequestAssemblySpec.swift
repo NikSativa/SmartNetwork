@@ -29,7 +29,7 @@ class RequestAssemblySpec: QuickSpec {
                                                     .register(Plugins.Bearer.Storage.self, .transient),
                                                     .register(UserDefaults.self, .container + .open),
                                                     .register(Storages.UserDefaults.self, .transient + .open),
-                                                    .register(Storages.Keyed<String>.self, .container + .open),
+                                                    .register(Storages.Keyed<String>.self, .transient + .open),
                                                     .register(AnyStorage<String, String>.self, .transient + .open),]
                 expect(registrator.registered).to(equal(expected))
             }
