@@ -16,10 +16,7 @@ public protocol Plugin {
 
     func prepare(_ info: Info) -> URLRequest
     func willSend(_ info: Info)
-    func didComplete(_ info: Info, response: Any?, error: Error?)
-
-    /// including 'cancel'
-    func didStop(_ info: Info)
+    func didFinish(_ info: Info, response: URLResponse?, with error: Error?, statusCode: Int?)
 
     func should(wait info: Info, response: URLResponse?, with error: Error?, forRetryCompletion: @escaping (_ shouldRetry: Bool) -> Void) -> Bool
 
@@ -34,10 +31,7 @@ public extension Plugin {
     func willSend(_ info: Info) {
     }
 
-    func didComplete(_ info: Info, response: Any?, error: Error?) {
-    }
-
-    func didStop(_ info: Info) {
+    func didFinish(_ info: Info, response: URLResponse?, with error: Error?, statusCode: Int?) {
     }
 
     func should(wait info: Info, response: URLResponse?, with error: Error?, forRetryCompletion: @escaping (_ shouldRetry: Bool) -> Void) -> Bool {
