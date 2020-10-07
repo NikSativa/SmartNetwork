@@ -30,31 +30,23 @@ Pod::Spec.new do |spec|
     }
 
     spec.subspec 'Core' do |cs|
-        cs.resources = ['Source/Core/**/Test/**/*.{xcassets,json,imageset,png,strings,stringsdict}']
-        cs.source_files = 'Source/Core/**/Test*.{storyboard,xib,swift}',
-                          'Source/Core/**/Fake*.*',
-                          'Source/Core/**/*+TestHelper.*'
-        cs.exclude_files = 'Source/Core/**/*Spec.*',
-                           'Source/Core/**/*Tests.*'
+        cs.resources = ['TestHelpers/**/Test/**/*.{xcassets,json,imageset,png,strings,stringsdict}']
+        cs.source_files = 'TestHelpers/**/Test*.{storyboard,xib,swift}',
+                          'TestHelpers/**/Fake*.*',
+                          'TestHelpers/**/*+TestHelper.*'
 
 		cs.dependency 'NRequest/Core'
-
         cs.test_spec 'Tests' do |tests|
             #        tests.requires_app_host = true
-            tests.source_files = 'Source/Core/**/*Spec.swift'
-            tests.exclude_files = 'Source/Core/**/Test*.*',
-                                  'Source/Core/**/Fake*.*',
-                                  'Source/Core/**/*+TestHelper.*'
+            tests.source_files = 'Tests/Specs/Core/**/*Spec.swift'
         end
     end
 
     spec.subspec 'Inject' do |is|
-        is.resources = ['Source/Inject/**/Test/**/*.{xcassets,json,imageset,png,strings,stringsdict}']
-        is.source_files = 'Source/Inject/**/Test*.{storyboard,xib,swift}',
-                          'Source/Inject/**/Fake*.*',
-                          'Source/Inject/**/*+TestHelper.*'
-        is.exclude_files = 'Source/Inject/**/*Spec.*',
-                           'Source/Inject/**/*Tests.*'
+        is.resources = ['TestHelpers/**/Test/**/*.{xcassets,json,imageset,png,strings,stringsdict}']
+        is.source_files = 'TestHelpers/**/Test*.{storyboard,xib,swift}',
+                          'TestHelpers/**/Fake*.*',
+                          'TestHelpers/**/*+TestHelper.*'
 
         is.dependency 'NInject'
         is.dependency 'NInjectTestHelpers'
@@ -64,10 +56,7 @@ Pod::Spec.new do |spec|
 
         is.test_spec 'Tests' do |tests|
             #        tests.requires_app_host = true
-            tests.source_files = 'Source/Inject/**/*Spec.swift'
-            tests.exclude_files = 'Source/Inject/**/Test*.*',
-                                  'Source/Inject/**/Fake*.*',
-                                  'Source/Inject/**/*+TestHelper.*'
+            tests.source_files = 'Tests/Specs/Inject/**/*Spec.swift'
         end
     end
 end

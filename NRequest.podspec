@@ -21,13 +21,11 @@ Pod::Spec.new do |spec|
     spec.subspec 'Core' do |cs|
         cs.resources = ['Source/Core/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
         cs.source_files  = 'Source/Core/**/*.swift'
-        cs.exclude_files = 'Source/Core/**/Test/**/*.*'
     end
 
     spec.subspec 'Inject' do |is|
         is.resources = ['Source/Inject/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
         is.source_files  = 'Source/Inject/**/*.swift'
-        is.exclude_files = 'Source/Inject/**/Test/**/*.*'
 
         is.dependency 'NInject'
         is.dependency 'NRequest/Core'

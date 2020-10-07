@@ -1,0 +1,70 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "CwlCatchException",
+        "repositoryURL": "https://github.com/mattgallagher/CwlCatchException.git",
+        "state": {
+          "branch": null,
+          "revision": "f809deb30dc5c9d9b78c872e553261a61177721a",
+          "version": "2.0.0"
+        }
+      },
+      {
+        "package": "CwlPreconditionTesting",
+        "repositoryURL": "https://github.com/mattgallagher/CwlPreconditionTesting.git",
+        "state": {
+          "branch": null,
+          "revision": "02b7a39a99c4da27abe03cab2053a9034379639f",
+          "version": "2.0.0"
+        }
+      },
+      {
+        "package": "NCallback",
+        "repositoryURL": "https://github.com/NikSativa/NCallback.git",
+        "state": {
+          "branch": null,
+          "revision": "055c30c508a7536de18499f5eff12d53ba9569ee",
+          "version": "1.2.0"
+        }
+      },
+      {
+        "package": "Nimble",
+        "repositoryURL": "https://github.com/Quick/Nimble.git",
+        "state": {
+          "branch": null,
+          "revision": "e491a6731307bb23783bf664d003be9b2fa59ab5",
+          "version": "9.0.0"
+        }
+      },
+      {
+        "package": "NInject",
+        "repositoryURL": "https://github.com/NikSativa/NInject.git",
+        "state": {
+          "branch": null,
+          "revision": "b762c7bbaa09e75720f8be00121fc20db59429cf",
+          "version": "1.2.0"
+        }
+      },
+      {
+        "package": "Quick",
+        "repositoryURL": "https://github.com/Quick/Quick.git",
+        "state": {
+          "branch": null,
+          "revision": "0038bcbab4292f3b028632556507c124e5ba69f3",
+          "version": "3.0.0"
+        }
+      },
+      {
+        "package": "Spry",
+        "repositoryURL": "https://github.com/NikSativa/Spry.git",
+        "state": {
+          "branch": null,
+          "revision": "e1ee8fa5f9a97eda484a289e8f4b2e17cadb7ab5",
+          "version": "3.3.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
