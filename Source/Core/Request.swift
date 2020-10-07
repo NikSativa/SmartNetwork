@@ -1,5 +1,65 @@
 import Foundation
 
+private class SessionAdaptor: NSObject, URLSessionDelegate, URLSessionDataDelegate {
+    private let progressHandler: ProgressHandler?
+    private var session: URLSession {
+        if let _ = progressHandler {
+            if #available(iOS 11, *) {
+                return Configuration.session
+            } else {
+                return URLSession(configuration: Configuration.session.configuration,
+                                  delegate: self,
+                                  delegateQueue: nil)
+            }
+        } else {
+            return Configuration.session
+        }
+    }
+
+    private var buffer: NSMutableData = NSMutableData()
+    private var dataTask: URLSessionDataTask?
+    private var expectedContentLength = 0
+    private var progress: NSKeyValueObservation?
+
+    required init(progressHandler: ProgressHandler?) {
+        self.progressHandler = progressHandler
+
+        super.init()
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: (URLSession.ResponseDisposition) -> Void) {
+        expectedContentLength = Int(response.expectedContentLength)
+        completionHandler(.allow)
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        buffer.append(data)
+
+        let percentageDownloaded = Double(buffer.length) / Double(expectedContentLength)
+        progressHandler?(.init(fractionCompleted: percentageDownloaded))
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        progressHandler?(.init(fractionCompleted: 1))
+    }
+
+    func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask {
+        let task = session.dataTask(with: request, completionHandler: completionHandler)
+
+        if let progressHandler = progressHandler {
+            if #available(iOS 11, *) {
+                progress = task.progress.observe(\.fractionCompleted, changeHandler: { progress, _ in
+                    progressHandler(.init(fractionCompleted: progress.fractionCompleted))
+                })
+            } else {
+                progressHandler(.init(fractionCompleted: 0))
+            }
+        }
+
+        return task
+    }
+}
+
 class Request<Response: InternalDecodable, Error: AnyError> {
     typealias CompleteCallback = (Result<Response.Object, Error>) -> Void
 
@@ -12,7 +72,7 @@ class Request<Response: InternalDecodable, Error: AnyError> {
     private var task: URLSessionDataTask?
     private var sdkRequest: URLRequest
     private var isStopped: Bool = false
-    private var progress: NSKeyValueObservation?
+    private var sessionAdaptor: SessionAdaptor?
 
     func start() {
         stop()
@@ -32,14 +92,17 @@ class Request<Response: InternalDecodable, Error: AnyError> {
         }
 
         tolog("sending \(parameters.method.toString()) request: " +
-            "\n" +
-            "\(sdkRequest.url?.absoluteString ?? "<url is nil>")" +
-            "\n" +
-            "with headers: " +
-            "\n" +
-            "\(String(describing: sdkRequest.allHTTPHeaderFields ?? [:]))")
+                "\n" +
+                "\(sdkRequest.url?.absoluteString ?? "<url is nil>")" +
+                "\n" +
+                "with headers: " +
+                "\n" +
+                "\(String(describing: sdkRequest.allHTTPHeaderFields ?? [:]))")
 
-        task = Configuration.session.dataTask(with: sdkRequest) { [weak self] (data, response, error) -> Void in
+        let sessionAdaptor = SessionAdaptor(progressHandler: parameters.progressHandler)
+        self.sessionAdaptor = sessionAdaptor
+
+        task = sessionAdaptor.dataTask(with: sdkRequest) { [weak self] data, response, error in
             guard let self = self else {
                 return
             }
@@ -52,14 +115,9 @@ class Request<Response: InternalDecodable, Error: AnyError> {
                 cache.storeCachedResponse(cached, for: self.sdkRequest)
             }
 
-            self.fire(data: data, response: response, error: error)
             self.task = nil
-        }
-
-        if let progressHandler = parameters.progressHandler {
-            progress = task?.progress.observe(\.fractionCompleted, changeHandler: { progress, _ in
-                progressHandler(.init(fractionCompleted: progress.fractionCompleted))
-            })
+            self.sessionAdaptor = nil
+            self.fire(data: data, response: response, error: error)
         }
 
         task?.resume()
@@ -73,7 +131,7 @@ class Request<Response: InternalDecodable, Error: AnyError> {
         }
 
         task = nil
-        progress = nil
+        sessionAdaptor = nil
     }
 
     deinit {
@@ -122,7 +180,7 @@ class Request<Response: InternalDecodable, Error: AnyError> {
             tolog({
                 let obj = { try? JSONSerialization.jsonObject(with: data ?? Data(), options: JSONSerialization.ReadingOptions())}
                 return "response: " + (String(data: data ?? Data(), encoding: .utf8) ?? obj().map({ String(describing: $0) }) ?? "nil")
-                }())
+            }())
 
             try plugins.forEach {
                 try $0.verify(httpStatusCode: httpStatusCode, header: header, data: data, error: error)

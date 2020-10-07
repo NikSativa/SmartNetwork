@@ -1,5 +1,7 @@
 import Foundation
+
 import NInject
+import NRequest
 
 public class RequestAssembly: Assembly {
     public init() { }

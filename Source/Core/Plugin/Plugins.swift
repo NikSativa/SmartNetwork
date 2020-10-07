@@ -30,7 +30,7 @@ public enum Plugins {
         }
 
         public final class Provider: TokenPlugin {
-            required init(authTokenProvider: AuthTokenProvider, type: TokenType = .header(.set("Authorization"))) {
+            required public init(authTokenProvider: AuthTokenProvider, type: TokenType = .header(.set("Authorization"))) {
                 super.init(type: type) { () -> String? in
                     return authTokenProvider.token().map {
                         return "Bearer " + $0
