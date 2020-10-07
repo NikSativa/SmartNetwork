@@ -12,6 +12,7 @@ class Request<Response: InternalDecodable, Error: AnyError> {
     private var task: URLSessionDataTask?
     private var sdkRequest: URLRequest
     private var isStopped: Bool = false
+    private var progress: NSKeyValueObservation?
 
     func start() {
         stop()
@@ -55,6 +56,12 @@ class Request<Response: InternalDecodable, Error: AnyError> {
             self.task = nil
         }
 
+        if let progressHandler = parameters.progressHandler {
+            progress = task?.progress.observe(\.fractionCompleted, changeHandler: { progress, _ in
+                progressHandler(.init(fractionCompleted: progress.fractionCompleted))
+            })
+        }
+
         task?.resume()
     }
 
@@ -64,7 +71,9 @@ class Request<Response: InternalDecodable, Error: AnyError> {
         if task?.state == .running {
             task?.cancel()
         }
+
         task = nil
+        progress = nil
     }
 
     deinit {

@@ -23,6 +23,7 @@ public struct Parameters {
     public let queue: ResponseQueue
     public let plugins: [Plugin]
     public let isLoggingEnabled: Bool
+    public let progressHandler: ProgressHandler?
 
     public init(address: Address,
                 header: [String: String] = [:],
@@ -31,7 +32,8 @@ public struct Parameters {
                 cacheSettings: CacheSettings = .init(),
                 timeoutInterval: TimeInterval = 60,
                 queue: ResponseQueue = DispatchQueue.main,
-                isLoggingEnabled: Bool = false) {
+                isLoggingEnabled: Bool = false,
+                progressHandler: ProgressHandler? = nil) {
         self.address = address
         self.header = header
         self.method = method
@@ -40,6 +42,7 @@ public struct Parameters {
         self.cacheSettings = cacheSettings
         self.queue = queue
         self.isLoggingEnabled = isLoggingEnabled
+        self.progressHandler = progressHandler
     }
 
     private init(_ original: Parameters, plugins: [Plugin]) {
@@ -51,6 +54,7 @@ public struct Parameters {
         self.cacheSettings = original.cacheSettings
         self.queue = original.queue
         self.isLoggingEnabled = original.isLoggingEnabled
+        self.progressHandler = original.progressHandler
     }
 }
 

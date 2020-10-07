@@ -11,7 +11,8 @@ extension Parameters: SpryEquatable {
                                 cacheSettings: CacheSettings = .testMake(),
                                 timeoutInterval: TimeInterval = 60,
                                 queue: ResponseQueue = DispatchQueue.main,
-                                isLoggingEnabled: Bool = false) -> Parameters {
+                                isLoggingEnabled: Bool = false,
+                                progressHandler: ProgressHandler? = nil) -> Parameters {
         return Parameters(address: address,
                           header: header,
                           method: method,
@@ -19,7 +20,8 @@ extension Parameters: SpryEquatable {
                           cacheSettings: cacheSettings,
                           timeoutInterval: timeoutInterval,
                           queue: queue,
-                          isLoggingEnabled: isLoggingEnabled)
+                          isLoggingEnabled: isLoggingEnabled,
+                          progressHandler: progressHandler)
     }
 }
 
