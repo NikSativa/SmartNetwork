@@ -1,7 +1,9 @@
 import Foundation
 
 import NInject
+#if SWIFT_PACKAGE
 import NRequest
+#endif
 
 public class RequestAssembly: Assembly {
     public init() { }

@@ -84,7 +84,7 @@ class Plugins_TokenPluginSpec: QuickSpec {
                     }
 
                     it("should not verify anything") {
-                        expect({ try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }).toNot(throwError())
+                        expect(expression: { try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }).toNot(throwError())
                     }
 
                     describe("prepare") {
