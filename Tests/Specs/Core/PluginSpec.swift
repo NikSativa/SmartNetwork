@@ -70,7 +70,7 @@ class PluginSpec: QuickSpec {
             }
 
             it("should not verify") {
-                expect({ try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }).toNot(throwError())
+                expect(expression: { try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }).toNot(throwError())
             }
         }
 
@@ -105,7 +105,7 @@ class PluginSpec: QuickSpec {
             }
 
             it("should verify and throw error") {
-                expect({ try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }).to(throwError(TestError.case1))
+                expect(expression: { try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }).to(throwError(TestError.case1))
             }
         }
     }
