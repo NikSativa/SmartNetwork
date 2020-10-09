@@ -12,7 +12,7 @@ extension Parameters: SpryEquatable {
                                 timeoutInterval: TimeInterval = 60,
                                 queue: ResponseQueue = DispatchQueue.main,
                                 isLoggingEnabled: Bool = false,
-                                progressHandler: ProgressHandler? = nil) -> Parameters {
+                                taskKind: TaskKind = .download(progressHandler: nil)) -> Parameters {
         return Parameters(address: address,
                           header: header,
                           method: method,
@@ -21,17 +21,15 @@ extension Parameters: SpryEquatable {
                           timeoutInterval: timeoutInterval,
                           queue: queue,
                           isLoggingEnabled: isLoggingEnabled,
-                          progressHandler: progressHandler)
+                          taskKind: taskKind)
     }
 }
 
 extension Parameters.CacheSettings: SpryEquatable {
-    public static func testMake(cache: URLCache? = nil,
-                                storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
-                                requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy) -> Parameters.CacheSettings {
+    public static func testMake(cache: URLCache = .init(),
+                                storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly) -> Parameters.CacheSettings {
         return Parameters.CacheSettings(cache: cache,
-                                        storagePolicy: storagePolicy,
-                                        requestPolicy: requestPolicy)
+                                        storagePolicy: storagePolicy)
     }
 }
 
