@@ -1,17 +1,19 @@
 import Foundation
 
 public struct Parameters {
-    public struct CacheSettings: Equatable {
-        public let cache: URLCache?
-        public let storagePolicy: URLCache.StoragePolicy
-        public let requestPolicy: URLRequest.CachePolicy
+    public enum TaskKind {
+        case download(progressHandler: ProgressHandler?)
+        case upload(progressHandler: ProgressHandler?)
+    }
 
-        public init(cache: URLCache? = nil,
-                    storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
-                    requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy) {
+    public struct CacheSettings: Equatable {
+        public let cache: URLCache
+        public let storagePolicy: URLCache.StoragePolicy
+
+        public init(cache: URLCache,
+                    storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly) {
             self.cache = cache
             self.storagePolicy = storagePolicy
-            self.requestPolicy = requestPolicy
         }
     }
 
@@ -19,30 +21,33 @@ public struct Parameters {
     public let header: [String: String]
     public let method: HTTPMethod
     public let timeoutInterval: TimeInterval
-    public let cacheSettings: CacheSettings
+    public let cacheSettings: CacheSettings?
+    public let requestPolicy: URLRequest.CachePolicy
     public let queue: ResponseQueue
     public let plugins: [Plugin]
     public let isLoggingEnabled: Bool
-    public let progressHandler: ProgressHandler?
+    public let taskKind: TaskKind
 
     public init(address: Address,
                 header: [String: String] = [:],
                 method: HTTPMethod = .get,
                 plugins: [Plugin] = [],
-                cacheSettings: CacheSettings = .init(),
+                cacheSettings: CacheSettings? = nil,
+                requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
                 timeoutInterval: TimeInterval = 60,
                 queue: ResponseQueue = DispatchQueue.main,
                 isLoggingEnabled: Bool = false,
-                progressHandler: ProgressHandler? = nil) {
+                taskKind: TaskKind = .download(progressHandler: nil)) {
         self.address = address
         self.header = header
         self.method = method
         self.plugins = plugins
         self.timeoutInterval = timeoutInterval
         self.cacheSettings = cacheSettings
+        self.requestPolicy = requestPolicy
         self.queue = queue
         self.isLoggingEnabled = isLoggingEnabled
-        self.progressHandler = progressHandler
+        self.taskKind = taskKind
     }
 
     private init(_ original: Parameters, plugins: [Plugin]) {
@@ -52,9 +57,10 @@ public struct Parameters {
         self.plugins = plugins
         self.timeoutInterval = original.timeoutInterval
         self.cacheSettings = original.cacheSettings
+        self.requestPolicy = original.requestPolicy
         self.queue = original.queue
         self.isLoggingEnabled = original.isLoggingEnabled
-        self.progressHandler = original.progressHandler
+        self.taskKind = original.taskKind
     }
 }
 

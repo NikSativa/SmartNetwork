@@ -9,6 +9,25 @@ public enum StatusCode: Error, Equatable, ErrorMapping {
     case serverError  // 500
     case other(Int)
 
+    public func toInt() -> Int {
+        switch self {
+        case .noContent:
+            return 204
+        case .badRequest:
+            return 400
+        case .unauthorized:
+            return 401
+        case .notFound:
+            return 404
+        case .timeout:
+            return 408
+        case .serverError:
+            return 500
+        case .other(let code):
+            return code
+        }
+    }
+
     public static func verify(_ code: Int?) throws {
         guard let code = code else {
             return

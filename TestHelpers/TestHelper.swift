@@ -39,12 +39,10 @@ public enum Helpers {
                          isLoggingEnabled: isLoggingEnabled)
     }
 
-    public static func testMake(cache: URLCache? = nil,
-                                storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
-                                requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy) -> Parameters.CacheSettings {
+    public static func testMake(cache: URLCache = .init(),
+                                storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly) -> Parameters.CacheSettings {
         return .testMake(cache: cache,
-                         storagePolicy: storagePolicy,
-                         requestPolicy: requestPolicy)
+                         storagePolicy: storagePolicy)
     }
 
     public static func testMake(_ string: String = "http://www.some.com") -> URL {
