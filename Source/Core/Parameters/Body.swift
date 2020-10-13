@@ -61,7 +61,7 @@ public enum Body {
     case form(Form)  // form-data
     case xform([String: Any]) // x-www-form-urlencoded
 
-    public init<T: Encodable>(with object: T) {
+    public init<T: Encodable>(_ object: T) {
         self = .encodable(AnyEncodable(object))
     }
 }

@@ -1,14 +1,10 @@
 import Foundation
 
-public enum HTTPMethod {
-    case post(Body)
+public enum HTTPMethod: Equatable {
+    case post
     case get
     case put
     case delete
-
-    public init<T: Encodable>(post object: T) {
-        self = .post(Body(with: object))
-    }
 }
 
 extension HTTPMethod {

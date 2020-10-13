@@ -155,9 +155,7 @@ class Request<Response: InternalDecodable, Error: AnyError> {
             request.addValue(value, forHTTPHeaderField: key)
         }
 
-        if case .post(let body) = parameters.method {
-            try body.fill(&request, isLoggingEnabled: parameters.isLoggingEnabled)
-        }
+        try parameters.body.fill(&request, isLoggingEnabled: parameters.isLoggingEnabled)
 
         sdkRequest = request
     }
