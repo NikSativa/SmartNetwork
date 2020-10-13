@@ -20,6 +20,7 @@ public struct Parameters {
     public let address: Address
     public let header: [String: String]
     public let method: HTTPMethod
+    public let body: Body
     public let timeoutInterval: TimeInterval
     public let cacheSettings: CacheSettings?
     public let requestPolicy: URLRequest.CachePolicy
@@ -31,6 +32,7 @@ public struct Parameters {
     public init(address: Address,
                 header: [String: String] = [:],
                 method: HTTPMethod = .get,
+                body: Body = .empty,
                 plugins: [Plugin] = [],
                 cacheSettings: CacheSettings? = nil,
                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
@@ -41,6 +43,7 @@ public struct Parameters {
         self.address = address
         self.header = header
         self.method = method
+        self.body = body
         self.plugins = plugins
         self.timeoutInterval = timeoutInterval
         self.cacheSettings = cacheSettings
@@ -54,6 +57,7 @@ public struct Parameters {
         self.address = original.address
         self.header = original.header
         self.method = original.method
+        self.body = original.body
         self.plugins = plugins
         self.timeoutInterval = original.timeoutInterval
         self.cacheSettings = original.cacheSettings

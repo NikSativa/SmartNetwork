@@ -7,6 +7,7 @@ extension Parameters: SpryEquatable {
     public static func testMake(address: Address = .testMake(),
                                 header: [String: String] = [:],
                                 method: HTTPMethod = .get,
+                                body: Body = .empty,
                                 plugins: [Plugin] = [],
                                 cacheSettings: CacheSettings = .testMake(),
                                 timeoutInterval: TimeInterval = 60,
@@ -16,6 +17,7 @@ extension Parameters: SpryEquatable {
         return Parameters(address: address,
                           header: header,
                           method: method,
+                          body: body,
                           plugins: plugins,
                           cacheSettings: cacheSettings,
                           timeoutInterval: timeoutInterval,
@@ -40,6 +42,7 @@ extension Parameters: Equatable {
             && lhs.header == rhs.header
             && lhs.isLoggingEnabled == rhs.isLoggingEnabled
             && lhs.method == rhs.method
+            && lhs.body == rhs.body
             && Set(lhs.plugins.map({ String(describing: type(of: $0)) })) == Set(rhs.plugins.map({ String(describing: type(of: $0)) }))
             && lhs.queue === rhs.queue
             && lhs.timeoutInterval == rhs.timeoutInterval
