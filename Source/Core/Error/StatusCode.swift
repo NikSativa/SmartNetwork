@@ -1,33 +1,16 @@
 import Foundation
 
-public enum StatusCode: Error, Equatable, ErrorMapping {
+public enum StatusCode: Error, Equatable {
     case noContent    // 204
     case badRequest   // 400
     case unauthorized // 401
     case notFound     // 404
-    case timeout     // 408
+    case timeout      // 408
     case serverError  // 500
     case other(Int)
+}
 
-    public func toInt() -> Int {
-        switch self {
-        case .noContent:
-            return 204
-        case .badRequest:
-            return 400
-        case .unauthorized:
-            return 401
-        case .notFound:
-            return 404
-        case .timeout:
-            return 408
-        case .serverError:
-            return 500
-        case .other(let code):
-            return code
-        }
-    }
-
+extension StatusCode: ErrorMapping {
     public static func verify(_ code: Int?) throws {
         guard let code = code else {
             return
