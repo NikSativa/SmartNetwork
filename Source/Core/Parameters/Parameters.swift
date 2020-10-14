@@ -9,11 +9,14 @@ public struct Parameters {
     public struct CacheSettings: Equatable {
         public let cache: URLCache
         public let storagePolicy: URLCache.StoragePolicy
+        public let queue: ResponseQueue
 
         public init(cache: URLCache,
-                    storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly) {
+                    storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
+                    queue: ResponseQueue = .default) {
             self.cache = cache
             self.storagePolicy = storagePolicy
+            self.queue = queue
         }
     }
 
@@ -37,7 +40,7 @@ public struct Parameters {
                 cacheSettings: CacheSettings? = nil,
                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
                 timeoutInterval: TimeInterval = 60,
-                queue: ResponseQueue = DispatchQueue.main,
+                queue: ResponseQueue = .default,
                 isLoggingEnabled: Bool = false,
                 taskKind: TaskKind = .download(progressHandler: nil)) {
         self.address = address
