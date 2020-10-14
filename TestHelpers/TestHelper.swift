@@ -11,7 +11,7 @@ public enum Helpers {
     public typealias FakeStorage = NRequestTestHelpers.FakeStorage
     public typealias FakeKeyedStorage = NRequestTestHelpers.FakeKeyedStorage
     public typealias FakeRequestFactory<Error: AnyError> = NRequestTestHelpers.FakeRequestFactory<Error>
-    public typealias FakeResponseQueue = NRequestTestHelpers.FakeResponseQueue
+    public typealias FakeResponseQueue = NRequestTestHelpers.FakeDispatchResponseQueue
 
     public static func testMake(host: String = "",
                                 endpoint: String? = nil,
@@ -24,25 +24,31 @@ public enum Helpers {
     public static func testMake(address: Address = .testMake(),
                                 header: [String: String] = [:],
                                 method: HTTPMethod = .get,
+                                body: Body = .empty,
                                 plugins: [Plugin] = [],
                                 cacheSettings: Parameters.CacheSettings = .testMake(),
                                 timeoutInterval: TimeInterval = 60,
-                                queue: ResponseQueue = DispatchQueue.main,
-                                isLoggingEnabled: Bool = false) -> Parameters {
-        return .testMake(address: address,
-                         header: header,
-                         method: method,
-                         plugins: plugins,
-                         cacheSettings: cacheSettings,
-                         timeoutInterval: timeoutInterval,
-                         queue: queue,
-                         isLoggingEnabled: isLoggingEnabled)
+                                queue: ResponseQueue = .async(DispatchQueue.main),
+                                isLoggingEnabled: Bool = false,
+                                taskKind: Parameters.TaskKind = .download(progressHandler: nil)) -> Parameters {
+        return Parameters(address: address,
+                          header: header,
+                          method: method,
+                          body: body,
+                          plugins: plugins,
+                          cacheSettings: cacheSettings,
+                          timeoutInterval: timeoutInterval,
+                          queue: queue,
+                          isLoggingEnabled: isLoggingEnabled,
+                          taskKind: taskKind)
     }
 
     public static func testMake(cache: URLCache = .init(),
-                                storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly) -> Parameters.CacheSettings {
-        return .testMake(cache: cache,
-                         storagePolicy: storagePolicy)
+                                storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
+                                queue: ResponseQueue = .async(DispatchQueue.main)) -> Parameters.CacheSettings {
+        return Parameters.CacheSettings(cache: cache,
+                                        storagePolicy: storagePolicy,
+                                        queue: queue)
     }
 
     public static func testMake(_ string: String = "http://www.some.com") -> URL {

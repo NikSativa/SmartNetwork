@@ -25,8 +25,8 @@ class Request<Response: InternalDecodable, Error: AnyError> {
             $0.willSend(info)
         }
 
-        if let cached = parameters.cacheSettings?.cache.cachedResponse(for: sdkRequest) {
-            fire(data: cached.data, response: cached.response, error: nil)
+        if let cacheSettings = parameters.cacheSettings, let cached = cacheSettings.cache.cachedResponse(for: sdkRequest) {
+            fire(data: cached.data, response: cached.response, error: nil, queue: cacheSettings.queue)
             return
         }
 
@@ -55,7 +55,7 @@ class Request<Response: InternalDecodable, Error: AnyError> {
             }
 
             self.sessionAdaptor = nil
-            self.fire(data: data, response: response, error: error)
+            self.fire(data: data, response: response, error: error, queue: self.parameters.queue)
         }
     }
 
@@ -86,7 +86,7 @@ class Request<Response: InternalDecodable, Error: AnyError> {
         Configuration.log(text(), file: file, method: method)
     }
 
-    private func fire(data: Data?, response: URLResponse?, error: Swift.Error?) {
+    private func fire(data: Data?, response: URLResponse?, error: Swift.Error?, queue: ResponseQueue) {
         var httpStatusCode: Int?
         var header: [AnyHashable: Any] = [:]
         if let response = response as? HTTPURLResponse {
@@ -98,6 +98,8 @@ class Request<Response: InternalDecodable, Error: AnyError> {
             self.plugins.forEach {
                 $0.didFinish(self.info, response: response, with: error, statusCode: httpStatusCode)
             }
+            
+            self.stop()
         }
 
         do {
@@ -111,7 +113,7 @@ class Request<Response: InternalDecodable, Error: AnyError> {
             }
 
             let resultResponse = try Response(with: data)
-            parameters.queue.async {
+            queue.fire {
                 self.completeCallback?(.success(resultResponse.content))
                 didfinish()
             }
@@ -121,7 +123,7 @@ class Request<Response: InternalDecodable, Error: AnyError> {
                     return
                 }
 
-                self.parameters.queue.async {
+                queue.fire {
                     self.tolog("failed request: \(resultError)")
                     self.completeCallback?(.failure(Error.wrap(resultError)))
                     didfinish()
