@@ -13,9 +13,14 @@ class FakeRequestFactory<Error: AnyError>: RequestFactory, Spryable {
 
     public enum Function: String, StringRepresentable {
         case request = "request(with:)"
+        case requestCustomDecodable = "request(_:with:)"
     }
 
     public init() {
+    }
+
+    public func request<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error> {
+        return spryify(arguments: parameters)
     }
 
     public func request(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {

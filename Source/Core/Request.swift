@@ -1,169 +1,173 @@
 import Foundation
 
-class Request<Response: InternalDecodable, Error: AnyError> {
-    typealias CompleteCallback = (Result<Response.Object, Error>) -> Void
+protocol Requesting {
+    func start()
+    func stop()
+}
 
-    private var completeCallback: CompleteCallback?
-    func onComplete(_ callback: @escaping CompleteCallback) {
-        completeCallback = callback
-    }
+protocol Request: Requesting {
+    associatedtype Response
+    associatedtype Error: AnyError
 
-    // MARK: -
-    private var sdkRequest: URLRequest
-    private var isStopped: Bool = false
-    private var sessionAdaptor: SessionAdaptor?
+    typealias CompleteCallback = (Result<Response, Error>) -> Void
+    func onComplete(_ callback: @escaping CompleteCallback)
+}
 
-    func start() {
-        stop()
-        isStopped = false
+extension Impl {
+    class Request<Response: CustomDecodable, Error: AnyError>: NRequest.Request {
+        typealias CompleteCallback = (Result<Response.Object, Error>) -> Void
 
-        plugins.forEach {
-            sdkRequest = $0.prepare(info)
+        private var completeCallback: CompleteCallback?
+        func onComplete(_ callback: @escaping CompleteCallback) {
+            completeCallback = callback
         }
 
-        plugins.forEach {
-            $0.willSend(info)
-        }
+        // MARK: -
+        private var sdkRequest: URLRequest
+        private var isStopped: Bool = false
+        private var sessionAdaptor: SessionAdaptor?
 
-        if let cacheSettings = parameters.cacheSettings, let cached = cacheSettings.cache.cachedResponse(for: sdkRequest) {
-            fire(data: cached.data, response: cached.response, error: nil, queue: cacheSettings.queue)
-            return
-        }
+        func start() {
+            stop()
+            isStopped = false
 
-        tolog("sending \(parameters.method.toString()) request: " +
-                "\n" +
-                "\(sdkRequest.url?.absoluteString ?? "<url is nil>")" +
-                "\n" +
-                "with headers: " +
-                "\n" +
-                "\(String(describing: sdkRequest.allHTTPHeaderFields ?? [:]))")
+            let info = RequestInfo(request: .init(sdkRequest), parameters: parameters)
+            plugins.forEach {
+                $0.prepare(info)
+            }
+            sdkRequest = info.request.original
 
-        let sessionAdaptor = SessionAdaptor(taskKind: parameters.taskKind)
-        self.sessionAdaptor = sessionAdaptor
+            plugins.forEach {
+                $0.willSend(info)
+            }
 
-        sessionAdaptor.dataTask(with: sdkRequest) { [weak self] data, response, error in
-            guard let self = self, !self.isStopped else {
+            if let cacheSettings = parameters.cacheSettings, let cached = cacheSettings.cache.cachedResponse(for: sdkRequest) {
+                fire(data: cached.data,
+                     response: cached.response,
+                     error: nil,
+                     queue: cacheSettings.queue,
+                     info: info)
                 return
             }
 
-            if let cacheSettings = self.parameters.cacheSettings, let response = response, let data = data, error == nil {
-                let cached = CachedURLResponse(response: response,
-                                               data: data,
-                                               userInfo: nil,
-                                               storagePolicy: cacheSettings.storagePolicy)
-                cacheSettings.cache.storeCachedResponse(cached, for: self.sdkRequest)
-            }
+            tolog("sending \(parameters.method.toString()) request: " +
+                    "\n" +
+                    "\(sdkRequest.url?.absoluteString ?? "<url is nil>")" +
+                    "\n" +
+                    "with headers: " +
+                    "\n" +
+                    "\(String(describing: sdkRequest.allHTTPHeaderFields ?? [:]))")
 
-            self.sessionAdaptor = nil
-            self.fire(data: data, response: response, error: error, queue: self.parameters.queue)
-        }
-    }
+            let sessionAdaptor = SessionAdaptor(taskKind: parameters.taskKind)
+            self.sessionAdaptor = sessionAdaptor
 
-    func stop() {
-        isStopped = true
-        sessionAdaptor?.stop()
-        sessionAdaptor = nil
-    }
-
-    deinit {
-        sessionAdaptor?.stop()
-    }
-
-    private var info: PluginInfo {
-        return .init(request: sdkRequest, parameters: parameters)
-    }
-
-    private var plugins: [Plugin] {
-        return parameters.plugins
-    }
-
-    private func tolog(_ text: @autoclosure () -> String, file: String = #file, method: String = #function) {
-        guard parameters.isLoggingEnabled else {
-            return
-        }
-
-        Configuration.log("\(self)", file: file, method: method)
-        Configuration.log(text(), file: file, method: method)
-    }
-
-    private func fire(data: Data?, response: URLResponse?, error: Swift.Error?, queue: ResponseQueue) {
-        var httpStatusCode: Int?
-        var header: [AnyHashable: Any] = [:]
-        if let response = response as? HTTPURLResponse {
-            httpStatusCode = response.statusCode
-            header = response.allHeaderFields
-        }
-
-        let didfinish = {
-            self.plugins.forEach {
-                $0.didFinish(self.info, response: response, with: error, statusCode: httpStatusCode)
-            }
-            
-            self.stop()
-        }
-
-        do {
-            tolog({
-                let obj = { try? JSONSerialization.jsonObject(with: data ?? Data(), options: JSONSerialization.ReadingOptions())}
-                return "response: " + (String(data: data ?? Data(), encoding: .utf8) ?? obj().map({ String(describing: $0) }) ?? "nil")
-            }())
-
-            try plugins.forEach {
-                try $0.verify(httpStatusCode: httpStatusCode, header: header, data: data, error: error)
-            }
-
-            let resultResponse = try Response(with: data)
-            queue.fire {
-                self.completeCallback?(.success(resultResponse.content))
-                didfinish()
-            }
-        } catch let resultError {
-            let completionHandler = { [weak self] in
-                guard let self = self else {
+            sessionAdaptor.dataTask(with: sdkRequest) { [weak self] data, response, error in
+                guard let self = self, !self.isStopped else {
                     return
                 }
 
+                if let cacheSettings = self.parameters.cacheSettings, let response = response, let data = data, error == nil {
+                    let cached = CachedURLResponse(response: response,
+                                                   data: data,
+                                                   userInfo: nil,
+                                                   storagePolicy: cacheSettings.storagePolicy)
+                    cacheSettings.cache.storeCachedResponse(cached, for: self.sdkRequest)
+                }
+
+                self.sessionAdaptor = nil
+                self.fire(data: data,
+                          response: response,
+                          error: error,
+                          queue: self.parameters.queue,
+                          info: info)
+            }
+        }
+
+        func stop() {
+            isStopped = true
+            sessionAdaptor?.stop()
+            sessionAdaptor = nil
+        }
+
+        deinit {
+            sessionAdaptor?.stop()
+        }
+
+        private var plugins: [Plugin] {
+            return parameters.plugins
+        }
+
+        private func tolog(_ text: @autoclosure () -> String, file: String = #file, method: String = #function) {
+            guard parameters.isLoggingEnabled else {
+                return
+            }
+
+            Configuration.log("\(self)", file: file, method: method)
+            Configuration.log(text(), file: file, method: method)
+        }
+
+        private func fire(data: Data?,
+                          response: URLResponse?,
+                          error: Swift.Error?,
+                          queue: ResponseQueue,
+                          info: RequestInfo) {
+            var httpStatusCode: Int?
+            var header: [AnyHashable: Any] = [:]
+            if let response = response as? HTTPURLResponse {
+                httpStatusCode = response.statusCode
+                header = response.allHeaderFields
+            }
+
+            do {
+                tolog({
+                    let obj = { try? JSONSerialization.jsonObject(with: data ?? Data(), options: JSONSerialization.ReadingOptions())}
+                    return "response: " + (String(data: data ?? Data(), encoding: .utf8) ?? obj().map({ String(describing: $0) }) ?? "nil")
+                }())
+
+                try plugins.forEach {
+                    try $0.verify(httpStatusCode: httpStatusCode, header: header, data: data, error: error)
+                }
+
+                let resultResponse = try Response(with: data)
                 queue.fire {
-                    self.tolog("failed request: \(resultError)")
-                    self.completeCallback?(.failure(Error.wrap(resultError)))
-                    didfinish()
+                    self.completeCallback?(.success(resultResponse.content))
+                }
+            } catch let resultError {
+                self.tolog("failed request: \(resultError)")
+
+                queue.fire {
+                    self.completeCallback?(.failure(.wrap(resultError)))
                 }
             }
 
-            let retryCompletion: (Bool) -> Void = { [weak self] shouldRetry in
-                if shouldRetry {
-                    self?.start()
-                } else {
-                    completionHandler()
-                }
+            self.plugins.forEach {
+                $0.didFinish(info, response: response, with: error, statusCode: httpStatusCode)
             }
 
-            if plugins.first(where: { $0.should(wait: info, response: response, with: resultError, forRetryCompletion: retryCompletion) }) == nil {
-                completionHandler()
+            self.stop()
+        }
+
+        private let parameters: Parameters
+        required init(_ parameters: Parameters) throws {
+            self.parameters = parameters
+
+            var request = URLRequest(url: try parameters.address.url(),
+                                     cachePolicy: parameters.requestPolicy,
+                                     timeoutInterval: parameters.timeoutInterval)
+            request.httpMethod = parameters.method.toString()
+
+            for (key, value) in parameters.header {
+                request.addValue(value, forHTTPHeaderField: key)
             }
+
+            try parameters.body.fill(&request, isLoggingEnabled: parameters.isLoggingEnabled)
+
+            sdkRequest = request
         }
-    }
-
-    private let parameters: Parameters
-    required init(_ parameters: Parameters) throws {
-        self.parameters = parameters
-
-        var request = URLRequest(url: try parameters.address.url(),
-                                 cachePolicy: parameters.requestPolicy,
-                                 timeoutInterval: parameters.timeoutInterval)
-        request.httpMethod = parameters.method.toString()
-
-        for (key, value) in parameters.header {
-            request.addValue(value, forHTTPHeaderField: key)
-        }
-
-        try parameters.body.fill(&request, isLoggingEnabled: parameters.isLoggingEnabled)
-
-        sdkRequest = request
     }
 }
 
-extension Request: CustomDebugStringConvertible {
+extension Impl.Request: CustomDebugStringConvertible {
     var debugDescription: String {
         return "<Request: \(sdkRequest)>"
     }
@@ -297,3 +301,64 @@ private extension Parameters.TaskKind {
         }
     }
 }
+
+//extension Impl.Request {
+//    func toAny() -> AnyRequest<Response.Object, Error> {
+//        AnyRequest(self)
+//    }
+//}
+//
+//class AnyRequest<Response, Error: AnyError>: Requesting {
+//    private let box: AbstractRequest<Response, Error>
+//
+//    init<Requestable: Request>(_ storage: Requestable) where Requestable.Response == Response, Requestable.Error == Error {
+//        box = RequestBox(storage)
+//    }
+//
+//    func start() {
+//        box.start()
+//    }
+//
+//    func stop() {
+//        box.stop()
+//    }
+//
+//    func onComplete(_ callback: @escaping (Result<Response, Error>) -> Void) {
+//        box.onComplete(callback)
+//    }
+//}
+//
+//private class AbstractRequest<Response, Error: AnyError>: Request {
+//    func start() {
+//        fatalError("abstract needs override")
+//    }
+//
+//    func stop() {
+//        fatalError("abstract needs override")
+//    }
+//
+//    func onComplete(_ callback: @escaping CompleteCallback) {
+//        fatalError("abstract needs override")
+//    }
+//}
+//
+//final
+//private class RequestBox<Requestable: Request>: AbstractRequest<Requestable.Response, Requestable.Error> {
+//    private let concrete: Requestable
+//
+//    init(_ concrete: Requestable) {
+//        self.concrete = concrete
+//    }
+//
+//    override func start() {
+//        concrete.start()
+//    }
+//
+//    override func stop() {
+//        concrete.stop()
+//    }
+//
+//    override func onComplete(_ callback: @escaping CompleteCallback) {
+//        concrete.onComplete(callback)
+//    }
+//}

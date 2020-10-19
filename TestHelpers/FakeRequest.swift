@@ -4,7 +4,7 @@ import Spry
 @testable import NRequest
 
 final
-class FakeRequest<Response: InternalDecodable, Error: AnyError>: Request<Response, Error>, Spryable {
+class FakeRequest<Response, Error: AnyError>: Request, Spryable {
     enum ClassFunction: String, StringRepresentable {
         case empty
     }
@@ -15,15 +15,15 @@ class FakeRequest<Response: InternalDecodable, Error: AnyError>: Request<Respons
         case stop = "stop()"
     }
 
-    override func onComplete(_ callback: @escaping CompleteCallback) {
+    func onComplete(_ callback: @escaping CompleteCallback) {
         return spryify(arguments: callback)
     }
 
-    override func start() {
+    func start() {
         return spryify()
     }
 
-    override func stop() {
+    func stop() {
         return spryify()
     }
 }

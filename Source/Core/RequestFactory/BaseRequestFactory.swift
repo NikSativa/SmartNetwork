@@ -2,21 +2,26 @@ import Foundation
 import UIKit
 import NCallback
 
+final
 public class BaseRequestFactory<Error: AnyError> {
+    private typealias RealRequest = Impl.Request
     private let pluginProvider: PluginProvider?
+    private let refreshToken: RefreshToken?
 
-    public init(pluginProvider: PluginProvider? = nil) {
+    public init(pluginProvider: PluginProvider? = nil,
+                refreshToken: RefreshToken? = nil) {
         self.pluginProvider = pluginProvider
+        self.refreshToken = refreshToken
     }
 
-    private func request<Response: InternalDecodable>(_ throwable: @autoclosure () throws -> Request<Response, Error>) -> ResultCallback<Response.Object, Error> {
+    private func request<Response: CustomDecodable>(_ throwable: @autoclosure () throws -> RealRequest<Response, Error>) -> ResultCallback<Response.Object, Error> {
         do {
-            return Callback(request: try throwable())
-        }
-        catch let error as Error {
+            let request = try throwable()
+            return Callback(request: request)
+        } catch let error as Error {
             return Callback.failure(error)
         } catch let error {
-            return Callback.failure(Error.wrap(error))
+            return Callback.failure(.wrap(error))
         }
     }
 
@@ -26,7 +31,7 @@ public class BaseRequestFactory<Error: AnyError> {
             if let value = value {
                 return .success(value)
             } else {
-                return .failure(Error.wrap(RequestError.decoding(.nilResponse)))
+                return .failure(.wrap(DecodingError.nilResponse))
             }
         case .failure(let error):
             return .failure(error)
@@ -42,45 +47,42 @@ public class BaseRequestFactory<Error: AnyError> {
 }
 
 extension BaseRequestFactory: RequestFactory {
-    public func request(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
+    public func request<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error> {
         let parameters = modify(parameters)
-        return request(try Request<IgnorableContent, Error>(parameters))
+        return request(try RealRequest<T, Error>(parameters))
+    }
+
+    public func request(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
+        return request(IgnorableContent.self, with: parameters)
     }
 
     // MARK: - weak
     public func request(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {
-        let parameters = modify(parameters)
-        return request(try Request<ImageContent, Error>(parameters))
+        return request(ImageContent.self, with: parameters)
     }
 
     public func request(with parameters: Parameters) -> ResultCallback<Data?, Error> {
-        let parameters = modify(parameters)
-        return request(try Request<DataContent, Error>(parameters))
+        return request(DataContent.self, with: parameters)
     }
 
     public func request(with parameters: Parameters) -> ResultCallback<Any?, Error> {
-        let parameters = modify(parameters)
-        return request(try Request<JSONContent, Error>(parameters))
+        return request(JSONContent.self, with: parameters)
     }
 
     // MARK: - strong
     public func request(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
-        let parameters = modify(parameters)
-        return request(try Request<ImageContent, Error>(parameters)).flatMap(Self.strongify)
+        return request(ImageContent.self, with: parameters).flatMap(Self.strongify)
     }
 
     public func request(with parameters: Parameters) -> ResultCallback<Data, Error> {
-        let parameters = modify(parameters)
-        return request(try Request<DataContent, Error>(parameters)).flatMap(Self.strongify)
+        return request(DataContent.self, with: parameters).flatMap(Self.strongify)
     }
 
     public func request<T: Decodable>(with parameters: Parameters) -> ResultCallback<T, Error> {
-        let parameters = modify(parameters)
-        return request(try Request<DecodableContent, Error>(parameters)).flatMap(Self.strongify)
+        return request(DecodableContent.self, with: parameters).flatMap(Self.strongify)
     }
 
     public func request(with parameters: Parameters) -> ResultCallback<Any, Error> {
-        let parameters = modify(parameters)
-        return request(try Request<JSONContent, Error>(parameters)).flatMap(Self.strongify)
+        return request(JSONContent.self, with: parameters).flatMap(Self.strongify)
     }
 }

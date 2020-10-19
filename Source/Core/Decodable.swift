@@ -2,19 +2,19 @@ import Foundation
 import UIKit
 import NCallback
 
-protocol InternalDecodable {
+public protocol CustomDecodable {
     associatedtype Object
     var content: Object { get }
 
     init(with data: Data?) throws
 }
 
-struct IgnorableContent: InternalDecodable {
+struct IgnorableContent: CustomDecodable {
     let content = Ignorable()
     init(with data: Data?) throws { }
 }
 
-struct DecodableContent<Response: Decodable>: InternalDecodable {
+struct DecodableContent<Response: Decodable>: CustomDecodable {
     let content: Response?
 
     init(with data: Data?) throws {
@@ -31,7 +31,7 @@ struct DecodableContent<Response: Decodable>: InternalDecodable {
     }
 }
 
-struct ImageContent: InternalDecodable {
+struct ImageContent: CustomDecodable {
     let content: UIImage?
 
     init(with data: Data?) throws {
@@ -43,7 +43,7 @@ struct ImageContent: InternalDecodable {
     }
 }
 
-struct DataContent: InternalDecodable {
+struct DataContent: CustomDecodable {
     let content: Data?
 
     public init(with data: Data?) throws {
@@ -51,7 +51,7 @@ struct DataContent: InternalDecodable {
     }
 }
 
-struct JSONContent: InternalDecodable {
+struct JSONContent: CustomDecodable {
     let content: Any?
 
     public init(with data: Data?) throws {

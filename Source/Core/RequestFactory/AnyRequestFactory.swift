@@ -12,6 +12,10 @@ public class AnyRequestFactory<Error: AnyError> {
 }
 
 extension AnyRequestFactory: RequestFactory {
+    public func request<T: CustomDecodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error> {
+        return box.request(type, with: parameters)
+    }
+
     public func request(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
         return box.request(with: parameters)
     }
@@ -46,6 +50,10 @@ extension AnyRequestFactory: RequestFactory {
 }
 
 private class AbstractRequestFactory<Error: AnyError>: RequestFactory {
+    public func request<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error> {
+        fatalError("abstract needs override")
+    }
+
     func request(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
         fatalError("abstract needs override")
     }
@@ -85,6 +93,10 @@ private class RequestFactoryBox<T: RequestFactory>: AbstractRequestFactory<T.Err
 
     init(_ concrete: T) {
         self.concrete = concrete
+    }
+
+    override func request<T: CustomDecodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error> {
+        concrete.request(type, with: parameters)
     }
 
     override func request(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {

@@ -14,7 +14,8 @@ public class RequestAssembly: Assembly {
         }
 
         registrator.register(BaseRequestFactory<RequestError>.self, options: .transient) { resolver, args in
-            BaseRequestFactory(pluginProvider: args.optionalResolve(PluginProvider.self, at: 0) ?? resolver.resolve(with: args))
+            BaseRequestFactory(pluginProvider: args.optionalFirst(PluginProvider.self) ?? resolver.resolve(with: args),
+                               refreshToken: args.optionalFirst(RefreshToken.self) ?? resolver.resolve(with: args))
         }
 
         registrator.register(Plugins.StatusCode.self, options: .transient, Plugins.StatusCode.init)
