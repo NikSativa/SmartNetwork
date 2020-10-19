@@ -2,7 +2,8 @@ import Foundation
 import NCallback
 
 extension Callback {
-    convenience init<R: InternalDecodable, Error: AnyError>(request: Request<R, Error>) where ResultType == Result<R.Object, Error> {
+    convenience init<Requestable: Request>(request: Requestable)
+    where ResultType == Result<Requestable.Response, Requestable.Error> {
         let start: ServiceClosure = { _ in
             request.start()
         }

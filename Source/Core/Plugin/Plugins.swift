@@ -43,6 +43,15 @@ public enum Plugins {
     public final class AutoError<E: ErrorMapping>: Plugin {
         public init() { }
 
+        public func prepare(_ info: Info) {
+        }
+
+        public func willSend(_ info: Info) {
+        }
+
+        public func didFinish(_ info: Info, response: URLResponse?, with error: Error?, statusCode: Int?) {
+        }
+
         public func verify(httpStatusCode code: Int?, header: [AnyHashable: Any], data: Data?, error: Error?) throws {
             try E.verify(code)
         }
@@ -60,35 +69,40 @@ public enum Plugins {
             self.type = type
         }
 
-        public func prepare(_ info: Info) -> URLRequest {
-            guard let apiKey = tokenProvider() else {
-                return info.request
-            }
+        public func willSend(_ info: Info) {
+        }
 
-            var urlRequest = info.request
+        public func prepare(_ info: Info) {
+            guard let apiKey = tokenProvider() else {
+                return
+            }
 
             switch type {
             case .header(let operation):
                 switch operation {
                 case .set(let keyName):
-                    urlRequest.setValue(apiKey, forHTTPHeaderField: keyName)
+                    info.request.setValue(apiKey, forHTTPHeaderField: keyName)
                 case .add(let keyName):
-                    urlRequest.addValue(apiKey, forHTTPHeaderField: keyName)
+                    info.request.addValue(apiKey, forHTTPHeaderField: keyName)
                 }
             case .queryParam(let keyName):
-                if let requestURL = urlRequest.url, var urlComponents = URLComponents(url: requestURL, resolvingAgainstBaseURL: false) {
+                if let requestURL = info.request.url, var urlComponents = URLComponents(url: requestURL, resolvingAgainstBaseURL: false) {
                     var queryItems: [URLQueryItem] = urlComponents.queryItems ?? []
                     queryItems = queryItems.filter({ $0.name != keyName })
                     queryItems.append(URLQueryItem(name: keyName, value: apiKey))
                     urlComponents.queryItems = queryItems
 
                     if let url = urlComponents.url {
-                        urlRequest.url = url
+                        info.request.url = url
                     }
                 }
             }
+        }
 
-            return urlRequest
+        public func didFinish(_ info: Info, response: URLResponse?, with error: Error?, statusCode: Int?) {
+        }
+
+        public func verify(httpStatusCode code: Int?, header: [AnyHashable : Any], data: Data?, error: Error?) throws {
         }
     }
 }

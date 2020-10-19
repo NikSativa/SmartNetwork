@@ -10,17 +10,17 @@ class FakePlugin: Plugin, Spryable {
     }
 
     public enum Function: String, StringRepresentable {
-        case prepare = "prepare"
-        case willSend = "willSend"
+        case prepare = "prepare(_:)"
+        case willSend = "willSend(_:)"
         case didComplete = "didComplete(:responseerror:)"
-        case didStop = "didStop"
+        case didStop = "didStop(_:)"
         case verify = "verify(httpStatusCode:header:data:error:)"
     }
 
     public init() {
     }
 
-    public func prepare(_ info: Info) -> URLRequest {
+    public func prepare(_ info: Info) {
         return spryify(arguments: info)
     }
 
@@ -28,13 +28,8 @@ class FakePlugin: Plugin, Spryable {
         return spryify(arguments: info)
     }
 
-    public func didComplete(_ info: Info, response: Any?, error: Error?) {
-        return spryify(arguments: info)
-    }
-
-    /// including 'cancel'
-    public func didStop(_ info: Info) {
-        return spryify(arguments: info)
+    public func didFinish(_ info: Info, response: URLResponse?, with error: Error?, statusCode: Int?) {
+        return spryify(arguments: info, response, error, statusCode)
     }
 
     public func verify(httpStatusCode code: Int?, header: [AnyHashable: Any], data: Data?, error: Error?) throws {

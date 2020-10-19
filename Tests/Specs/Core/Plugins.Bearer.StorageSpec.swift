@@ -22,8 +22,7 @@ class Plugins_Bearer_StorageSpec: QuickSpec {
 
             describe("prepare") {
                 var originalRequest: URLRequest!
-                var info: PluginInfo!
-                var actualUrlRequest: URLRequest!
+                var info: RequestInfo!
 
                 beforeEach {
                     originalRequest = .testMake(url: .testMake("http://www.some.com"))
@@ -31,27 +30,15 @@ class Plugins_Bearer_StorageSpec: QuickSpec {
 
                     authToken.stub(.value).andReturn("my_token_string")
 
-                    actualUrlRequest = subject.prepare(info)
+                    subject.prepare(info)
                 }
 
                 it("should modify request") {
-                    expect(actualUrlRequest).toNot(equal(originalRequest))
+                    expect(info.request).toNot(equal(originalRequest))
 
                     let expectedRequest: URLRequest = .testMake(url: .testMake("http://www.some.com"),
                                                                 headers: ["Authorization": "Bearer my_token_string"])
-                    expect(actualUrlRequest).to(equal(expectedRequest))
-                }
-            }
-
-            describe("should not wait anything") {
-                var actual: Bool!
-
-                beforeEach {
-                    actual = subject.should(wait: .testMake(), response: nil, with: nil, forRetryCompletion: { _ in })
-                }
-
-                it("should not modify request") {
-                    expect(actual).to(beFalse())
+                    expect(info.request).to(equal(expectedRequest))
                 }
             }
         }

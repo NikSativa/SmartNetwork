@@ -48,7 +48,7 @@ class Plugins_TokenPluginSpec: QuickSpec {
             describe(tokenType.name + (sufix ?? "")) {
                 context("when token is absent") {
                     var subject: Plugins.TokenPlugin!
-                    var actualUrlRequest: URLRequest!
+                    var info: RequestInfo!
 
                     beforeEach {
                         let authTokenProvider: Plugins.TokenPlugin.TokenProviderClosure = {
@@ -57,12 +57,12 @@ class Plugins_TokenPluginSpec: QuickSpec {
 
                         subject = .init(type: tokenType, tokenProvider: authTokenProvider)
 
-                        let info = PluginInfo.testMake(request: originalURLRequest)
-                        actualUrlRequest = subject.prepare(info)
+                        info = RequestInfo.testMake(request: originalURLRequest)
+                        subject.prepare(info)
                     }
 
                     it("should not modify request") {
-                        expect(actualUrlRequest).to(equal(originalURLRequest))
+                        expect(info.request).to(equal(originalURLRequest))
                     }
                 }
 
@@ -78,27 +78,21 @@ class Plugins_TokenPluginSpec: QuickSpec {
                         subject = .init(type: tokenType, tokenProvider: authTokenProvider)
                     }
 
-                    it("should not wait anything") {
-                        let actual = subject.should(wait: .testMake(), response: nil, with: nil, forRetryCompletion: { _ in })
-                        expect(actual).to(beFalse())
-                    }
-
                     it("should not verify anything") {
                         expect(expression: { try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }).toNot(throwError())
                     }
 
                     describe("prepare") {
-                        var info: PluginInfo!
-                        var actualUrlRequest: URLRequest!
+                        var info: RequestInfo!
 
                         beforeEach {
                             info = .testMake(request: originalURLRequest)
-                            actualUrlRequest = subject.prepare(info)
+                            subject.prepare(info)
                         }
 
                         it("should modify request") {
-                            expect(actualUrlRequest).toNot(equal(originalURLRequest))
-                            expect(actualUrlRequest).to(equal(expectedURLRequest))
+                            expect(info.request).toNot(equal(originalURLRequest))
+                            expect(info.request).to(equal(expectedURLRequest))
                         }
                     }
                 }

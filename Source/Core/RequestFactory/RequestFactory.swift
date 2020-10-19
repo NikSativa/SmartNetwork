@@ -19,6 +19,7 @@ public protocol RequestFactory: class {
 
     /// proxy helper
     func request<T: Decodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T, Error>
+    func request<T: CustomDecodable>(_ : T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error>
 
     /// convert to AnyRequestFactory
     func toAny() -> AnyRequestFactory<Error>
@@ -26,6 +27,30 @@ public protocol RequestFactory: class {
 
 public extension RequestFactory {
     func request<T: Decodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T, Error> {
+        request(with: parameters)
+    }
+
+    func requestData(with parameters: Parameters) -> ResultCallback<Data, Error> {
+        request(with: parameters)
+    }
+
+    func requestData(with parameters: Parameters) -> ResultCallback<Data?, Error> {
+        request(with: parameters)
+    }
+
+    func requestImage(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
+        request(with: parameters)
+    }
+
+    func requestImage(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {
+        request(with: parameters)
+    }
+
+    func requestAny(with parameters: Parameters) -> ResultCallback<Any, Error> {
+        request(with: parameters)
+    }
+
+    func requestAny(with parameters: Parameters) -> ResultCallback<Any?, Error> {
         request(with: parameters)
     }
 
