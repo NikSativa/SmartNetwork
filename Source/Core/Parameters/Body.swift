@@ -103,7 +103,7 @@ extension Body {
                     tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
                 }
             } catch let error {
-                throw EncodingError(error)
+                throw EncodingError.generic(.init(error))
             }
         case .image(let image):
             let data: Data
@@ -139,7 +139,7 @@ extension Body {
                     tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
                 }
             } catch let error {
-                throw EncodingError(error)
+                throw EncodingError.generic(.init(error))
             }
         case .form(let form):
             let data = FormEncoder.createBody(form)
