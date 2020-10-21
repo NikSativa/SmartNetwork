@@ -17,9 +17,6 @@ Pod::Spec.new do |spec|
 
     spec.default_subspec = 'Core'
 
-    spec.dependency 'NCallback'
-    spec.dependency 'NCallbackTestHelpers'
-
     spec.dependency 'Nimble'
     spec.dependency 'Spry'
     spec.dependency 'Quick'
@@ -50,11 +47,35 @@ Pod::Spec.new do |spec|
 
         is.dependency 'NInject'
         is.dependency 'NInjectTestHelpers'
+        is.dependency 'NCallback'
+        is.dependency 'NCallbackTestHelpers'
 
 		is.dependency 'NRequest/Inject'
+        is.dependency 'NRequest/Callback'
         is.dependency 'NRequestTestHelpers/Core'
+        is.dependency 'NRequestTestHelpers/Callback'
 
         is.test_spec 'Tests' do |tests|
+            #        tests.requires_app_host = true
+            tests.source_files = 'Tests/Specs/Inject/**/*Spec.swift'
+        end
+    end
+
+    spec.subspec 'Callback' do |cs|
+        cs.resources = ['TestHelpers/**/Test/**/*.{xcassets,json,imageset,png,strings,stringsdict}']
+        cs.source_files = 'TestHelpers/**/Test*.{storyboard,xib,swift}',
+                          'TestHelpers/**/Fake*.*',
+                          'TestHelpers/**/*+TestHelper.*'
+
+        cs.dependency 'NInject'
+        cs.dependency 'NInjectTestHelpers'
+        cs.dependency 'NCallback'
+        cs.dependency 'NCallbackTestHelpers'
+
+        cs.dependency 'NRequest/Core'
+        cs.dependency 'NRequestTestHelpers/Core'
+
+        cs.test_spec 'Tests' do |tests|
             #        tests.requires_app_host = true
             tests.source_files = 'Tests/Specs/Inject/**/*Spec.swift'
         end

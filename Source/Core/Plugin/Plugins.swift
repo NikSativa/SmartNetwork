@@ -43,7 +43,7 @@ public enum Plugins {
     public final class AutoError<E: ErrorMapping>: Plugin {
         public init() { }
 
-        public func prepare(_ info: Info) {
+        public func prepare(_ info: inout Info) {
         }
 
         public func willSend(_ info: Info) {
@@ -72,7 +72,7 @@ public enum Plugins {
         public func willSend(_ info: Info) {
         }
 
-        public func prepare(_ info: Info) {
+        public func prepare(_ info: inout Info) {
             guard let apiKey = tokenProvider() else {
                 return
             }

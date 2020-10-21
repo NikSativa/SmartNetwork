@@ -1,24 +1,34 @@
 import Foundation
 
-protocol Requesting {
-    func start()
-    func stop()
-}
-
-protocol Request: Requesting {
-    associatedtype Response
+public protocol Request {
+    associatedtype Response: CustomDecodable
     associatedtype Error: AnyError
 
-    typealias CompleteCallback = (Result<Response, Error>) -> Void
-    func onComplete(_ callback: @escaping CompleteCallback)
+    func start()
+    func stop()
+
+    typealias CompletionCallback = (Result<Response.Object, Error>) -> Void
+    func onComplete(_ callback: @escaping CompletionCallback)
+
+    /// convert to AnyRequest
+//    func toAny() -> AnyRequest<Response, Error>
 }
 
-extension Impl {
-    class Request<Response: CustomDecodable, Error: AnyError>: NRequest.Request {
-        typealias CompleteCallback = (Result<Response.Object, Error>) -> Void
+//public extension Request {
+//    func toAny() -> AnyRequest<Response, Error> {
+//        if let self = self as? AnyRequest<Response, Error> {
+//            return self
+//        }
+//
+//        return AnyRequest(self)
+//    }
+//}
 
-        private var completeCallback: CompleteCallback?
-        func onComplete(_ callback: @escaping CompleteCallback) {
+extension Impl {
+    final
+    class Request<Response: CustomDecodable, Error: AnyError>: NRequest.Request {
+        private var completeCallback: CompletionCallback?
+        func onComplete(_ callback: @escaping CompletionCallback) {
             completeCallback = callback
         }
 
@@ -26,22 +36,33 @@ extension Impl {
         private var sdkRequest: URLRequest
         private var isStopped: Bool = false
         private var sessionAdaptor: SessionAdaptor?
+        private let parameters: Parameters
+
+        required init(_ parameters: Parameters) throws {
+            self.parameters = parameters
+            sdkRequest = try parameters.sdkRequest()
+        }
+
+        deinit {
+            sessionAdaptor?.stop()
+        }
 
         func start() {
             stop()
             isStopped = false
 
-            let info = RequestInfo(request: .init(sdkRequest), parameters: parameters)
+            var info = RequestInfo(request: sdkRequest,
+                                   parameters: parameters)
             plugins.forEach {
-                $0.prepare(info)
+                $0.prepare(&info)
             }
-            sdkRequest = info.request.original
+            let modifiedRequest = info.request.original
 
             plugins.forEach {
                 $0.willSend(info)
             }
 
-            if let cacheSettings = parameters.cacheSettings, let cached = cacheSettings.cache.cachedResponse(for: sdkRequest) {
+            if let cacheSettings = parameters.cacheSettings, let cached = cacheSettings.cache.cachedResponse(for: modifiedRequest) {
                 fire(data: cached.data,
                      response: cached.response,
                      error: nil,
@@ -52,16 +73,16 @@ extension Impl {
 
             tolog("sending \(parameters.method.toString()) request: " +
                     "\n" +
-                    "\(sdkRequest.url?.absoluteString ?? "<url is nil>")" +
+                    "\(modifiedRequest.url?.absoluteString ?? "<url is nil>")" +
                     "\n" +
                     "with headers: " +
                     "\n" +
-                    "\(String(describing: sdkRequest.allHTTPHeaderFields ?? [:]))")
+                    "\(String(describing: modifiedRequest.allHTTPHeaderFields ?? [:]))")
 
             let sessionAdaptor = SessionAdaptor(taskKind: parameters.taskKind)
             self.sessionAdaptor = sessionAdaptor
 
-            sessionAdaptor.dataTask(with: sdkRequest) { [weak self] data, response, error in
+            sessionAdaptor.dataTask(with: modifiedRequest) { [weak self] data, response, error in
                 guard let self = self, !self.isStopped else {
                     return
                 }
@@ -71,7 +92,7 @@ extension Impl {
                                                    data: data,
                                                    userInfo: nil,
                                                    storagePolicy: cacheSettings.storagePolicy)
-                    cacheSettings.cache.storeCachedResponse(cached, for: self.sdkRequest)
+                    cacheSettings.cache.storeCachedResponse(cached, for: modifiedRequest)
                 }
 
                 self.sessionAdaptor = nil
@@ -87,10 +108,6 @@ extension Impl {
             isStopped = true
             sessionAdaptor?.stop()
             sessionAdaptor = nil
-        }
-
-        deinit {
-            sessionAdaptor?.stop()
         }
 
         private var plugins: [Plugin] {
@@ -112,57 +129,51 @@ extension Impl {
                           queue: ResponseQueue,
                           info: RequestInfo) {
             var httpStatusCode: Int?
-            var header: [AnyHashable: Any] = [:]
+            var allHeaderFields: [AnyHashable: Any] = [:]
             if let response = response as? HTTPURLResponse {
                 httpStatusCode = response.statusCode
-                header = response.allHeaderFields
+                allHeaderFields = response.allHeaderFields
             }
 
-            do {
-                tolog({
-                    let obj = { try? JSONSerialization.jsonObject(with: data ?? Data(), options: JSONSerialization.ReadingOptions())}
-                    return "response: " + (String(data: data ?? Data(), encoding: .utf8) ?? obj().map({ String(describing: $0) }) ?? "nil")
-                }())
-
-                try plugins.forEach {
-                    try $0.verify(httpStatusCode: httpStatusCode, header: header, data: data, error: error)
-                }
-
-                let resultResponse = try Response(with: data)
+            if let error = error {
                 queue.fire {
-                    self.completeCallback?(.success(resultResponse.content))
+                    self.completeCallback?(.failure(.wrap(error)))
                 }
-            } catch let resultError {
-                self.tolog("failed request: \(resultError)")
+            } else {
+                do {
+                    tolog({
+                        let obj = { try? JSONSerialization.jsonObject(with: data ?? Data(), options: JSONSerialization.ReadingOptions())}
+                        return "response: " + (String(data: data ?? Data(), encoding: .utf8) ?? obj().map({ String(describing: $0) }) ?? "nil")
+                    }())
 
-                queue.fire {
-                    self.completeCallback?(.failure(.wrap(resultError)))
+                    try plugins.forEach {
+                        try $0.verify(httpStatusCode: httpStatusCode,
+                                      header: allHeaderFields,
+                                      data: data,
+                                      error: error)
+                    }
+
+                    let resultResponse = try Response(with: data)
+                    queue.fire {
+                        self.completeCallback?(.success(resultResponse.content))
+                    }
+                } catch let resultError {
+                    self.tolog("failed request: \(resultError)")
+
+                    queue.fire {
+                        self.completeCallback?(.failure(.wrap(resultError)))
+                    }
                 }
             }
 
             self.plugins.forEach {
-                $0.didFinish(info, response: response, with: error, statusCode: httpStatusCode)
+                $0.didFinish(info,
+                             response: response,
+                             with: error,
+                             statusCode: httpStatusCode)
             }
 
             self.stop()
-        }
-
-        private let parameters: Parameters
-        required init(_ parameters: Parameters) throws {
-            self.parameters = parameters
-
-            var request = URLRequest(url: try parameters.address.url(),
-                                     cachePolicy: parameters.requestPolicy,
-                                     timeoutInterval: parameters.timeoutInterval)
-            request.httpMethod = parameters.method.toString()
-
-            for (key, value) in parameters.header {
-                request.addValue(value, forHTTPHeaderField: key)
-            }
-
-            try parameters.body.fill(&request, isLoggingEnabled: parameters.isLoggingEnabled)
-
-            sdkRequest = request
         }
     }
 }

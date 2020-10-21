@@ -80,3 +80,23 @@ extension Parameters {
         return Parameters(lhs, plugins: lhs.plugins + plugin)
     }
 }
+
+extension Parameters {
+    func sdkRequest() throws -> URLRequest {
+        var request = URLRequest(url: try address.url(),
+                                 cachePolicy: requestPolicy,
+                                 timeoutInterval: timeoutInterval)
+        request.httpMethod = method.toString()
+
+        for (key, value) in header {
+            request.addValue(value, forHTTPHeaderField: key)
+        }
+
+        try body.fill(&request, isLoggingEnabled: isLoggingEnabled)
+        return request
+    }
+
+    func info() throws -> RequestInfo {
+        RequestInfo(request: try sdkRequest(), parameters: self)
+    }
+}

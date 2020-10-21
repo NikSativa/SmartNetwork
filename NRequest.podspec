@@ -16,7 +16,6 @@ Pod::Spec.new do |spec|
     spec.frameworks = 'Foundation', 'UIKit'
 
     spec.default_subspec = 'Core'
-    spec.dependency 'NCallback'
 
     spec.subspec 'Core' do |cs|
         cs.resources = ['Source/Core/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
@@ -28,6 +27,16 @@ Pod::Spec.new do |spec|
         is.source_files  = 'Source/Inject/**/*.swift'
 
         is.dependency 'NInject'
+        is.dependency 'NCallback'
         is.dependency 'NRequest/Core'
+    end
+
+    spec.subspec 'Callback' do |cs|
+        cs.resources = ['Source/Callback/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
+        cs.source_files  = 'Source/Callback/**/*.swift'
+
+        cs.dependency 'NCallback'
+        cs.dependency 'NRequest/Core'
+        cs.dependency 'NRequest/Inject'
     end
 end
