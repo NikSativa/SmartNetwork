@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol Request {
+protocol Request {
     associatedtype Response: CustomDecodable
     associatedtype Error: AnyError
 
@@ -9,20 +9,7 @@ public protocol Request {
 
     typealias CompletionCallback = (Result<Response.Object, Error>) -> Void
     func onComplete(_ callback: @escaping CompletionCallback)
-
-    /// convert to AnyRequest
-//    func toAny() -> AnyRequest<Response, Error>
 }
-
-//public extension Request {
-//    func toAny() -> AnyRequest<Response, Error> {
-//        if let self = self as? AnyRequest<Response, Error> {
-//            return self
-//        }
-//
-//        return AnyRequest(self)
-//    }
-//}
 
 extension Impl {
     final
