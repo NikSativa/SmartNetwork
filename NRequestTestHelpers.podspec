@@ -3,8 +3,8 @@ Pod::Spec.new do |spec|
     spec.version      = "1.0.0"
     spec.summary      = "RESTKit"
 
-    spec.source       = { :git => "https://bitbucket.org/tech4star/nrequest.git" }
-    spec.homepage     = "https://bitbucket.org/tech4star/nrequest.git"
+    spec.source       = { :git => "git@github.com:NikSativa/NRequest.git" }
+    spec.homepage     = "https://github.com/NikSativa/NRequest"
 
     spec.license          = 'MIT'
     spec.author           = { "Nikita Konopelko" => "nik.sativa@gmail.com" }
