@@ -59,7 +59,7 @@ public enum Plugins {
 
     public typealias StatusCode = AutoError<NRequest.StatusCode>
 
-    public class TokenPlugin: Plugin {
+    open class TokenPlugin: Plugin {
         public typealias TokenProviderClosure = () -> String?
         private let tokenProvider: TokenProviderClosure
         private let type: TokenType
