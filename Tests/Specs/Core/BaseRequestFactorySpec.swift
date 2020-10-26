@@ -38,7 +38,7 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
-                        actualCallback = subject.request(with: parameters)
+                        actualCallback = subject.requestIgnorable(with: parameters)
                     }
 
                     it("should make request") {
@@ -56,7 +56,7 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
-                        actualCallback = subject.request(with: parameters)
+                        actualCallback = subject.requestImage(with: parameters)
                     }
 
                     it("should make request") {
@@ -74,7 +74,7 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
-                        actualCallback = subject.request(with: parameters)
+                        actualCallback = subject.requestOptionalImage(with: parameters)
                     }
 
                     it("should make request") {
@@ -128,7 +128,7 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
-                        actualCallback = subject.request(TestInfo.self, with: parameters)
+                        actualCallback = subject.requestDecodable(TestInfo.self, with: parameters)
                     }
 
                     it("should make request") {
@@ -182,7 +182,7 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
-                        actualCallback = subject.request(with: parameters)
+                        actualCallback = subject.requestAny(with: parameters)
                     }
 
                     it("should make request") {
@@ -200,7 +200,7 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
-                        actualCallback = subject.request(with: parameters)
+                        actualCallback = subject.requestOptionalAny(with: parameters)
                     }
 
                     it("should make request") {

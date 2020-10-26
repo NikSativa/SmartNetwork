@@ -30,7 +30,7 @@ class Plugins_Bearer_ProviderSpec: QuickSpec {
 
                     authTokenProvider.stub(.token).andReturn("my_token_string")
 
-                    subject.prepare(info)
+                    subject.prepare(&info)
                 }
 
                 it("should modify request") {

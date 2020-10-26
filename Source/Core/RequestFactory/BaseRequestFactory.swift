@@ -35,8 +35,49 @@ public class BaseRequestFactory<Error: AnyError> {
 }
 
 extension BaseRequestFactory: RequestFactory {
-    public func request<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, T.Error> {
+    public func requestCustomDecodable<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, T.Error> {
         let parameters = modify(parameters)
         return request(try RealRequest<T, T.Error>(parameters))
+    }
+
+    // MARK - Ignorable
+    public func requestIgnorable(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
+        requestCustomDecodable(IgnorableContent<Error>.self, with: parameters)
+    }
+
+    // MARK - Decodable
+    public func requestDecodable<T: Decodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T, Error> {
+        requestCustomDecodable(DecodableContent<T, Error>.self, with: parameters)
+    }
+
+    public func request<T: Decodable>(with parameters: Parameters) -> ResultCallback<T, Error> {
+        requestDecodable(T.self, with: parameters)
+    }
+
+    // MARK - Image
+    public func requestImage(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
+        requestCustomDecodable(ImageContent<Error>.self, with: parameters)
+    }
+
+    public func requestOptionalImage(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {
+        requestCustomDecodable(OptionalImageContent<Error>.self, with: parameters)
+    }
+
+    // MARK - Data
+    public func requestData(with parameters: Parameters) -> ResultCallback<Data, Error> {
+        requestCustomDecodable(DataContent<Error>.self, with: parameters)
+    }
+
+    public func requestOptionalData(with parameters: Parameters) -> ResultCallback<Data?, Error> {
+        requestCustomDecodable(OptionalDataContent<Error>.self, with: parameters)
+    }
+
+    // MARK - Any/JSON
+    public func requestAny(with parameters: Parameters) -> ResultCallback<Any, Error> {
+        requestCustomDecodable(JSONContent<Error>.self, with: parameters)
+    }
+
+    public func requestOptionalAny(with parameters: Parameters) -> ResultCallback<Any?, Error> {
+        requestCustomDecodable(OptionalJSONContent<Error>.self, with: parameters)
     }
 }

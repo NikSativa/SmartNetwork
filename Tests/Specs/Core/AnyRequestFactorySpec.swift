@@ -37,8 +37,8 @@ class RequestFactorySpec: QuickSpec {
                 beforeEach {
                     parameters = .testMake()
                     originalCallback = .init()
-                    originalFacroty.stub(.request).andReturn(originalCallback)
-                    actualCallback = subject.request(with: parameters)
+                    originalFacroty.stub(.requestIgnorable).andReturn(originalCallback)
+                    actualCallback = subject.requestIgnorable(with: parameters)
                 }
 
                 it("should make request") {
@@ -46,7 +46,7 @@ class RequestFactorySpec: QuickSpec {
                 }
 
                 it("should add required plugins") {
-                    expect(originalFacroty).to(haveReceived(.request, with: parameters))
+                    expect(originalFacroty).to(haveReceived(.requestIgnorable, with: parameters))
                 }
             }
 
@@ -58,8 +58,8 @@ class RequestFactorySpec: QuickSpec {
                 beforeEach {
                     parameters = .testMake()
                     originalCallback = .init()
-                    originalFacroty.stub(.request).andReturn(originalCallback)
-                    actualCallback = subject.request(with: parameters)
+                    originalFacroty.stub(.requestImage).andReturn(originalCallback)
+                    actualCallback = subject.requestImage(with: parameters)
                 }
 
                 it("should make request") {
@@ -67,7 +67,7 @@ class RequestFactorySpec: QuickSpec {
                 }
 
                 it("should add required plugins") {
-                    expect(originalFacroty).to(haveReceived(.request, with: parameters))
+                    expect(originalFacroty).to(haveReceived(.requestImage, with: parameters))
                 }
             }
 
@@ -100,8 +100,8 @@ class RequestFactorySpec: QuickSpec {
                 beforeEach {
                     parameters = .testMake()
                     originalCallback = .init()
-                    originalFacroty.stub(.request).andReturn(originalCallback)
-                    actualCallback = subject.request(TestInfo.self, with: parameters)
+                    originalFacroty.stub(.requestDecodable).andReturn(originalCallback)
+                    actualCallback = subject.requestDecodable(TestInfo.self, with: parameters)
                 }
 
                 it("should make request") {
@@ -109,7 +109,7 @@ class RequestFactorySpec: QuickSpec {
                 }
 
                 it("should add required plugins") {
-                    expect(originalFacroty).to(haveReceived(.request, with: parameters))
+                    expect(originalFacroty).to(haveReceived(.requestDecodable, with: Argument.anything, parameters))
                 }
             }
 
@@ -121,7 +121,7 @@ class RequestFactorySpec: QuickSpec {
                 beforeEach {
                     parameters = .testMake()
                     originalCallback = .init()
-                    originalFacroty.stub(.request).andReturn(originalCallback)
+                    originalFacroty.stub(.requestData).andReturn(originalCallback)
                     actualCallback = subject.request(with: parameters)
                 }
 
@@ -130,7 +130,7 @@ class RequestFactorySpec: QuickSpec {
                 }
 
                 it("should add required plugins") {
-                    expect(originalFacroty).to(haveReceived(.request, with: parameters))
+                    expect(originalFacroty).to(haveReceived(.requestData, with: parameters))
                 }
             }
         }
