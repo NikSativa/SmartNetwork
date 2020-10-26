@@ -58,7 +58,7 @@ class Plugins_TokenPluginSpec: QuickSpec {
                         subject = .init(type: tokenType, tokenProvider: authTokenProvider)
 
                         info = RequestInfo.testMake(request: originalURLRequest)
-                        subject.prepare(info)
+                        subject.prepare(&info)
                     }
 
                     it("should not modify request") {
@@ -87,7 +87,7 @@ class Plugins_TokenPluginSpec: QuickSpec {
 
                         beforeEach {
                             info = .testMake(request: originalURLRequest)
-                            subject.prepare(info)
+                            subject.prepare(&info)
                         }
 
                         it("should modify request") {

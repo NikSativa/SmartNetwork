@@ -14,6 +14,8 @@ protocol Request {
 extension Impl {
     final
     class Request<Response: CustomDecodable, Error: AnyError>: NRequest.Request {
+        typealias CompletionCallback = (Result<Response.Object, Error>) -> Void
+        
         private var completeCallback: CompletionCallback?
         func onComplete(_ callback: @escaping CompletionCallback) {
             completeCallback = callback
