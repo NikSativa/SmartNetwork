@@ -15,11 +15,7 @@ extension Impl {
     final
     class Request<Response: CustomDecodable, Error: AnyError>: NRequest.Request {
         typealias CompletionCallback = (Result<Response.Object, Error>) -> Void
-        
         private var completeCallback: CompletionCallback?
-        func onComplete(_ callback: @escaping CompletionCallback) {
-            completeCallback = callback
-        }
 
         // MARK: -
         private var sdkRequest: URLRequest
@@ -93,6 +89,10 @@ extension Impl {
             }
         }
 
+        func onComplete(_ callback: @escaping CompletionCallback) {
+            completeCallback = callback
+        }
+
         func stop() {
             isStopped = true
             sessionAdaptor?.stop()
@@ -117,11 +117,14 @@ extension Impl {
                           error: Swift.Error?,
                           queue: ResponseQueue,
                           info: RequestInfo) {
-            var httpStatusCode: Int?
-            var allHeaderFields: [AnyHashable: Any] = [:]
+            let httpStatusCode: Int?
+            let allHeaderFields: [AnyHashable: Any]
             if let response = response as? HTTPURLResponse {
                 httpStatusCode = response.statusCode
                 allHeaderFields = response.allHeaderFields
+            } else {
+                httpStatusCode = nil
+                allHeaderFields = [:]
             }
 
             if let error = error {
@@ -142,7 +145,7 @@ extension Impl {
                                       error: error)
                     }
 
-                    let resultResponse = try Response(with: data)
+                    let resultResponse = try Response(with: data, statusCode: httpStatusCode, headers: allHeaderFields)
                     queue.fire {
                         self.completeCallback?(.success(resultResponse.content))
                     }
