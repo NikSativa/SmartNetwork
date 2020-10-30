@@ -4,7 +4,7 @@ import Spry
 @testable import NRequest
 
 public final
-class FakeAuthTokenProvider: AuthTokenProvider, Spryable {
+class FakeBearerTokenProvider: BearerTokenProvider, Spryable {
     public enum ClassFunction: String, StringRepresentable {
         case empty
     }
