@@ -12,6 +12,7 @@ public enum Helpers {
     public typealias FakeKeyedStorage = NRequestTestHelpers.FakeKeyedStorage
     public typealias FakeRequestFactory<Error: AnyError> = NRequestTestHelpers.FakeRequestFactory<Error>
     public typealias FakeResponseQueue = NRequestTestHelpers.FakeDispatchResponseQueue
+    public typealias FakeRefreshToken = NRequestTestHelpers.FakeRefreshToken
 
     public static func testMake(host: String = "",
                                 endpoint: String? = nil,
