@@ -9,13 +9,13 @@ public class RequestAssembly: Assembly {
     public init() { }
 
     public func assemble(with registrator: Registrator) {
-        registrator.register(AnyRequestFactory<RequestError>.self, options: .transient) { resolver, args in
+        registrator.register(AnyRequestFactory<RequestError>.self, options: .container) { resolver, args in
             resolver.resolve(BaseRequestFactory.self, with: args).toAny()
         }
 
-        registrator.register(BaseRequestFactory<RequestError>.self, options: .transient) { resolver, args in
-            BaseRequestFactory(pluginProvider: args.optionalFirst(PluginProvider.self) ?? resolver.resolve(with: args),
-                               refreshToken: args.optionalFirst(AnyRefreshToken.self) ?? resolver.resolve(with: args))
+        registrator.register(BaseRequestFactory<RequestError>.self, options: .container) { resolver, args in
+            BaseRequestFactory(pluginProvider: args.optionalFirst(PluginProvider.self) ?? resolver.optionalResolve(with: args),
+                               refreshToken: args.optionalFirst(AnyRefreshToken.self) ?? resolver.optionalResolve(with: args))
         }
 
         registrator.register(Plugins.StatusCode.self, options: .transient, Plugins.StatusCode.init)

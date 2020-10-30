@@ -44,7 +44,7 @@ public class BaseRequestFactory<Error: AnyError> {
     where Error == Requestable.Error {
         do {
             let request = try throwable()
-            return schedule(request)
+            return refresh(request)
         } catch let error as Requestable.Error {
             return Callback.failure(error)
         } catch let error {
@@ -105,7 +105,7 @@ public class BaseRequestFactory<Error: AnyError> {
         }
     }
 
-    private func schedule<Requestable: Request>(_ request: Requestable) -> ResultCallback<Requestable.Response.Object, Requestable.Error>
+    private func refresh<Requestable: Request>(_ request: Requestable) -> ResultCallback<Requestable.Response.Object, Requestable.Error>
     where Error == Requestable.Error {
         typealias Callback = ResultCallback<Requestable.Response.Object, Requestable.Error>
         typealias ServiceClosure = Callback.ServiceClosure
