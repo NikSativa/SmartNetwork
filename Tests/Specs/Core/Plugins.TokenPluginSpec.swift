@@ -12,12 +12,12 @@ import Spry_Nimble
 class Plugins_Bearer_ProviderSpec: QuickSpec {
     override func spec() {
         describe("Plugins.Bearer.Provider") {
-            var subject: Plugins.Bearer.Provider!
-            var authTokenProvider: FakeAuthTokenProvider!
+            var subject: Plugins.Bearer!
+            var authTokenProvider: FakeBearerTokenProvider!
 
             beforeEach {
                 authTokenProvider = .init()
-                subject = .init(authTokenProvider: authTokenProvider)
+                subject = .init(tokenProvider: authTokenProvider)
             }
 
             describe("prepare") {

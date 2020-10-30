@@ -4,7 +4,7 @@ public protocol ErrorMapping: Error {
     static func verify(_ code: Int?) throws
 }
 
-public protocol AuthTokenProvider {
+public protocol BearerTokenProvider {
     func token() -> String?
 }
 
@@ -18,23 +18,12 @@ public enum Plugins {
         case queryParam(String)
     }
 
-    public enum Bearer {
-        public final class Storage: TokenPlugin {
-            public init(authToken: Storages.Keyed<String>, type: TokenType = .header(.set("Authorization"))) {
-                super.init(type: type, tokenProvider: { () -> String? in
-                    return authToken.value.map {
-                        return "Bearer " + $0
-                    }
-                })
-            }
-        }
-
-        public final class Provider: TokenPlugin {
-            required public init(authTokenProvider: AuthTokenProvider, type: TokenType = .header(.set("Authorization"))) {
-                super.init(type: type) { () -> String? in
-                    return authTokenProvider.token().map {
-                        return "Bearer " + $0
-                    }
+    public final class Bearer: TokenPlugin {
+        public typealias TokenProvider = () -> String?
+        required public init(tokenProvider: BearerTokenProvider, type: TokenType = .header(.set("Authorization"))) {
+            super.init(type: type) { () -> String? in
+                return tokenProvider.token().map {
+                    return "Bearer " + $0
                 }
             }
         }
