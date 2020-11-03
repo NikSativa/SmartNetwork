@@ -11,16 +11,38 @@ import Spry_Nimble
 
 class AddressSpec: QuickSpec {
     override func spec() {
-        describe("Address") {
+        fdescribe("Address") {
             var subject: Address!
 
             describe("url") {
-                beforeEach {
-                    subject = .url(.testMake("some.com"))
+                context("without scheme") {
+                    beforeEach {
+                        subject = .url(.testMake("some.com"))
+                    }
+
+                    it("should pass the url") {
+                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com")))
+                    }
                 }
 
-                it("should pass the url") {
-                    expect(expression: { try subject.url() }).to(equal(.testMake("some.com")))
+                context("http scheme") {
+                    beforeEach {
+                        subject = .url(.testMake("http://some.com"))
+                    }
+
+                    it("should pass the url") {
+                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com")))
+                    }
+                }
+
+                context("https scheme") {
+                    beforeEach {
+                        subject = .url(.testMake("https://some.com"))
+                    }
+
+                    it("should pass the url") {
+                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com")))
+                    }
                 }
             }
 

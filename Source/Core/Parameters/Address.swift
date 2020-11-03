@@ -1,53 +1,83 @@
 import Foundation
 
-public enum Address: Equatable {
-    case url(URL)
-    case address(host: String, endpoint: String?, queryItems: [String: String])
+public typealias QueryItems = [String: String]
 
-    public init(host: String,
+public struct Address: Equatable {
+    /// https
+    let scheme: String?
+    /// google.com
+    let host: String
+    /// /search/
+    let endpoint: String?
+    /// text=input
+    let queryItems: QueryItems
+
+    public init(scheme: String? = nil,
+                host: String,
                 endpoint: String? = nil,
-                queryItems: [String: String] = [:]) {
-        self = .address(host: host,
-                        endpoint: endpoint,
-                        queryItems: queryItems)
+                queryItems: QueryItems = [:]) {
+        self.scheme = scheme
+        self.host = host
+        self.endpoint = endpoint
+        self.queryItems = queryItems
+    }
+
+    public static func url(_ url: URL) -> Address {
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+
+        if let scheme = components?.scheme {
+            let host = components?.host ?? ""
+            let endpoint = components?.path
+            let queryItems: [String: String] = (components?.queryItems ?? []).reduce(into: [:], { $0[$1.name] = $1.value })
+            return .init(scheme: scheme,
+                         host: host,
+                         endpoint: endpoint,
+                         queryItems: queryItems)
+        } else {
+            let host = components?.host ?? components?.path ?? ""
+            let queryItems: [String: String] = (components?.queryItems ?? []).reduce(into: [:], { $0[$1.name] = $1.value })
+            return .init(host: host,
+                         queryItems: queryItems)
+        }
+    }
+
+    public static func address(scheme: String? = nil,
+                               host: String,
+                               endpoint: String? = nil,
+                               queryItems: QueryItems = [:]) -> Address {
+        return Address(scheme: scheme,
+                       host: host,
+                       endpoint: endpoint,
+                       queryItems: queryItems)
     }
 }
 
 extension Address {
     func url() throws -> URL {
-        switch self {
-        case .url(let url):
-            return url
+        guard var components = URLComponents(string: host) else {
+            throw EncodingError.lackAdress
+        }
 
-        case let .address(host, endpoint, queryItems):
-            guard var url = URL(string: host) else {
-                throw EncodingError.lackAdress
-            }
+        if let scheme = scheme {
+            components.scheme = scheme
+        }
 
-            if let endpoint = endpoint, !endpoint.isEmpty {
-                url.appendPathComponent(endpoint)
-            }
-
-            if queryItems.isEmpty {
-                return url
-            }
-
-            var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-            var result = components?.queryItems ?? []
+        if !queryItems.isEmpty {
+            var result = components.queryItems ?? []
 
             let keys = queryItems.keys
-            result = result.filter({ !keys.contains($0.name) })
+            result = result.filter { !keys.contains($0.name) }
 
             for (key, value) in queryItems {
                 result.append(URLQueryItem(name: key, value: value))
             }
-            components?.queryItems = result
-
-            if let componentsUrl = components?.url {
-                url = componentsUrl
-            }
-            
-            return url
+            components.queryItems = result
         }
+
+        if let componentsUrl = components.url {
+            return componentsUrl
+        }
+
+        throw EncodingError.lackAdress
     }
 }

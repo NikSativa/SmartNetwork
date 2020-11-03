@@ -1,5 +1,7 @@
 import Foundation
 
+public typealias HeaderFields = [String: String]
+
 public struct Parameters {
     public enum TaskKind {
         case download(progressHandler: ProgressHandler?)
@@ -21,7 +23,7 @@ public struct Parameters {
     }
 
     public let address: Address
-    public let header: [String: String]
+    public let header: HeaderFields
     public let method: HTTPMethod
     public let body: Body
     public let timeoutInterval: TimeInterval
@@ -33,7 +35,7 @@ public struct Parameters {
     public let taskKind: TaskKind
 
     public init(address: Address,
-                header: [String: String] = [:],
+                header: HeaderFields = [:],
                 method: HTTPMethod = .get,
                 body: Body = .empty,
                 plugins: [Plugin] = [],
