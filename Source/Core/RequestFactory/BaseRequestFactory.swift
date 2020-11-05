@@ -27,9 +27,21 @@ public class BaseRequestFactory<Error: AnyError> {
     private let pluginProvider: PluginProvider?
     private let refreshToken: AnyRefreshToken<Error>?
 
-    struct ScheduledRequest {
-        let action: () -> Void
-        let info: RequestInfo
+    private class ScheduledRequest {
+        private let prepare: () -> RequestInfo
+        private let action: () -> Void
+        private(set) var info: RequestInfo!
+
+        init(prepare: @escaping @autoclosure () -> RequestInfo,
+             action: @escaping @autoclosure () -> Void) {
+            self.prepare = prepare
+            self.action = action
+        }
+
+        func start() {
+            info = prepare()
+            action()
+        }
     }
     private let scheduledRequestsLock = UnfairLock()
     private var scheduledRequests: [Key: ScheduledRequest] = [:]
@@ -70,7 +82,7 @@ public class BaseRequestFactory<Error: AnyError> {
 
         scheduledRequestsLock.lock()
         scheduledRequests.values.forEach {
-            $0.action()
+            $0.start()
         }
         scheduledRequestsLock.unlock()
     }
@@ -104,15 +116,14 @@ public class BaseRequestFactory<Error: AnyError> {
             removeFromCache(actual)
             actual.complete(result)
         case .failure(let error):
-            if let refreshToken = refreshToken {
-                // swiftlint:disable:next force_cast
-                let info = scheduledRequests[Key(actual)]!.info
+            if let refreshToken = refreshToken,
+               let info = scheduledRequests[Key(actual)]?.info {
                 switch refreshToken.action(for: error, with: info) {
                 case .passOver:
                     removeFromCache(actual)
                     actual.complete(error)
                 case .retry:
-                    scheduledRequests[Key(actual)]?.action()
+                    scheduledRequests[Key(actual)]?.start()
                 case .refresh:
                     refresh(refreshToken: refreshToken, actual: actual)
                 }
@@ -132,22 +143,25 @@ public class BaseRequestFactory<Error: AnyError> {
 
         if let _ = refreshToken {
             start = { [weak self] actual in
-                let info = request.prepareRequestInfo()
+                guard let self = self else {
+                    request.start()
+                    return
+                }
 
-                self?.scheduledRequestsLock.lock()
-                self?.scheduledRequests[Key(actual)] = .init(action: {
-                    let info = request.prepareRequestInfo()
-                    request.start(with: info)
-                },
-                info: info)
-                self?.scheduledRequestsLock.unlock()
+                self.scheduledRequestsLock.lock()
+                self.scheduledRequests[Key(actual)] = .init(prepare: request.prepare(),
+                                                            action: request.start())
+                self.scheduledRequestsLock.unlock()
 
-                self?.stateLock.lock()
-                let state = self?.state ?? .idle
-                self?.stateLock.unlock()
+                self.stateLock.lock()
+                if self.state == .idle {
+                    self.stateLock.unlock()
 
-                if state == .idle {
-                    request.start(with: info)
+                    self.scheduledRequestsLock.lock()
+                    self.scheduledRequests[Key(actual)]?.start()
+                    self.scheduledRequestsLock.unlock()
+                } else {
+                    self.stateLock.unlock()
                 }
             }
 
