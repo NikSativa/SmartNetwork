@@ -12,7 +12,7 @@ public class FakeRefreshToken<Error: AnyError>: RefreshToken, Spryable {
 
     public enum Function: String, StringRepresentable {
         case makeRequest = "makeRequest(_:)"
-        case shouldRefresh = "shouldRefresh(_:)"
+        case action = "action(for:with:)"
     }
 
     public func makeRequest<R: RequestFactory>(_ originalFactory: R) -> Callback<Ignorable>
@@ -20,7 +20,7 @@ public class FakeRefreshToken<Error: AnyError>: RefreshToken, Spryable {
         return spryify(arguments: originalFactory)
     }
 
-    public func shouldRefresh(_ error: Error) -> Bool {
-        return spryify(arguments: error)
+    public func action(for error: Error, with info: RequestInfo) -> RefreshTokenAction {
+        return spryify(arguments: error, info)
     }
 }

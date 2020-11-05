@@ -1,10 +1,16 @@
 import Foundation
 import NCallback
 
+public enum RefreshTokenAction: Equatable {
+    case passOver
+    case retry
+    case refresh
+}
+
 public protocol RefreshToken {
     associatedtype Error: AnyError
     func makeRequest<R: RequestFactory>(_ originalFactory: R) -> Callback<Ignorable> where R.Error == Error
-    func shouldRefresh(_ error: Error) -> Bool
+    func action(for error: Error, with info: RequestInfo) -> RefreshTokenAction
 }
 
 public extension RefreshToken {
@@ -29,13 +35,13 @@ public class AnyRefreshToken<Error: AnyError>: RefreshToken {
         box.makeRequest(originalFactory)
     }
 
-    public func shouldRefresh(_ error: Error) -> Bool {
-        box.shouldRefresh(error)
+    public func action(for error: Error, with info: RequestInfo) -> RefreshTokenAction {
+        box.action(for: error, with: info)
     }
 }
 
 private class AbstractRefreshToken<Error: AnyError>: RefreshToken {
-    func shouldRefresh(_ error: Error) -> Bool {
+    func action(for error: Error, with info: RequestInfo) -> RefreshTokenAction {
         fatalError("abstract needs override")
     }
 
@@ -56,7 +62,7 @@ private class RefreshTokenBox<T: RefreshToken>: AbstractRefreshToken<T.Error> {
         concrete.makeRequest(originalFactory)
     }
 
-    override func shouldRefresh(_ error: Error) -> Bool {
-        concrete.shouldRefresh(error)
+    override func action(for error: Error, with info: RequestInfo) -> RefreshTokenAction {
+        concrete.action(for: error, with: info)
     }
 }
