@@ -4,11 +4,14 @@ protocol Request {
     associatedtype Response: CustomDecodable
     associatedtype Error: AnyError
 
+    func start(with info: RequestInfo)
     func start()
     func stop()
 
     typealias CompletionCallback = (Result<Response.Object, Error>) -> Void
     func onComplete(_ callback: @escaping CompletionCallback)
+
+    func prepareRequestInfo() -> RequestInfo
 }
 
 extension Impl {
@@ -32,22 +35,33 @@ extension Impl {
             sessionAdaptor?.stop()
         }
 
-        func start() {
-            stop()
-            isStopped = false
-
+        func prepareRequestInfo() -> RequestInfo {
             var info = RequestInfo(request: sdkRequest,
                                    parameters: parameters)
+
             plugins.forEach {
                 $0.prepare(&info)
             }
+
+            return info
+        }
+
+        func start() {
+            start(with: prepareRequestInfo())
+        }
+
+        func start(with info: RequestInfo) {
             let modifiedRequest = info.request.original
+
+            stop()
+            isStopped = false
 
             plugins.forEach {
                 $0.willSend(info)
             }
 
             if let cacheSettings = parameters.cacheSettings, let cached = cacheSettings.cache.cachedResponse(for: modifiedRequest) {
+                tologSelf(modifiedRequest)
                 fire(data: cached.data,
                      response: cached.response,
                      error: nil,
@@ -55,14 +69,6 @@ extension Impl {
                      info: info)
                 return
             }
-
-            tolog("sending \(parameters.method.toString()) request: " +
-                    "\n" +
-                    "\(modifiedRequest.url?.absoluteString ?? "<url is nil>")" +
-                    "\n" +
-                    "with headers: " +
-                    "\n" +
-                    "\(String(describing: modifiedRequest.allHTTPHeaderFields ?? [:]))")
 
             let sessionAdaptor = SessionAdaptor(taskKind: parameters.taskKind)
             self.sessionAdaptor = sessionAdaptor
@@ -81,6 +87,7 @@ extension Impl {
                 }
 
                 self.sessionAdaptor = nil
+                self.tologSelf(modifiedRequest)
                 self.fire(data: data,
                           response: response,
                           error: error,
@@ -112,6 +119,20 @@ extension Impl {
             Configuration.log(text(), file: file, method: method)
         }
 
+        private func tologSelf(_ modifiedRequest: URLRequest, file: String = #file, method: String = #function) {
+            tolog("request: " +
+                    "\n" +
+                    "method:" + parameters.method.toString() +
+                    "\n" +
+                    "\(modifiedRequest.url?.absoluteString ?? "<url is nil>")" +
+                    "\n" +
+                    "with headers: " +
+                    "\n" +
+                    "\(String(describing: modifiedRequest.allHTTPHeaderFields ?? [:]))",
+                  file: file,
+                  method: method)
+        }
+
         private func fire(data: Data?,
                           response: URLResponse?,
                           error: Swift.Error?,
@@ -134,8 +155,17 @@ extension Impl {
             } else {
                 do {
                     tolog({
-                        let obj = { try? JSONSerialization.jsonObject(with: data ?? Data(), options: JSONSerialization.ReadingOptions())}
-                        return "response: " + (String(data: data ?? Data(), encoding: .utf8) ?? obj().map({ String(describing: $0) }) ?? "nil")
+                        if let data = data {
+                            let obj: () -> String? = {
+                                let json = try? JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions())
+                                return json.map({ String(describing: $0) })
+                            }
+                            let strFromData = String(data: data, encoding: .utf8)
+                            let str = strFromData ?? obj()
+                            return "response: " + (str ?? "nil")
+                        } else {
+                            return "response: empty"
+                        }
                     }())
 
                     try plugins.forEach {
@@ -304,64 +334,3 @@ private extension Parameters.TaskKind {
         }
     }
 }
-
-//extension Impl.Request {
-//    func toAny() -> AnyRequest<Response.Object, Error> {
-//        AnyRequest(self)
-//    }
-//}
-//
-//class AnyRequest<Response, Error: AnyError>: Requesting {
-//    private let box: AbstractRequest<Response, Error>
-//
-//    init<Requestable: Request>(_ storage: Requestable) where Requestable.Response == Response, Requestable.Error == Error {
-//        box = RequestBox(storage)
-//    }
-//
-//    func start() {
-//        box.start()
-//    }
-//
-//    func stop() {
-//        box.stop()
-//    }
-//
-//    func onComplete(_ callback: @escaping (Result<Response, Error>) -> Void) {
-//        box.onComplete(callback)
-//    }
-//}
-//
-//private class AbstractRequest<Response, Error: AnyError>: Request {
-//    func start() {
-//        fatalError("abstract needs override")
-//    }
-//
-//    func stop() {
-//        fatalError("abstract needs override")
-//    }
-//
-//    func onComplete(_ callback: @escaping CompleteCallback) {
-//        fatalError("abstract needs override")
-//    }
-//}
-//
-//final
-//private class RequestBox<Requestable: Request>: AbstractRequest<Requestable.Response, Requestable.Error> {
-//    private let concrete: Requestable
-//
-//    init(_ concrete: Requestable) {
-//        self.concrete = concrete
-//    }
-//
-//    override func start() {
-//        concrete.start()
-//    }
-//
-//    override func stop() {
-//        concrete.stop()
-//    }
-//
-//    override func onComplete(_ callback: @escaping CompleteCallback) {
-//        concrete.onComplete(callback)
-//    }
-//}

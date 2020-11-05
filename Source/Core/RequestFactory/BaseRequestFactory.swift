@@ -27,9 +27,13 @@ public class BaseRequestFactory<Error: AnyError> {
     private let pluginProvider: PluginProvider?
     private let refreshToken: AnyRefreshToken<Error>?
 
-    typealias ScheduledRequest = () -> Void
+    struct ScheduledRequest {
+        let action: () -> Void
+        let info: RequestInfo
+    }
     private let scheduledRequestsLock = UnfairLock()
     private var scheduledRequests: [Key: ScheduledRequest] = [:]
+    private var scheduledParameters: [Key: Parameters] = [:]
 
     private let stateLock = UnfairLock()
     private var state: State = .idle
@@ -66,7 +70,7 @@ public class BaseRequestFactory<Error: AnyError> {
 
         scheduledRequestsLock.lock()
         scheduledRequests.values.forEach {
-            $0()
+            $0.action()
         }
         scheduledRequestsLock.unlock()
     }
@@ -87,18 +91,31 @@ public class BaseRequestFactory<Error: AnyError> {
         }
     }
 
+    func removeFromCache<T>(_ actual: ResultCallback<T, Error>) {
+        scheduledRequestsLock.lock()
+        scheduledRequests[Key(actual)] = nil
+        scheduledRequestsLock.unlock()
+    }
+
     private func check<T>(actual: ResultCallback<T, Error>,
                           result: Result<T, Error>) {
         switch result {
         case .success:
-            scheduledRequestsLock.lock()
-            scheduledRequests[Key(actual)] = nil
-            scheduledRequestsLock.unlock()
-
+            removeFromCache(actual)
             actual.complete(result)
         case .failure(let error):
-            if let refreshToken = refreshToken, refreshToken.shouldRefresh(error) {
-                refresh(refreshToken: refreshToken, actual: actual)
+            if let refreshToken = refreshToken {
+                // swiftlint:disable:next force_cast
+                let info = scheduledRequests[Key(actual)]!.info
+                switch refreshToken.action(for: error, with: info) {
+                case .passOver:
+                    removeFromCache(actual)
+                    actual.complete(error)
+                case .retry:
+                    scheduledRequests[Key(actual)]?.action()
+                case .refresh:
+                    refresh(refreshToken: refreshToken, actual: actual)
+                }
             } else {
                 actual.complete(error)
             }
@@ -115,10 +132,14 @@ public class BaseRequestFactory<Error: AnyError> {
 
         if let _ = refreshToken {
             start = { [weak self] actual in
+                let info = request.prepareRequestInfo()
+
                 self?.scheduledRequestsLock.lock()
-                self?.scheduledRequests[Key(actual)] = {
-                    request.start()
-                }
+                self?.scheduledRequests[Key(actual)] = .init(action: {
+                    let info = request.prepareRequestInfo()
+                    request.start(with: info)
+                },
+                info: info)
                 self?.scheduledRequestsLock.unlock()
 
                 self?.stateLock.lock()
@@ -126,15 +147,12 @@ public class BaseRequestFactory<Error: AnyError> {
                 self?.stateLock.unlock()
 
                 if state == .idle {
-                    request.start()
+                    request.start(with: info)
                 }
             }
 
             stop = { [weak self] actual in
-                self?.scheduledRequestsLock.lock()
-                self?.scheduledRequests[Key(actual)] = nil
-                self?.scheduledRequestsLock.unlock()
-
+                self?.removeFromCache(actual)
                 request.stop()
             }
         } else {
