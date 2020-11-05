@@ -4,14 +4,14 @@ protocol Request {
     associatedtype Response: CustomDecodable
     associatedtype Error: AnyError
 
-    func start(with info: RequestInfo)
+    @discardableResult
+    func prepare() -> RequestInfo
+
     func start()
     func stop()
 
     typealias CompletionCallback = (Result<Response.Object, Error>) -> Void
     func onComplete(_ callback: @escaping CompletionCallback)
-
-    func prepareRequestInfo() -> RequestInfo
 }
 
 extension Impl {
@@ -25,6 +25,7 @@ extension Impl {
         private var isStopped: Bool = false
         private var sessionAdaptor: SessionAdaptor?
         private let parameters: Parameters
+        private var requestInfo: RequestInfo?
 
         required init(_ parameters: Parameters) throws {
             self.parameters = parameters
@@ -35,22 +36,19 @@ extension Impl {
             sessionAdaptor?.stop()
         }
 
-        func prepareRequestInfo() -> RequestInfo {
+        func prepare() -> RequestInfo {
             var info = RequestInfo(request: sdkRequest,
                                    parameters: parameters)
-
             plugins.forEach {
                 $0.prepare(&info)
             }
 
+            requestInfo = info
             return info
         }
 
         func start() {
-            start(with: prepareRequestInfo())
-        }
-
-        func start(with info: RequestInfo) {
+            let info = requestInfo ?? prepare()
             let modifiedRequest = info.request.original
 
             stop()
@@ -94,6 +92,8 @@ extension Impl {
                           queue: self.parameters.queue,
                           info: info)
             }
+
+            return
         }
 
         func onComplete(_ callback: @escaping CompletionCallback) {
