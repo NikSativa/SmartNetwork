@@ -81,7 +81,7 @@ public extension RequestFactory {
 
     // MARK - Decodable
     func request<T: Decodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T, Error> {
-        request(with: parameters)
+        requestDecodable(type, with: parameters)
     }
 
     // MARK - Image

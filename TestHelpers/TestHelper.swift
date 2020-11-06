@@ -11,13 +11,26 @@ public enum Helpers {
     public typealias FakeRequestFactory<Error: AnyError> = NRequestTestHelpers.FakeRequestFactory<Error>
     public typealias FakeResponseQueue = NRequestTestHelpers.FakeDispatchResponseQueue
     public typealias FakeRefreshToken = NRequestTestHelpers.FakeRefreshToken
+    public typealias FakeURLRequestable = NRequestTestHelpers.FakeURLRequestable
 
-    public static func testMake(host: String = "",
-                                endpoint: String? = nil,
+    public static func testMake(scheme: Address.Scheme? = .https,
+                                host: String = "",
+                                path: [String] = [],
                                 queryItems: [String: String] = [:]) -> Address {
-        return .testMake(host: host,
-                         endpoint: endpoint,
-                         queryItems: queryItems)
+        return .address(scheme: scheme,
+                        host: host,
+                        path: path,
+                        queryItems: queryItems)
+    }
+
+    public static func testMake(scheme: URLRepresentation.Scheme? = .https,
+                                host: String = "",
+                                path: [String] = [],
+                                queryItems: [String: String] = [:]) -> URLRepresentation {
+        return .init(scheme: scheme,
+                     host: host,
+                     path: path,
+                     queryItems: queryItems)
     }
 
     public static func testMake(address: Address = .testMake(),
