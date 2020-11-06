@@ -14,7 +14,7 @@ public enum Address: Equatable {
 
     public init(scheme: Scheme? = .https,
                 host: String,
-                path: [String],
+                path: [String] = [],
                 queryItems: QueryItems = [:]) {
         let representable = URLRepresentation(scheme: scheme,
                                               host: host,
