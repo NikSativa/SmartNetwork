@@ -9,7 +9,7 @@ public enum RefreshTokenAction: Equatable {
 
 public protocol RefreshToken {
     associatedtype Error: AnyError
-    func makeRequest<R: RequestFactory>(_ originalFactory: R) -> Callback<Ignorable> where R.Error == Error
+    func makeRequest<R: RequestFactory>(_ factory: R) -> Callback<Ignorable> where R.Error == Error
     func action(for error: Error, with info: RequestInfo) -> RefreshTokenAction
 }
 
