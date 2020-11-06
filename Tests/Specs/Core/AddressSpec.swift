@@ -11,7 +11,7 @@ import Spry_Nimble
 
 class AddressSpec: QuickSpec {
     override func spec() {
-        fdescribe("Address") {
+        describe("Address") {
             var subject: Address!
 
             describe("url") {
@@ -25,13 +25,23 @@ class AddressSpec: QuickSpec {
                     }
                 }
 
+                context("https scheme and endpoint") {
+                    beforeEach {
+                        subject = .url(.testMake("https://some.com/asd"))
+                    }
+
+                    it("should pass the url") {
+                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com/asd")))
+                    }
+                }
+
                 context("http scheme") {
                     beforeEach {
                         subject = .url(.testMake("http://some.com"))
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("http://some.com")))
                     }
                 }
 
@@ -41,7 +51,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com")))
                     }
                 }
             }
@@ -49,71 +59,71 @@ class AddressSpec: QuickSpec {
             describe("constructor") {
                 context("host") {
                     beforeEach {
-                        subject = .init(host: "some.com")
+                        subject = .address(host: "some.com")
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com")))
                     }
                 }
 
-                context("broken host") {
+                context("unexpected character in the host name") {
                     beforeEach {
-                        subject = .init(host: "\"some.com")
+                        subject = .address(host: "\"some.com")
                     }
 
                     it("should throw error") {
-                        expect(expression: { try subject.url() }).to(throwError(EncodingError.lackAdress))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("https://%22some.com")))
                     }
                 }
 
                 context("host; endpoint") {
                     beforeEach {
-                        subject = .init(host: "some.com", endpoint: "endpoint")
+                        subject = .address(host: "some.com", endpoint: "endpoint")
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com/endpoint")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com/endpoint")))
                     }
                 }
 
                 context("host; endpoint with slashes") {
                     beforeEach {
-                        subject = .init(host: "some.com", endpoint: "/endpoint/")
+                        subject = .address(host: "some.com", endpoint: "/endpoint/")
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com/endpoint/")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com/endpoint")))
                     }
                 }
 
                 context("host; endpoint; queryItems") {
                     beforeEach {
-                        subject = .init(host: "some.com", endpoint: "endpoint", queryItems: ["item": "value"])
+                        subject = .address(host: "some.com", endpoint: "endpoint", queryItems: ["item": "value"])
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com/endpoint?item=value")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com/endpoint?item=value")))
                     }
                 }
 
                 context("host; endpoint with slashes; queryItems") {
                     beforeEach {
-                        subject = .init(host: "some.com", endpoint: "endpoint", queryItems: ["item": "value"])
+                        subject = .address(host: "some.com", endpoint: "endpoint", queryItems: ["item": "value"])
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com/endpoint?item=value")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com/endpoint?item=value")))
                     }
                 }
 
                 context("host qith query items; endpoint with slashes; queryItems with broken format") {
                     beforeEach {
-                        subject = .init(host: "some.com?item=value", endpoint: "/endpoint/", queryItems: ["item": "value"])
+                        subject = .address(host: "some.com/item=value", endpoint: "/endpoint/", queryItems: ["item": "value"])
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com/endpoint/?item=value")))
+                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com%2Fitem=value/endpoint?item=value")))
                     }
                 }
             }

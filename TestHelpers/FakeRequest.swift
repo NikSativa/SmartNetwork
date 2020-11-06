@@ -10,14 +10,13 @@ class FakeRequest<Response: CustomDecodable, Error: AnyError>: Request, Spryable
     }
 
     enum Function: String, StringRepresentable {
-        case prepareRequestInfo = "prepareRequestInfo()"
+        case prepare = "prepare()"
         case onComplete = "onComplete()"
         case start = "start()"
-        case startWithInfo = "start(with:)"
         case stop = "stop()"
     }
 
-    func prepareRequestInfo() -> RequestInfo {
+    func prepare() -> RequestInfo {
         return spryify()
     }
 
@@ -27,10 +26,6 @@ class FakeRequest<Response: CustomDecodable, Error: AnyError>: Request, Spryable
 
     func start() {
         return spryify()
-    }
-
-    func start(with info: RequestInfo) {
-        return spryify(arguments: info)
     }
 
     func stop() {
