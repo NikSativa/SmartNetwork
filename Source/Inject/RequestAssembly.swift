@@ -10,9 +10,9 @@ public class RequestAssembly: Assembly {
     }
 
     public func assemble(with registrator: Registrator) {
-        registrator.register(AnyRequestFactory<RequestError>.self, options: .transient + .open) { resolver, args in
-            let pluginProvider = args.optionalFirst(PluginProvider.self)
-            let refreshToken = args.optionalFirst(AnyRefreshToken<RequestError>.self)
+        registrator.register(AnyRequestFactory<RequestError>.self, options: .container + .open) { resolver, args in
+            let pluginProvider = args.optionalFirst(PluginProvider.self) ?? resolver.optionalResolve()
+            let refreshToken = args.optionalFirst(AnyRefreshToken<RequestError>.self) ?? resolver.optionalResolve()
             let factory = BaseRequestFactory<RequestError>(pluginProvider: pluginProvider,
                                                            refreshToken: refreshToken)
             return factory.toAny()

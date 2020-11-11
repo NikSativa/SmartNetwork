@@ -26,7 +26,7 @@ class RequestAssemblySpec: QuickSpec {
             }
 
             it("should resolve dependencies") {
-                let expected: [RegistrationInfo] = [.register(AnyRequestFactory<RequestError>.self, .transient + .open),
+                let expected: [RegistrationInfo] = [.register(AnyRequestFactory<RequestError>.self, .container + .open),
                                                     .register(Plugins.StatusCode.self, .transient),
                                                     .register(Plugins.Bearer.self, .transient)]
                 expect(registrator.registered).to(equal(expected))
