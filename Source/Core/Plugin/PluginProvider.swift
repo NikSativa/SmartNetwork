@@ -6,12 +6,15 @@ public protocol PluginProvider {
 
 public struct PluginProviderContext: PluginProvider {
     private let cache: [Plugin]
+    private let providers: [PluginProvider]
 
-    public init(_ plugins: [Plugin]) {
+    public init(plugins: [Plugin] = [],
+                providers: [PluginProvider] = []) {
         self.cache = plugins
+        self.providers = providers
     }
 
     public func plugins() -> [Plugin] {
-        return cache
+        return cache + providers.flatMap { $0.plugins() }
     }
 }
