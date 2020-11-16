@@ -4,6 +4,7 @@ public protocol URLRequestable {
     var original: URLRequest { get }
     var allHTTPHeaderFields: [String: String] { get }
     var url: URL? { get set }
+    var body: Data? { get }
 
     mutating func addValue(_ value: String, forHTTPHeaderField field: String)
     mutating func setValue(_ value: String?, forHTTPHeaderField field: String)
@@ -31,6 +32,10 @@ extension Impl.URLRequestable: URLRequestable {
         set {
             original.url = newValue
         }
+    }
+
+    var body: Data? {
+        original.httpBody
     }
 
     mutating func addValue(_ value: String, forHTTPHeaderField field: String) {

@@ -13,6 +13,7 @@ class FakeURLRequestable: URLRequestable, Spryable {
         case original
         case allHTTPHeaderFields
         case url
+        case body
         case addValue = "addValue(_:forHTTPHeaderField:)"
         case setValue = "setValue(_:forHTTPHeaderField:)"
     }
@@ -35,6 +36,10 @@ class FakeURLRequestable: URLRequestable, Spryable {
         set {
             return recordCall(arguments: newValue)
         }
+    }
+
+    public var body: Data? {
+        return spryify()
     }
 
     public func addValue(_ value: String, forHTTPHeaderField field: String) {

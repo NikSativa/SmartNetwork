@@ -192,6 +192,7 @@ extension Impl {
                 $0.didFinish(info,
                              response: response,
                              with: error,
+                             responseBody: data,
                              statusCode: httpStatusCode)
             }
 
