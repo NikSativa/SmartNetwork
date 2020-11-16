@@ -38,7 +38,7 @@ public enum Plugins {
         public func willSend(_ info: Info) {
         }
 
-        public func didFinish(_ info: Info, response: URLResponse?, with error: Error?, statusCode: Int?) {
+        public func didFinish(_ info: Info, response: URLResponse?, with error: Error?, responseBody body: Data?, statusCode code: Int?) {
         }
 
         public func verify(httpStatusCode code: Int?, header: [AnyHashable: Any], data: Data?, error: Error?) throws {
@@ -88,7 +88,7 @@ public enum Plugins {
             }
         }
 
-        public func didFinish(_ info: Info, response: URLResponse?, with error: Error?, statusCode: Int?) {
+        public func didFinish(_ info: Info, response: URLResponse?, with error: Error?, responseBody body: Data?, statusCode code: Int?) {
         }
 
         public func verify(httpStatusCode code: Int?, header: [AnyHashable : Any], data: Data?, error: Error?) throws {
