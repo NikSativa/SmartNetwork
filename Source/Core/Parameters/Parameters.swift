@@ -34,6 +34,9 @@ public struct Parameters {
     public let isLoggingEnabled: Bool
     public let taskKind: TaskKind
 
+    /// used only on client side. best practice to use it to identify request in the Plugin's
+    public var userInfo: [String: Any] = [:]
+
     public init(address: Address,
                 header: HeaderFields = [:],
                 method: HTTPMethod = .get,
