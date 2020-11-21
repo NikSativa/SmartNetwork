@@ -50,6 +50,7 @@ extension Impl {
         func start() {
             let info = requestInfo ?? prepare()
             let modifiedRequest = info.request.original
+            requestInfo = nil
 
             stop()
             isStopped = false
@@ -92,8 +93,6 @@ extension Impl {
                           queue: self.parameters.queue,
                           info: info)
             }
-
-            return
         }
 
         func onComplete(_ callback: @escaping CompletionCallback) {
@@ -102,6 +101,10 @@ extension Impl {
 
         func stop() {
             isStopped = true
+            clear()
+        }
+
+        private func clear() {
             sessionAdaptor?.stop()
             sessionAdaptor = nil
         }
@@ -188,7 +191,7 @@ extension Impl {
                 }
             }
 
-            self.plugins.forEach {
+            plugins.forEach {
                 $0.didFinish(info,
                              response: response,
                              with: error,
@@ -196,7 +199,7 @@ extension Impl {
                              statusCode: httpStatusCode)
             }
 
-            self.stop()
+            clear()
         }
     }
 }

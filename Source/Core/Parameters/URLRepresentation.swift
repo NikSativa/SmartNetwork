@@ -5,15 +5,18 @@ public struct URLRepresentation: Equatable {
 
     public let scheme: Scheme?
     public let host: String
+    public let port: Int?
     public let path: [String]
     public let queryItems: QueryItems
 
     public init(scheme: Scheme? = .https,
                 host: String,
+                port: Int? = nil,
                 path: [String] = [],
                 queryItems: QueryItems = [:]) {
         self.scheme = scheme
         self.host = host
+        self.port = port
         self.path = path
         self.queryItems = queryItems
     }
@@ -23,6 +26,7 @@ public struct URLRepresentation: Equatable {
 
         self.scheme = Scheme(components.scheme)
         self.host = components.host ?? ""
+        self.port = components.port
         self.path = components.path.components(separatedBy: "/")
         self.queryItems = (components.queryItems ?? []).reduce(into: [:], { $0[$1.name] = $1.value })
     }
@@ -38,13 +42,23 @@ public struct URLRepresentation: Equatable {
     public static func + (lhs: Self, rhs: QueryItems) -> Self {
         return Self(scheme: lhs.scheme,
                     host: lhs.host,
+                    port: lhs.port,
                     path: lhs.path,
                     queryItems: lhs.queryItems.merging(rhs, uniquingKeysWith: { _, new in new }))
+    }
+
+    public static func + (lhs: Self, rhs: [String]) -> Self {
+        return Self(scheme: lhs.scheme,
+                    host: lhs.host,
+                    port: lhs.port,
+                    path: lhs.path + rhs,
+                    queryItems: lhs.queryItems)
     }
 
     public static func + (lhs: Self, rhs: String) -> Self {
         return Self(scheme: lhs.scheme,
                     host: lhs.host,
+                    port: lhs.port,
                     path: lhs.path + [rhs],
                     queryItems: lhs.queryItems)
     }

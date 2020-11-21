@@ -14,10 +14,12 @@ public enum Address: Equatable {
 
     public init(scheme: Scheme? = .https,
                 host: String,
+                port: Int? = nil,
                 path: [String] = [],
                 queryItems: QueryItems = [:]) {
         let representable = URLRepresentation(scheme: scheme,
                                               host: host,
+                                              port: port,
                                               path: path,
                                               queryItems: queryItems)
         self = .address(representable)
@@ -25,10 +27,12 @@ public enum Address: Equatable {
 
     public static func address(scheme: Scheme? = .https,
                                host: String,
+                               port: Int? = nil,
                                endpoint: String,
                                queryItems: QueryItems = [:]) -> Address {
         let representable = URLRepresentation(scheme: scheme,
                                               host: host,
+                                              port: port,
                                               path: [endpoint].compactMap { $0 },
                                               queryItems: queryItems)
         return .address(representable)
@@ -36,12 +40,18 @@ public enum Address: Equatable {
 
     public static func address(scheme: Scheme? = .https,
                                host: String,
+                               port: Int? = nil,
                                path: [String] = [],
                                queryItems: QueryItems = [:]) -> Address {
         return .init(scheme: scheme,
                      host: host,
+                     port: port,
                      path: path,
                      queryItems: queryItems)
+    }
+
+    public func append(_ pathComponents: [String]) -> Self {
+        self + pathComponents
     }
 
     public func append(_ pathComponent: String) -> Self {
@@ -77,10 +87,23 @@ public enum Address: Equatable {
 
         return .address(representation + rhs)
     }
+
+    public static func + (lhs: Self, rhs: [String]) -> Self {
+        let representation: URLRepresentation
+
+        switch lhs {
+        case .url(let url):
+            representation = .init(url: url)
+        case .address(let value):
+            representation = value
+        }
+
+        return .address(representation + rhs)
+    }
 }
 
 extension Address {
-    func url() throws -> URL {
+    public func url() throws -> URL {
         switch self {
         case .url(let url):
             return url
@@ -98,6 +121,8 @@ extension Address {
             case .other(let string):
                 components.scheme = string
             }
+
+            components.port = url.port
 
             let path = url.path.flatMap { $0.components(separatedBy: "/") }.filter { !$0.isEmpty }
             if !path.isEmpty {
