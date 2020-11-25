@@ -117,7 +117,8 @@ public class BaseRequestFactory<Error: AnyError> {
             actual.complete(result)
         case .failure(let error):
             if let refreshToken = refreshToken,
-               let info = scheduledRequests[Key(actual)]?.info {
+               let scheduledRequest = scheduledRequests[Key(actual)],
+               let info = scheduledRequest.info {
                 switch refreshToken.action(for: error, with: info) {
                 case .passOver:
                     removeFromCache(actual)
