@@ -5,6 +5,8 @@ import NCallback
 public protocol RequestFactory: class {
     associatedtype Error: AnyError
 
+    func prepare(_: Parameters) throws -> URLRequest
+
     func requestCustomDecodable<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, T.Error>
     where T.Error == Error
 

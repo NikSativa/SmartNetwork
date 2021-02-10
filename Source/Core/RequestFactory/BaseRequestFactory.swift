@@ -193,6 +193,11 @@ public class BaseRequestFactory<Error: AnyError> {
 }
 
 extension BaseRequestFactory: RequestFactory {
+    public func prepare(_ parameters: Parameters) throws -> URLRequest {
+        let parameters = modify(parameters)
+        return try parameters.sdkRequest()
+    }
+
     public func requestCustomDecodable<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, T.Error>
     where Error == T.Error {
         let parameters = modify(parameters)
