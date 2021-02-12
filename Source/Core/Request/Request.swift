@@ -59,14 +59,31 @@ extension Impl {
                 $0.willSend(info)
             }
 
-            if let cacheSettings = parameters.cacheSettings, let cached = cacheSettings.cache.cachedResponse(for: modifiedRequest) {
-                tologSelf(modifiedRequest)
-                fire(data: cached.data,
-                     response: cached.response,
-                     error: nil,
-                     queue: cacheSettings.queue,
-                     info: info)
-                return
+            if let cacheSettings = parameters.cacheSettings {
+                let shouldUseCache: Bool
+                switch parameters.requestPolicy {
+                case .reloadIgnoringLocalAndRemoteCacheData,
+                     .reloadIgnoringLocalCacheData,
+                     .reloadRevalidatingCacheData:
+                    parameters.cacheSettings?.cache.removeCachedResponse(for: modifiedRequest)
+                    shouldUseCache = false
+                case .returnCacheDataDontLoad,
+                     .returnCacheDataElseLoad,
+                     .useProtocolCachePolicy:
+                    shouldUseCache = true
+                @unknown default:
+                    shouldUseCache = true
+                }
+
+                if shouldUseCache, let cached = cacheSettings.cache.cachedResponse(for: modifiedRequest) {
+                    tologSelf(modifiedRequest)
+                    fire(data: cached.data,
+                         response: cached.response,
+                         error: nil,
+                         queue: cacheSettings.queue,
+                         info: info)
+                    return
+                }
             }
 
             let sessionAdaptor = SessionAdaptor(taskKind: parameters.taskKind)
