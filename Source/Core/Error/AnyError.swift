@@ -15,3 +15,9 @@ public extension AnyError {
         return Self.init(EquatableError(error))
     }
 }
+
+public extension Error {
+    func wrap<T: AnyError>() -> T {
+        return .wrap(self)
+    }
+}
