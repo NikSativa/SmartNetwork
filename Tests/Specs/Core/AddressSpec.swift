@@ -21,7 +21,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("some.com")))
+                        expect({ try subject.url() }) == .testMake("some.com")
                     }
                 }
 
@@ -31,7 +31,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com/asd")))
+                        expect({ try subject.url() }) == .testMake("https://some.com/asd")
                     }
                 }
 
@@ -41,7 +41,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("http://some.com")))
+                        expect({ try subject.url() }) == .testMake("http://some.com")
                     }
                 }
 
@@ -51,7 +51,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com")))
+                        expect({ try subject.url() }) == .testMake("https://some.com")
                     }
                 }
             }
@@ -63,7 +63,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com")))
+                        expect({ try subject.url() }) == .testMake("https://some.com")
                     }
                 }
 
@@ -73,7 +73,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should throw error") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("https://%22some.com")))
+                        expect({ try subject.url() }) == .testMake("https://%22some.com")
                     }
                 }
 
@@ -83,7 +83,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com/endpoint")))
+                        expect({ try subject.url() }) == .testMake("https://some.com/endpoint")
                     }
                 }
 
@@ -93,7 +93,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com/endpoint")))
+                        expect({ try subject.url() }) == .testMake("https://some.com/endpoint")
                     }
                 }
 
@@ -103,7 +103,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com/endpoint?item=value")))
+                        expect({ try subject.url() }) == .testMake("https://some.com/endpoint?item=value")
                     }
                 }
 
@@ -113,7 +113,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com/endpoint?item=value")))
+                        expect({ try subject.url() }) == .testMake("https://some.com/endpoint?item=value")
                     }
                 }
 
@@ -123,7 +123,7 @@ class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect(expression: { try subject.url() }).to(equal(.testMake("https://some.com%2Fitem=value/endpoint?item=value")))
+                        expect({ try subject.url() }) == .testMake("https://some.com%2Fitem=value/endpoint?item=value")
                     }
                 }
             }

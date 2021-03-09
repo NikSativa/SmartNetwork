@@ -34,11 +34,11 @@ class Plugins_Bearer_ProviderSpec: QuickSpec {
                 }
 
                 it("should modify request") {
-                    expect(info.request).toNot(equal(originalRequest))
+                    expect(info.request) != originalRequest
 
                     let expectedRequest: URLRequest = .testMake(url: .testMake("http://www.some.com"),
                                                                 headers: ["Authorization": "Bearer my_token_string"])
-                    expect(info.request).to(equal(expectedRequest))
+                    expect(info.request) == expectedRequest
                 }
             }
         }

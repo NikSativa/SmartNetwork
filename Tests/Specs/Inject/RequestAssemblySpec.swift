@@ -29,7 +29,7 @@ class RequestAssemblySpec: QuickSpec {
                 let expected: [RegistrationInfo] = [.register(AnyRequestFactory<RequestError>.self, .container + .open),
                                                     .register(Plugins.StatusCode.self, .transient),
                                                     .register(Plugins.Bearer.self, .transient)]
-                expect(registrator.registered).to(equal(expected))
+                expect(registrator.registered) == expected
             }
 
             it("should create AnyRequestFactory") {

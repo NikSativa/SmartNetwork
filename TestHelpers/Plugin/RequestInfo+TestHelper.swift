@@ -33,14 +33,6 @@ extension Impl.URLRequestable: Equatable, SpryEquatable, TestOutputStringConvert
     }
 }
 
-public func ==(lhs: URLRequest, rhs: URLRequestable) -> Bool {
-    return lhs == rhs.original
-}
-
-public func ==(lhs: URLRequestable, rhs: URLRequest) -> Bool {
-    return lhs.original == rhs
-}
-
 public func equal(_ expectedValue: URLRequest?) -> Predicate<URLRequestable> {
     return Predicate.define("equal <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
@@ -69,4 +61,36 @@ public func equal(_ expectedValue: URLRequestable?) -> Predicate<URLRequest> {
             return PredicateResult(bool: matches, message: msg)
         }
     }
+}
+
+public func ==(lhs: URLRequest, rhs: URLRequestable) -> Bool {
+    return lhs == rhs.original
+}
+
+public func ==(lhs: URLRequestable, rhs: URLRequest) -> Bool {
+    return lhs.original == rhs
+}
+
+public func ==(lhs: Expectation<URLRequest>, rhs: URLRequest?) {
+    lhs.to(equal(rhs))
+}
+
+public func !=(lhs: Expectation<URLRequest>, rhs: URLRequest?) {
+    lhs.toNot(equal(rhs))
+}
+
+public func ==(lhs: Expectation<URLRequestable>, rhs: URLRequest?) {
+    lhs.to(equal(rhs))
+}
+
+public func !=(lhs: Expectation<URLRequestable>, rhs: URLRequest?) {
+    lhs.toNot(equal(rhs))
+}
+
+public func ==(lhs: Expectation<URLRequest>, rhs: URLRequestable?) {
+    lhs.to(equal(rhs))
+}
+
+public func !=(lhs: Expectation<URLRequest>, rhs: URLRequestable?) {
+    lhs.toNot(equal(rhs))
 }
