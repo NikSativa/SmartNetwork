@@ -180,7 +180,7 @@ class ResponseQueueSpec: QuickSpec {
                             didCall = true
                         }
                         expect(didCall).to(beFalse())
-                        expect(didCall).toEventually(beTrue(), timeout: 2)
+                        expect(didCall).toEventually(beTrue(), timeout: .seconds(2))
                     }
                 }
             }

@@ -62,7 +62,7 @@ class Plugins_TokenPluginSpec: QuickSpec {
                     }
 
                     it("should not modify request") {
-                        expect(info.request).to(equal(originalURLRequest))
+                        expect(info.request) == originalURLRequest 
                     }
                 }
 
@@ -79,7 +79,7 @@ class Plugins_TokenPluginSpec: QuickSpec {
                     }
 
                     it("should not verify anything") {
-                        expect(expression: { try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }).toNot(throwError())
+                        expect({ try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }).toNot(throwError())
                     }
 
                     describe("prepare") {
@@ -91,8 +91,8 @@ class Plugins_TokenPluginSpec: QuickSpec {
                         }
 
                         it("should modify request") {
-                            expect(info.request).toNot(equal(originalURLRequest))
-                            expect(info.request).to(equal(expectedURLRequest))
+                            expect(info.request) != originalURLRequest
+                            expect(info.request) == expectedURLRequest
                         }
                     }
                 }
