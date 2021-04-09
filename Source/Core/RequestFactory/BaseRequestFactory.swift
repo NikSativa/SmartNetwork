@@ -116,15 +116,19 @@ public class BaseRequestFactory<Error: AnyError> {
             removeFromCache(actual)
             actual.complete(result)
         case .failure(let error):
+            scheduledRequestsLock.lock()
+            let scheduledRequest = scheduledRequests[Key(actual)]
+            scheduledRequestsLock.unlock()
+
             if let refreshToken = refreshToken,
-               let scheduledRequest = scheduledRequests[Key(actual)],
+               let scheduledRequest = scheduledRequest,
                let info = scheduledRequest.info {
                 switch refreshToken.action(for: error, with: info) {
                 case .passOver:
                     removeFromCache(actual)
                     actual.complete(error)
                 case .retry:
-                    scheduledRequests[Key(actual)]?.start()
+                    scheduledRequest.start()
                 case .refresh:
                     refresh(refreshToken: refreshToken, actual: actual)
                 }
