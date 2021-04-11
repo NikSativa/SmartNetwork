@@ -153,9 +153,10 @@ public class BaseRequestFactory<Error: AnyError> {
                     return
                 }
 
+                let callback: ScheduledRequest = .init(prepare: request.prepare(),
+                                                       action: request.start())
                 self.scheduledRequestsLock.lock()
-                self.scheduledRequests[Key(actual)] = .init(prepare: request.prepare(),
-                                                            action: request.start())
+                self.scheduledRequests[Key(actual)] = callback
                 self.scheduledRequestsLock.unlock()
 
                 self.stateLock.lock()
