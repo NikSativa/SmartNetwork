@@ -10,6 +10,10 @@ private class UnfairLock {
         os_unfair_lock_lock(&unfairLock)
     }
 
+    func tryLock() -> Bool {
+        return os_unfair_lock_trylock(&unfairLock)
+    }
+
     func unlock() {
         os_unfair_lock_unlock(&unfairLock)
     }
@@ -104,9 +108,11 @@ public class BaseRequestFactory<Error: AnyError> {
     }
 
     func removeFromCache<T>(_ actual: ResultCallback<T, Error>) {
-        scheduledRequestsLock.lock()
+        let isLocked = scheduledRequestsLock.tryLock()
         scheduledRequests[Key(actual)] = nil
-        scheduledRequestsLock.unlock()
+        if isLocked {
+            scheduledRequestsLock.unlock()
+        }
     }
 
     private func check<T>(actual: ResultCallback<T, Error>,

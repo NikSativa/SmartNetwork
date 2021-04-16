@@ -72,4 +72,10 @@ public enum Helpers {
         return .testMake(url: url,
                          headers: headers)
     }
+
+    public static func testMake(url: String,
+                                headers: [String: String] = [:]) -> URLRequest {
+        return .testMake(url: URL.testMake(url),
+                         headers: headers)
+    }
 }
