@@ -1,4 +1,5 @@
 import Foundation
+import NQueue
 
 public typealias HeaderFields = [String: String]
 
@@ -11,11 +12,11 @@ public struct Parameters {
     public struct CacheSettings: Equatable {
         public let cache: URLCache
         public let storagePolicy: URLCache.StoragePolicy
-        public let queue: ResponseQueue
+        public let queue: DelayedQueue
 
         public init(cache: URLCache,
                     storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
-                    queue: ResponseQueue = .default) {
+                    queue: DelayedQueue = .async(Queue.main)) {
             self.cache = cache
             self.storagePolicy = storagePolicy
             self.queue = queue
@@ -29,7 +30,7 @@ public struct Parameters {
     public let timeoutInterval: TimeInterval
     public let cacheSettings: CacheSettings?
     public let requestPolicy: URLRequest.CachePolicy
-    public let queue: ResponseQueue
+    public let queue: DelayedQueue
     public let plugins: [Plugin]
     public let isLoggingEnabled: Bool
     public let taskKind: TaskKind
@@ -45,7 +46,7 @@ public struct Parameters {
                 cacheSettings: CacheSettings? = nil,
                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
                 timeoutInterval: TimeInterval = 60,
-                queue: ResponseQueue = .default,
+                queue: DelayedQueue = .async(Queue.main),
                 isLoggingEnabled: Bool = false,
                 taskKind: TaskKind = .download(progressHandler: nil)) {
         self.address = address

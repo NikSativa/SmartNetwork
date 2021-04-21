@@ -1,4 +1,5 @@
 import Foundation
+import NQueue
 
 protocol Request {
     associatedtype Response: CustomDecodable
@@ -156,7 +157,7 @@ extension Impl {
         private func fire(data: Data?,
                           response: URLResponse?,
                           error: Swift.Error?,
-                          queue: ResponseQueue,
+                          queue: DelayedQueue,
                           info: RequestInfo) {
             let httpStatusCode: Int?
             let allHeaderFields: [AnyHashable: Any]

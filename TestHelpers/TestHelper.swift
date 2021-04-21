@@ -1,6 +1,7 @@
 import Foundation
 import Spry
 
+import NQueue
 import NRequest
 
 /// make NRequest hidden from main app, but all helpers can be visible via `public typealias Helpers = NRequestTestHelpers.Helpers`
@@ -9,7 +10,6 @@ public enum Helpers {
     public typealias FakeBearerTokenProvider = NRequestTestHelpers.FakeBearerTokenProvider
     public typealias FakePluginProvider = NRequestTestHelpers.FakePluginProvider
     public typealias FakeRequestFactory<Error: AnyError> = NRequestTestHelpers.FakeRequestFactory<Error>
-    public typealias FakeResponseQueue = NRequestTestHelpers.FakeDispatchResponseQueue
     public typealias FakeRefreshToken = NRequestTestHelpers.FakeRefreshToken
     public typealias FakeURLRequestable = NRequestTestHelpers.FakeURLRequestable
 
@@ -40,7 +40,7 @@ public enum Helpers {
                                 plugins: [Plugin] = [],
                                 cacheSettings: Parameters.CacheSettings = .testMake(),
                                 timeoutInterval: TimeInterval = 60,
-                                queue: ResponseQueue = .async(DispatchQueue.main),
+                                queue: DelayedQueue = .async(Queue.main),
                                 isLoggingEnabled: Bool = false,
                                 taskKind: Parameters.TaskKind = .download(progressHandler: nil)) -> Parameters {
         return Parameters(address: address,
@@ -57,7 +57,7 @@ public enum Helpers {
 
     public static func testMake(cache: URLCache = .init(),
                                 storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
-                                queue: ResponseQueue = .async(DispatchQueue.main)) -> Parameters.CacheSettings {
+                                queue: DelayedQueue = .async(Queue.main)) -> Parameters.CacheSettings {
         return Parameters.CacheSettings(cache: cache,
                                         storagePolicy: storagePolicy,
                                         queue: queue)

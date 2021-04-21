@@ -47,8 +47,6 @@ Pod::Spec.new do |spec|
 
         is.dependency 'NInject'
         is.dependency 'NInjectTestHelpers'
-        is.dependency 'NCallback'
-        is.dependency 'NCallbackTestHelpers'
 
 		is.dependency 'NRequest/Inject'
         is.dependency 'NRequestTestHelpers/Core'

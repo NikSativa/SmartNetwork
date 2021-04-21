@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/NikSativa/NCallback.git",
         "state": {
           "branch": null,
-          "revision": "055c30c508a7536de18499f5eff12d53ba9569ee",
-          "version": "1.2.0"
+          "revision": "67d4cf9a59ef9f4ea86167ac17e43664edd052ce",
+          "version": "2.0.0"
         }
       },
       {
@@ -42,8 +42,17 @@
         "repositoryURL": "https://github.com/NikSativa/NInject.git",
         "state": {
           "branch": null,
-          "revision": "a445ccbfd760662a379b38e8b3168825f6feb7e3",
-          "version": "1.2.0"
+          "revision": "adb07707cdfd8ff76a2d8f22ab52711566ebc4e4",
+          "version": "1.3.3"
+        }
+      },
+      {
+        "package": "NQueue",
+        "repositoryURL": "https://github.com/NikSativa/NQueue.git",
+        "state": {
+          "branch": null,
+          "revision": "875ff4bd2c7b229efe0d26b8c4653783bdb80a7c",
+          "version": "1.0.2"
         }
       },
       {
@@ -51,8 +60,8 @@
         "repositoryURL": "https://github.com/Quick/Quick.git",
         "state": {
           "branch": null,
-          "revision": "0038bcbab4292f3b028632556507c124e5ba69f3",
-          "version": "3.0.0"
+          "revision": "8cce6acd38f965f5baa3167b939f86500314022b",
+          "version": "3.1.2"
         }
       },
       {
@@ -60,8 +69,8 @@
         "repositoryURL": "https://github.com/NikSativa/Spry.git",
         "state": {
           "branch": null,
-          "revision": "e1ee8fa5f9a97eda484a289e8f4b2e17cadb7ab5",
-          "version": "3.3.0"
+          "revision": "c8a2894b3e1f97b3b9a7d726a05320673b864337",
+          "version": "3.4.3"
         }
       }
     ]

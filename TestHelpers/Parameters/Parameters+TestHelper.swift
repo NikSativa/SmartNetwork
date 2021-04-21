@@ -1,6 +1,7 @@
 import Foundation
 import Spry
 
+import NQueue
 import NRequest
 
 extension Parameters: SpryEquatable {
@@ -11,7 +12,7 @@ extension Parameters: SpryEquatable {
                                 plugins: [Plugin] = [],
                                 cacheSettings: CacheSettings? = nil,
                                 timeoutInterval: TimeInterval = 60,
-                                queue: ResponseQueue = .async(DispatchQueue.main),
+                                queue: DelayedQueue = .async(Queue.main),
                                 isLoggingEnabled: Bool = false,
                                 taskKind: TaskKind = .download(progressHandler: nil)) -> Self {
         return .init(address: address,
@@ -30,7 +31,7 @@ extension Parameters: SpryEquatable {
 extension Parameters.CacheSettings: SpryEquatable {
     public static func testMake(cache: URLCache = .init(),
                                 storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
-                                queue: ResponseQueue = .async(DispatchQueue.main)) -> Self {
+                                queue: DelayedQueue = .async(Queue.main)) -> Self {
         return .init(cache: cache,
                      storagePolicy: storagePolicy,
                      queue: queue)

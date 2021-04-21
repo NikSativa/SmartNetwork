@@ -16,52 +16,42 @@ let package = Package(
     ],
     products: [
         .library(name: "NRequest", targets: ["NRequest"]),
-        .library(name: "NRequest_Callback", targets: ["NRequest_Callback"]),
         .library(name: "NRequest_Inject", targets: ["NRequest_Inject"]),
         .library(name: "NRequestTestHelpers", targets: ["NRequestTestHelpers"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/NikSativa/Spry.git", .upToNextMajor(from: "3.3.0")),
-        .package(url: "https://github.com/Quick/Quick.git", .upToNextMajor(from: "3.0.0")),
+        .package(url: "https://github.com/NikSativa/Spry.git", .upToNextMajor(from: "3.4.3")),
+        .package(url: "https://github.com/Quick/Quick.git", .upToNextMajor(from: "3.1.2")),
         .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "9.0.0")),
-        .package(url: "https://github.com/NikSativa/NInject.git", .upToNextMajor(from: "1.2.0")),
-        .package(url: "https://github.com/NikSativa/NCallback.git", .upToNextMajor(from: "1.2.0"))
+        .package(url: "https://github.com/NikSativa/NInject.git", .upToNextMajor(from: "1.3.3")),
+        .package(url: "https://github.com/NikSativa/NCallback.git", .upToNextMajor(from: "2.0.0")),
+        .package(url: "https://github.com/NikSativa/NQueue.git", .upToNextMajor(from: "1.0.0"))
     ],
     targets: [
         .target(name: "NRequest",
-                dependencies: ["NCallback"],
+                dependencies: ["NQueue", "NCallback"],
                 path: "Source/Core"),
         .target(name: "NRequestTestHelpers",
                 dependencies: [
                     "NRequest",
+                    "NQueue",
+                    .product(name: "NQueueTestHelpers", package: "NQueue"),
                     "Nimble",
                     "Spry"
                 ],
                 path: "TestHelpers"),
         .testTarget(name: "NRequestTests",
                     dependencies: [
+                        "NCallback",
                         .product(name: "NCallbackTestHelpers", package: "NCallback"),
-                        .product(name: "NInjectTestHelpers", package: "NInject"),
                         "NInject",
+                        .product(name: "NInjectTestHelpers", package: "NInject"),
                         "NRequest",
-                        "NRequestTestHelpers"
+                        "NRequestTestHelpers",
+                        "NQueue",
+                        .product(name: "NQueueTestHelpers", package: "NQueue")
                     ] + commonTestDependencies,
                     path: "Tests/Specs/Core"
-        ),
-
-        .target(name: "NRequest_Callback",
-                dependencies: ["NCallback", "NRequest"],
-                path: "Source/Callback"),
-        .testTarget(name: "NRequest_CallbackTests",
-                    dependencies: [
-                        .product(name: "NCallbackTestHelpers", package: "NCallback"),
-                        .product(name: "NInjectTestHelpers", package: "NInject"),
-                        "NInject",
-                        "NRequest",
-                        "NRequest_Inject",
-                        "NRequestTestHelpers"
-                    ] + commonTestDependencies,
-                    path: "Tests/Specs/Callback"
         ),
 
         .target(name: "NRequest_Inject",
@@ -74,7 +64,9 @@ let package = Package(
                         "NInject",
                         "NRequest",
                         "NRequest_Inject",
-                        "NRequestTestHelpers"
+                        "NRequestTestHelpers",
+                        "NQueue",
+                        .product(name: "NQueueTestHelpers", package: "NQueue")
                     ] + commonTestDependencies,
                     path: "Tests/Specs/Inject"
         )

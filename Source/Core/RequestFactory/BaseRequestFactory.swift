@@ -1,23 +1,7 @@
 import Foundation
 import UIKit
 import NCallback
-
-final
-private class UnfairLock {
-    private var unfairLock = os_unfair_lock_s()
-
-    func lock() {
-        os_unfair_lock_lock(&unfairLock)
-    }
-
-    func tryLock() -> Bool {
-        return os_unfair_lock_trylock(&unfairLock)
-    }
-
-    func unlock() {
-        os_unfair_lock_unlock(&unfairLock)
-    }
-}
+import NQueue
 
 final
 public class BaseRequestFactory<Error: AnyError> {
@@ -47,12 +31,13 @@ public class BaseRequestFactory<Error: AnyError> {
             action()
         }
     }
-    private let scheduledRequestsLock = UnfairLock()
+
+    @Atomic(mutex: Mutex.unfair, read: .trySync, write: .trySync)
+    private var state: State = .idle
+
+    @Atomic(mutex: Mutex.unfair, read: .trySync, write: .trySync)
     private var scheduledRequests: [Key: ScheduledRequest] = [:]
     private var scheduledParameters: [Key: Parameters] = [:]
-
-    private let stateLock = UnfairLock()
-    private var state: State = .idle
     
     public init(pluginProvider: PluginProvider? = nil,
                 refreshToken: AnyRefreshToken<Error>? = nil) {
@@ -80,26 +65,20 @@ public class BaseRequestFactory<Error: AnyError> {
     }
 
     private func unfreeze() {
-        stateLock.lock()
         state = .idle
-        stateLock.unlock()
-
-        scheduledRequestsLock.lock()
-        scheduledRequests.values.forEach {
-            $0.start()
+        $scheduledRequests.tryMutate {
+            $0.values.forEach {
+                $0.start()
+            }
         }
-        scheduledRequestsLock.unlock()
     }
 
     private func refresh<T>(refreshToken: AnyRefreshToken<Error>,
                             actual: ResultCallback<T, Error>) {
-        stateLock.lock()
         if state == .refreshing {
-            stateLock.unlock()
             return
         }
         state = .refreshing
-        stateLock.unlock()
 
         let factoryWithoutRefreshToken = Self(pluginProvider: pluginProvider)
         refreshToken.makeRequest(factoryWithoutRefreshToken).onComplete { [weak self] in
@@ -108,10 +87,8 @@ public class BaseRequestFactory<Error: AnyError> {
     }
 
     func removeFromCache<T>(_ actual: ResultCallback<T, Error>) {
-        let isLocked = scheduledRequestsLock.tryLock()
-        scheduledRequests[Key(actual)] = nil
-        if isLocked {
-            scheduledRequestsLock.unlock()
+        $scheduledRequests.tryMutate {
+            $0[Key(actual)] = nil
         }
     }
 
@@ -122,9 +99,9 @@ public class BaseRequestFactory<Error: AnyError> {
             removeFromCache(actual)
             actual.complete(result)
         case .failure(let error):
-            scheduledRequestsLock.lock()
-            let scheduledRequest = scheduledRequests[Key(actual)]
-            scheduledRequestsLock.unlock()
+            let scheduledRequest = $scheduledRequests.tryMutate {
+                return $0[Key(actual)]
+            }
 
             if let refreshToken = refreshToken,
                let scheduledRequest = scheduledRequest,
@@ -161,19 +138,12 @@ public class BaseRequestFactory<Error: AnyError> {
 
                 let callback: ScheduledRequest = .init(prepare: request.prepare(),
                                                        action: request.start())
-                self.scheduledRequestsLock.lock()
-                self.scheduledRequests[Key(actual)] = callback
-                self.scheduledRequestsLock.unlock()
+                self.$scheduledRequests.tryMutate {
+                    $0[Key(actual)] = callback
+                }
 
-                self.stateLock.lock()
                 if self.state == .idle {
-                    self.stateLock.unlock()
-
-                    self.scheduledRequestsLock.lock()
-                    self.scheduledRequests[Key(actual)]?.start()
-                    self.scheduledRequestsLock.unlock()
-                } else {
-                    self.stateLock.unlock()
+                    callback.start()
                 }
             }
 
