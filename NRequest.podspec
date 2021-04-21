@@ -17,6 +17,8 @@ Pod::Spec.new do |spec|
 
     spec.default_subspec = 'Core'
 
+    spec.dependency 'NCallback'
+
     spec.subspec 'Core' do |cs|
         cs.resources = ['Source/Core/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
         cs.source_files  = 'Source/Core/**/*.swift'
