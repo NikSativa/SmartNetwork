@@ -27,7 +27,6 @@ Pod::Spec.new do |spec|
         is.source_files  = 'Source/Inject/**/*.swift'
 
         is.dependency 'NInject'
-        is.dependency 'NCallback'
         is.dependency 'NRequest/Core'
     end
 end
