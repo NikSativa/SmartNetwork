@@ -22,6 +22,9 @@ Pod::Spec.new do |spec|
     spec.dependency 'Quick'
     spec.dependency 'Spry+Nimble'
 
+    spec.dependency 'NCallback'
+    spec.dependency 'NCallbackTestHelpers'
+
     spec.scheme = {
       :code_coverage => true
     }
