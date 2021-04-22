@@ -9,7 +9,7 @@ public struct Parameters {
         case upload(progressHandler: ProgressHandler?)
     }
 
-    public struct CacheSettings: Equatable {
+    public struct CacheSettings {
         public let cache: URLCache
         public let storagePolicy: URLCache.StoragePolicy
         public let queue: DelayedQueue

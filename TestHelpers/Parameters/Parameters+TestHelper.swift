@@ -2,6 +2,7 @@ import Foundation
 import Spry
 
 import NQueue
+import NQueueTestHelpers
 import NRequest
 
 extension Parameters: SpryEquatable {
@@ -35,6 +36,14 @@ extension Parameters.CacheSettings: SpryEquatable {
         return .init(cache: cache,
                      storagePolicy: storagePolicy,
                      queue: queue)
+    }
+}
+
+extension Parameters.CacheSettings: Equatable {
+    public static func ==(lhs: Parameters.CacheSettings, rhs: Parameters.CacheSettings) -> Bool {
+        return lhs.cache == rhs.cache
+            && lhs.storagePolicy == rhs.storagePolicy
+            && lhs.queue == rhs.queue
     }
 }
 
