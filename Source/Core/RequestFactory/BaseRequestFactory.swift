@@ -32,10 +32,10 @@ public class BaseRequestFactory<Error: AnyError> {
         }
     }
 
-    @Atomic(mutex: Mutex.unfair, read: .trySync, write: .trySync)
+    @Atomic(mutex: Mutex.unfair, read: .sync, write: .sync)
     private var state: State = .idle
 
-    @Atomic(mutex: Mutex.unfair, read: .trySync, write: .trySync)
+    @Atomic(mutex: Mutex.unfair, read: .sync, write: .sync)
     private var scheduledRequests: [Key: ScheduledRequest] = [:]
     private var scheduledParameters: [Key: Parameters] = [:]
     
