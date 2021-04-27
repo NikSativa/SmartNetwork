@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 import NCallback
 
-public protocol RequestFactory: class {
+public protocol RequestFactory: AnyObject {
     associatedtype Error: AnyError
 
     func prepare(_: Parameters) throws -> URLRequest
