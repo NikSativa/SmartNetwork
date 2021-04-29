@@ -159,6 +159,7 @@ extension Impl {
                           error: Swift.Error?,
                           queue: DelayedQueue,
                           info: RequestInfo) {
+            var resultError = error
             let httpStatusCode: Int?
             let allHeaderFields: [AnyHashable: Any]
             if let response = response as? HTTPURLResponse {
@@ -169,7 +170,7 @@ extension Impl {
                 allHeaderFields = [:]
             }
 
-            if let error = error {
+            if let error = resultError {
                 queue.fire {
                     self.completeCallback?(.failure(.wrap(error)))
                 }
@@ -193,18 +194,19 @@ extension Impl {
                         try $0.verify(httpStatusCode: httpStatusCode,
                                       header: allHeaderFields,
                                       data: data,
-                                      error: error)
+                                      error: resultError)
                     }
 
                     let resultResponse = try Response(with: data, statusCode: httpStatusCode, headers: allHeaderFields)
                     queue.fire {
                         self.completeCallback?(.success(resultResponse.content))
                     }
-                } catch let resultError {
-                    self.tolog("failed request: \(resultError)")
+                } catch let catchedError {
+                    self.tolog("failed request: \(catchedError)")
+                    resultError = catchedError
 
                     queue.fire {
-                        self.completeCallback?(.failure(.wrap(resultError)))
+                        self.completeCallback?(.failure(.wrap(catchedError)))
                     }
                 }
             }
@@ -212,7 +214,7 @@ extension Impl {
             plugins.forEach {
                 $0.didFinish(info,
                              response: response,
-                             with: error,
+                             with: resultError,
                              responseBody: data,
                              statusCode: httpStatusCode)
             }
