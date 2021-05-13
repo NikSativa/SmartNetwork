@@ -66,10 +66,10 @@ public class BaseRequestFactory<Error: AnyError> {
 
     private func unfreeze() {
         state = .idle
-        $scheduledRequests.tryMutate {
-            $0.values.forEach {
-                $0.start()
-            }
+
+        let scheduledRequests = self.scheduledRequests
+        for request in scheduledRequests.values {
+            request.start()
         }
     }
 
@@ -87,7 +87,7 @@ public class BaseRequestFactory<Error: AnyError> {
     }
 
     func removeFromCache<T>(_ actual: ResultCallback<T, Error>) {
-        $scheduledRequests.tryMutate {
+        $scheduledRequests.mutate {
             $0[Key(actual)] = nil
         }
     }
@@ -99,7 +99,7 @@ public class BaseRequestFactory<Error: AnyError> {
             removeFromCache(actual)
             actual.complete(result)
         case .failure(let error):
-            let scheduledRequest = $scheduledRequests.tryMutate {
+            let scheduledRequest = $scheduledRequests.mutate {
                 return $0[Key(actual)]
             }
 
@@ -138,7 +138,7 @@ public class BaseRequestFactory<Error: AnyError> {
 
                 let callback: ScheduledRequest = .init(prepare: request.prepare(),
                                                        action: request.start())
-                self.$scheduledRequests.tryMutate {
+                self.$scheduledRequests.mutate {
                     $0[Key(actual)] = callback
                 }
 
