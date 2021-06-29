@@ -18,9 +18,8 @@ Pod::Spec.new do |spec|
     spec.default_subspec = 'Core'
 
     spec.dependency 'Nimble'
-    spec.dependency 'Spry'
+    spec.dependency 'NSpry'
     spec.dependency 'Quick'
-    spec.dependency 'Spry+Nimble'
 
     spec.dependency 'NCallback'
     spec.dependency 'NCallbackTestHelpers'

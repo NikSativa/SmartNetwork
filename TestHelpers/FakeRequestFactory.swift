@@ -1,6 +1,6 @@
 import Foundation
 import UIKit
-import Spry
+import NSpry
 
 import NCallback
 @testable import NRequest
