@@ -1,5 +1,5 @@
 import Foundation
-import Spry
+import NSpry
 
 @testable import NRequest
 
