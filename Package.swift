@@ -1,12 +1,11 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.4
 
 import PackageDescription
 
 let commonTestDependencies: [PackageDescription.Target.Dependency] = [
-    "Spry",
+    "NSpry",
     "Nimble",
-    "Quick",
-    .product(name: "Spry_Nimble", package: "Spry")
+    "Quick"
 ]
 
 let package = Package(
@@ -20,12 +19,12 @@ let package = Package(
         .library(name: "NRequestTestHelpers", targets: ["NRequestTestHelpers"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/NikSativa/Spry.git", .upToNextMajor(from: "3.4.3")),
-        .package(url: "https://github.com/Quick/Quick.git", .upToNextMajor(from: "3.1.2")),
+        .package(url: "https://github.com/Quick/Quick.git", .upToNextMajor(from: "4.0.0")),
         .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "9.0.0")),
-        .package(url: "https://github.com/NikSativa/NInject.git", .upToNextMajor(from: "1.3.3")),
-        .package(url: "https://github.com/NikSativa/NCallback.git", .upToNextMajor(from: "2.0.0")),
-        .package(url: "https://github.com/NikSativa/NQueue.git", .upToNextMajor(from: "1.0.0"))
+        .package(url: "git@github.com:NikSativa/NSpry.git", .upToNextMajor(from: "1.0.0")),
+        .package(url: "git@github.com:NikSativa/NInject.git", .upToNextMajor(from: "1.3.3")),
+        .package(url: "git@github.com:NikSativa/NCallback.git", .upToNextMajor(from: "2.0.0")),
+        .package(url: "git@github.com:NikSativa/NQueue.git", .upToNextMajor(from: "1.0.0"))
     ],
     targets: [
         .target(name: "NRequest",
@@ -37,7 +36,7 @@ let package = Package(
                     "NQueue",
                     .product(name: "NQueueTestHelpers", package: "NQueue"),
                     "Nimble",
-                    "Spry"
+                    "NSpry"
                 ],
                 path: "TestHelpers"),
         .testTarget(name: "NRequestTests",
