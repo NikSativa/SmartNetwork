@@ -23,7 +23,7 @@ let package = Package(
         .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "9.0.0")),
         .package(url: "git@github.com:NikSativa/NSpry.git", .upToNextMajor(from: "1.0.0")),
         .package(url: "git@github.com:NikSativa/NInject.git", .upToNextMajor(from: "1.3.3")),
-        .package(url: "git@github.com:NikSativa/NCallback.git", .upToNextMajor(from: "2.0.0")),
+        .package(url: "git@github.com:NikSativa/NCallback.git", .upToNextMajor(from: "2.2.1")),
         .package(url: "git@github.com:NikSativa/NQueue.git", .upToNextMajor(from: "1.0.0"))
     ],
     targets: [
