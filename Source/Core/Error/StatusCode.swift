@@ -4,6 +4,7 @@ public enum StatusCode: Error, Equatable {
     case noContent       // 204
     case badRequest      // 400
     case unauthorized    // 401
+    case forbidden       // 403
     case notFound        // 404
     case timeout         // 408
     case upgradeRequired // 426
@@ -20,6 +21,8 @@ extension StatusCode {
             return 400
         case .unauthorized:
             return 401
+        case .forbidden:
+            return 403
         case .notFound:
             return 404
         case .timeout:
@@ -49,6 +52,8 @@ extension StatusCode: StatusCodeMapping {
             self = .badRequest
         case 401:
             self = .unauthorized
+        case 403:
+            self = .forbidden
         case 404:
             self = .notFound
         case 408:
