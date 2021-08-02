@@ -5,8 +5,7 @@ import NSpry
 import NCallback
 @testable import NRequest
 
-public final
-class FakeRequestFactory<Error: AnyError>: RequestFactory, Spryable {
+public final class FakeRequestFactory<Error: AnyError>: RequestFactory, Spryable {
     public enum ClassFunction: String, StringRepresentable {
         case empty
     }

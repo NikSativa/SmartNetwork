@@ -3,8 +3,7 @@ import UIKit
 import NCallback
 import NQueue
 
-final
-public class BaseRequestFactory<Error: AnyError> {
+public final class BaseRequestFactory<Error: AnyError> {
     private enum State {
         case idle
         case refreshing
@@ -13,7 +12,7 @@ public class BaseRequestFactory<Error: AnyError> {
     private typealias Key = ObjectIdentifier
 
     private let pluginProvider: PluginProvider?
-    private let refreshToken: AnyRefreshToken<Error>?
+    private let stopTheLine: AnyStopTheLine<Error>?
 
     private class ScheduledRequest {
         private let prepare: () -> RequestInfo
@@ -40,9 +39,9 @@ public class BaseRequestFactory<Error: AnyError> {
     private var scheduledParameters: [Key: Parameters] = [:]
     
     public init(pluginProvider: PluginProvider? = nil,
-                refreshToken: AnyRefreshToken<Error>? = nil) {
+                stopTheLine: AnyStopTheLine<Error>? = nil) {
         self.pluginProvider = pluginProvider
-        self.refreshToken = refreshToken
+        self.stopTheLine = stopTheLine
     }
 
     private func request<Requestable: Request>(_ throwable: @autoclosure () throws -> Requestable) -> ResultCallback<Requestable.Response.Object, Requestable.Error>
@@ -73,7 +72,7 @@ public class BaseRequestFactory<Error: AnyError> {
         }
     }
 
-    private func refresh<T>(refreshToken: AnyRefreshToken<Error>,
+    private func refresh<T>(refreshToken: AnyStopTheLine<Error>,
                             actual: ResultCallback<T, Error>) {
         if state == .refreshing {
             return
@@ -103,7 +102,7 @@ public class BaseRequestFactory<Error: AnyError> {
                 return $0[Key(actual)]
             }
 
-            if let refreshToken = refreshToken,
+            if let refreshToken = stopTheLine,
                let scheduledRequest = scheduledRequest,
                let info = scheduledRequest.info {
                 switch refreshToken.action(for: error, with: info) {
@@ -112,7 +111,7 @@ public class BaseRequestFactory<Error: AnyError> {
                     actual.complete(error)
                 case .retry:
                     scheduledRequest.start()
-                case .refresh:
+                case .stopTheLine:
                     refresh(refreshToken: refreshToken, actual: actual)
                 }
             } else {
@@ -129,7 +128,7 @@ public class BaseRequestFactory<Error: AnyError> {
         let start: ServiceClosure
         let stop: ServiceClosure
 
-        if let _ = refreshToken {
+        if let _ = stopTheLine {
             start = { [weak self] actual in
                 guard let self = self else {
                     request.start()
@@ -187,42 +186,42 @@ extension BaseRequestFactory: RequestFactory {
 
     // MARK - Ignorable
     public func requestIgnorable(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
-        requestCustomDecodable(IgnorableContent<Error>.self, with: parameters)
+        return requestCustomDecodable(IgnorableContent<Error>.self, with: parameters)
     }
 
     // MARK - Decodable
     public func requestDecodable<T: Decodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T, Error> {
-        requestCustomDecodable(DecodableContent<T, Error>.self, with: parameters)
+        return requestCustomDecodable(DecodableContent<T, Error>.self, with: parameters)
     }
 
     public func request<T: Decodable>(with parameters: Parameters) -> ResultCallback<T, Error> {
-        requestDecodable(T.self, with: parameters)
+        return requestDecodable(T.self, with: parameters)
     }
 
     // MARK - Image
     public func requestImage(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
-        requestCustomDecodable(ImageContent<Error>.self, with: parameters)
+        return requestCustomDecodable(ImageContent<Error>.self, with: parameters)
     }
 
     public func requestOptionalImage(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {
-        requestCustomDecodable(OptionalImageContent<Error>.self, with: parameters)
+        return requestCustomDecodable(OptionalImageContent<Error>.self, with: parameters)
     }
 
     // MARK - Data
     public func requestData(with parameters: Parameters) -> ResultCallback<Data, Error> {
-        requestCustomDecodable(DataContent<Error>.self, with: parameters)
+        return requestCustomDecodable(DataContent<Error>.self, with: parameters)
     }
 
     public func requestOptionalData(with parameters: Parameters) -> ResultCallback<Data?, Error> {
-        requestCustomDecodable(OptionalDataContent<Error>.self, with: parameters)
+        return requestCustomDecodable(OptionalDataContent<Error>.self, with: parameters)
     }
 
     // MARK - Any/JSON
     public func requestAny(with parameters: Parameters) -> ResultCallback<Any, Error> {
-        requestCustomDecodable(JSONContent<Error>.self, with: parameters)
+        return requestCustomDecodable(JSONContent<Error>.self, with: parameters)
     }
 
     public func requestOptionalAny(with parameters: Parameters) -> ResultCallback<Any?, Error> {
-        requestCustomDecodable(OptionalJSONContent<Error>.self, with: parameters)
+        return requestCustomDecodable(OptionalJSONContent<Error>.self, with: parameters)
     }
 }

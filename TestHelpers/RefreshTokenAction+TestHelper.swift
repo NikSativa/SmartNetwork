@@ -3,5 +3,5 @@ import NSpry
 
 @testable import NRequest
 
-extension RefreshTokenAction: SpryEquatable {
+extension StopTheLineAction: SpryEquatable {
 }
