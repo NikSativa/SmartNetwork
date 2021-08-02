@@ -5,7 +5,7 @@ import NCallback
 @testable import NRequest
 
 final
-public class FakeRefreshToken<Error: AnyError>: RefreshToken, Spryable {
+public class FakeRefreshToken<Error: AnyError>: StopTheLine, Spryable {
     public enum ClassFunction: String, StringRepresentable {
         case empty
     }
@@ -20,7 +20,7 @@ public class FakeRefreshToken<Error: AnyError>: RefreshToken, Spryable {
         return spryify(arguments: originalFactory)
     }
 
-    public func action(for error: Error, with info: RequestInfo) -> RefreshTokenAction {
+    public func action(for error: Error, with info: RequestInfo) -> StopTheLineAction {
         return spryify(arguments: error, info)
     }
 }

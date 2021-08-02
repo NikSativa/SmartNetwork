@@ -10,7 +10,7 @@ import NSpry
 @testable import NCallback
 @testable import NCallbackTestHelpers
 
-class RequestFactorySpec: QuickSpec {
+final class RequestFactorySpec: QuickSpec {
     private typealias Error = RequestError
     private struct TestInfo: Decodable { }
 
@@ -22,10 +22,6 @@ class RequestFactorySpec: QuickSpec {
             beforeEach {
                 originalFacroty = .init()
                 subject = originalFacroty.toAny()
-            }
-
-            it("should not wrap twice") {
-                expect(subject.toAny()).to(be(subject))
             }
 
             describe("ignorable response") {

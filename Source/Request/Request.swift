@@ -16,8 +16,7 @@ protocol Request {
 }
 
 extension Impl {
-    final
-    class Request<Response: CustomDecodable, Error: AnyError>: NRequest.Request {
+    final class Request<Response: CustomDecodable, Error: AnyError>: NRequest.Request {
         typealias CompletionCallback = (Result<Response.Object, Error>) -> Void
         private var completeCallback: CompletionCallback?
 
