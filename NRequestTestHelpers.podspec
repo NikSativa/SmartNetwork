@@ -15,47 +15,25 @@ Pod::Spec.new do |spec|
 
     spec.frameworks = 'XCTest', 'Foundation', 'UIKit'
 
-    spec.default_subspec = 'Core'
-
     spec.dependency 'Nimble'
     spec.dependency 'NSpry'
     spec.dependency 'Quick'
 
+    spec.dependency 'NRequest'
+
     spec.dependency 'NCallback'
     spec.dependency 'NCallbackTestHelpers'
 
-    spec.scheme = {
-      :code_coverage => true
-    }
+    #spec.scheme = {
+    #  :code_coverage => true
+    #}
 
-    spec.subspec 'Core' do |cs|
-        cs.resources = ['TestHelpers/**/Test/**/*.{xcassets,json,imageset,png,strings,stringsdict}']
-        cs.source_files = 'TestHelpers/**/Test*.{storyboard,xib,swift}',
-                          'TestHelpers/**/Fake*.*',
-                          'TestHelpers/**/*+TestHelper.*'
+    #spec.resources = ['TestHelpers/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
+    spec.source_files  = 'TestHelpers/**/*.swift'
 
-		cs.dependency 'NRequest/Core'
-        cs.test_spec 'Tests' do |tests|
-            #        tests.requires_app_host = true
-            tests.source_files = 'Tests/Specs/Core/**/*Spec.swift'
-        end
-    end
-
-    spec.subspec 'Inject' do |is|
-        is.resources = ['TestHelpers/**/Test/**/*.{xcassets,json,imageset,png,strings,stringsdict}']
-        is.source_files = 'TestHelpers/**/Test*.{storyboard,xib,swift}',
-                          'TestHelpers/**/Fake*.*',
-                          'TestHelpers/**/*+TestHelper.*'
-
-        is.dependency 'NInject'
-        is.dependency 'NInjectTestHelpers'
-
-		is.dependency 'NRequest/Inject'
-        is.dependency 'NRequestTestHelpers/Core'
-
-        is.test_spec 'Tests' do |tests|
-            #        tests.requires_app_host = true
-            tests.source_files = 'Tests/Specs/Inject/**/*Spec.swift'
-        end
+    spec.test_spec 'Tests' do |tests|
+        #tests.requires_app_host = true
+        #tests.resources = ['TestHelpers/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
+        tests.source_files  = 'TestHelpers/**/*.swift'
     end
 end
