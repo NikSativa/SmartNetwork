@@ -193,7 +193,7 @@ extension Impl {
                         try $0.verify(httpStatusCode: httpStatusCode,
                                       header: allHeaderFields,
                                       data: data,
-                                      error: resultError)
+                                      error: resultError.map { Error.wrap($0) })
                     }
 
                     let resultResponse = try Response(with: data, statusCode: httpStatusCode, headers: allHeaderFields)
@@ -213,7 +213,7 @@ extension Impl {
             plugins.forEach {
                 $0.didFinish(info,
                              response: response,
-                             with: resultError,
+                             with: resultError.map { Error.wrap($0) },
                              responseBody: data,
                              statusCode: httpStatusCode)
             }
