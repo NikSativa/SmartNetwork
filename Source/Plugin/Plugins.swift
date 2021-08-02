@@ -1,7 +1,7 @@
 import Foundation
 
-public protocol ErrorMapping: Error {
-    static func verify(_ code: Int?) throws
+public protocol StatusCodeMapping: Error {
+    init?(_ statusCode: Int?)
 }
 
 public protocol BearerTokenProvider {
@@ -29,7 +29,7 @@ public enum Plugins {
         }
     }
 
-    public final class AutoError<E: ErrorMapping>: Plugin {
+    public final class AutoError<E: StatusCodeMapping>: Plugin {
         public init() { }
 
         public func prepare(_ info: inout Info) {
@@ -42,7 +42,9 @@ public enum Plugins {
         }
 
         public func verify(httpStatusCode code: Int?, header: [AnyHashable: Any], data: Data?, error: Error?) throws {
-            try E.verify(code)
+            if let error = E(code) {
+                throw error
+            }
         }
     }
 

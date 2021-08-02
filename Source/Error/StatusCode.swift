@@ -4,6 +4,7 @@ public enum StatusCode: Error, Equatable {
     case noContent       // 204
     case badRequest      // 400
     case unauthorized    // 401
+    case forbidden       // 403
     case notFound        // 404
     case timeout         // 408
     case upgradeRequired // 426
@@ -20,6 +21,8 @@ extension StatusCode {
             return 400
         case .unauthorized:
             return 401
+        case .forbidden:
+            return 403
         case .notFound:
             return 404
         case .timeout:
@@ -34,31 +37,33 @@ extension StatusCode {
     }
 }
 
-extension StatusCode: ErrorMapping {
-    public static func verify(_ code: Int?) throws {
+extension StatusCode: StatusCodeMapping {
+    public init?(_ code: Int?) {
         guard let code = code else {
-            return
+            return nil
         }
 
         switch code {
         case 200:
-            break
+            return nil
         case 204:
-            throw noContent
+            self = .noContent
         case 400:
-            throw badRequest
+            self = .badRequest
         case 401:
-            throw unauthorized
+            self = .unauthorized
+        case 403:
+            self = .forbidden
         case 404:
-            throw notFound
+            self = .notFound
         case 408:
-            throw timeout
+            self = .timeout
         case 426:
-            throw upgradeRequired
+            self = .upgradeRequired
         case 500:
-            throw serverError
+            self = .serverError
         default:
-            throw other(code)
+            self = .other(code)
         }
     }
 }
