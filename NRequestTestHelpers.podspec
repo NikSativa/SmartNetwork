@@ -34,6 +34,6 @@ Pod::Spec.new do |spec|
     spec.test_spec 'Tests' do |tests|
         #tests.requires_app_host = true
         #tests.resources = ['TestHelpers/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
-        tests.source_files  = 'TestHelpers/**/*.swift'
+        tests.source_files  = 'Tests/**/*.swift'
     end
 end

@@ -3,8 +3,7 @@ import NSpry
 
 import NRequest
 
-public final
-class FakePlugin: Plugin, Spryable {
+public final class FakePlugin: Plugin, Spryable {
     public enum ClassFunction: String, StringRepresentable {
         case empty
     }
