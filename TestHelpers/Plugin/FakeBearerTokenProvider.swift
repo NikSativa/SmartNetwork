@@ -3,8 +3,7 @@ import NSpry
 
 @testable import NRequest
 
-public final
-class FakeBearerTokenProvider: BearerTokenProvider, Spryable {
+public final class FakeBearerTokenProvider: BearerTokenProvider, Spryable {
     public enum ClassFunction: String, StringRepresentable {
         case empty
     }

@@ -3,8 +3,7 @@ import NSpry
 
 @testable import NRequest
 
-final
-class FakeRequest<Response: CustomDecodable, Error: AnyError>: Request, Spryable {
+final class FakeRequest<Response: CustomDecodable, Error: AnyError>: Request, Spryable {
     enum ClassFunction: String, StringRepresentable {
         case empty
     }
