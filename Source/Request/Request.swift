@@ -25,6 +25,8 @@ extension Impl {
         private var isStopped: Bool = false
         private var sessionAdaptor: SessionAdaptor?
         private let parameters: Parameters
+
+        @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
         private var requestInfo: RequestInfo?
 
         required init(_ parameters: Parameters) throws {
