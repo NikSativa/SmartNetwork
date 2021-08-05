@@ -1,14 +1,23 @@
 import Foundation
 import NQueue
 
-protocol Request {
+public protocol MutableRequest: AnyObject {
+    var info: RequestInfo { get }
+    func set(_ parameters: Parameters) throws
+
+    typealias SpecialCompletionCallback = (_ httpStatusCode: Int?, _ header: [AnyHashable: Any], _ data: Data?, _ error: Error?) -> Bool
+    func onSpecialComplete(_ callback: @escaping SpecialCompletionCallback)
+}
+
+protocol ScheduledRequest: MutableRequest {
+    var isSpecial: Bool { get }
+    func start()
+}
+
+protocol Request: ScheduledRequest {
     associatedtype Response: CustomDecodable
     associatedtype Error: AnyError
 
-    @discardableResult
-    func prepare() -> RequestInfo
-
-    func start()
     func stop()
 
     typealias CompletionCallback = (Result<Response.Object, Error>) -> Void
@@ -19,26 +28,45 @@ extension Impl {
     final class Request<Response: CustomDecodable, Error: AnyError>: NRequest.Request {
         typealias CompletionCallback = (Result<Response.Object, Error>) -> Void
         private var completeCallback: CompletionCallback?
+        private var specialCompleteCallback: SpecialCompletionCallback?
 
         // MARK: -
-        private var sdkRequest: URLRequest
         private var isStopped: Bool = false
         private var sessionAdaptor: SessionAdaptor?
-        private let parameters: Parameters
+
+        @Atomic
+        private var parameters: Parameters
+
+        @Atomic
+        private var sdkRequest: URLRequest
 
         @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
         private var requestInfo: RequestInfo?
 
-        required init(_ parameters: Parameters) throws {
-            self.parameters = parameters
-            sdkRequest = try parameters.sdkRequest()
+        var info: RequestInfo {
+            return requestInfo ?? prepare()
+        }
+
+        var isSpecial: Bool {
+            specialCompleteCallback != nil
+        }
+
+        required init(parameters: Parameters) throws {
+            self._parameters = Atomic(wrappedValue: parameters,
+                                      mutex: Mutex.pthread(.recursive),
+                                      read: .sync,
+                                      write: .sync)
+            _sdkRequest = Atomic(wrappedValue: try parameters.sdkRequest(),
+                                 mutex: Mutex.pthread(.recursive),
+                                 read: .sync,
+                                 write: .sync)
         }
 
         deinit {
             sessionAdaptor?.stop()
         }
 
-        func prepare() -> RequestInfo {
+        private func prepare() -> RequestInfo {
             var info = RequestInfo(request: sdkRequest,
                                    parameters: parameters)
             plugins.forEach {
@@ -47,6 +75,13 @@ extension Impl {
 
             requestInfo = info
             return info
+        }
+
+        func set(_ parameters: Parameters) throws {
+            stop()
+            self.parameters = parameters
+            sdkRequest = try parameters.sdkRequest()
+            requestInfo = requestInfo ?? prepare()
         }
 
         func start() {
@@ -61,7 +96,8 @@ extension Impl {
                 $0.willSend(info)
             }
 
-            if let cacheSettings = parameters.cacheSettings {
+            if let cacheSettings = parameters.cacheSettings,
+               !isSpecial {
                 let shouldUseCache: Bool
                 switch parameters.requestPolicy {
                 case .reloadIgnoringLocalAndRemoteCacheData,
@@ -80,7 +116,7 @@ extension Impl {
                 if shouldUseCache, let cached = cacheSettings.cache.cachedResponse(for: modifiedRequest) {
                     tologSelf(modifiedRequest)
                     fire(data: cached.data,
-                         response: cached.response,
+                         response: cached.response as? HTTPURLResponse,
                          error: nil,
                          queue: cacheSettings.queue,
                          info: info)
@@ -106,16 +142,26 @@ extension Impl {
 
                 self.sessionAdaptor = nil
                 self.tologSelf(modifiedRequest)
-                self.fire(data: data,
-                          response: response,
-                          error: error,
-                          queue: self.parameters.queue,
-                          info: info)
+
+                let httpResponse = response as? HTTPURLResponse
+                if let specialCompleteCallback = self.specialCompleteCallback,
+                   specialCompleteCallback(httpResponse?.statusCode, httpResponse?.allHeaderFields ?? [:], data, error) {
+                    self.fire(data: data,
+                              response: httpResponse,
+                              error: error.map { .wrap($0) },
+                              queue: self.parameters.queue,
+                              info: info)
+                }
             }
         }
 
         func onComplete(_ callback: @escaping CompletionCallback) {
             completeCallback = callback
+        }
+
+        func onSpecialComplete(_ callback: @escaping SpecialCompletionCallback) {
+            specialCompleteCallback = callback
+            start()
         }
 
         func stop() {
@@ -155,47 +201,51 @@ extension Impl {
                   method: method)
         }
 
+        private func tolog(_ data: Data?, file: String = #file, method: String = #function) {
+            guard parameters.isLoggingEnabled else {
+                return
+            }
+
+            let text: String
+            if let data = data {
+                if let json = try? JSONSerialization.jsonObject(with: data, options: []) {
+                    let str = String(describing: json)
+                    text = "response: \n" + str
+                } else if let strFromData = String(data: data, encoding: .utf8) {
+                    text = strFromData
+                } else {
+                    text = "response: not empty body (can't decode for logging)"
+                }
+            } else {
+                text = "response: empty body"
+            }
+
+            Configuration.log("\(self)", file: file, method: method)
+            Configuration.log(text, file: file, method: method)
+        }
+
         private func fire(data: Data?,
-                          response: URLResponse?,
-                          error: Swift.Error?,
+                          response: HTTPURLResponse?,
+                          error: Error?,
                           queue: DelayedQueue,
                           info: RequestInfo) {
             var resultError = error
-            let httpStatusCode: Int?
-            let allHeaderFields: [AnyHashable: Any]
-            if let response = response as? HTTPURLResponse {
-                httpStatusCode = response.statusCode
-                allHeaderFields = response.allHeaderFields
-            } else {
-                httpStatusCode = nil
-                allHeaderFields = [:]
-            }
+            let httpStatusCode: Int? = response?.statusCode
+            let allHeaderFields: [AnyHashable: Any] = response?.allHeaderFields ?? [:]
 
-            if let error = resultError {
+            if let error = error {
                 queue.fire {
-                    self.completeCallback?(.failure(.wrap(error)))
+                    self.completeCallback?(.failure(error))
                 }
             } else {
                 do {
-                    tolog({
-                        if let data = data {
-                            let obj: () -> String? = {
-                                let json = try? JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions())
-                                return json.map({ String(describing: $0) })
-                            }
-                            let strFromData = String(data: data, encoding: .utf8)
-                            let str = strFromData ?? obj()
-                            return "response: " + (str ?? "nil")
-                        } else {
-                            return "response: empty"
-                        }
-                    }())
+                    tolog(data)
 
                     try plugins.forEach {
                         try $0.verify(httpStatusCode: httpStatusCode,
                                       header: allHeaderFields,
                                       data: data,
-                                      error: resultError.map { Error.wrap($0) })
+                                      error: nil)
                     }
 
                     let resultResponse = try Response(with: data, statusCode: httpStatusCode, headers: allHeaderFields)
@@ -204,10 +254,11 @@ extension Impl {
                     }
                 } catch let catchedError {
                     self.tolog("failed request: \(catchedError)")
-                    resultError = catchedError
+                    let wrappedError: Error = .wrap(catchedError)
+                    resultError = wrappedError
 
                     queue.fire {
-                        self.completeCallback?(.failure(.wrap(catchedError)))
+                        self.completeCallback?(.failure(wrappedError))
                     }
                 }
             }

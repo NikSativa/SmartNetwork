@@ -15,12 +15,14 @@ public class FakeRefreshToken<Error: AnyError>: StopTheLine, Spryable {
         case action = "action(for:with:)"
     }
 
-    public func makeRequest<R: RequestFactory>(_ originalFactory: R) -> Callback<Ignorable>
-    where Error == R.Error {
-        return spryify(arguments: originalFactory)
+    public func makeRequest(_ factory: AnyRequestFactory<Error>,
+                            request: MutableRequest,
+                            error: Error) -> Callback<Ignorable> {
+        return spryify(arguments: factory, request, error)
     }
 
-    public func action(for error: Error, with info: RequestInfo) -> StopTheLineAction {
+    public func action(for error: Error,
+                       with info: RequestInfo) -> StopTheLineAction {
         return spryify(arguments: error, info)
     }
 }
