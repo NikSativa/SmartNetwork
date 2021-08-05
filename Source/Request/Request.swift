@@ -144,8 +144,17 @@ extension Impl {
                 self.tologSelf(modifiedRequest)
 
                 let httpResponse = response as? HTTPURLResponse
-                if let specialCompleteCallback = self.specialCompleteCallback,
-                   specialCompleteCallback(httpResponse?.statusCode, httpResponse?.allHeaderFields ?? [:], data, error) {
+                let shouldFireResponse: Bool
+                if let specialCompleteCallback = self.specialCompleteCallback {
+                    shouldFireResponse = specialCompleteCallback(httpResponse?.statusCode,
+                                                                 httpResponse?.allHeaderFields ?? [:],
+                                                                 data,
+                                                                 error)
+                } else {
+                    shouldFireResponse = true
+                }
+                
+                if shouldFireResponse {
                     self.fire(data: data,
                               response: httpResponse,
                               error: error.map { .wrap($0) },
