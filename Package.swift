@@ -19,10 +19,10 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/Quick/Quick.git", .upToNextMajor(from: "4.0.0")),
-        .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "9.0.0")),
-        .package(url: "git@github.com:NikSativa/NSpry.git", .upToNextMajor(from: "1.0.0")),
-        .package(url: "git@github.com:NikSativa/NCallback.git", .upToNextMajor(from: "2.2.1")),
-        .package(url: "git@github.com:NikSativa/NQueue.git", .upToNextMajor(from: "1.0.0"))
+        .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "9.2.0")),
+        .package(url: "git@github.com:NikSativa/NSpry.git", .upToNextMajor(from: "1.0.2")),
+        .package(url: "git@github.com:NikSativa/NCallback.git", .upToNextMajor(from: "2.4.2")),
+        .package(url: "git@github.com:NikSativa/NQueue.git", .upToNextMajor(from: "1.1.3"))
     ],
     targets: [
         .target(name: "NRequest",

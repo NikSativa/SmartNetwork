@@ -13,6 +13,10 @@ final class FakeRequest<Response: CustomDecodable, Error: AnyError>: Request, Sp
         case onComplete = "onComplete()"
         case start = "start()"
         case stop = "stop()"
+        case isSpecial
+        case info
+        case setParameters = "set(_:)"
+        case onSpecialComplete = "onSpecialComplete(_:)"
     }
 
     func prepare() -> RequestInfo {
@@ -29,5 +33,21 @@ final class FakeRequest<Response: CustomDecodable, Error: AnyError>: Request, Sp
 
     func stop() {
         return spryify()
+    }
+
+    var isSpecial: Bool {
+        return spryify()
+    }
+
+    var info: RequestInfo {
+        return spryify()
+    }
+
+    func set(_ parameters: Parameters) throws {
+        return spryify(arguments: parameters)
+    }
+
+    func onSpecialComplete(_ callback: @escaping SpecialCompletionCallback) {
+        return spryify(arguments: callback)
     }
 }

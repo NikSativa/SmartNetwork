@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/mattgallagher/CwlCatchException.git",
         "state": {
           "branch": null,
-          "revision": "f809deb30dc5c9d9b78c872e553261a61177721a",
-          "version": "2.0.0"
+          "revision": "682841464136f8c66e04afe5dbd01ab51a3a56f2",
+          "version": "2.1.0"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "git@github.com:NikSativa/NCallback.git",
         "state": {
           "branch": null,
-          "revision": "e8ecdea9d7cc5695a9da3e869811d563434ee1c9",
-          "version": "2.2.2"
+          "revision": "83793da457c64d65affb3257f9e15aa8aa51f27d",
+          "version": "2.4.2"
         }
       },
       {
@@ -42,8 +42,8 @@
         "repositoryURL": "git@github.com:NikSativa/NQueue.git",
         "state": {
           "branch": null,
-          "revision": "875ff4bd2c7b229efe0d26b8c4653783bdb80a7c",
-          "version": "1.0.2"
+          "revision": "7cc4bd490eb254ee43b1ce0b4467f957b230900e",
+          "version": "1.1.3"
         }
       },
       {
@@ -62,15 +62,6 @@
           "branch": null,
           "revision": "bd86ca0141e3cfb333546de5a11ede63f0c4a0e6",
           "version": "4.0.0"
-        }
-      },
-      {
-        "package": "Spry",
-        "repositoryURL": "https://github.com/NikSativa/Spry.git",
-        "state": {
-          "branch": null,
-          "revision": "c8a2894b3e1f97b3b9a7d726a05320673b864337",
-          "version": "3.4.3"
         }
       }
     ]

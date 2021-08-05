@@ -23,17 +23,17 @@ public struct Parameters {
         }
     }
 
-    public let address: Address
-    public let header: HeaderFields
-    public let method: HTTPMethod
-    public let body: Body
-    public let timeoutInterval: TimeInterval
-    public let cacheSettings: CacheSettings?
-    public let requestPolicy: URLRequest.CachePolicy
-    public let queue: DelayedQueue
-    public let plugins: [Plugin]
-    public let isLoggingEnabled: Bool
-    public let taskKind: TaskKind
+    public var address: Address
+    public var header: HeaderFields
+    public var method: HTTPMethod
+    public var body: Body
+    public var timeoutInterval: TimeInterval
+    public var cacheSettings: CacheSettings?
+    public var requestPolicy: URLRequest.CachePolicy
+    public var queue: DelayedQueue
+    public var plugins: [Plugin]
+    public var isLoggingEnabled: Bool
+    public var taskKind: TaskKind
 
     /// used only on client side. best practice to use it to identify request in the Plugin's
     public var userInfo: [String: Any] = [:]
@@ -61,29 +61,23 @@ public struct Parameters {
         self.isLoggingEnabled = isLoggingEnabled
         self.taskKind = taskKind
     }
-
-    private init(_ original: Parameters, plugins: [Plugin]) {
-        self.address = original.address
-        self.header = original.header
-        self.method = original.method
-        self.body = original.body
-        self.plugins = plugins
-        self.timeoutInterval = original.timeoutInterval
-        self.cacheSettings = original.cacheSettings
-        self.requestPolicy = original.requestPolicy
-        self.queue = original.queue
-        self.isLoggingEnabled = original.isLoggingEnabled
-        self.taskKind = original.taskKind
-    }
 }
 
 extension Parameters {
     public static func + (lhs: Parameters, plugin: Plugin) -> Parameters {
-        return Parameters(lhs, plugins: lhs.plugins + [plugin])
+        var new = lhs
+        new.plugins.append(plugin)
+        return new
     }
 
-    public static func + (lhs: Parameters, plugin: [Plugin]) -> Parameters {
-        return Parameters(lhs, plugins: lhs.plugins + plugin)
+    public static func + (lhs: Parameters, plugins: [Plugin]) -> Parameters {
+        if plugins.isEmpty {
+            return lhs
+        }
+
+        var new = lhs
+        new.plugins += plugins
+        return new
     }
 }
 
@@ -100,9 +94,5 @@ extension Parameters {
 
         try body.fill(&request, isLoggingEnabled: isLoggingEnabled)
         return request
-    }
-
-    func info() throws -> RequestInfo {
-        RequestInfo(request: try sdkRequest(), parameters: self)
     }
 }

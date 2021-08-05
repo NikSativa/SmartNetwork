@@ -11,54 +11,28 @@ public final class BaseRequestFactory<Error: AnyError> {
 
     private typealias Key = ObjectIdentifier
 
-    private let pluginProvider: PluginProvider?
-    private let stopTheLine: AnyStopTheLine<Error>?
-
-    private class ScheduledRequest {
-        private let prepare: () -> RequestInfo
-        private let action: () -> Void
-        private(set) var info: RequestInfo!
-
-        init(prepare: @escaping @autoclosure () -> RequestInfo,
-             action: @escaping @autoclosure () -> Void) {
-            self.prepare = prepare
-            self.action = action
-        }
-
-        func start() {
-            info = prepare()
-            action()
-        }
-    }
-
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var state: State = .idle
 
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var scheduledRequests: [Key: ScheduledRequest] = [:]
     private var scheduledParameters: [Key: Parameters] = [:]
-    
+
+    private let pluginProvider: PluginProvider?
+    private let stopTheLine: AnyStopTheLine<Error>?
+
     public init(pluginProvider: PluginProvider? = nil,
                 stopTheLine: AnyStopTheLine<Error>? = nil) {
         self.pluginProvider = pluginProvider
         self.stopTheLine = stopTheLine
     }
 
-    private func request<Requestable: Request>(_ throwable: @autoclosure () throws -> Requestable) -> ResultCallback<Requestable.Response.Object, Requestable.Error>
-    where Error == Requestable.Error {
-        do {
-            let request = try throwable()
-            return refresh(request)
-        } catch let error as Requestable.Error {
-            return Callback.failure(error)
-        } catch let error {
-            return Callback.failure(.wrap(error))
-        }
-    }
-
     private func modify(_ parameters: Parameters) -> Parameters {
-        if let plugins = pluginProvider?.plugins(), !plugins.isEmpty {
-            return parameters + plugins
+        if let plugins = pluginProvider?.plugins(),
+           !plugins.isEmpty {
+            var new = parameters
+            new.plugins += plugins
+            return new
         }
         return parameters
     }
@@ -67,22 +41,25 @@ public final class BaseRequestFactory<Error: AnyError> {
         state = .idle
 
         let scheduledRequests = self.scheduledRequests
-        for request in scheduledRequests.values {
+        for request in scheduledRequests.values.filter({ !$0.isSpecial }) {
             request.start()
         }
     }
 
-    private func refresh<T>(refreshToken: AnyStopTheLine<Error>,
-                            actual: ResultCallback<T, Error>) {
+    private func refresh(refreshToken: AnyStopTheLine<Error>,
+                         request: ScheduledRequest,
+                         error: Error) {
         if state == .refreshing {
             return
         }
         state = .refreshing
 
-        let factoryWithoutRefreshToken = Self(pluginProvider: pluginProvider)
-        refreshToken.makeRequest(factoryWithoutRefreshToken).onComplete { [weak self] in
-            self?.unfreeze()
-        }
+        let stopTheLineFactory = Self(pluginProvider: pluginProvider).toAny()
+        refreshToken.makeRequest(stopTheLineFactory,
+                                 request: request,
+                                 error: error).onComplete { [weak self] in
+                                    self?.unfreeze()
+                                 }
     }
 
     func removeFromCache<T>(_ actual: ResultCallback<T, Error>) {
@@ -98,21 +75,26 @@ public final class BaseRequestFactory<Error: AnyError> {
             removeFromCache(actual)
             actual.complete(result)
         case .failure(let error):
-            let scheduledRequest = $scheduledRequests.mutate {
-                return $0[Key(actual)]
-            }
+            if let refreshToken = stopTheLine {
+                let scheduledRequest = $scheduledRequests.mutate {
+                    return $0[Key(actual)]
+                }
 
-            if let refreshToken = stopTheLine,
-               let scheduledRequest = scheduledRequest,
-               let info = scheduledRequest.info {
-                switch refreshToken.action(for: error, with: info) {
-                case .passOver:
-                    removeFromCache(actual)
+                if let scheduledRequest = scheduledRequest {
+                    let info = scheduledRequest.info
+                    switch refreshToken.action(for: error, with: info) {
+                    case .passOver:
+                        removeFromCache(actual)
+                        actual.complete(error)
+                    case .retry:
+                        scheduledRequest.start()
+                    case .stopTheLine:
+                        refresh(refreshToken: refreshToken,
+                                request: scheduledRequest,
+                                error: error)
+                    }
+                } else {
                     actual.complete(error)
-                case .retry:
-                    scheduledRequest.start()
-                case .stopTheLine:
-                    refresh(refreshToken: refreshToken, actual: actual)
                 }
             } else {
                 actual.complete(error)
@@ -135,14 +117,12 @@ public final class BaseRequestFactory<Error: AnyError> {
                     return
                 }
 
-                let callback: ScheduledRequest = .init(prepare: request.prepare(),
-                                                       action: request.start())
                 self.$scheduledRequests.mutate {
-                    $0[Key(actual)] = callback
+                    $0[Key(actual)] = request
                 }
 
-                if self.state == .idle {
-                    callback.start()
+                if self.state == .idle || request.isSpecial {
+                    request.start()
                 }
             }
 
@@ -181,7 +161,14 @@ extension BaseRequestFactory: RequestFactory {
     public func requestCustomDecodable<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, T.Error>
     where Error == T.Error {
         let parameters = modify(parameters)
-        return request(try Impl.Request<T, T.Error>(parameters))
+        do {
+            let request = try Impl.Request<T, T.Error>(parameters: parameters)
+            return refresh(request)
+        } catch let error as T.Error {
+            return Callback.failure(error)
+        } catch let error {
+            return Callback.failure(.wrap(error))
+        }
     }
 
     // MARK - Ignorable
