@@ -2,7 +2,7 @@ import Foundation
 
 public enum RequestError: AnyError {
     case generic(EquatableError)
-    case connectionError(ConnectionError)
+    case connection(ConnectionError)
     case encoding(EncodingError)
     case decoding(DecodingError)
     case statusCode(StatusCode)
@@ -12,7 +12,7 @@ public enum RequestError: AnyError {
         case let error as Self:
             self = error
         case let error as ConnectionError:
-            self = .connectionError(error)
+            self = .connection(error)
         case let error as EncodingError:
             self = .encoding(error)
         case let error as DecodingError:
@@ -21,7 +21,7 @@ public enum RequestError: AnyError {
             self = .statusCode(error)
         default:
             if let error = ConnectionError(error) {
-                self = .connectionError(error)
+                self = .connection(error)
             } else {
                 return nil
             }
