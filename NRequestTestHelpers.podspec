@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name         = "NRequestTestHelpers"
-    spec.version      = "2.10.3"
+    spec.version      = "2.10.4"
     spec.summary      = "RESTKit"
 
     spec.source       = { :git => "git@github.com:NikSativa/NRequest.git" }
