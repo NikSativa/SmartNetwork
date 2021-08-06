@@ -1,12 +1,21 @@
 import Foundation
 import NQueue
 
+public enum SpecialCompletionAction: Equatable {
+    /// response will be delivered to the real request
+    case passOver
+
+    /// response will be ignored
+    case ignore
+}
+
 public protocol MutableRequest: AnyObject {
     var info: RequestInfo { get }
     func set(_ parameters: Parameters) throws
 
-    typealias SpecialCompletionCallback = (_ httpStatusCode: Int?, _ header: [AnyHashable: Any], _ data: Data?, _ error: Error?) -> Bool
+    typealias SpecialCompletionCallback = (_ httpStatusCode: Int?, _ header: [AnyHashable: Any], _ data: Data?, _ error: Error?) -> SpecialCompletionAction
     func onSpecialComplete(_ callback: @escaping SpecialCompletionCallback)
+    func cancelSpecialCompletion()
 }
 
 protocol ScheduledRequest: MutableRequest {
@@ -48,7 +57,7 @@ extension Impl {
         }
 
         var isSpecial: Bool {
-            specialCompleteCallback != nil
+            return specialCompleteCallback != nil
         }
 
         required init(parameters: Parameters) throws {
@@ -144,22 +153,25 @@ extension Impl {
                 self.tologSelf(modifiedRequest)
 
                 let httpResponse = response as? HTTPURLResponse
-                let shouldFireResponse: Bool
+                let action: SpecialCompletionAction
                 if let specialCompleteCallback = self.specialCompleteCallback {
-                    shouldFireResponse = specialCompleteCallback(httpResponse?.statusCode,
+                    action = specialCompleteCallback(httpResponse?.statusCode,
                                                                  httpResponse?.allHeaderFields ?? [:],
                                                                  data,
                                                                  error)
                 } else {
-                    shouldFireResponse = true
+                    action = .passOver
                 }
-                
-                if shouldFireResponse {
+
+                switch action {
+                case .passOver:
                     self.fire(data: data,
                               response: httpResponse,
                               error: error.map { .wrap($0) },
                               queue: self.parameters.queue,
                               info: info)
+                case .ignore:
+                    self.cancelSpecialCompletion()
                 }
             }
         }
@@ -173,12 +185,17 @@ extension Impl {
             start()
         }
 
-        func stop() {
-            isStopped = true
-            clear()
+        func cancelSpecialCompletion() {
+            specialCompleteCallback = nil
+            stopSessionRequest()
         }
 
-        private func clear() {
+        func stop() {
+            isStopped = true
+            stopSessionRequest()
+        }
+
+        private func stopSessionRequest() {
             sessionAdaptor?.stop()
             sessionAdaptor = nil
         }
@@ -280,7 +297,7 @@ extension Impl {
                              statusCode: httpStatusCode)
             }
 
-            clear()
+            stopSessionRequest()
         }
     }
 }

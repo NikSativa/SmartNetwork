@@ -17,6 +17,7 @@ final class FakeRequest<Response: CustomDecodable, Error: AnyError>: Request, Sp
         case info
         case setParameters = "set(_:)"
         case onSpecialComplete = "onSpecialComplete(_:)"
+        case cancelSpecialCompletion = "cancelSpecialCompletion()"
     }
 
     func prepare() -> RequestInfo {
@@ -49,5 +50,9 @@ final class FakeRequest<Response: CustomDecodable, Error: AnyError>: Request, Sp
 
     func onSpecialComplete(_ callback: @escaping SpecialCompletionCallback) {
         return spryify(arguments: callback)
+    }
+
+    func cancelSpecialCompletion() {
+        return spryify()
     }
 }
