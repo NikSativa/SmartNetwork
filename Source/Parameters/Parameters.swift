@@ -5,8 +5,8 @@ public typealias HeaderFields = [String: String]
 
 public struct Parameters {
     public enum TaskKind {
-        case download(progressHandler: ProgressHandler?)
-        case upload(progressHandler: ProgressHandler?)
+        case download(progressHandler: ProgressHandler)
+        case upload(progressHandler: ProgressHandler)
     }
 
     public struct CacheSettings {
@@ -33,7 +33,8 @@ public struct Parameters {
     public var queue: DelayedQueue
     public var plugins: [Plugin]
     public var isLoggingEnabled: Bool
-    public var taskKind: TaskKind
+    public var taskKind: TaskKind?
+    public var session: Session
 
     /// used only on client side. best practice to use it to identify request in the Plugin's
     public var userInfo: [String: Any] = [:]
@@ -48,7 +49,8 @@ public struct Parameters {
                 timeoutInterval: TimeInterval = 60,
                 queue: DelayedQueue = .async(Queue.main),
                 isLoggingEnabled: Bool = false,
-                taskKind: TaskKind = .download(progressHandler: nil)) {
+                taskKind: TaskKind? = nil,
+                session: Session = URLSession.shared) {
         self.address = address
         self.header = header
         self.method = method
@@ -60,6 +62,7 @@ public struct Parameters {
         self.queue = queue
         self.isLoggingEnabled = isLoggingEnabled
         self.taskKind = taskKind
+        self.session = session
     }
 }
 

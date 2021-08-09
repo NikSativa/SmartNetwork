@@ -9,7 +9,7 @@ extension Address: SpryEquatable {
     }
 
     public static func testMake(scheme: Scheme? = .https,
-                                host: String = "",
+                                host: String = "google.com",
                                 path: [String] = [],
                                 queryItems: [String: String] = [:]) -> Self {
         return .address(scheme: scheme,

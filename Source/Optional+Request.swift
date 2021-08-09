@@ -1,7 +1,7 @@
 import Foundation
 
 public extension Optional {
-    func unwrap<T: Error>(_ error: T) throws -> Wrapped {
+    func unwrap<T: Error>(orThrow error: T) throws -> Wrapped {
         switch self {
         case .none:
             throw error
@@ -11,6 +11,6 @@ public extension Optional {
     }
 
     func unwrap() throws -> Wrapped {
-        try unwrap(DecodingError.brokenResponse)
+        try unwrap(orThrow: DecodingError.brokenResponse)
     }
 }
