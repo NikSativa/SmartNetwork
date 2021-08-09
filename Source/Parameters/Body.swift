@@ -109,9 +109,9 @@ extension Body {
             let data: Data
             switch image {
             case .png(let image):
-                data = try image.pngData().unwrap(EncodingError.cantEncodeImage)
+                data = try image.pngData().unwrap(orThrow: EncodingError.cantEncodeImage)
             case .jpeg(let image, let quality):
-                data = try image.jpegData(compressionQuality: quality).unwrap(EncodingError.cantEncodeImage)
+                data = try image.jpegData(compressionQuality: quality).unwrap(orThrow: EncodingError.cantEncodeImage)
             }
 
             tempRequest.httpBody = data

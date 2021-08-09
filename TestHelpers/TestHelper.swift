@@ -42,7 +42,8 @@ public enum Helpers {
                                 timeoutInterval: TimeInterval = 60,
                                 queue: DelayedQueue = .async(Queue.main),
                                 isLoggingEnabled: Bool = false,
-                                taskKind: Parameters.TaskKind = .download(progressHandler: nil)) -> Parameters {
+                                taskKind: Parameters.TaskKind? = nil,
+                                session: Session = URLSession.shared) -> Parameters {
         return Parameters(address: address,
                           header: header,
                           method: method,
@@ -52,7 +53,8 @@ public enum Helpers {
                           timeoutInterval: timeoutInterval,
                           queue: queue,
                           isLoggingEnabled: isLoggingEnabled,
-                          taskKind: taskKind)
+                          taskKind: taskKind,
+                          session: session)
     }
 
     public static func testMake(cache: URLCache = .init(),

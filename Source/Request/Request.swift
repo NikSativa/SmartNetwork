@@ -50,10 +50,16 @@ extension Impl {
         private var sdkRequest: URLRequest
 
         @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
-        private var requestInfo: RequestInfo?
+        private var cachedRequestInfo: RequestInfo?
 
         var info: RequestInfo {
-            return requestInfo ?? prepare()
+            if let requestInfo = cachedRequestInfo {
+                return requestInfo
+            }
+            
+            let info = prepare()
+            cachedRequestInfo = info
+            return info
         }
 
         var isSpecial: Bool {
@@ -82,21 +88,21 @@ extension Impl {
                 $0.prepare(&info)
             }
 
-            requestInfo = info
+            cachedRequestInfo = info
             return info
         }
 
         func set(_ parameters: Parameters) throws {
             stop()
+
             self.parameters = parameters
             sdkRequest = try parameters.sdkRequest()
-            requestInfo = requestInfo ?? prepare()
+            cachedRequestInfo = prepare()
         }
 
         func start() {
-            let info = requestInfo ?? prepare()
-            let modifiedRequest = info.request.original
-            requestInfo = nil
+            let info = info
+            cachedRequestInfo = nil
 
             stop()
             isStopped = false
@@ -112,7 +118,7 @@ extension Impl {
                 case .reloadIgnoringLocalAndRemoteCacheData,
                      .reloadIgnoringLocalCacheData,
                      .reloadRevalidatingCacheData:
-                    parameters.cacheSettings?.cache.removeCachedResponse(for: modifiedRequest)
+                    parameters.cacheSettings?.cache.removeCachedResponse(for: sdkRequest)
                     shouldUseCache = false
                 case .returnCacheDataDontLoad,
                      .returnCacheDataElseLoad,
@@ -122,8 +128,8 @@ extension Impl {
                     shouldUseCache = true
                 }
 
-                if shouldUseCache, let cached = cacheSettings.cache.cachedResponse(for: modifiedRequest) {
-                    tologSelf(modifiedRequest)
+                if shouldUseCache, let cached = cacheSettings.cache.cachedResponse(for: sdkRequest) {
+                    tologSelf(sdkRequest)
                     fire(data: cached.data,
                          response: cached.response as? HTTPURLResponse,
                          error: nil,
@@ -133,10 +139,10 @@ extension Impl {
                 }
             }
 
-            let sessionAdaptor = SessionAdaptor(taskKind: parameters.taskKind)
+            let sessionAdaptor = SessionAdaptor(parameters: parameters)
             self.sessionAdaptor = sessionAdaptor
 
-            sessionAdaptor.dataTask(with: modifiedRequest) { [weak self] data, response, error in
+            sessionAdaptor.dataTask(with: sdkRequest) { [weak self] data, response, error in
                 guard let self = self, !self.isStopped else {
                     return
                 }
@@ -146,11 +152,11 @@ extension Impl {
                                                    data: data,
                                                    userInfo: nil,
                                                    storagePolicy: cacheSettings.storagePolicy)
-                    cacheSettings.cache.storeCachedResponse(cached, for: modifiedRequest)
+                    cacheSettings.cache.storeCachedResponse(cached, for: self.sdkRequest)
                 }
 
                 self.sessionAdaptor = nil
-                self.tologSelf(modifiedRequest)
+                self.tologSelf(self.sdkRequest)
 
                 let httpResponse = response as? HTTPURLResponse
                 let action: SpecialCompletionAction
@@ -261,7 +267,7 @@ extension Impl {
 
             if let error = error {
                 queue.fire {
-                    self.completeCallback?(.failure(error))
+                    self.complete(.failure(error), in: queue)
                 }
             } else {
                 do {
@@ -276,7 +282,7 @@ extension Impl {
 
                     let resultResponse = try Response(with: data, statusCode: httpStatusCode, headers: allHeaderFields)
                     queue.fire {
-                        self.completeCallback?(.success(resultResponse.content))
+                        self.complete(.success(resultResponse.content), in: queue)
                     }
                 } catch let catchedError {
                     self.tolog("failed request: \(catchedError)")
@@ -284,7 +290,7 @@ extension Impl {
                     resultError = wrappedError
 
                     queue.fire {
-                        self.completeCallback?(.failure(wrappedError))
+                        self.complete(.failure(wrappedError), in: queue)
                     }
                 }
             }
@@ -299,6 +305,13 @@ extension Impl {
 
             stopSessionRequest()
         }
+
+        private func complete(_ result: Result<Response.Object, Error>,
+                              in queue: DelayedQueue) {
+            queue.fire {
+                self.completeCallback?(result)
+            }
+        }
     }
 }
 
@@ -308,51 +321,45 @@ extension Impl.Request: CustomDebugStringConvertible {
     }
 }
 
-private class SessionAdaptor: NSObject {
-    private let taskKind: Parameters.TaskKind
+private final class SessionAdaptor: NSObject {
+    private let parameters: Parameters
     private var invalidator: (() -> Void)?
 
-    private lazy var session: URLSession = {
-        if taskKind.hasHandler {
+    private lazy var session: Session = {
+        if let _ = parameters.taskKind {
             if #available(iOS 11, *) {
-                return Configuration.session
+                return parameters.session
             } else {
-                let session = URLSession(configuration: Configuration.session.configuration,
-                                         delegate: self,
-                                         delegateQueue: nil)
+                let session = parameters.session.copy(with: self)
                 invalidator = { [weak session] in
                     session?.finishTasksAndInvalidate()
                 }
                 return session
             }
         } else {
-            return Configuration.session
+            return parameters.session
         }
     }()
 
-    private var task: URLSessionDataTask?
+    private var task: SessionTask?
     private var buffer: NSMutableData = NSMutableData()
-    private var dataTask: URLSessionDataTask?
+    private var dataTask: SessionTask?
     private var expectedContentLength: Int64 = 0
-    private var progress: NSKeyValueObservation?
+    private var observer: AnyObject?
 
-    required init(taskKind: Parameters.TaskKind) {
-        self.taskKind = taskKind
-
-        super.init()
+    required init(parameters: Parameters) {
+        self.parameters = parameters
     }
 
     func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) {
-        let task = session.dataTask(with: request) { [weak self] data, response, error in
+        let task = session.task(with: request) { [weak self] data, response, error in
             completionHandler(data, response, error)
             self?.stop()
         }
 
-        if let progressHandler = taskKind.progressHandler {
+        if let progressHandler = parameters.taskKind?.progressHandler {
             if #available(iOS 11, *) {
-                progress = task.progress.observe(\.fractionCompleted, changeHandler: { progress, _ in
-                    progressHandler(.init(fractionCompleted: progress.fractionCompleted))
-                })
+                observer = task.observe(progressHandler)
             } else {
                 progressHandler(.init(fractionCompleted: 0))
             }
@@ -363,7 +370,7 @@ private class SessionAdaptor: NSObject {
     }
 
     func stop() {
-        if task?.state == .running {
+        if task?.isRunning == true {
             task?.cancel()
         }
         task = nil
@@ -375,7 +382,7 @@ private class SessionAdaptor: NSObject {
     }
 }
 
-extension SessionAdaptor: URLSessionDelegate, URLSessionDataDelegate {
+extension SessionAdaptor: SessionDelegate {
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: (URLSession.ResponseDisposition) -> Void) {
         expectedContentLength = Int64(response.expectedContentLength)
         completionHandler(.allow)
@@ -383,15 +390,15 @@ extension SessionAdaptor: URLSessionDelegate, URLSessionDataDelegate {
 
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         buffer.append(data)
-        taskKind.downloadProgressHandler?(progress(totalBytesSent: Int64(buffer.length), totalBytesExpectedToSend: expectedContentLength))
+        parameters.taskKind?.downloadProgressHandler?(progress(totalBytesSent: Int64(buffer.length), totalBytesExpectedToSend: expectedContentLength))
     }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        taskKind.downloadProgressHandler?(.init(fractionCompleted: 1))
+        parameters.taskKind?.downloadProgressHandler?(.init(fractionCompleted: 1))
     }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
-        taskKind.uploadProgressHandler?(progress(totalBytesSent: totalBytesSent, totalBytesExpectedToSend: totalBytesExpectedToSend))
+        parameters.taskKind?.uploadProgressHandler?(progress(totalBytesSent: totalBytesSent, totalBytesExpectedToSend: totalBytesExpectedToSend))
     }
 
     private func progress(totalBytesSent: Int64, totalBytesExpectedToSend: Int64) -> Progress {
@@ -406,11 +413,7 @@ extension SessionAdaptor: URLSessionDelegate, URLSessionDataDelegate {
 }
 
 private extension Parameters.TaskKind {
-    var hasHandler: Bool {
-        return progressHandler != nil
-    }
-
-    var progressHandler: ProgressHandler? {
+    var progressHandler: ProgressHandler {
         switch self {
         case .download(let progressHandler),
              .upload(let progressHandler):

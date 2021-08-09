@@ -15,7 +15,8 @@ extension Parameters: SpryEquatable {
                                 timeoutInterval: TimeInterval = 60,
                                 queue: DelayedQueue = .async(Queue.main),
                                 isLoggingEnabled: Bool = false,
-                                taskKind: TaskKind = .download(progressHandler: nil)) -> Self {
+                                taskKind: TaskKind? = nil,
+                                session: Session = URLSession.shared) -> Self {
         return .init(address: address,
                      header: header,
                      method: method,
@@ -25,7 +26,8 @@ extension Parameters: SpryEquatable {
                      timeoutInterval: timeoutInterval,
                      queue: queue,
                      isLoggingEnabled: isLoggingEnabled,
-                     taskKind: taskKind)
+                     taskKind: taskKind,
+                     session: session)
     }
 }
 
