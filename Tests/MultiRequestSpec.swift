@@ -12,7 +12,7 @@ import NQueue
 
 final class MultiRequestSpec: QuickSpec {
     fileprivate enum Constant {
-        static let numberOfRequests = 1000
+        static let numberOfRequests = 200
         static let error: RequestError = .decoding(.nilResponse)
         static let error2: RequestError = .decoding(.brokenResponse)
     }
@@ -129,13 +129,13 @@ final class MultiRequestSpec: QuickSpec {
                     context("simple completion") {
                         beforeEach {
                             for index in 0..<chunkSize {
-                                Queue.background.asyncAfter(deadline: .now() + .milliseconds(Int.random(in: 10...maxDelayInMilliseconds))) {
+                                subject.randomQueue.asyncAfter(deadline: .now() + .milliseconds(Int.random(in: 10...maxDelayInMilliseconds))) {
                                     completionHandlers[index]?(nil, nil, nil)
                                 }
                             }
 
                             for index in chunkSize..<Constant.numberOfRequests {
-                                Queue.userInitiated.asyncAfter(deadline: .now() + .milliseconds(Int.random(in: 10...maxDelayInMilliseconds))) {
+                                subject.randomQueue.asyncAfter(deadline: .now() + .milliseconds(Int.random(in: 10...maxDelayInMilliseconds))) {
                                     completionHandlers[index]?(nil, nil, Constant.error)
                                 }
                             }
@@ -152,16 +152,14 @@ final class MultiRequestSpec: QuickSpec {
                         beforeEach {
                             for index in 0..<chunkSize {
                                 subject.makeSpecial(at: index)
-
-                                Queue.background.asyncAfter(deadline: .now() + .milliseconds(Int.random(in: 10...maxDelayInMilliseconds))) {
+                                subject.randomQueue.asyncAfter(deadline: .now() + .milliseconds(Int.random(in: 10...maxDelayInMilliseconds))) {
                                     completionHandlers[index]?(nil, nil, Constant.error)
                                 }
                             }
 
                             for index in chunkSize..<Constant.numberOfRequests {
                                 subject.makeSpecial(at: index)
-
-                                Queue.userInitiated.asyncAfter(deadline: .now() + .milliseconds(Int.random(in: 10...maxDelayInMilliseconds))) {
+                                subject.randomQueue.asyncAfter(deadline: .now() + .milliseconds(Int.random(in: 10...maxDelayInMilliseconds))) {
                                     completionHandlers[index]?(nil, nil, Constant.error2)
                                 }
                             }
@@ -174,34 +172,34 @@ final class MultiRequestSpec: QuickSpec {
                         }
                     }
 
-//                    context("random completion") {
-//                        beforeEach {
-//                            for index in 0..<Constant.numberOfRequests {
-//                                let delay = Int.random(in: 10...maxDelayInMilliseconds)
-//                                let queue = subject.queues.randomElement() ?? Queue.background
-//                                queue.asyncAfter(deadline: .now() + .milliseconds(delay)) {
-//                                    completionHandlers[index]?(nil, nil, Constant.error)
-//                                }
-//
-//                                queue.asyncAfter(deadline: .now() + .milliseconds(delay)) {
-//                                    subject.requests[index].stop()
-//                                }
-//
-//                                queue.asyncAfter(deadline: .now() + .milliseconds(delay)) {
-//                                    subject.requests[index].start()
-//                                }
-//
-//                                queue.asyncAfter(deadline: .now() + .milliseconds(delay + 100)) {
-//                                    completionHandlers[index]?(nil, nil, nil)
-//                                }
-//                            }
-//                        }
-//
-//                        it("should not crash on multithreading") {
-//                            let expectedResponses: [Response] = Array(repeating: .normal(.success(.init())), count: Constant.numberOfRequests)
-//                            expect(subject.responses).toEventually(equal(expectedResponses), timeout: .milliseconds(maxDelayInMilliseconds + 200))
-//                        }
-//                    }
+                    context("random completion") {
+                        beforeEach {
+                            for index in 0..<Constant.numberOfRequests {
+                                let delay = Int.random(in: 10...maxDelayInMilliseconds)
+                                let queue = subject.randomQueue
+                                queue.asyncAfter(deadline: .now() + .milliseconds(delay)) {
+                                    completionHandlers[index]?(nil, nil, Constant.error)
+                                }
+
+                                queue.asyncAfter(deadline: .now() + .milliseconds(delay)) {
+                                    subject.requests[index].stop()
+                                }
+
+                                queue.asyncAfter(deadline: .now() + .milliseconds(delay)) {
+                                    subject.requests[index].start()
+                                }
+
+                                queue.asyncAfter(deadline: .now() + .milliseconds(delay + 100)) {
+                                    completionHandlers[index]?(nil, nil, nil)
+                                }
+                            }
+                        }
+
+                        it("should not crash on multithreading") {
+                            expect(subject.responses.contains(.pending)).toEventually(equal(false),
+                                                                                      timeout: .milliseconds(maxDelayInMilliseconds + 200))
+                        }
+                    }
                 }
             }
         }
@@ -240,6 +238,10 @@ private final class Subject {
                                Queue.userInteractive,
                                Queue.userInteractive,
                                Queue.main]
+    var randomQueue: Queueable {
+        return queues.randomElement() ?? Queue.utility
+    }
+
     private(set) var requests: [MyRequest] = []
     private(set) var responses: [Response] = []
     private(set) var sdkRequests: [Int: URLRequest] = [:]
