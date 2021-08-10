@@ -147,7 +147,7 @@ extension Impl {
                 return new
             }
 
-            sessionAdaptor.dataTask(with: sdkRequest) { [weak self] data, response, error in
+            sessionAdaptor.dataTask(with: info.request.original) { [weak self] data, response, error in
                 guard let self = self, !self.isStopped else {
                     return
                 }
