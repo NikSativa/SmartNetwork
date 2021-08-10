@@ -41,6 +41,8 @@ extension Impl {
 
         // MARK: -
         private var isStopped: Bool = false
+
+        @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
         private var sessionAdaptor: SessionAdaptor?
 
         @Atomic
@@ -139,8 +141,11 @@ extension Impl {
                 }
             }
 
-            let sessionAdaptor = SessionAdaptor(parameters: parameters)
-            self.sessionAdaptor = sessionAdaptor
+            let sessionAdaptor: SessionAdaptor = $sessionAdaptor.mutate { sessionAdaptor in
+                let new = SessionAdaptor(parameters: parameters)
+                sessionAdaptor = new
+                return new
+            }
 
             sessionAdaptor.dataTask(with: sdkRequest) { [weak self] data, response, error in
                 guard let self = self, !self.isStopped else {
@@ -351,6 +356,7 @@ private final class SessionAdaptor: NSObject {
         }
     }()
 
+    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var task: SessionTask?
     private var buffer: NSMutableData = NSMutableData()
     private var dataTask: SessionTask?
@@ -362,28 +368,31 @@ private final class SessionAdaptor: NSObject {
     }
 
     func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) {
-        let task = session.task(with: request) { [weak self] data, response, error in
+        stop()
+
+        let newTask = session.task(with: request) { [weak self] data, response, error in
             completionHandler(data, response, error)
             self?.stop()
         }
 
         if let progressHandler = parameters.taskKind?.progressHandler {
             if #available(iOS 11, *) {
-                observer = task.observe(progressHandler)
+                observer = newTask.observe(progressHandler)
             } else {
                 progressHandler(.init(fractionCompleted: 0))
             }
         }
-
-        self.task = task
-        task.resume()
+        task = newTask
+        newTask.resume()
     }
 
     func stop() {
-        if task?.isRunning == true {
-            task?.cancel()
+        $task.mutate { task in
+            if task?.isRunning == true {
+                task?.cancel()
+            }
+            task = nil
         }
-        task = nil
     }
 
     deinit {

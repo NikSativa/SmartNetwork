@@ -1,6 +1,7 @@
 import Foundation
 import NSpry
 import NCallback
+import NQueue
 
 @testable import NRequest
 
@@ -19,14 +20,20 @@ public final class FakeSession: Session, Spryable {
     }
 
     public func copy(with delegate: SessionDelegate) -> Session {
-        return spryify(arguments: delegate)
+        return Queue.main.sync {
+            return spryify(arguments: delegate)
+        }
     }
 
     public func task(with request: URLRequest, completionHandler: @escaping CompletionHandler) -> SessionTask {
-        return spryify(arguments: request, completionHandler)
+        return Queue.main.sync {
+            return spryify(arguments: request, completionHandler)
+        }
     }
 
     public func finishTasksAndInvalidate() {
-        return spryify()
+        return Queue.main.sync {
+            return spryify()
+        }
     }
 }

@@ -1,6 +1,7 @@
 import Foundation
 import NSpry
 import NCallback
+import NQueue
 
 @testable import NRequest
 
@@ -18,22 +19,32 @@ public final class FakeSessionTask: SessionTask, Spryable, SpryEquatable {
     }
 
     public var progressContainer: NRequest.Progress {
-        return spryify()
+        return Queue.main.sync {
+            return spryify()
+        }
     }
 
     public var isRunning: Bool {
-        return spryify()
+        return Queue.main.sync {
+            return spryify()
+        }
     }
 
     public func resume() {
-        return spryify()
+        return Queue.main.sync {
+            return spryify()
+        }
     }
 
     public func cancel() {
-        return spryify()
+        return Queue.main.sync {
+            return spryify()
+        }
     }
 
     public func observe(_ progressHandler: @escaping ProgressHandler) -> AnyObject {
-        return spryify(arguments: progressHandler)
+        return Queue.main.sync {
+            return spryify(arguments: progressHandler)
+        }
     }
 }
