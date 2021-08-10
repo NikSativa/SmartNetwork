@@ -67,12 +67,19 @@ public enum Body {
 }
 
 extension Body {
-    private func tolog(_ isLoggingEnabled: Bool, _ text: @autoclosure () -> String, file: String = #file, method: String = #function) {
+    private func tolog(_ isLoggingEnabled: Bool,
+                       _ text: @autoclosure () -> String,
+                       file: String = #file,
+                       method: String = #function,
+                       line: Int = #line) {
         guard isLoggingEnabled else {
             return
         }
 
-        Configuration.log(text(), file: file, method: method)
+        Logger.log(text(),
+                   file: file,
+                   method: method,
+                   line: line)
     }
 
     func fill(_ tempRequest: inout URLRequest, isLoggingEnabled: Bool) throws {

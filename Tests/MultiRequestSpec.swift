@@ -173,6 +173,35 @@ final class MultiRequestSpec: QuickSpec {
                             expect(subject.responses).toEventually(equal(expectedResponses), timeout: .milliseconds(maxDelayInMilliseconds + 100))
                         }
                     }
+
+//                    context("random completion") {
+//                        beforeEach {
+//                            for index in 0..<Constant.numberOfRequests {
+//                                let delay = Int.random(in: 10...maxDelayInMilliseconds)
+//                                let queue = subject.queues.randomElement() ?? Queue.background
+//                                queue.asyncAfter(deadline: .now() + .milliseconds(delay)) {
+//                                    completionHandlers[index]?(nil, nil, Constant.error)
+//                                }
+//
+//                                queue.asyncAfter(deadline: .now() + .milliseconds(delay)) {
+//                                    subject.requests[index].stop()
+//                                }
+//
+//                                queue.asyncAfter(deadline: .now() + .milliseconds(delay)) {
+//                                    subject.requests[index].start()
+//                                }
+//
+//                                queue.asyncAfter(deadline: .now() + .milliseconds(delay + 100)) {
+//                                    completionHandlers[index]?(nil, nil, nil)
+//                                }
+//                            }
+//                        }
+//
+//                        it("should not crash on multithreading") {
+//                            let expectedResponses: [Response] = Array(repeating: .normal(.success(.init())), count: Constant.numberOfRequests)
+//                            expect(subject.responses).toEventually(equal(expectedResponses), timeout: .milliseconds(maxDelayInMilliseconds + 200))
+//                        }
+//                    }
                 }
             }
         }
