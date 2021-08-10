@@ -210,16 +210,22 @@ extension Impl {
             return parameters.plugins
         }
 
-        private func tolog(_ text: @autoclosure () -> String, file: String = #file, method: String = #function) {
+        private func tolog(_ text: @autoclosure () -> String,
+                           file: String = #file,
+                           method: String = #function,
+                           line: Int = #line) {
             guard parameters.isLoggingEnabled else {
                 return
             }
 
-            Configuration.log("\(self)", file: file, method: method)
-            Configuration.log(text(), file: file, method: method)
+            Logger.log("\(self)", file: file, method: method, line: line)
+            Logger.log(text(), file: file, method: method, line: line)
         }
 
-        private func tologSelf(_ modifiedRequest: URLRequest, file: String = #file, method: String = #function) {
+        private func tologSelf(_ modifiedRequest: URLRequest,
+                               file: String = #file,
+                               method: String = #function,
+                               line: Int = #line) {
             tolog("request: " +
                     "\n" +
                     "method:" + parameters.method.toString() +
@@ -230,10 +236,14 @@ extension Impl {
                     "\n" +
                     "\(String(describing: modifiedRequest.allHTTPHeaderFields ?? [:]))",
                   file: file,
-                  method: method)
+                  method: method,
+                  line: line)
         }
 
-        private func tolog(_ data: Data?, file: String = #file, method: String = #function) {
+        private func tolog(_ data: Data?,
+                           file: String = #file,
+                           method: String = #function,
+                           line: Int = #line) {
             guard parameters.isLoggingEnabled else {
                 return
             }
@@ -252,8 +262,8 @@ extension Impl {
                 text = "response: empty body"
             }
 
-            Configuration.log("\(self)", file: file, method: method)
-            Configuration.log(text, file: file, method: method)
+            Logger.log("\(self)", file: file, method: method, line: line)
+            Logger.log(text, file: file, method: method, line: line)
         }
 
         private func fire(data: Data?,

@@ -4,6 +4,8 @@ import NQueue
 public typealias HeaderFields = [String: String]
 
 public struct Parameters {
+    public static var sharedSession: Session = URLSession.shared
+
     public enum TaskKind {
         case download(progressHandler: ProgressHandler)
         case upload(progressHandler: ProgressHandler)
@@ -50,7 +52,7 @@ public struct Parameters {
                 queue: DelayedQueue = .async(Queue.main),
                 isLoggingEnabled: Bool = false,
                 taskKind: TaskKind? = nil,
-                session: Session = URLSession.shared) {
+                session: Session = Self.sharedSession) {
         self.address = address
         self.header = header
         self.method = method
