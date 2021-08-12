@@ -1,5 +1,6 @@
 import Foundation
 
+// sourcery: fakable
 public protocol PluginProvider {
     func plugins() -> [Plugin]
 }

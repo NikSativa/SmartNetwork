@@ -2,19 +2,14 @@ import Foundation
 import UIKit
 import NCallback
 
-public struct AnyRequestFactory<Error: AnyError>: RequestFactory {
+public struct AnyRequestManager<Error: AnyError>: RequestManager {
     private let box: AbstractRequestFactory<Error>
 
-    public init<K: RequestFactory>(_ provider: K) where K.Error == Error {
+    public init<K: RequestManager>(_ provider: K) where K.Error == Error {
         self.box = RequestFactoryBox(provider)
     }
 
-    public func prepare(_ parameters: Parameters) throws -> URLRequest {
-        return try box.prepare(parameters)
-    }
-
-    public func requestCustomDecodable<T: CustomDecodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, T.Error>
-    where T.Error == Error {
+    public func requestCustomDecodable<T: CustomDecodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error> {
         return box.requestCustomDecodable(type, with: parameters)
     }
 
@@ -55,13 +50,8 @@ public struct AnyRequestFactory<Error: AnyError>: RequestFactory {
     }
 }
 
-private class AbstractRequestFactory<Error: AnyError>: RequestFactory {
-    func prepare(_: Parameters) throws -> URLRequest {
-        fatalError("abstract needs override")
-    }
-
-    func requestCustomDecodable<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, T.Error>
-    where T.Error == Error {
+private class AbstractRequestFactory<Error: AnyError>: RequestManager {
+    func requestCustomDecodable<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error> {
         fatalError("abstract needs override")
     }
 
@@ -102,23 +92,18 @@ private class AbstractRequestFactory<Error: AnyError>: RequestFactory {
     }
 }
 
-final private class RequestFactoryBox<T: RequestFactory>: AbstractRequestFactory<T.Error> {
+final private class RequestFactoryBox<T: RequestManager>: AbstractRequestFactory<T.Error> {
     private var concrete: T
 
     init(_ concrete: T) {
         self.concrete = concrete
     }
 
-    override func prepare(_ parameters: Parameters) throws -> URLRequest {
-        try concrete.prepare(parameters)
-    }
-
-    override func requestCustomDecodable<T: CustomDecodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, T.Error>
-    where T.Error == Error {
+    override func requestCustomDecodable<T: CustomDecodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error> {
         return concrete.requestCustomDecodable(type, with: parameters)
     }
 
-    override func requestVoid(with parameters: Parameters) -> ResultCallback<Void, Error> {
+    override func requestVoid(with parameters: Parameters) -> ResultCallback<Void, T.Error> {
         return concrete.requestVoid(with: parameters)
     }
 

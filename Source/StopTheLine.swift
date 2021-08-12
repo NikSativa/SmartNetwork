@@ -7,13 +7,27 @@ public enum StopTheLineAction: Equatable {
     case retry
 }
 
+public enum StopTheLineResult {
+    /// pass over new response
+    case passOver(ResponseData)
+
+    /// use original response
+    case useOriginal
+
+    /// ignore current response and retry request
+    case retry
+}
+
+// sourcery: fakable
 public protocol StopTheLine {
     associatedtype Error: AnyError
-    func makeRequest(_ factory: AnyRequestFactory<Error>,
-                     request: MutableRequest,
-                     error: Error) -> Callback<Void>
-    func action(for error: Error,
-                with info: RequestInfo) -> StopTheLineAction
+
+    func action(with manager: AnyRequestManager<Error>,
+                originalParameters parameters: Parameters,
+                response: ResponseData) -> Callback<StopTheLineResult>
+
+    func verify(response: ResponseData,
+                for parameters: Parameters) -> StopTheLineAction
 }
 
 public extension StopTheLine {
@@ -27,22 +41,25 @@ public extension StopTheLine {
 }
 
 public struct AnyStopTheLine<Error: AnyError>: StopTheLine {
-    private let _makeRequest: (_ factory: AnyRequestFactory<Error>, _ request: MutableRequest, _ error: Error) -> Callback<Void>
-    private let _action: (_ error: Error, _ info: RequestInfo) -> StopTheLineAction
+    private let _action: (_ manager: AnyRequestManager<Error>,
+                          _ originalParameters: Parameters,
+                          _ data: ResponseData) -> Callback<StopTheLineResult>
+    private let _verify: (_ data: ResponseData,
+                          _ parameters: Parameters) -> StopTheLineAction
 
     public init<K: StopTheLine>(_ provider: K) where K.Error == Error {
-        self._makeRequest = provider.makeRequest(_:request:error:)
-        self._action = provider.action(for:with:)
+        self._action = provider.action(with:originalParameters:response:)
+        self._verify = provider.verify(response:for:)
     }
 
-    public func makeRequest(_ factory: AnyRequestFactory<Error>,
-                            request: MutableRequest,
-                            error: Error) -> Callback<Void> {
-        return _makeRequest(factory, request, error)
+    public func action(with manager: AnyRequestManager<Error>,
+                originalParameters parameters: Parameters,
+                response: ResponseData) -> Callback<StopTheLineResult> {
+        return _action(manager, parameters, response)
     }
 
-    public func action(for error: Error,
-                       with info: RequestInfo) -> StopTheLineAction {
-        return _action(error, info)
+    public func verify(response: ResponseData,
+                       for parameters: Parameters) -> StopTheLineAction {
+        return _verify(response, parameters)
     }
 }

@@ -3,8 +3,7 @@ import NSpry
 
 @testable import NRequest
 
-final public
-class FakeURLRequestable: URLRequestable, Spryable {
+public final class FakeURLRequestable: URLRequestable, Spryable {
     public enum ClassFunction: String, StringRepresentable {
         case empty
     }

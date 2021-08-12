@@ -6,8 +6,9 @@ import Nimble
 import NSpry
 
 @testable import NRequest
+@testable import NRequestTestHelpers
 
-class StatusCodePluginSpec: QuickSpec {
+final class StatusCodePluginSpec: QuickSpec {
     override func spec() {
         describe("StatusCodePlugin") {
             var subject: Plugins.StatusCode!
@@ -18,49 +19,31 @@ class StatusCodePluginSpec: QuickSpec {
 
             context("when status code is absent") {
                 it("should pass") {
-                    expect({ try subject.verify(httpStatusCode: nil, header: [:], data: nil, error: nil) }).toNot(throwError())
+                    expect({ try subject.verify(data: .testMake()) }).toNot(throwError())
                 }
             }
 
             context("when receiving status code 200") {
                 it("should pass") {
-                    expect({ try subject.verify(httpStatusCode: 200, header: [:], data: nil, error: nil) }).toNot(throwError())
+                    expect({ try subject.verify(data: .testMake(statusCode: 200)) }).toNot(throwError())
                 }
             }
 
-            context("when receiving status code 204") {
-                it("should throw error") {
-                    expect({ try subject.verify(httpStatusCode: 204, header: [:], data: nil, error: nil) }).to(throwError(StatusCode.noContent))
-                }
-            }
+            context("when receiving status code 0..<1000") {
+                it("should throw corresponding error") {
+                    let codes: [Int: StatusCode] = [204: .noContent,
+                                                    400: .badRequest,
+                                                    401: .unauthorized,
+                                                    403: .forbidden,
+                                                    404: .notFound,
+                                                    408: .timeout,
+                                                    426: .upgradeRequired,
+                                                    500: .serverError]
 
-            context("when receiving status code 400") {
-                it("should throw error") {
-                    expect({ try subject.verify(httpStatusCode: 400, header: [:], data: nil, error: nil) }).to(throwError(StatusCode.badRequest))
-                }
-            }
-
-            context("when receiving status code 401") {
-                it("should throw error") {
-                    expect({ try subject.verify(httpStatusCode: 401, header: [:], data: nil, error: nil) }).to(throwError(StatusCode.unauthorized))
-                }
-            }
-
-            context("when receiving status code 404") {
-                it("should throw error") {
-                    expect({ try subject.verify(httpStatusCode: 404, header: [:], data: nil, error: nil) }).to(throwError(StatusCode.notFound))
-                }
-            }
-
-            context("when receiving status code 500") {
-                it("should throw error") {
-                    expect({ try subject.verify(httpStatusCode: 500, header: [:], data: nil, error: nil) }).to(throwError(StatusCode.serverError))
-                }
-            }
-
-            context("when receiving unknown status code") {
-                it("should throw error") {
-                    expect({ try subject.verify(httpStatusCode: 123, header: [:], data: nil, error: nil) }).to(throwError(StatusCode.other(123)))
+                    for code in 0..<1000 where code != 200 {
+                        let error = codes[code] ?? .other(code)
+                        expect({ try subject.verify(data: .testMake(statusCode: code)) }).to(throwError(error))
+                    }
                 }
             }
         }

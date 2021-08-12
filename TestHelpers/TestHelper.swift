@@ -7,10 +7,10 @@ import NRequest
 /// make NRequest hidden from main app, but all helpers can be visible via `public typealias Helpers = NRequestTestHelpers.Helpers`
 public enum Helpers {
     public typealias FakePlugin = NRequestTestHelpers.FakePlugin
-    public typealias FakeBearerTokenProvider = NRequestTestHelpers.FakeBearerTokenProvider
+    public typealias FakeRequestFactory = NRequestTestHelpers.FakeRequestFactory
     public typealias FakePluginProvider = NRequestTestHelpers.FakePluginProvider
-    public typealias FakeRequestFactory<Error: AnyError> = NRequestTestHelpers.FakeRequestFactory<Error>
-    public typealias FakeRefreshToken = NRequestTestHelpers.FakeRefreshToken
+    public typealias FakeRequestManager<Error: AnyError> = NRequestTestHelpers.FakeRequestManager<Error>
+    public typealias FakeStopTheLine = NRequestTestHelpers.FakeStopTheLine
     public typealias FakeURLRequestable = NRequestTestHelpers.FakeURLRequestable
 
     public static func testMake(scheme: Address.Scheme? = .https,

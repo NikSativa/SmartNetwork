@@ -1,39 +1,38 @@
 Pod::Spec.new do |spec|
-    spec.name         = "NRequestTestHelpers"
-    spec.version      = "2.11.5"
-    spec.summary      = "RESTKit"
+  spec.name         = "NRequestTestHelpers"
+  spec.version      = "3.0.0"
+  spec.summary      = "RESTKit"
 
-    spec.source       = { :git => "git@github.com:NikSativa/NRequest.git" }
-    spec.homepage     = "https://github.com/NikSativa/NRequest"
+  spec.source       = { :git => "git@github.com:NikSativa/NRequest.git" }
+  spec.homepage     = "https://github.com/NikSativa/NRequest"
 
-    spec.license          = 'MIT'
-    spec.author           = { "Nikita Konopelko" => "nik.sativa@gmail.com" }
-    spec.social_media_url = "https://www.facebook.com/Nik.Sativa"
+  spec.license          = 'MIT'
+  spec.author           = { "Nikita Konopelko" => "nik.sativa@gmail.com" }
+  spec.social_media_url = "https://www.facebook.com/Nik.Sativa"
 
-    spec.ios.deployment_target = "10.0"
-    spec.swift_version = '5.0'
+  spec.ios.deployment_target = "10.0"
+  spec.swift_version = '5.0'
 
-    spec.frameworks = 'XCTest', 'Foundation', 'UIKit'
+  spec.frameworks = 'XCTest', 'Foundation', 'UIKit'
+  spec.weak_framework = 'NCallback'
 
-    spec.dependency 'Nimble'
-    spec.dependency 'NSpry'
-    spec.dependency 'Quick'
+  spec.dependency 'Nimble'
+  spec.dependency 'NSpry'
 
-    spec.dependency 'NRequest'
+  spec.dependency 'NRequest'
+  spec.dependency 'NQueue'
+  spec.dependency 'NQueueTestHelpers'
+  spec.dependency 'NCallback'
+  spec.dependency 'NCallbackTestHelpers'
 
-    spec.dependency 'NCallback'
-    spec.dependency 'NCallbackTestHelpers'
+  spec.scheme = {
+    :code_coverage => true
+  }
 
-    #spec.scheme = {
-    #  :code_coverage => true
-    #}
+  spec.source_files  = 'TestHelpers/**/*.swift'
 
-    #spec.resources = ['TestHelpers/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
-    spec.source_files  = 'TestHelpers/**/*.swift'
-
-    spec.test_spec 'Tests' do |tests|
-        #tests.requires_app_host = true
-        #tests.resources = ['TestHelpers/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,stringsdict}']
-        tests.source_files  = 'Tests/**/*.swift'
-    end
+  spec.test_spec 'Tests' do |tests|
+    tests.dependency 'Quick'
+    tests.source_files  = 'Tests/**/*.swift'
+  end
 end
