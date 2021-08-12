@@ -1,6 +1,5 @@
 import Foundation
 import NSpry
-import NCallback
 import NQueue
 
 @testable import NRequest

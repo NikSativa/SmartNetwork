@@ -1,5 +1,6 @@
 import Foundation
 
+// sourcery: fakable
 public protocol URLRequestable {
     var original: URLRequest { get }
     var allHTTPHeaderFields: [String: String] { get }
@@ -22,12 +23,12 @@ extension Impl {
 
 extension Impl.URLRequestable: URLRequestable {
     var allHTTPHeaderFields: [String: String] {
-        original.allHTTPHeaderFields ?? [:]
+        return original.allHTTPHeaderFields ?? [:]
     }
 
     var url: URL? {
         get {
-            original.url
+            return original.url
         }
         set {
             original.url = newValue
@@ -35,7 +36,7 @@ extension Impl.URLRequestable: URLRequestable {
     }
 
     var body: Data? {
-        original.httpBody
+        return original.httpBody
     }
 
     mutating func addValue(_ value: String, forHTTPHeaderField field: String) {

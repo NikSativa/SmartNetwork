@@ -1,13 +1,5 @@
 import Foundation
 
-public protocol StatusCodeMapping: Error {
-    init?(_ statusCode: Int?)
-}
-
-public protocol BearerTokenProvider {
-    func token() -> String?
-}
-
 public enum Plugins {
     public enum TokenType {
         public enum Operation {
@@ -19,81 +11,82 @@ public enum Plugins {
     }
 
     public final class Bearer: TokenPlugin {
-        public typealias TokenProvider = () -> String?
-        required public init(tokenProvider: BearerTokenProvider, type: TokenType = .header(.set("Authorization"))) {
-            super.init(type: type) { () -> String? in
-                return tokenProvider.token().map {
-                    return "Bearer " + $0
-                }
-            }
+        public required init(tokenProvider: @escaping Plugins.TokenPlugin.TokenProvider) {
+            super.init(type: .header(.set("Authorization")),
+                       tokenProvider: {
+                        return tokenProvider().map { token in
+                            return "Bearer " + token
+                        }
+                       })
         }
     }
 
-    public final class AutoError<E: StatusCodeMapping>: Plugin {
-        public init() { }
-
-        public func prepare(_ info: inout Info) {
+    public final class StatusCode: Plugin {
+        public init() {
         }
 
-        public func willSend(_ info: Info) {
+        public func prepare(_ parameters: Parameters, request: inout URLRequestable) {
         }
 
-        public func didFinish(_ info: Info, response: URLResponse?, with error: Error?, responseBody body: Data?, statusCode code: Int?) {
+        public func willSend(_ parameters: Parameters, request: URLRequestable) {
         }
 
-        public func verify(httpStatusCode code: Int?, header: [AnyHashable: Any], data: Data?, error: Error?) throws {
-            if let error = E(code) {
+        public func didFinish(_ parameters: Parameters, request: URLRequestable, data: ResponseData) {
+        }
+
+        public func verify(data: ResponseData) throws {
+            if let error = NRequest.StatusCode(data.statusCode) {
                 throw error
             }
         }
     }
 
-    public typealias StatusCode = AutoError<NRequest.StatusCode>
-
     open class TokenPlugin: Plugin {
-        public typealias TokenProviderClosure = () -> String?
-        private let tokenProvider: TokenProviderClosure
+        public typealias TokenProvider = () -> String?
+        private let tokenProvider: TokenProvider
         private let type: TokenType
-
-        public init(type: TokenType, tokenProvider: @escaping TokenProviderClosure) {
+        
+        public init(type: TokenType,
+                    tokenProvider: @escaping TokenProvider) {
             self.tokenProvider = tokenProvider
             self.type = type
         }
 
-        public func willSend(_ info: Info) {
-        }
-
-        public func prepare(_ info: inout Info) {
-            guard let apiKey = tokenProvider() else {
+        public func prepare(_ parameters: Parameters,
+                            request: inout URLRequestable) {
+            guard let value = tokenProvider() else {
                 return
             }
 
             switch type {
             case .header(let operation):
                 switch operation {
-                case .set(let keyName):
-                    info.request.setValue(apiKey, forHTTPHeaderField: keyName)
-                case .add(let keyName):
-                    info.request.addValue(apiKey, forHTTPHeaderField: keyName)
+                case .set(let key):
+                    request.setValue(value, forHTTPHeaderField: key)
+                case .add(let key):
+                    request.addValue(value, forHTTPHeaderField: key)
                 }
-            case .queryParam(let keyName):
-                if let requestURL = info.request.url, var urlComponents = URLComponents(url: requestURL, resolvingAgainstBaseURL: false) {
+            case .queryParam(let key):
+                if let requestURL = request.url, var urlComponents = URLComponents(url: requestURL, resolvingAgainstBaseURL: false) {
                     var queryItems: [URLQueryItem] = urlComponents.queryItems ?? []
-                    queryItems = queryItems.filter({ $0.name != keyName })
-                    queryItems.append(URLQueryItem(name: keyName, value: apiKey))
+                    queryItems = queryItems.filter({ $0.name != key })
+                    queryItems.append(URLQueryItem(name: key, value: value))
                     urlComponents.queryItems = queryItems
 
                     if let url = urlComponents.url {
-                        info.request.url = url
+                        request.url = url
                     }
                 }
             }
         }
 
-        public func didFinish(_ info: Info, response: URLResponse?, with error: Error?, responseBody body: Data?, statusCode code: Int?) {
+        public func willSend(_ parameters: Parameters, request: URLRequestable) {
         }
 
-        public func verify(httpStatusCode code: Int?, header: [AnyHashable : Any], data: Data?, error: Error?) throws {
+        public func didFinish(_ parameters: Parameters, request: URLRequestable, data: ResponseData) {
+        }
+
+        public func verify(data: ResponseData) throws {
         }
     }
 }

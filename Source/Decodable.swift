@@ -1,102 +1,115 @@
 import Foundation
 import UIKit
-import NCallback
 
+// sourcery: fakable
 public protocol CustomDecodable {
     associatedtype Object
-    associatedtype Error: AnyError
 
-    var content: Object { get }
+    var result: Result<Object, Error> { get }
 
-    init(with data: Data?, statusCode: Int?, headers: [AnyHashable: Any]) throws
+    init(with data: ResponseData)
 }
 
-struct VoidContent<Error: AnyError>: CustomDecodable {
-    let content: Void = ()
-    init(with data: Data?, statusCode: Int?, headers: [AnyHashable: Any]) throws { }
+struct VoidContent: CustomDecodable {
+    var result: Result<Void, Error>
+
+    init(with data: ResponseData) {
+        if let error = data.error {
+            if let error = data.error as? StatusCode {
+                switch error {
+                case .noContent:
+                    result = .success(())
+                case .badRequest,
+                     .unauthorized,
+                     .forbidden,
+                     .notFound,
+                     .timeout,
+                     .upgradeRequired,
+                     .serverError,
+                     .other:
+                    break
+                }
+            } else if let error = data.error as? DecodingError {
+                switch error {
+                case .nilResponse:
+                    result = .success(())
+                case .brokenResponse:
+                    break
+                }
+            }
+            
+            result = .failure(error)
+        } else {
+            result = .success(())
+        }
+    }
 }
 
-struct DecodableContent<Response: Decodable, Error: AnyError>: CustomDecodable {
-    let content: Response
+struct DecodableContent<Response: Decodable>: CustomDecodable {
+    var result: Result<Response?, Error>
 
-    init(with data: Data?, statusCode: Int?, headers: [AnyHashable: Any]) throws {
-        if let data = data {
+    init(with data: ResponseData) {
+        if let error = data.error {
+            result = .failure(error)
+        } else if let data = data.body {
             do {
                 let decoder = (Response.self as? CustomizedDecodable.Type)?.decoder ?? JSONDecoder()
-                content = try decoder.decode(Response.self, from: data)
+                result = .success(try decoder.decode(Response.self, from: data))
             } catch let error {
-                throw Error.wrap(error)
+                result = .failure(error)
             }
         } else {
-            throw Error.wrap(DecodingError.nilResponse)
+            result = .success(nil)
         }
     }
 }
 
-struct ImageContent<Error: AnyError>: CustomDecodable {
-    let content: UIImage
+struct ImageContent: CustomDecodable {
+    var result: Result<UIImage?, Error>
 
-    init(with data: Data?, statusCode: Int?, headers: [AnyHashable: Any]) throws {
-        if let data = data {
+    init(with data: ResponseData) {
+        if let error = data.error {
+            result = .failure(error)
+        } else if let data = data.body {
             if let image = UIImage(data: data) {
-                content = image
+                result = .success(image)
             } else {
-                throw Error.wrap(DecodingError.brokenResponse)
+                result = .failure(DecodingError.brokenResponse)
             }
         } else {
-            throw Error.wrap(DecodingError.nilResponse)
+            result = .success(nil)
         }
     }
 }
 
-struct OptionalImageContent<Error: AnyError>: CustomDecodable {
-    let content: UIImage?
+struct DataContent: CustomDecodable {
+    var result: Result<Data?, Error>
 
-    init(with data: Data?, statusCode: Int?, headers: [AnyHashable: Any]) throws {
-        content = data.map { UIImage(data: $0) } ?? nil
-    }
-}
-
-struct DataContent<Error: AnyError>: CustomDecodable {
-    let content: Data
-
-    public init(with data: Data?, statusCode: Int?, headers: [AnyHashable: Any]) throws {
-        if let data = data {
-            content = data
+    init(with data: ResponseData) {
+        if let error = data.error {
+            result = .failure(error)
+        } else if let data = data.body {
+            result = .success(data)
         } else {
-            throw Error.wrap(DecodingError.nilResponse)
+            result = .success(nil)
         }
     }
 }
 
-struct OptionalDataContent<Error: AnyError>: CustomDecodable {
-    let content: Data?
+struct JSONContent: CustomDecodable {
+    var result: Result<Any?, Error>
 
-    public init(with data: Data?, statusCode: Int?, headers: [AnyHashable: Any]) throws {
-        content = data
-    }
-}
-
-struct JSONContent<Error: AnyError>: CustomDecodable {
-    let content: Any
-
-    public init(with data: Data?, statusCode: Int?, headers: [AnyHashable: Any]) throws {
-        if let data = data {
+    init(with data: ResponseData) {
+        if let error = data.error {
+            result = .failure(error)
+        } else if let data = data.body {
             do {
-                content = try JSONSerialization.jsonObject(with: data)
+                result = .success(try JSONSerialization.jsonObject(with: data))
             } catch let error {
-                throw Error.wrap(error)
+                result = .failure(error)
             }
         } else {
-            throw Error.wrap(DecodingError.nilResponse)
+            result = .success(nil)
         }
-    }
-}
-
-struct OptionalJSONContent<Error: AnyError>: CustomDecodable {
-    let content: Any?
-
-    public init(with data: Data?, statusCode: Int?, headers: [AnyHashable: Any]) throws {
-        content = data.map { try? JSONSerialization.jsonObject(with: $0) } ?? nil
     }
 }

@@ -3,56 +3,31 @@ import NSpry
 
 @testable import NRequest
 
-final class FakeRequest<Response: CustomDecodable, Error: AnyError>: Request, Spryable {
+final class FakeRequest: Request, Spryable {
     enum ClassFunction: String, StringRepresentable {
         case empty
     }
 
     enum Function: String, StringRepresentable {
-        case prepare = "prepare()"
-        case onComplete = "onComplete()"
-        case start = "start()"
-        case stop = "stop()"
-        case isSpecial
-        case info
-        case setParameters = "set(_:)"
-        case onSpecialComplete = "onSpecialComplete(_:)"
-        case cancelSpecialCompletion = "cancelSpecialCompletion()"
+        case parameters
+        case restart = "restart()"
+        case start = "start(with:)"
+        case cancel = "cancel()"
     }
 
-    func prepare() -> RequestInfo {
+    var parameters: Parameters {
         return spryify()
     }
 
-    func onComplete(_ callback: @escaping CompletionCallback) {
-        return spryify(arguments: callback)
-    }
-
-    func start() {
+    func restart() {
         return spryify()
     }
 
-    func stop() {
+    func cancel() {
         return spryify()
     }
 
-    var isSpecial: Bool {
-        return spryify()
-    }
-
-    var info: RequestInfo {
-        return spryify()
-    }
-
-    func set(_ parameters: Parameters) throws {
-        return spryify(arguments: parameters)
-    }
-
-    func onSpecialComplete(_ callback: @escaping SpecialCompletionCallback) {
-        return spryify(arguments: callback)
-    }
-
-    func cancelSpecialCompletion() {
-        return spryify()
+    func start(with completion: @escaping CompletionCallback) {
+        return spryify(arguments: completion)
     }
 }

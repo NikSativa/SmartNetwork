@@ -10,42 +10,61 @@ import NSpry
 @testable import NCallback
 @testable import NCallbackTestHelpers
 
-class BaseRequestFactorySpec: QuickSpec {
+class RequestManagerSpec: QuickSpec {
     private typealias Error = RequestError
     private struct TestInfo: Decodable { }
 
     override func spec() {
-        describe("BaseRequestFactory") {
-            var subject: BaseRequestFactory<Error>!
+        describe("RequestManager") {
+            var subject: AnyRequestManager<Error>!
+            var factory: FakeRequestFactory!
+            var stubResponse: ((ResponseData) -> Void)!
+
+            beforeEach {
+                factory = .init()
+
+                stubResponse = { data in
+                    factory.stub(.make).andDo { args in
+                        let request = FakeRequest()
+                        request.stub(.start).andDo { args in
+                            let callback = args[0] as! Request.CompletionCallback
+                            callback(data)
+                            return Void()
+                        }
+                        request.stub(.cancel).andReturn()
+                        return request
+                    }
+                }
+            }
 
             describe("containing plugin provider") {
                 var pluginProvider: FakePluginProvider!
-                var plugin: FakePlugin!
+                var factoryArgument: Argument!
 
                 beforeEach {
-                    plugin = .init()
-
                     pluginProvider = .init()
-                    pluginProvider.stub(.plugins).andReturn([plugin])
+                    factoryArgument = Argument.validator {
+                        return pluginProvider === ($0 as AnyObject)
+                    }
 
-                    subject = BaseRequestFactory(pluginProvider: pluginProvider)
+                    subject = Impl.RequestManager(factory: factory,
+                                                  pluginProvider: pluginProvider,
+                                                  stopTheLine: nil).toAny()
                 }
 
-                describe("Void response") {
+                describe("void response") {
                     var actualCallback: ResultCallback<Void, Error>!
                     var parameters: Parameters!
 
                     beforeEach {
                         parameters = .testMake()
+                        stubResponse(.testMake())
                         actualCallback = subject.requestVoid(with: parameters)
                     }
 
                     it("should make request") {
                         expect(actualCallback).toNot(beNil())
-                    }
-
-                    it("should add required plugins") {
-                        expect(pluginProvider).to(haveReceived(.plugins))
+                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
                     }
                 }
 
@@ -55,15 +74,13 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
+                        stubResponse(.testMake())
                         actualCallback = subject.requestImage(with: parameters)
                     }
 
                     it("should make request") {
                         expect(actualCallback).toNot(beNil())
-                    }
-
-                    it("should add required plugins") {
-                        expect(pluginProvider).to(haveReceived(.plugins))
+                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
                     }
                 }
 
@@ -73,15 +90,13 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
+                        stubResponse(.testMake())
                         actualCallback = subject.requestOptionalImage(with: parameters)
                     }
 
                     it("should make request") {
                         expect(actualCallback).toNot(beNil())
-                    }
-
-                    it("should add required plugins") {
-                        expect(pluginProvider).to(haveReceived(.plugins))
+                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
                     }
                 }
 
@@ -91,15 +106,13 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
+                        stubResponse(.testMake())
                         actualCallback = subject.request(with: parameters)
                     }
 
                     it("should make request") {
                         expect(actualCallback).toNot(beNil())
-                    }
-
-                    it("should add required plugins") {
-                        expect(pluginProvider).to(haveReceived(.plugins))
+                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
                     }
                 }
 
@@ -109,15 +122,13 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
+                        stubResponse(.testMake())
                         actualCallback = subject.request(with: parameters)
                     }
 
                     it("should make request") {
                         expect(actualCallback).toNot(beNil())
-                    }
-
-                    it("should add required plugins") {
-                        expect(pluginProvider).to(haveReceived(.plugins))
+                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
                     }
                 }
 
@@ -127,15 +138,13 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
+                        stubResponse(.testMake())
                         actualCallback = subject.requestDecodable(TestInfo.self, with: parameters)
                     }
 
                     it("should make request") {
                         expect(actualCallback).toNot(beNil())
-                    }
-
-                    it("should add required plugins") {
-                        expect(pluginProvider).to(haveReceived(.plugins))
+                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
                     }
                 }
 
@@ -145,15 +154,13 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
+                        stubResponse(.testMake())
                         actualCallback = subject.request(with: parameters)
                     }
 
                     it("should make request") {
                         expect(actualCallback).toNot(beNil())
-                    }
-
-                    it("should add required plugins") {
-                        expect(pluginProvider).to(haveReceived(.plugins))
+                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
                     }
                 }
 
@@ -163,15 +170,13 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
+                        stubResponse(.testMake())
                         actualCallback = subject.request(with: parameters)
                     }
 
                     it("should make request") {
                         expect(actualCallback).toNot(beNil())
-                    }
-
-                    it("should add required plugins") {
-                        expect(pluginProvider).to(haveReceived(.plugins))
+                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
                     }
                 }
 
@@ -181,15 +186,13 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
+                        stubResponse(.testMake())
                         actualCallback = subject.requestAny(with: parameters)
                     }
 
                     it("should make request") {
                         expect(actualCallback).toNot(beNil())
-                    }
-
-                    it("should add required plugins") {
-                        expect(pluginProvider).to(haveReceived(.plugins))
+                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
                     }
                 }
 
@@ -199,15 +202,13 @@ class BaseRequestFactorySpec: QuickSpec {
 
                     beforeEach {
                         parameters = .testMake()
+                        stubResponse(.testMake())
                         actualCallback = subject.requestOptionalAny(with: parameters)
                     }
 
                     it("should make request") {
                         expect(actualCallback).toNot(beNil())
-                    }
-
-                    it("should add required plugins") {
-                        expect(pluginProvider).to(haveReceived(.plugins))
+                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
                     }
                 }
             }
@@ -217,8 +218,11 @@ class BaseRequestFactorySpec: QuickSpec {
                 var parameters: Parameters!
 
                 beforeEach {
-                    subject = BaseRequestFactory(pluginProvider: nil)
+                    subject = Impl.RequestManager(factory: factory,
+                                                  pluginProvider: nil,
+                                                  stopTheLine: nil).toAny()
                     parameters = .testMake()
+                    stubResponse(.testMake())
                     actualCallback = subject.request(with: parameters)
                 }
 

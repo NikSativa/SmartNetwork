@@ -37,7 +37,7 @@ extension StatusCode {
     }
 }
 
-extension StatusCode: StatusCodeMapping {
+extension StatusCode {
     public init?(_ code: Int?) {
         guard let code = code else {
             return nil

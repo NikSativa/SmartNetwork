@@ -4,25 +4,6 @@ import Nimble
 
 @testable import NRequest
 
-extension RequestInfo: Equatable, SpryEquatable {
-    public static func testMake(request: URLRequestable,
-                                parameters: Parameters = .testMake()) -> Self {
-        return .init(request: request,
-                     parameters: parameters)
-    }
-
-    public static func testMake(request: URLRequest = .testMake(),
-                                parameters: Parameters = .testMake()) -> Self {
-        return .init(request: request,
-                     parameters: parameters)
-    }
-
-    public static func ==(lhs: RequestInfo, rhs: RequestInfo) -> Bool {
-        return lhs.parameters == rhs.parameters
-            && lhs.request.original == rhs.request.original
-    }
-}
-
 extension Impl.URLRequestable: Equatable, SpryEquatable, TestOutputStringConvertible {
     public static func ==(lhs: Self, rhs: Self) -> Bool {
         return lhs.original == rhs.original

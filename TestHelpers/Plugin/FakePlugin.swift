@@ -9,28 +9,29 @@ public final class FakePlugin: Plugin, Spryable {
     }
 
     public enum Function: String, StringRepresentable {
-        case prepare = "prepare(_:)"
-        case willSend = "willSend(_:)"
-        case verify = "verify(httpStatusCode:header:data:error:)"
-        case didFinish = "didFinish(_:response:with:responseBody:statusCode:)"
+        case prepare = "prepare(_:request:)"
+        case willSend = "willSend(_:request:)"
+        case didFinish = "didFinish(_:response:request:data:)"
+        case verify = "verify(data:)"
     }
 
     public init() {
     }
 
-    public func prepare(_ info: inout Info) {
-        return spryify(arguments: info)
+
+    public func prepare(_ parameters: Parameters, request: inout URLRequestable) {
+        return spryify(arguments: parameters, request)
     }
 
-    public func willSend(_ info: Info) {
-        return spryify(arguments: info)
+    public func willSend(_ parameters: Parameters, request: URLRequestable) {
+        return spryify(arguments: parameters, request)
     }
 
-    public func verify(httpStatusCode code: Int?, header: [AnyHashable: Any], data: Data?, error: Error?) throws {
-        return spryify(arguments: code, header, data, error)
+    public func didFinish(_ parameters: Parameters, request: URLRequestable, data: ResponseData) {
+        return spryify(arguments: parameters, request, data)
     }
 
-    public func didFinish(_ info: Info, response: URLResponse?, with error: Error?, responseBody body: Data?, statusCode code: Int?) {
-        return spryify(arguments: info, response, error, body, code)
+    public func verify(data: ResponseData) throws {
+        return spryify(arguments: data)
     }
 }

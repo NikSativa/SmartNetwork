@@ -1,11 +1,15 @@
 import Foundation
 
+// sourcery: fakable
 public protocol Plugin {
-    typealias Info = RequestInfo
+    func prepare(_ parameters: Parameters,
+                 request: inout URLRequestable)
 
-    func prepare(_ info: inout Info)
-    func willSend(_ info: Info)
-    func didFinish(_ info: Info, response: URLResponse?, with error: Error?, responseBody body: Data?, statusCode code: Int?)
+    func willSend(_ parameters: Parameters,
+                  request: URLRequestable)
+    func didFinish(_ parameters: Parameters,
+                   request: URLRequestable,
+                   data: ResponseData)
 
-    func verify(httpStatusCode code: Int?, header: [AnyHashable: Any], data: Data?, error: Error?) throws
+    func verify(data: ResponseData) throws
 }
