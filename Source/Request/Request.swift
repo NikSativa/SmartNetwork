@@ -103,8 +103,7 @@ extension Impl {
         }
 
         func start() {
-            let info = info
-            cachedRequestInfo = nil
+            let info = prepare()
 
             stop()
             isStopped = false
@@ -281,9 +280,7 @@ extension Impl {
             let allHeaderFields: [AnyHashable: Any] = response?.allHeaderFields ?? [:]
 
             if let error = error {
-                queue.fire {
-                    self.complete(.failure(error), in: queue)
-                }
+                complete(.failure(error), in: queue)
             } else {
                 do {
                     tolog(data)
@@ -296,17 +293,13 @@ extension Impl {
                     }
 
                     let resultResponse = try Response(with: data, statusCode: httpStatusCode, headers: allHeaderFields)
-                    queue.fire {
-                        self.complete(.success(resultResponse.content), in: queue)
-                    }
+                    complete(.success(resultResponse.content), in: queue)
                 } catch let catchedError {
                     self.tolog("failed request: \(catchedError)")
                     let wrappedError: Error = .wrap(catchedError)
                     resultError = wrappedError
 
-                    queue.fire {
-                        self.complete(.failure(wrappedError), in: queue)
-                    }
+                    complete(.failure(wrappedError), in: queue)
                 }
             }
 
