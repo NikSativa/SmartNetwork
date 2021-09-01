@@ -2,12 +2,6 @@
 
 import PackageDescription
 
-let commonTestDependencies: [PackageDescription.Target.Dependency] = [
-    "NSpry",
-    "Nimble",
-    "Quick"
-]
-
 let package = Package(
     name: "NRequest",
     platforms: [
@@ -44,8 +38,11 @@ let package = Package(
                         "NRequest",
                         "NRequestTestHelpers",
                         "NQueue",
-                        .product(name: "NQueueTestHelpers", package: "NQueue")
-                    ] + commonTestDependencies,
+                        .product(name: "NQueueTestHelpers", package: "NQueue"),
+                        "NSpry",
+                        "Nimble",
+                        "Quick"
+                    ],
                     path: "Tests"),
     ],
     swiftLanguageVersions: [.v5]
