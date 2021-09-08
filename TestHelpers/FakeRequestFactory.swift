@@ -13,7 +13,7 @@ public final class FakeRequestFactory<Error: AnyError>: RequestFactory, Spryable
     public enum Function: String, StringRepresentable {
         case prepare = "prepare(_:)"
         case requestCustomDecodable = "requestCustomDecodable(_:with:)"
-        case requestIgnorable = "requestIgnorable(with:)"
+        case requestVoid = "requestVoid(with:)"
         case requestDecodable = "requestDecodable(_:with:)"
         case request = "request(with:)"
         case requestImage = "requestImage(with:)"
@@ -35,8 +35,8 @@ public final class FakeRequestFactory<Error: AnyError>: RequestFactory, Spryable
         return spryify(arguments: type, parameters)
     }
 
-    // MARK - Ignorable
-    public func requestIgnorable(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
+    // MARK - Void
+    public func requestVoid(with parameters: Parameters) -> ResultCallback<Void, Error> {
         return spryify(arguments: parameters)
     }
 

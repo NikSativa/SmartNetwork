@@ -207,11 +207,11 @@ final class MultiRequestSpec: QuickSpec {
 }
 
 private final class Subject {
-    typealias MyRequest = Impl.Request<IgnorableContent<RequestError>, RequestError>
+    typealias MyRequest = Impl.Request<VoidContent<RequestError>, RequestError>
 
     enum Response: Equatable, SpryEquatable, CustomDebugStringConvertible {
         case pending
-        case normal(Result<Ignorable, RequestError>)
+        case normal(Result<Void, RequestError>)
         case special(RequestError?)
 
         var debugDescription: String {

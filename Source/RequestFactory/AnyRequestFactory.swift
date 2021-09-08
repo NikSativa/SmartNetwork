@@ -18,8 +18,8 @@ public struct AnyRequestFactory<Error: AnyError>: RequestFactory {
         return box.requestCustomDecodable(type, with: parameters)
     }
 
-    public func requestIgnorable(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
-        return box.requestIgnorable(with: parameters)
+    public func requestVoid(with parameters: Parameters) -> ResultCallback<Void, Error> {
+        return box.requestVoid(with: parameters)
     }
 
     public func requestDecodable<T: Decodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T, Error> {
@@ -65,7 +65,7 @@ private class AbstractRequestFactory<Error: AnyError>: RequestFactory {
         fatalError("abstract needs override")
     }
 
-    func requestIgnorable(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
+    func requestVoid(with parameters: Parameters) -> ResultCallback<Void, Error> {
         fatalError("abstract needs override")
     }
 
@@ -118,8 +118,8 @@ final private class RequestFactoryBox<T: RequestFactory>: AbstractRequestFactory
         return concrete.requestCustomDecodable(type, with: parameters)
     }
 
-    override func requestIgnorable(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
-        return concrete.requestIgnorable(with: parameters)
+    override func requestVoid(with parameters: Parameters) -> ResultCallback<Void, Error> {
+        return concrete.requestVoid(with: parameters)
     }
 
     override func requestDecodable<T: Decodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T, Error> {

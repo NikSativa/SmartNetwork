@@ -24,16 +24,16 @@ final class RequestFactorySpec: QuickSpec {
                 subject = originalFacroty.toAny()
             }
 
-            describe("ignorable response") {
-                var actualCallback: ResultCallback<Ignorable, Error>!
-                var originalCallback: FakeResultCallback<Ignorable, Error>!
+            describe("Void response") {
+                var actualCallback: ResultCallback<Void, Error>!
+                var originalCallback: FakeResultCallback<Void, Error>!
                 var parameters: Parameters!
 
                 beforeEach {
                     parameters = .testMake()
                     originalCallback = .init()
-                    originalFacroty.stub(.requestIgnorable).andReturn(originalCallback)
-                    actualCallback = subject.requestIgnorable(with: parameters)
+                    originalFacroty.stub(.requestVoid).andReturn(originalCallback)
+                    actualCallback = subject.requestVoid(with: parameters)
                 }
 
                 it("should make request") {
@@ -41,7 +41,7 @@ final class RequestFactorySpec: QuickSpec {
                 }
 
                 it("should add required plugins") {
-                    expect(originalFacroty).to(haveReceived(.requestIgnorable, with: parameters))
+                    expect(originalFacroty).to(haveReceived(.requestVoid, with: parameters))
                 }
             }
 

@@ -31,13 +31,13 @@ class BaseRequestFactorySpec: QuickSpec {
                     subject = BaseRequestFactory(pluginProvider: pluginProvider)
                 }
 
-                describe("ignorable response") {
-                    var actualCallback: ResultCallback<Ignorable, Error>!
+                describe("Void response") {
+                    var actualCallback: ResultCallback<Void, Error>!
                     var parameters: Parameters!
 
                     beforeEach {
                         parameters = .testMake()
-                        actualCallback = subject.requestIgnorable(with: parameters)
+                        actualCallback = subject.requestVoid(with: parameters)
                     }
 
                     it("should make request") {
