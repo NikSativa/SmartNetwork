@@ -10,8 +10,8 @@ public protocol RequestFactory {
     func requestCustomDecodable<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, T.Error>
     where T.Error == Error
 
-    // MARK - Ignorable
-    func requestIgnorable(with parameters: Parameters) -> ResultCallback<Ignorable, Error>
+    // MARK - Void
+    func requestVoid(with parameters: Parameters) -> ResultCallback<Void, Error>
 
     // MARK - Decodable
     func requestDecodable<T: Decodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T, Error>
@@ -32,9 +32,9 @@ public protocol RequestFactory {
 
 // MARK - proxy method for Fake
 public extension RequestFactory {
-    // MARK - Ignorable
-    func requestIgnorable(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
-        requestCustomDecodable(IgnorableContent<Error>.self, with: parameters)
+    // MARK - Void
+    func requestVoid(with parameters: Parameters) -> ResultCallback<Void, Error> {
+        requestCustomDecodable(VoidContent<Error>.self, with: parameters)
     }
 
     // MARK - Decodable
@@ -76,9 +76,9 @@ public extension RequestFactory {
 
 // only proxy without `faking`
 public extension RequestFactory {
-    // MARK - Ignorable
-    func request(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
-        requestIgnorable(with: parameters)
+    // MARK - Void
+    func request(with parameters: Parameters) -> ResultCallback<Void, Error> {
+        requestVoid(with: parameters)
     }
 
     // MARK - Decodable

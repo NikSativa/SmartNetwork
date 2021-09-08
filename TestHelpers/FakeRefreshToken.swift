@@ -17,7 +17,7 @@ public class FakeRefreshToken<Error: AnyError>: StopTheLine, Spryable {
 
     public func makeRequest(_ factory: AnyRequestFactory<Error>,
                             request: MutableRequest,
-                            error: Error) -> Callback<Ignorable> {
+                            error: Error) -> Callback<Void> {
         return spryify(arguments: factory, request, error)
     }
 

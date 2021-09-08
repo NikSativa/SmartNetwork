@@ -11,8 +11,8 @@ public protocol CustomDecodable {
     init(with data: Data?, statusCode: Int?, headers: [AnyHashable: Any]) throws
 }
 
-struct IgnorableContent<Error: AnyError>: CustomDecodable {
-    let content = Ignorable()
+struct VoidContent<Error: AnyError>: CustomDecodable {
+    let content: Void = ()
     init(with data: Data?, statusCode: Int?, headers: [AnyHashable: Any]) throws { }
 }
 

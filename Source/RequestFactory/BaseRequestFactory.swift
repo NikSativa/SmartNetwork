@@ -171,9 +171,9 @@ extension BaseRequestFactory: RequestFactory {
         }
     }
 
-    // MARK - Ignorable
-    public func requestIgnorable(with parameters: Parameters) -> ResultCallback<Ignorable, Error> {
-        return requestCustomDecodable(IgnorableContent<Error>.self, with: parameters)
+    // MARK - Void
+    public func requestVoid(with parameters: Parameters) -> ResultCallback<Void, Error> {
+        return requestCustomDecodable(VoidContent<Error>.self, with: parameters)
     }
 
     // MARK - Decodable
