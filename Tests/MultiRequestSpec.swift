@@ -97,7 +97,7 @@ final class MultiRequestSpec: QuickSpec {
                     it("should mark completion correctly") {
                         var expectedResponses: [Response] = []
                         for i in 0..<Constant.numberOfRequests {
-                            expectedResponses.append(first == i || second == i ? .normal(.success(.init())) : .pending)
+                            expectedResponses.append(first == i || second == i ? .normal(.success(())) : .pending)
                         }
 
                         expect(completionHandlers[first]).toNot(beNil())
@@ -142,8 +142,8 @@ final class MultiRequestSpec: QuickSpec {
                         }
 
                         it("should not crash on multithreading") {
-                            let expectedResponses: [Response] = Array(repeating: .normal(.success(.init())), count: chunkSize) +
-                            Array(repeating: .normal(.failure(Constant.error)), count: chunkSize)
+                            let expectedResponses: [Response] = Array(repeating: .normal(.success(())), count: chunkSize) +
+                                Array(repeating: .normal(.failure(Constant.error)), count: chunkSize)
                             expect(subject.responses).toEventually(equal(expectedResponses), timeout: .milliseconds(maxDelayInMilliseconds + 100))
                         }
                     }
@@ -167,7 +167,7 @@ final class MultiRequestSpec: QuickSpec {
 
                         it("should not crash on multithreading") {
                             let expectedResponses: [Response] = Array(repeating: .special(Constant.error), count: chunkSize) +
-                            Array(repeating: .normal(.failure(Constant.error2)), count: chunkSize)
+                                Array(repeating: .normal(.failure(Constant.error2)), count: chunkSize)
                             expect(subject.responses).toEventually(equal(expectedResponses), timeout: .milliseconds(maxDelayInMilliseconds + 100))
                         }
                     }
@@ -197,7 +197,11 @@ final class MultiRequestSpec: QuickSpec {
 
                         it("should not crash on multithreading") {
                             expect(subject.responses.contains(.pending)).toEventually(equal(false),
-                                                                                      timeout: .milliseconds(maxDelayInMilliseconds + 200))
+                                                                                      timeout: .milliseconds(maxDelayInMilliseconds + 500),
+                                                                                      description: subject.responses.enumerated()
+                                                                                        .filter({ $0.element == .pending })
+                                                                                        .map({ String($0.offset) })
+                                                                                        .joined(separator: ", "))
                         }
                     }
                 }
@@ -227,6 +231,19 @@ private final class Subject {
                 }
             case .special(let error):
                 return "special - \(error?.localizedDescription ?? "nil")"
+            }
+        }
+
+        static func == (lhs: Subject.Response, rhs: Subject.Response) -> Bool {
+            switch (lhs, rhs) {
+            case (.pending, .pending),
+                 (.normal, .normal),
+                 (.special, .special):
+                return true
+            case (.pending, _),
+                 (.normal, _),
+                 (.special, _):
+                return false
             }
         }
     }
