@@ -1,9 +1,9 @@
 import Foundation
 import UIKit
 
-import Quick
 import Nimble
 import NSpry
+import Quick
 
 @testable import NRequest
 @testable import NRequestTestHelpers
@@ -108,6 +108,7 @@ class Plugins_TokenPluginSpec: QuickSpec {
         }
 
         // MARK: queryParam
+
         itBehavesLike(Constant.sharedName) {
             return [Constant.type: TokenType.queryParam(Constant.key)]
         }
@@ -117,6 +118,7 @@ class Plugins_TokenPluginSpec: QuickSpec {
         }
 
         // MARK: header.set
+
         itBehavesLike(Constant.sharedName) {
             return [Constant.type: TokenType.header(.set(Constant.key))]
         }
@@ -126,6 +128,7 @@ class Plugins_TokenPluginSpec: QuickSpec {
         }
 
         // MARK: header.add
+
         itBehavesLike(Constant.sharedName) {
             return [Constant.type: TokenType.header(.add(Constant.key))]
         }

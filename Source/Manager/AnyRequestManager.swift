@@ -1,6 +1,6 @@
 import Foundation
-import UIKit
 import NCallback
+import UIKit
 
 public struct AnyRequestManager<Error: AnyError>: RequestManager {
     private let box: AbstractRequestFactory<Error>
@@ -51,48 +51,48 @@ public struct AnyRequestManager<Error: AnyError>: RequestManager {
 }
 
 private class AbstractRequestFactory<Error: AnyError>: RequestManager {
-    func requestCustomDecodable<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error> {
+    func requestCustomDecodable<T: CustomDecodable>(_: T.Type, with _: Parameters) -> ResultCallback<T.Object, Error> {
         fatalError("abstract needs override")
     }
 
-    func requestVoid(with parameters: Parameters) -> ResultCallback<Void, Error> {
+    func requestVoid(with _: Parameters) -> ResultCallback<Void, Error> {
         fatalError("abstract needs override")
     }
 
-    func requestDecodable<T: Decodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T, Error> {
+    func requestDecodable<T: Decodable>(_: T.Type, with _: Parameters) -> ResultCallback<T, Error> {
         fatalError("abstract needs override")
     }
 
-    func request<T: Decodable>(with parameters: Parameters) -> ResultCallback<T, Error> {
+    func request<T: Decodable>(with _: Parameters) -> ResultCallback<T, Error> {
         fatalError("abstract needs override")
     }
 
-    func requestImage(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
+    func requestImage(with _: Parameters) -> ResultCallback<UIImage, Error> {
         fatalError("abstract needs override")
     }
 
-    func requestOptionalImage(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {
+    func requestOptionalImage(with _: Parameters) -> ResultCallback<UIImage?, Error> {
         fatalError("abstract needs override")
     }
 
-    func requestData(with parameters: Parameters) -> ResultCallback<Data, Error> {
+    func requestData(with _: Parameters) -> ResultCallback<Data, Error> {
         fatalError("abstract needs override")
     }
 
-    func requestOptionalData(with parameters: Parameters) -> ResultCallback<Data?, Error> {
+    func requestOptionalData(with _: Parameters) -> ResultCallback<Data?, Error> {
         fatalError("abstract needs override")
     }
 
-    func requestAny(with parameters: Parameters) -> ResultCallback<Any, Error> {
+    func requestAny(with _: Parameters) -> ResultCallback<Any, Error> {
         fatalError("abstract needs override")
     }
 
-    func requestOptionalAny(with parameters: Parameters) -> ResultCallback<Any?, Error> {
+    func requestOptionalAny(with _: Parameters) -> ResultCallback<Any?, Error> {
         fatalError("abstract needs override")
     }
 }
 
-final private class RequestFactoryBox<T: RequestManager>: AbstractRequestFactory<T.Error> {
+private final class RequestFactoryBox<T: RequestManager>: AbstractRequestFactory<T.Error> {
     private var concrete: T
 
     init(_ concrete: T) {

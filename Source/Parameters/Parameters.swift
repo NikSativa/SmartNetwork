@@ -72,14 +72,14 @@ public struct Parameters {
     }
 }
 
-extension Parameters {
-    public static func + (lhs: Parameters, plugin: Plugin) -> Parameters {
+public extension Parameters {
+    static func +(lhs: Parameters, plugin: Plugin) -> Parameters {
         var new = lhs
         new.plugins.append(plugin)
         return new
     }
 
-    public static func + (lhs: Parameters, plugins: [Plugin]) -> Parameters {
+    static func +(lhs: Parameters, plugins: [Plugin]) -> Parameters {
         if plugins.isEmpty {
             return lhs
         }

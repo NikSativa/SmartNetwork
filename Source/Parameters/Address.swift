@@ -62,7 +62,7 @@ public enum Address: Equatable {
         self + queryItems
     }
 
-    public static func + (lhs: Self, rhs: QueryItems) -> Self {
+    public static func +(lhs: Self, rhs: QueryItems) -> Self {
         let representation: URLRepresentation
 
         switch lhs {
@@ -75,7 +75,7 @@ public enum Address: Equatable {
         return .address(representation + rhs)
     }
 
-    public static func + (lhs: Self, rhs: String) -> Self {
+    public static func +(lhs: Self, rhs: String) -> Self {
         let representation: URLRepresentation
 
         switch lhs {
@@ -88,7 +88,7 @@ public enum Address: Equatable {
         return .address(representation + rhs)
     }
 
-    public static func + (lhs: Self, rhs: [String]) -> Self {
+    public static func +(lhs: Self, rhs: [String]) -> Self {
         let representation: URLRepresentation
 
         switch lhs {
@@ -102,8 +102,8 @@ public enum Address: Equatable {
     }
 }
 
-extension Address {
-    public func url() throws -> URL {
+public extension Address {
+    func url() throws -> URL {
         switch self {
         case .url(let url):
             return url

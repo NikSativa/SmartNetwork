@@ -6,6 +6,7 @@ public enum Plugins {
             case set(String)
             case add(String)
         }
+
         case header(Operation)
         case queryParam(String)
     }
@@ -14,9 +15,9 @@ public enum Plugins {
         public required init(tokenProvider: @escaping Plugins.TokenPlugin.TokenProvider) {
             super.init(type: .header(.set("Authorization")),
                        tokenProvider: {
-                        return tokenProvider().map { token in
-                            return "Bearer " + token
-                        }
+                           return tokenProvider().map { token in
+                               return "Bearer " + token
+                           }
                        })
         }
     }
@@ -25,13 +26,13 @@ public enum Plugins {
         public init() {
         }
 
-        public func prepare(_ parameters: Parameters, request: inout URLRequestable) {
+        public func prepare(_: Parameters, request _: inout URLRequestable) {
         }
 
-        public func willSend(_ parameters: Parameters, request: URLRequestable) {
+        public func willSend(_: Parameters, request _: URLRequestable) {
         }
 
-        public func didFinish(_ parameters: Parameters, request: URLRequestable, data: ResponseData) {
+        public func didFinish(_: Parameters, request _: URLRequestable, data _: ResponseData) {
         }
 
         public func verify(data: ResponseData) throws {
@@ -45,14 +46,14 @@ public enum Plugins {
         public typealias TokenProvider = () -> String?
         private let tokenProvider: TokenProvider
         private let type: TokenType
-        
+
         public init(type: TokenType,
                     tokenProvider: @escaping TokenProvider) {
             self.tokenProvider = tokenProvider
             self.type = type
         }
 
-        public func prepare(_ parameters: Parameters,
+        public func prepare(_: Parameters,
                             request: inout URLRequestable) {
             guard let value = tokenProvider() else {
                 return
@@ -69,7 +70,7 @@ public enum Plugins {
             case .queryParam(let key):
                 if let requestURL = request.url, var urlComponents = URLComponents(url: requestURL, resolvingAgainstBaseURL: false) {
                     var queryItems: [URLQueryItem] = urlComponents.queryItems ?? []
-                    queryItems = queryItems.filter({ $0.name != key })
+                    queryItems = queryItems.filter { $0.name != key }
                     queryItems.append(URLQueryItem(name: key, value: value))
                     urlComponents.queryItems = queryItems
 
@@ -80,13 +81,13 @@ public enum Plugins {
             }
         }
 
-        public func willSend(_ parameters: Parameters, request: URLRequestable) {
+        public func willSend(_: Parameters, request _: URLRequestable) {
         }
 
-        public func didFinish(_ parameters: Parameters, request: URLRequestable, data: ResponseData) {
+        public func didFinish(_: Parameters, request _: URLRequestable, data _: ResponseData) {
         }
 
-        public func verify(data: ResponseData) throws {
+        public func verify(data _: ResponseData) throws {
         }
     }
 }

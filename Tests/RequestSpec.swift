@@ -1,9 +1,9 @@
 import Foundation
 import UIKit
 
-import Quick
 import Nimble
 import NSpry
+import Quick
 
 @testable import NRequest
 @testable import NRequestTestHelpers
@@ -77,7 +77,7 @@ final class RequestSpec: QuickSpec {
 
                 afterEach {
                     sessionCompletionHandler = nil
-                    
+
                     // deinit
                     task.resetCallsAndStubs()
                     task.stub(.isRunning).andReturn(false)

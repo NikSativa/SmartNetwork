@@ -1,7 +1,7 @@
 import Foundation
-import UIKit
-import NSpry
 import NCallback
+import NSpry
+import UIKit
 
 @testable import NRequest
 
@@ -35,12 +35,14 @@ public final class FakeRequestManager<Error: AnyError>: RequestManager, Spryable
         return spryify(arguments: type, parameters)
     }
 
-    // MARK - Void
+    // MARK: - Void
+
     public func requestVoid(with parameters: Parameters) -> ResultCallback<Void, Error> {
         return spryify(arguments: parameters)
     }
 
-    // MARK - Decodable
+    // MARK: - Decodable
+
     public func requestDecodable<T: Decodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T, Error> {
         return spryify(arguments: type, parameters)
     }
@@ -49,7 +51,8 @@ public final class FakeRequestManager<Error: AnyError>: RequestManager, Spryable
         return spryify(arguments: parameters)
     }
 
-    // MARK - Image
+    // MARK: - Image
+
     public func requestImage(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
         return spryify(arguments: parameters)
     }
@@ -58,7 +61,8 @@ public final class FakeRequestManager<Error: AnyError>: RequestManager, Spryable
         return spryify(arguments: parameters)
     }
 
-    // MARK - Data
+    // MARK: - Data
+
     public func requestData(with parameters: Parameters) -> ResultCallback<Data, Error> {
         return spryify(arguments: parameters)
     }
@@ -67,7 +71,8 @@ public final class FakeRequestManager<Error: AnyError>: RequestManager, Spryable
         return spryify(arguments: parameters)
     }
 
-    // MARK - Any/JSON
+    // MARK: - Any/JSON
+
     public func requestAny(with parameters: Parameters) -> ResultCallback<Any, Error> {
         return spryify(arguments: parameters)
     }

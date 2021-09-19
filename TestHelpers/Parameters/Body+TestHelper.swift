@@ -1,6 +1,6 @@
 import Foundation
-import NSpry
 import Nimble
+import NSpry
 
 import NRequest
 
@@ -30,12 +30,12 @@ extension Body: Equatable, SpryEquatable {
         case (.xform(let a), .xform(let b)):
             return compare(a, b)
 
-        case (.empty, _),
-             (.json, _),
-             (.data, _),
-             (.image, _),
+        case (.data, _),
+             (.empty, _),
              (.encodable, _),
              (.form, _),
+             (.image, _),
+             (.json, _),
              (.xform, _):
             return false
         }
@@ -51,5 +51,8 @@ extension Body.AnyEncodable: Equatable, SpryEquatable {
     }
 }
 
-extension Body.Image: SpryEquatable { }
-extension Body.Form: SpryEquatable { }
+extension Body.Image: SpryEquatable {
+}
+
+extension Body.Form: SpryEquatable {
+}

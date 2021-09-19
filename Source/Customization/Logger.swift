@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Logger {
+public enum Logger {
     public typealias Logging = (_ text: String, _ file: String, _ method: String, _ line: Int) -> Void
     public static var logger: Logging?
 

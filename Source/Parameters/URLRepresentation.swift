@@ -28,7 +28,7 @@ public struct URLRepresentation: Equatable {
         self.host = components.host ?? ""
         self.port = components.port
         self.path = components.path.components(separatedBy: "/")
-        self.queryItems = (components.queryItems ?? []).reduce(into: [:], { $0[$1.name] = $1.value })
+        self.queryItems = (components.queryItems ?? []).reduce(into: [:]) { $0[$1.name] = $1.value }
     }
 
     public func append(_ pathComponent: String) -> Self {
@@ -39,7 +39,7 @@ public struct URLRepresentation: Equatable {
         self + queryItems
     }
 
-    public static func + (lhs: Self, rhs: QueryItems) -> Self {
+    public static func +(lhs: Self, rhs: QueryItems) -> Self {
         return Self(scheme: lhs.scheme,
                     host: lhs.host,
                     port: lhs.port,
@@ -47,7 +47,7 @@ public struct URLRepresentation: Equatable {
                     queryItems: lhs.queryItems.merging(rhs, uniquingKeysWith: { _, new in new }))
     }
 
-    public static func + (lhs: Self, rhs: [String]) -> Self {
+    public static func +(lhs: Self, rhs: [String]) -> Self {
         return Self(scheme: lhs.scheme,
                     host: lhs.host,
                     port: lhs.port,
@@ -55,7 +55,7 @@ public struct URLRepresentation: Equatable {
                     queryItems: lhs.queryItems)
     }
 
-    public static func + (lhs: Self, rhs: String) -> Self {
+    public static func +(lhs: Self, rhs: String) -> Self {
         return Self(scheme: lhs.scheme,
                     host: lhs.host,
                     port: lhs.port,

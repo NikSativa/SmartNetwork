@@ -9,10 +9,10 @@ public extension AnyError {
     static func wrap(_ error: Error) -> Self {
         if let error = error as? Self {
             return error
-        } else if let error = Self.init(error) {
+        } else if let error = Self(error) {
             return error
         }
-        return Self.init(EquatableError(error))
+        return Self(EquatableError(error))
     }
 }
 

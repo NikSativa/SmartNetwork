@@ -1,18 +1,19 @@
 import Foundation
 import UIKit
 
-import Quick
 import Nimble
 import NSpry
+import Quick
 
-@testable import NRequest
-@testable import NRequestTestHelpers
 @testable import NCallback
 @testable import NCallbackTestHelpers
+@testable import NRequest
+@testable import NRequestTestHelpers
 
 class RequestManagerSpec: QuickSpec {
     private typealias Error = RequestError
-    private struct TestInfo: Decodable { }
+    private struct TestInfo: Decodable {
+    }
 
     override func spec() {
         describe("RequestManager") {
@@ -29,7 +30,7 @@ class RequestManagerSpec: QuickSpec {
                         request.stub(.start).andDo { args in
                             let callback = args[0] as! Request.CompletionCallback
                             callback(data)
-                            return Void()
+                            return ()
                         }
                         request.stub(.cancel).andReturn()
                         return request

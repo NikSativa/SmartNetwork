@@ -1,6 +1,6 @@
 import Foundation
-import NSpry
 import NQueue
+import NSpry
 
 @testable import NRequest
 

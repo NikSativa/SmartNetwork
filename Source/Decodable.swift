@@ -20,13 +20,13 @@ struct VoidContent: CustomDecodable {
                 case .noContent:
                     result = .success(())
                 case .badRequest,
-                     .unauthorized,
                      .forbidden,
                      .notFound,
-                     .timeout,
-                     .upgradeRequired,
+                     .other,
                      .serverError,
-                     .other:
+                     .timeout,
+                     .unauthorized,
+                     .upgradeRequired:
                     break
                 }
             } else if let error = data.error as? DecodingError {
@@ -37,7 +37,7 @@ struct VoidContent: CustomDecodable {
                     break
                 }
             }
-            
+
             result = .failure(error)
         } else {
             result = .success(())
@@ -55,7 +55,7 @@ struct DecodableContent<Response: Decodable>: CustomDecodable {
             do {
                 let decoder = (Response.self as? CustomizedDecodable.Type)?.decoder ?? JSONDecoder()
                 result = .success(try decoder.decode(Response.self, from: data))
-            } catch let error {
+            } catch {
                 result = .failure(error)
             }
         } else {
@@ -105,7 +105,7 @@ struct JSONContent: CustomDecodable {
         } else if let data = data.body {
             do {
                 result = .success(try JSONSerialization.jsonObject(with: data))
-            } catch let error {
+            } catch {
                 result = .failure(error)
             }
         } else {

@@ -1,6 +1,6 @@
 import Foundation
-import NSpry
 import Nimble
+import NSpry
 
 @testable import NRequest
 
@@ -20,7 +20,8 @@ public func equal(_ expectedValue: URLRequest?) -> Predicate<URLRequestable> {
         switch (expectedValue, actualValue) {
         case (nil, _?):
             return PredicateResult(status: .fail, message: msg.appendedBeNilHint())
-        case (nil, nil), (_, nil):
+        case (_, nil),
+             (nil, nil):
             return PredicateResult(status: .fail, message: msg)
         case (let expected?, let actual?):
             let matches = expected == actual
@@ -35,7 +36,8 @@ public func equal(_ expectedValue: URLRequestable?) -> Predicate<URLRequest> {
         switch (expectedValue, actualValue) {
         case (nil, _?):
             return PredicateResult(status: .fail, message: msg.appendedBeNilHint())
-        case (nil, nil), (_, nil):
+        case (_, nil),
+             (nil, nil):
             return PredicateResult(status: .fail, message: msg)
         case (let expected?, let actual?):
             let matches = expected == actual
