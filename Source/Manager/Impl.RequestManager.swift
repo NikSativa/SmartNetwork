@@ -1,7 +1,7 @@
 import Foundation
-import UIKit
-import NQueue
 import NCallback
+import NQueue
+import UIKit
 
 extension Impl {
     final class RequestManager<Error: AnyError> {
@@ -58,18 +58,18 @@ extension Impl {
             refreshToken.action(with: stopTheLineFactory,
                                 originalParameters: request.parameters,
                                 response: data).onComplete { [weak self] result in
-                                    switch result {
-                                    case .useOriginal:
-                                        self?.removeFromCache(key)
-                                        actual.complete(data)
-                                    case .passOver(let newResponse):
-                                        self?.removeFromCache(key)
-                                        actual.complete(newResponse)
-                                    case .retry:
-                                        break
-                                    }
-                                    self?.unfreeze()
-                                }
+                switch result {
+                case .useOriginal:
+                    self?.removeFromCache(key)
+                    actual.complete(data)
+                case .passOver(let newResponse):
+                    self?.removeFromCache(key)
+                    actual.complete(newResponse)
+                case .retry:
+                    break
+                }
+                self?.unfreeze()
+            }
         }
 
         private func removeFromCache(_ key: Key) {
@@ -144,7 +144,7 @@ extension Impl {
                     }
                 }
 
-                stop = { [weak self] actual in
+                stop = { [weak self] _ in
                     self?.removeFromCache(key)
                     request.cancel()
                 }
@@ -167,7 +167,7 @@ extension Impl {
 }
 
 extension Impl.RequestManager: RequestManager {
-    func requestCustomDecodable<T: CustomDecodable>(_ type: T.Type,
+    func requestCustomDecodable<T: CustomDecodable>(_: T.Type,
                                                     with parameters: Parameters) -> ResultCallback<T.Object, Error> {
         let request: Request = factory.make(for: parameters,
                                             pluginContext: pluginProvider)

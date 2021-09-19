@@ -58,7 +58,7 @@ public enum Body {
     case data(Data)
     case image(Image)
     case encodable(AnyEncodable)
-    case form(Form)  // form-data
+    case form(Form) // form-data
     case xform([String: Any]) // x-www-form-urlencoded
 
     public init<T: Encodable>(_ object: T) {
@@ -109,7 +109,7 @@ extension Body {
                 if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
                     tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
                 }
-            } catch let error {
+            } catch {
                 throw EncodingError.generic(.init(error))
             }
         case .image(let image):
@@ -145,7 +145,7 @@ extension Body {
                 if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
                     tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
                 }
-            } catch let error {
+            } catch {
                 throw EncodingError.generic(.init(error))
             }
         case .form(let form):
@@ -236,9 +236,9 @@ private enum XFormEncoder {
 
     static func encodeParameters(parameters: [String: Any]) -> Data {
         return parameters
-            .map { (key, value) -> String in
+            .map { key, value -> String in
                 return "\(key)=\(self.percentEscapeString(value))"
-        }
-        .joined(separator: "&").data(using: String.Encoding.utf8) ?? Data()
+            }
+            .joined(separator: "&").data(using: String.Encoding.utf8) ?? Data()
     }
 }

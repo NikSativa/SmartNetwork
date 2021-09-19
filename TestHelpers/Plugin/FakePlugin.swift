@@ -18,7 +18,6 @@ public final class FakePlugin: Plugin, Spryable {
     public init() {
     }
 
-
     public func prepare(_ parameters: Parameters, request: inout URLRequestable) {
         return spryify(arguments: parameters, request)
     }

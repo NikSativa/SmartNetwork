@@ -1,10 +1,10 @@
 import Foundation
 import UIKit
 
-import Quick
 import Nimble
-import NSpry
 import NQueue
+import NSpry
+import Quick
 
 @testable import NRequest
 @testable import NRequestTestHelpers
@@ -30,7 +30,7 @@ final class MultiRequestSpec: QuickSpec {
                 do {
                     subject = try .init(session: session,
                                         numberOfRequests: Constant.numberOfRequests)
-                } catch let error {
+                } catch {
                     self.record(.init(type: .thrownError,
                                       compactDescription: error.localizedDescription))
                 }
@@ -137,7 +137,7 @@ final class MultiRequestSpec: QuickSpec {
 
                         it("should not crash on multithreading") {
                             let expectedResponses: [Response] = Array(repeating: .finished(success: true), count: chunkSize) +
-                            Array(repeating: .finished(success: false), count: chunkSize)
+                                Array(repeating: .finished(success: false), count: chunkSize)
                             expect(subject.responses).toEventually(equal(expectedResponses), timeout: .milliseconds(maxDelayInMilliseconds + 100))
                         }
                     }
@@ -166,7 +166,7 @@ final class MultiRequestSpec: QuickSpec {
                         }
 
                         it("should not crash on multithreading") {
-                            expect(subject.responses.enumerated().filter({ $0.element == .pending }).map({ $0.offset }))
+                            expect(subject.responses.enumerated().filter { $0.element == .pending }.map(\.offset))
                                 .toEventually(beEmpty(),
                                               timeout: .milliseconds(maxDelayInMilliseconds + 200))
                         }

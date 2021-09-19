@@ -1,6 +1,6 @@
 import Foundation
-import NSpry
 import Nimble
+import NSpry
 
 import NRequest
 
@@ -23,6 +23,6 @@ extension URLRequest: SpryEquatable, TestOutputStringConvertible {
     public var testDescription: String {
         return [String(describing: type(of: self)),
                 self.description,
-                String(describing: allHTTPHeaderFields)].compactMap({ $0 }).joined(separator: ", ")
+                String(describing: allHTTPHeaderFields)].compactMap { $0 }.joined(separator: ", ")
     }
 }

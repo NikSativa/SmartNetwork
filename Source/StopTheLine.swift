@@ -53,8 +53,8 @@ public struct AnyStopTheLine<Error: AnyError>: StopTheLine {
     }
 
     public func action(with manager: AnyRequestManager<Error>,
-                originalParameters parameters: Parameters,
-                response: ResponseData) -> Callback<StopTheLineResult> {
+                       originalParameters parameters: Parameters,
+                       response: ResponseData) -> Callback<StopTheLineResult> {
         return _action(manager, parameters, response)
     }
 

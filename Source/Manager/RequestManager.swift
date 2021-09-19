@@ -1,6 +1,6 @@
 import Foundation
-import UIKit
 import NCallback
+import UIKit
 
 // sourcery: fakable
 public protocol RequestManager {
@@ -8,39 +8,47 @@ public protocol RequestManager {
 
     func requestCustomDecodable<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error>
 
-    // MARK - Void
+    // MARK: - Void
+
     func requestVoid(with parameters: Parameters) -> ResultCallback<Void, Error>
 
-    // MARK - Decodable
+    // MARK: - Decodable
+
     func requestDecodable<T: Decodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T, Error>
     func request<T: Decodable>(with parameters: Parameters) -> ResultCallback<T, Error>
 
-    // MARK - Image
+    // MARK: - Image
+
     func requestImage(with parameters: Parameters) -> ResultCallback<UIImage, Error>
     func requestOptionalImage(with parameters: Parameters) -> ResultCallback<UIImage?, Error>
 
-    // MARK - Data
+    // MARK: - Data
+
     func requestData(with parameters: Parameters) -> ResultCallback<Data, Error>
     func requestOptionalData(with parameters: Parameters) -> ResultCallback<Data?, Error>
 
-    // MARK - Any/JSON
+    // MARK: - Any/JSON
+
     func requestAny(with parameters: Parameters) -> ResultCallback<Any, Error>
     func requestOptionalAny(with parameters: Parameters) -> ResultCallback<Any?, Error>
 }
 
-// MARK - proxy method for Fake
+// MARK: - proxy method for Fake
+
 public extension RequestManager {
-    // MARK - Void
+    // MARK: - Void
+
     func requestVoid(with parameters: Parameters) -> ResultCallback<Void, Error> {
         return requestCustomDecodable(VoidContent.self, with: parameters)
     }
 
-    // MARK - Decodable
-    func requestDecodable<T: Decodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T, Error> {
+    // MARK: - Decodable
+
+    func requestDecodable<T: Decodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T, Error> {
         return requestCustomDecodable(DecodableContent<T>.self, with: parameters).recoverResponse()
     }
 
-    func requestOptionalDecodable<T: Decodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T?, Error> {
+    func requestOptionalDecodable<T: Decodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T?, Error> {
         return requestCustomDecodable(DecodableContent<T>.self, with: parameters)
     }
 
@@ -48,7 +56,8 @@ public extension RequestManager {
         return requestDecodable(T.self, with: parameters)
     }
 
-    // MARK - Image
+    // MARK: - Image
+
     func requestImage(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
         return requestCustomDecodable(ImageContent.self, with: parameters).recoverResponse()
     }
@@ -57,7 +66,8 @@ public extension RequestManager {
         return requestCustomDecodable(ImageContent.self, with: parameters)
     }
 
-    // MARK - Data
+    // MARK: - Data
+
     func requestData(with parameters: Parameters) -> ResultCallback<Data, Error> {
         return requestCustomDecodable(DataContent.self, with: parameters).recoverResponse()
     }
@@ -66,7 +76,8 @@ public extension RequestManager {
         return requestCustomDecodable(DataContent.self, with: parameters)
     }
 
-    // MARK - Any/JSON
+    // MARK: - Any/JSON
+
     func requestAny(with parameters: Parameters) -> ResultCallback<Any, Error> {
         return requestCustomDecodable(JSONContent.self, with: parameters).recoverResponse()
     }
@@ -78,17 +89,20 @@ public extension RequestManager {
 
 // only proxy without `faking`
 public extension RequestManager {
-    // MARK - Void
+    // MARK: - Void
+
     func request(with parameters: Parameters) -> ResultCallback<Void, Error> {
         return requestVoid(with: parameters)
     }
 
-    // MARK - Decodable
+    // MARK: - Decodable
+
     func request<T: Decodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T, Error> {
         return requestDecodable(type, with: parameters)
     }
 
-    // MARK - Image
+    // MARK: - Image
+
     func request(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
         return requestImage(with: parameters)
     }
@@ -97,7 +111,8 @@ public extension RequestManager {
         return requestOptionalImage(with: parameters)
     }
 
-    // MARK - Data
+    // MARK: - Data
+
     func request(with parameters: Parameters) -> ResultCallback<Data, Error> {
         return requestData(with: parameters)
     }
@@ -106,7 +121,8 @@ public extension RequestManager {
         return requestOptionalData(with: parameters)
     }
 
-    // MARK - Any/JSON
+    // MARK: - Any/JSON
+
     func request(with parameters: Parameters) -> ResultCallback<Any, Error> {
         return requestAny(with: parameters)
     }

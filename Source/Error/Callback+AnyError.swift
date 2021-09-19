@@ -1,8 +1,8 @@
 import Foundation
 import NCallback
 
-extension Callback {
-    public func tryMap<NewResponse, Response, Error: AnyError>(_ mapper: @escaping (Response) throws -> NewResponse) -> ResultCallback<NewResponse, Error>
+public extension Callback {
+    func tryMap<NewResponse, Response, Error: AnyError>(_ mapper: @escaping (Response) throws -> NewResponse) -> ResultCallback<NewResponse, Error>
     where ResultType == Result<Response, Error> {
         return flatMap {
             do {
@@ -14,7 +14,7 @@ extension Callback {
                 }
             } catch let error as Error {
                 return .failure(error)
-            } catch let error {
+            } catch {
                 return .failure(.wrap(error))
             }
         }

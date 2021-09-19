@@ -43,7 +43,7 @@ extension Impl {
                 }
 
                 start(with: requestable)
-            } catch let error {
+            } catch {
                 parameters.queue.fire { [parameters] in
                     let data = ResponseData(body: nil,
                                             response: nil,
@@ -196,17 +196,17 @@ extension Impl.Request {
                            method: String = #function,
                            line: Int = #line) {
         tolog("request: " +
-                "\n" +
-                "method:" + parameters.method.toString() +
-                "\n" +
-                "\(modifiedRequest.url?.absoluteString ?? "<url is nil>")" +
-                "\n" +
-                "with headers: " +
-                "\n" +
-                "\(String(describing: modifiedRequest.allHTTPHeaderFields ?? [:]))",
-              file: file,
-              method: method,
-              line: line)
+            "\n" +
+            "method:" + parameters.method.toString() +
+            "\n" +
+            "\(modifiedRequest.url?.absoluteString ?? "<url is nil>")" +
+            "\n" +
+            "with headers: " +
+            "\n" +
+            "\(String(describing: modifiedRequest.allHTTPHeaderFields ?? [:]))",
+            file: file,
+            method: method,
+            line: line)
     }
 
     private func tolog(_ data: Data?,
@@ -266,7 +266,7 @@ private final class SessionAdaptor: NSObject {
 
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var task: SessionTask?
-    private var buffer: NSMutableData = NSMutableData()
+    private var buffer = NSMutableData()
     private var dataTask: SessionTask?
     private var expectedContentLength: Int64 = 0
     private var observer: AnyObject?
@@ -314,21 +314,21 @@ private final class SessionAdaptor: NSObject {
 }
 
 extension SessionAdaptor: SessionDelegate {
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: (URLSession.ResponseDisposition) -> Void) {
+    func urlSession(_: URLSession, dataTask _: URLSessionDataTask, didReceive response: URLResponse, completionHandler: (URLSession.ResponseDisposition) -> Void) {
         expectedContentLength = Int64(response.expectedContentLength)
         completionHandler(.allow)
     }
 
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+    func urlSession(_: URLSession, dataTask _: URLSessionDataTask, didReceive data: Data) {
         buffer.append(data)
         parameters.taskKind?.downloadProgressHandler?(progress(totalBytesSent: Int64(buffer.length), totalBytesExpectedToSend: expectedContentLength))
     }
 
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    func urlSession(_: URLSession, task _: URLSessionTask, didCompleteWithError _: Error?) {
         parameters.taskKind?.downloadProgressHandler?(.init(fractionCompleted: 1))
     }
 
-    func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
+    func urlSession(_: URLSession, task _: URLSessionTask, didSendBodyData _: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         parameters.taskKind?.uploadProgressHandler?(progress(totalBytesSent: totalBytesSent, totalBytesExpectedToSend: totalBytesExpectedToSend))
     }
 

@@ -1,6 +1,6 @@
 import Foundation
-import NSpry
 import NRequest
+import NSpry
 
 @testable import NRequest
 

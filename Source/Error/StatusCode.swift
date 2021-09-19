@@ -1,19 +1,19 @@
 import Foundation
 
 public enum StatusCode: Error, Equatable {
-    case noContent       // 204
-    case badRequest      // 400
-    case unauthorized    // 401
-    case forbidden       // 403
-    case notFound        // 404
-    case timeout         // 408
+    case noContent // 204
+    case badRequest // 400
+    case unauthorized // 401
+    case forbidden // 403
+    case notFound // 404
+    case timeout // 408
     case upgradeRequired // 426
-    case serverError     // 500
+    case serverError // 500
     case other(Int)
 }
 
-extension StatusCode {
-    public func toInt() -> Int {
+public extension StatusCode {
+    func toInt() -> Int {
         switch self {
         case .noContent:
             return 204
@@ -37,8 +37,8 @@ extension StatusCode {
     }
 }
 
-extension StatusCode {
-    public init?(_ code: Int?) {
+public extension StatusCode {
+    init?(_ code: Int?) {
         guard let code = code else {
             return nil
         }
