@@ -10,7 +10,7 @@ final class FakeRequest: Request, Spryable {
 
     enum Function: String, StringRepresentable {
         case parameters
-        case restart = "restart()"
+        case restartIfNeeded = "restartIfNeeded()"
         case start = "start(with:)"
         case cancel = "cancel()"
     }
@@ -19,7 +19,7 @@ final class FakeRequest: Request, Spryable {
         return spryify()
     }
 
-    func restart() {
+    func restartIfNeeded() {
         return spryify()
     }
 

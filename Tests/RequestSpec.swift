@@ -46,8 +46,8 @@ final class RequestSpec: QuickSpec {
                 }
 
                 describe("restarting") {
-                    it("should throw unexpected assertion") {
-                        expect(subject.restart()).to(throwAssertion())
+                    it("should nothing happen") {
+                        expect(subject.restartIfNeeded()).toNot(throwAssertion())
                     }
                 }
             }
@@ -117,7 +117,7 @@ final class RequestSpec: QuickSpec {
                         task.stub(.resume).andReturn()
                         task.stub(.isRunning).andReturn(true)
                         task.stub(.cancel).andReturn()
-                        subject.restart()
+                        subject.restartIfNeeded()
                     }
 
                     it("should cancel previous task and resume new") {
