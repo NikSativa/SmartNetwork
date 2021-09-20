@@ -5,7 +5,7 @@ import NQueue
 public protocol Request: AnyObject {
     var parameters: Parameters { get }
 
-    func restart()
+    func restartIfNeeded()
     func cancel()
 
     typealias CompletionCallback = (ResponseData) -> Void
@@ -44,13 +44,12 @@ extension Impl {
 
                 start(with: requestable)
             } catch {
-                parameters.queue.fire { [parameters] in
-                    let data = ResponseData(body: nil,
-                                            response: nil,
-                                            error: error,
-                                            userInfo: parameters.userInfo)
-                    self.completeCallback?(data)
-                }
+                let data = ResponseData(body: nil,
+                                        response: nil,
+                                        error: error,
+                                        userInfo: parameters.userInfo)
+                complete(in: parameters.queue,
+                         with: data)
             }
         }
 
@@ -146,25 +145,32 @@ extension Impl {
                 data.error = catchedError
             }
 
-            queue.fire {
-                self.completeCallback?(data)
-            }
-
             plugins.forEach {
                 $0.didFinish(parameters,
                              request: sdkRequest,
                              data: data)
             }
 
+            complete(in: queue,
+                     with: data)
+
             stopSessionRequest()
+        }
+
+        private func complete(in queue: DelayedQueue,
+                              with data: ResponseData) {
+            queue.fire {
+                self.completeCallback?(data)
+            }
         }
     }
 }
 
 extension Impl.Request: Request {
-    func restart() {
-        assert(completeCallback != nil, "unexpected behaviour. response will not be delivered to app")
-        start()
+    func restartIfNeeded() {
+        if completeCallback != nil {
+            start()
+        }
     }
 
     func start(with completion: @escaping CompletionCallback) {

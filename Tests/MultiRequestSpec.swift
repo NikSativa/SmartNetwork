@@ -156,7 +156,7 @@ final class MultiRequestSpec: QuickSpec {
                                 }
 
                                 queue.asyncAfter(deadline: .now() + .milliseconds(delay)) {
-                                    subject.requests[index].restart()
+                                    subject.requests[index].restartIfNeeded()
                                 }
 
                                 queue.asyncAfter(deadline: .now() + .milliseconds(delay + 100)) {
