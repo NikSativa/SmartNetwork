@@ -18,10 +18,9 @@ public func equal(_ expectedValue: URLRequest?) -> Predicate<URLRequestable> {
     return Predicate.define("equal <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
         switch (expectedValue, actualValue) {
-        case (nil, _?):
+        case (nil, _):
             return PredicateResult(status: .fail, message: msg.appendedBeNilHint())
-        case (_, nil),
-             (nil, nil):
+        case (_, nil):
             return PredicateResult(status: .fail, message: msg)
         case (let expected?, let actual?):
             let matches = expected == actual
@@ -34,10 +33,9 @@ public func equal(_ expectedValue: URLRequestable?) -> Predicate<URLRequest> {
     return Predicate.define("equal <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
         switch (expectedValue, actualValue) {
-        case (nil, _?):
+        case (nil, _):
             return PredicateResult(status: .fail, message: msg.appendedBeNilHint())
-        case (_, nil),
-             (nil, nil):
+        case (_, nil):
             return PredicateResult(status: .fail, message: msg)
         case (let expected?, let actual?):
             let matches = expected == actual
