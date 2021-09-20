@@ -3,6 +3,7 @@ import UIKit
 
 import Nimble
 import NSpry
+import NSpry_Nimble
 import Quick
 
 @testable import NCallback

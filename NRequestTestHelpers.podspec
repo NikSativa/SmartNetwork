@@ -10,15 +10,13 @@ Pod::Spec.new do |spec|
   spec.author           = { "Nikita Konopelko" => "nik.sativa@gmail.com" }
   spec.social_media_url = "https://www.facebook.com/Nik.Sativa"
 
-  spec.ios.deployment_target = "10.0"
+  spec.ios.deployment_target = "12.0"
   spec.swift_version = '5.0'
 
   spec.frameworks = 'XCTest', 'Foundation', 'UIKit'
   spec.weak_framework = 'NCallback'
 
-  spec.dependency 'Nimble'
   spec.dependency 'NSpry'
-
   spec.dependency 'NRequest'
   spec.dependency 'NQueue'
   spec.dependency 'NQueueTestHelpers'
@@ -33,6 +31,9 @@ Pod::Spec.new do |spec|
 
   spec.test_spec 'Tests' do |tests|
     tests.dependency 'Quick'
+    tests.dependency 'Nimble'
+    tests.dependency 'NSpry_Nimble'
+
     tests.source_files  = 'Tests/**/*.swift'
   end
 end
