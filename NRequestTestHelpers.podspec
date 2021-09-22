@@ -10,8 +10,8 @@ Pod::Spec.new do |spec|
   spec.author           = { "Nikita Konopelko" => "nik.sativa@gmail.com" }
   spec.social_media_url = "https://www.facebook.com/Nik.Sativa"
 
-  spec.ios.deployment_target = "12.0"
-  spec.swift_version = '5.0'
+  spec.ios.deployment_target = '11.0'
+  spec.swift_version = '5.5'
 
   spec.frameworks = 'XCTest', 'Foundation', 'UIKit'
   spec.weak_framework = 'NCallback'
