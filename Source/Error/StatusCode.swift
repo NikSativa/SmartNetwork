@@ -67,3 +67,13 @@ public extension StatusCode {
         }
     }
 }
+
+extension StatusCode: CustomNSError {
+    public var errorCode: Int {
+        toInt()
+    }
+    
+    public var errorUserInfo: [String : Any] {
+        ["code": errorCode]
+    }
+}

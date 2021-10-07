@@ -17,3 +17,22 @@ public struct EquatableError: Equatable {
         return (lhs.error as NSError) == (rhs.error as NSError)
     }
 }
+
+extension EquatableError: CustomNSError {
+    public var errorCode: Int {
+        error.nsError.code
+    }
+    
+    public var errorUserInfo: [String : Any] {
+        [
+            "domain": error.nsError.domain,
+            "code": errorCode
+        ]
+    }
+}
+
+extension Error {
+    var nsError: NSError {
+        self as NSError
+    }
+}
