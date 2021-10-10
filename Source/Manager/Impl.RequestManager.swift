@@ -167,6 +167,12 @@ extension Impl {
 }
 
 extension Impl.RequestManager: RequestManager {
+    func requestPureData(with parameters: Parameters) -> Callback<ResponseData> {
+        let request: Request = factory.make(for: parameters,
+                                            pluginContext: pluginProvider)
+        return prepare(request)
+    }
+
     func requestCustomDecodable<T: CustomDecodable>(_: T.Type,
                                                     with parameters: Parameters) -> ResultCallback<T.Object, Error> {
         let request: Request = factory.make(for: parameters,

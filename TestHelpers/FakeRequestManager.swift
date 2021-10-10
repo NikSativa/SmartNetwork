@@ -11,11 +11,11 @@ public final class FakeRequestManager<Error: AnyError>: RequestManager, Spryable
     }
 
     public enum Function: String, StringRepresentable {
-        case prepare = "prepare(_:)"
+        case request = "request(with:)"
+        case requestPureData = "requestPureData(with:)"
         case requestCustomDecodable = "requestCustomDecodable(_:with:)"
         case requestVoid = "requestVoid(with:)"
         case requestDecodable = "requestDecodable(_:with:)"
-        case request = "request(with:)"
         case requestImage = "requestImage(with:)"
         case requestOptionalImage = "requestOptionalImage(with:)"
         case requestData = "requestData(with:)"
@@ -27,7 +27,7 @@ public final class FakeRequestManager<Error: AnyError>: RequestManager, Spryable
     public init() {
     }
 
-    public func prepare(_ parameters: Parameters) throws -> URLRequest {
+    public func requestPureData(with parameters: Parameters) -> Callback<ResponseData> {
         return spryify(arguments: parameters)
     }
 

@@ -44,8 +44,7 @@ extension Impl {
 
                 start(with: requestable)
             } catch {
-                let data = ResponseData(request: nil,
-                                        body: nil,
+                let data = ResponseData(body: nil,
                                         response: nil,
                                         error: error,
                                         userInfo: parameters.userInfo)
@@ -78,8 +77,7 @@ extension Impl {
 
                 if shouldUseCache, let cached = cacheSettings.cache.cachedResponse(for: sdkRequest) {
                     tologSelf(sdkRequest)
-                    let responseData = ResponseData(request: requestable,
-                                                    body: cached.data,
+                    let responseData = ResponseData(body: cached.data,
                                                     response: cached.response,
                                                     error: nil,
                                                     userInfo: self.parameters.userInfo)
@@ -114,8 +112,7 @@ extension Impl {
 
                 self.tologSelf(sdkRequest)
 
-                let responseData = ResponseData(request: requestable,
-                                                body: data,
+                let responseData = ResponseData(body: data,
                                                 response: response,
                                                 error: error,
                                                 userInfo: self.parameters.userInfo)
