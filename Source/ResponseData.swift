@@ -1,7 +1,6 @@
 import Foundation
 
 public final class ResponseData {
-    public let request: URLRequestable?
     public let body: Data?
     public let response: URLResponse?
     public internal(set) var error: Error?
@@ -19,12 +18,10 @@ public final class ResponseData {
         return error as? URLError
     }()
 
-    init(request: URLRequestable?,
-         body: Data?,
+    init(body: Data?,
          response: URLResponse?,
          error: Error?,
          userInfo: Parameters.UserInfo) {
-        self.request = request
         self.body = body
         self.response = response
         self.error = error

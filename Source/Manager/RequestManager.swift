@@ -6,6 +6,10 @@ import UIKit
 public protocol RequestManager {
     associatedtype Error: AnyError
 
+    func requestPureData(with parameters: Parameters) -> Callback<ResponseData>
+
+    // MARK: - CustomDecodable
+
     func requestCustomDecodable<T: CustomDecodable>(_: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error>
 
     // MARK: - Void

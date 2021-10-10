@@ -9,6 +9,10 @@ public struct AnyRequestManager<Error: AnyError>: RequestManager {
         self.box = RequestFactoryBox(provider)
     }
 
+    public func requestPureData(with parameters: Parameters) -> Callback<ResponseData> {
+        return box.requestPureData(with: parameters)
+    }
+
     public func requestCustomDecodable<T: CustomDecodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error> {
         return box.requestCustomDecodable(type, with: parameters)
     }
@@ -51,6 +55,10 @@ public struct AnyRequestManager<Error: AnyError>: RequestManager {
 }
 
 private class AbstractRequestFactory<Error: AnyError>: RequestManager {
+    func requestPureData(with parameters: Parameters) -> Callback<ResponseData> {
+        fatalError("abstract needs override")
+    }
+
     func requestCustomDecodable<T: CustomDecodable>(_: T.Type, with _: Parameters) -> ResultCallback<T.Object, Error> {
         fatalError("abstract needs override")
     }
@@ -97,6 +105,10 @@ private final class RequestFactoryBox<T: RequestManager>: AbstractRequestFactory
 
     init(_ concrete: T) {
         self.concrete = concrete
+    }
+
+    override func requestPureData(with parameters: Parameters) -> Callback<ResponseData> {
+        return concrete.requestPureData(with: parameters)
     }
 
     override func requestCustomDecodable<T: CustomDecodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error> {
