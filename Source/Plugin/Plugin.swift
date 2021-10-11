@@ -3,7 +3,8 @@ import Foundation
 // sourcery: fakable
 public protocol Plugin {
     func prepare(_ parameters: Parameters,
-                 request: inout URLRequestable)
+                 request: inout URLRequestable,
+                 userInfo: inout Parameters.UserInfo)
 
     func willSend(_ parameters: Parameters,
                   request: URLRequestable)

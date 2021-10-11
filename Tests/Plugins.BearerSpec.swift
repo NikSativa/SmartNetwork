@@ -32,7 +32,9 @@ final class Plugins_Bearer_ProviderSpec: QuickSpec {
                     requestable = .init()
                     requestable.stub(.setValue).andReturn()
 
-                    subject.prepare(parameters, request: requestable)
+                    subject.prepare(parameters,
+                                    request: requestable,
+                                    userInfo: &parameters.userInfo)
                 }
 
                 it("should modify request") {

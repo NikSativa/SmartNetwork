@@ -19,7 +19,7 @@ extension Impl {
         private var completeCallback: CompletionCallback?
         private var isCanceled: Bool = false
         private let pluginContext: PluginProvider
-        let parameters: Parameters
+        private(set) var parameters: Parameters
 
         required init(parameters: Parameters,
                       pluginContext: PluginProvider?) {
@@ -39,7 +39,9 @@ extension Impl {
                 let request = try parameters.sdkRequest()
                 var requestable: NRequest.URLRequestable = Impl.URLRequestable(request)
                 for plugin in plugins {
-                    plugin.prepare(parameters, request: &requestable)
+                    plugin.prepare(parameters,
+                                   request: &requestable,
+                                   userInfo: &parameters.userInfo)
                 }
 
                 start(with: requestable)
