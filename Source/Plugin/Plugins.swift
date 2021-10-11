@@ -26,7 +26,7 @@ public enum Plugins {
         public init() {
         }
 
-        public func prepare(_: Parameters, request _: inout URLRequestable) {
+        public func prepare(_: Parameters, request _: inout URLRequestable, userInfo _: inout Parameters.UserInfo) {
         }
 
         public func willSend(_: Parameters, request _: URLRequestable) {
@@ -53,8 +53,9 @@ public enum Plugins {
             self.type = type
         }
 
-        public func prepare(_: Parameters,
-                            request: inout URLRequestable) {
+        public func prepare(_ parameters: Parameters,
+                            request: inout URLRequestable,
+                            userInfo: inout Parameters.UserInfo) {
             guard let value = tokenProvider() else {
                 return
             }

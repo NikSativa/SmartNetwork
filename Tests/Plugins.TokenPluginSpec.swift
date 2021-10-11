@@ -43,7 +43,9 @@ class Plugins_TokenPluginSpec: QuickSpec {
                         }
 
                         subject = .init(type: tokenType, tokenProvider: authTokenProvider)
-                        subject.prepare(parameters, request: request)
+                        subject.prepare(parameters,
+                                        request: request,
+                                        userInfo: &parameters.userInfo)
                     }
 
                     it("should not modify request") {
@@ -86,7 +88,9 @@ class Plugins_TokenPluginSpec: QuickSpec {
                         }
 
                         subject = .init(type: tokenType, tokenProvider: authTokenProvider)
-                        subject.prepare(parameters, request: request)
+                        subject.prepare(parameters,
+                                        request: request,
+                                        userInfo: &parameters.userInfo)
                     }
 
                     it("should not modify request") {
