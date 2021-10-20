@@ -4,7 +4,7 @@ import NSpry
 @testable import NRequest
 
 extension StopTheLineResult: Equatable, SpryEquatable {
-    public static func == (lhs: StopTheLineResult, rhs: StopTheLineResult) -> Bool {
+    public static func ==(lhs: StopTheLineResult, rhs: StopTheLineResult) -> Bool {
         switch (lhs, rhs) {
         case (.passOver(let responseData1), .passOver(let responseData2)):
             return responseData1 == responseData2
@@ -12,9 +12,9 @@ extension StopTheLineResult: Equatable, SpryEquatable {
             return true
         case (.retry, .retry):
             return true
-        case (.retry, _),
-            (.useOriginal, _),
-            (.passOver, _):
+        case (.passOver, _),
+             (.retry, _),
+             (.useOriginal, _):
             return false
         }
     }
