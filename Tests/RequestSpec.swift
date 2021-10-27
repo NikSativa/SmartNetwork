@@ -46,13 +46,13 @@ final class RequestSpec: QuickSpec {
                     }
                 }
 
-#if arch(x86_64) && canImport(Darwin)
+                #if arch(x86_64) && canImport(Darwin)
                 describe("restarting") {
                     it("should nothing happen") {
                         expect(subject.restartIfNeeded()).toNot(throwAssertion())
                     }
                 }
-#endif
+                #endif
             }
 
             describe("starting") {
