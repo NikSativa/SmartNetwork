@@ -9,7 +9,7 @@ import Quick
 @testable import NRequestTestHelpers
 
 @available(iOS 11, *)
-final class FoundationProgress_ProgressObservable: QuickSpec {
+final class FoundationProgress_ProgressObservableSpec: QuickSpec {
     override func spec() {
         describe("Progress") {
             var subject: Foundation.Progress!

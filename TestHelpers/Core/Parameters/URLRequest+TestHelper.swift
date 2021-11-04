@@ -1,10 +1,9 @@
 import Foundation
-import Nimble
 import NSpry
 
 import NRequest
 
-extension URLRequest: SpryEquatable, TestOutputStringConvertible {
+extension URLRequest: SpryEquatable {
     public static func testMake(url: String,
                                 headers: [String: String] = [:]) -> URLRequest {
         return .testMake(url: URL.testMake(url),
@@ -18,11 +17,5 @@ extension URLRequest: SpryEquatable, TestOutputStringConvertible {
             request.addValue(value, forHTTPHeaderField: key)
         }
         return request
-    }
-
-    public var testDescription: String {
-        return [String(describing: type(of: self)),
-                self.description,
-                String(describing: allHTTPHeaderFields)].compactMap { $0 }.joined(separator: ", ")
     }
 }

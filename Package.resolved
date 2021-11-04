@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/mattgallagher/CwlCatchException.git",
         "state": {
           "branch": null,
-          "revision": "682841464136f8c66e04afe5dbd01ab51a3a56f2",
-          "version": "2.1.0"
+          "revision": "35f9e770f54ce62dd8526470f14c6e137cef3eea",
+          "version": "2.1.1"
         }
       },
       {
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/mattgallagher/CwlPreconditionTesting.git",
         "state": {
           "branch": null,
-          "revision": "02b7a39a99c4da27abe03cab2053a9034379639f",
-          "version": "2.0.0"
+          "revision": "fb7a26374e8570ff5c68142e5c83406d6abae0d8",
+          "version": "2.0.2"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "git@github.com:NikSativa/NCallback.git",
         "state": {
           "branch": null,
-          "revision": "83793da457c64d65affb3257f9e15aa8aa51f27d",
-          "version": "2.4.2"
+          "revision": "c07887aafef94bf765710549ccb72a5a9dde78cc",
+          "version": "2.8.3"
         }
       },
       {
@@ -33,8 +33,8 @@
         "repositoryURL": "https://github.com/Quick/Nimble.git",
         "state": {
           "branch": null,
-          "revision": "af1730dde4e6c0d45bf01b99f8a41713ce536790",
-          "version": "9.2.0"
+          "revision": "c93f16c25af5770f0d3e6af27c9634640946b068",
+          "version": "9.2.1"
         }
       },
       {
@@ -42,8 +42,8 @@
         "repositoryURL": "git@github.com:NikSativa/NQueue.git",
         "state": {
           "branch": null,
-          "revision": "7cc4bd490eb254ee43b1ce0b4467f957b230900e",
-          "version": "1.1.3"
+          "revision": "b3a9c69c0774770ec00f63aa13ae5a56aca885cf",
+          "version": "1.1.7"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "git@github.com:NikSativa/NSpry.git",
         "state": {
           "branch": null,
-          "revision": "771838b34ce4fd8bd80b1660222d3cc4f73142a5",
-          "version": "1.0.2"
+          "revision": "1dafbc3393aba85753e96947b6c9d80fd81347c1",
+          "version": "1.1.2"
         }
       },
       {
