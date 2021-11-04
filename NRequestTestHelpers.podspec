@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "NRequestTestHelpers"
-  spec.version      = "3.1.3"
+  spec.version      = "3.1.5"
   spec.summary      = "RESTKit"
 
   spec.source       = { :git => "git@github.com:NikSativa/NRequest.git" }
@@ -20,19 +20,38 @@ Pod::Spec.new do |spec|
   spec.dependency 'NRequest'
   spec.dependency 'NQueue'
   spec.dependency 'NQueueTestHelpers'
-  spec.dependency 'NCallback'
-  spec.dependency 'NCallbackTestHelpers'
 
-  spec.scheme = {
-    :code_coverage => true
-  }
+#  spec.scheme = {
+#    :code_coverage => true
+#  }
 
   spec.source_files  = 'TestHelpers/**/*.swift'
+
+  spec.default_subspec = 'Core'
+
+  spec.subspec 'Core' do |sub|
+    sub.resources = ['TestHelpers/Core/**/*.{xcassets,json,imageset,png,strings,stringsdict}']
+    sub.source_files = 'TestHelpers/Core/**/*.{storyboard,xib,swift}'
+  end
+
+  spec.subspec 'Extra' do |sub|
+    sub.resources = ['TestHelpers/Extra/**/*.{xcassets,json,imageset,png,strings,stringsdict}']
+    sub.source_files = 'TestHelpers/Extra/**/*.swift'
+
+    sub.dependency 'Nimble'
+
+    sub.frameworks = 'XCTest', 'Foundation', 'UIKit'
+  end
 
   spec.test_spec 'Tests' do |tests|
     tests.dependency 'Quick'
     tests.dependency 'Nimble'
     tests.dependency 'NSpry_Nimble'
+
+    tests.dependency 'NQueue'
+    tests.dependency 'NQueueTestHelpers'
+    tests.dependency 'NCallback'
+    tests.dependency 'NCallbackTestHelpers'
 
     tests.source_files  = 'Tests/**/*.swift'
   end
