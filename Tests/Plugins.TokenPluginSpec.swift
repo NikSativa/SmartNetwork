@@ -9,7 +9,7 @@ import Quick
 @testable import NRequest
 @testable import NRequestTestHelpers
 
-class Plugins_TokenPluginSpec: QuickSpec {
+final class Plugins_TokenPluginSpec: QuickSpec {
     private enum Constant {
         static let sharedName = "Plugins.TokenPlugin"
         static let type = "type"

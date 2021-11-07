@@ -8,7 +8,7 @@ import Quick
 @testable import NRequest
 @testable import NRequestTestHelpers
 
-class AddressSpec: QuickSpec {
+final class AddressSpec: QuickSpec {
     override func spec() {
         describe("Address") {
             var subject: Address!
