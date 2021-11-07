@@ -11,7 +11,7 @@ import Quick
 @testable import NRequest
 @testable import NRequestTestHelpers
 
-class RequestManagerSpec: QuickSpec {
+final class RequestManagerSpec: QuickSpec {
     private typealias Error = RequestError
     private struct TestInfo: Decodable {
     }
