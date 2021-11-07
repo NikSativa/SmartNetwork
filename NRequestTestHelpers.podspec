@@ -21,11 +21,9 @@ Pod::Spec.new do |spec|
   spec.dependency 'NQueue'
   spec.dependency 'NQueueTestHelpers'
 
-#  spec.scheme = {
-#    :code_coverage => true
-#  }
-
-  spec.source_files  = 'TestHelpers/**/*.swift'
+  #  spec.scheme = {
+  #    :code_coverage => true
+  #  }
 
   spec.default_subspec = 'Core'
 
