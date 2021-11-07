@@ -1,6 +1,6 @@
 import Foundation
-import NSpry
 import Nimble
+import NSpry
 
 import NRequest
 
