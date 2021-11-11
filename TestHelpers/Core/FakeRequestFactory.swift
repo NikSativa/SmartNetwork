@@ -12,6 +12,9 @@ public final class FakeRequestFactory: RequestFactory, Spryable {
         case make = "make(for:pluginContext:)"
     }
 
+    public init() {
+    }
+
     public func make(for parameters: Parameters,
                      pluginContext: PluginProvider?) -> Request {
         return spryify(arguments: parameters, pluginContext)
