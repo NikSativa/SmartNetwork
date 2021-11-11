@@ -3,31 +3,34 @@ import NSpry
 
 @testable import NRequest
 
-final class FakeRequest: Request, Spryable {
-    enum ClassFunction: String, StringRepresentable {
+public final class FakeRequest: Request, Spryable {
+    public enum ClassFunction: String, StringRepresentable {
         case empty
     }
 
-    enum Function: String, StringRepresentable {
+    public enum Function: String, StringRepresentable {
         case parameters
         case restartIfNeeded = "restartIfNeeded()"
         case start = "start(with:)"
         case cancel = "cancel()"
     }
 
-    var parameters: Parameters {
+    public init() {
+    }
+
+    public var parameters: Parameters {
         return spryify()
     }
 
-    func restartIfNeeded() {
+    public func restartIfNeeded() {
         return spryify()
     }
 
-    func cancel() {
+    public func cancel() {
         return spryify()
     }
 
-    func start(with completion: @escaping CompletionCallback) {
+    public func start(with completion: @escaping CompletionCallback) {
         return spryify(arguments: completion)
     }
 }

@@ -7,6 +7,7 @@ import NRequest
 /// make NRequest hidden from main app, but all helpers can be visible via `public typealias Helpers = NRequestTestHelpers.Helpers`
 public enum Helpers {
     public typealias FakePlugin = NRequestTestHelpers.FakePlugin
+    public typealias FakeRequest = NRequestTestHelpers.FakeRequest
     public typealias FakeRequestFactory = NRequestTestHelpers.FakeRequestFactory
     public typealias FakePluginProvider = NRequestTestHelpers.FakePluginProvider
     public typealias FakeRequestManager<Error: AnyError> = NRequestTestHelpers.FakeRequestManager<Error>
