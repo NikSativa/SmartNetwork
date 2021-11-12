@@ -21,7 +21,7 @@
       },
       {
         "package": "NCallback",
-        "repositoryURL": "git@github.com:NikSativa/NCallback.git",
+        "repositoryURL": "https://github.com/NikSativa/NCallback.git",
         "state": {
           "branch": null,
           "revision": "c07887aafef94bf765710549ccb72a5a9dde78cc",
@@ -39,7 +39,7 @@
       },
       {
         "package": "NQueue",
-        "repositoryURL": "git@github.com:NikSativa/NQueue.git",
+        "repositoryURL": "https://github.com/NikSativa/NQueue.git",
         "state": {
           "branch": null,
           "revision": "b3a9c69c0774770ec00f63aa13ae5a56aca885cf",
@@ -48,7 +48,7 @@
       },
       {
         "package": "NSpry",
-        "repositoryURL": "git@github.com:NikSativa/NSpry.git",
+        "repositoryURL": "https://github.com/NikSativa/NSpry.git",
         "state": {
           "branch": null,
           "revision": "1dafbc3393aba85753e96947b6c9d80fd81347c1",

@@ -19,20 +19,14 @@ public final class FakeSession: Session, Spryable {
     }
 
     public func copy(with delegate: SessionDelegate) -> Session {
-        return Queue.main.sync {
-            return spryify(arguments: delegate)
-        }
+        return spryify(arguments: delegate)
     }
 
     public func task(with request: URLRequest, completionHandler: @escaping CompletionHandler) -> SessionTask {
-        return Queue.main.sync {
-            return spryify(arguments: request, completionHandler)
-        }
+        return spryify(arguments: request, completionHandler)
     }
 
     public func finishTasksAndInvalidate() {
-        return Queue.main.sync {
-            return spryify()
-        }
+        return spryify()
     }
 }

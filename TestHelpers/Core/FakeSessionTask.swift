@@ -18,32 +18,22 @@ public final class FakeSessionTask: SessionTask, Spryable, SpryEquatable {
     }
 
     public var progressContainer: NRequest.Progress {
-        return Queue.main.sync {
-            return spryify()
-        }
+        return spryify()
     }
 
     public var isRunning: Bool {
-        return Queue.main.sync {
-            return spryify()
-        }
+        return spryify()
     }
 
     public func resume() {
-        return Queue.main.sync {
-            return spryify()
-        }
+        return spryify()
     }
 
     public func cancel() {
-        return Queue.main.sync {
-            return spryify()
-        }
+        return spryify()
     }
 
     public func observe(_ progressHandler: @escaping ProgressHandler) -> AnyObject {
-        return Queue.main.sync {
-            return spryify(arguments: progressHandler)
-        }
+        return spryify(arguments: progressHandler)
     }
 }
