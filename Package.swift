@@ -1,11 +1,11 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.2
 
 import PackageDescription
 
 // swiftformat:disable all
 let package = Package(
     name: "NRequest",
-    platforms: [.iOS(.v12)],
+    platforms: [.iOS(.v12), .macOS(.v10_12)],
     products: [
         .library(name: "NRequest", targets: ["NRequest"]),
         .library(name: "NRequestTestHelpers", targets: ["NRequestTestHelpers"]),
@@ -14,9 +14,9 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/Quick/Quick.git", .upToNextMajor(from: "4.0.0")),
         .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "9.2.1")),
-        .package(url: "git@github.com:NikSativa/NSpry.git", .upToNextMajor(from: "1.1.2")),
-        .package(url: "git@github.com:NikSativa/NCallback.git", .upToNextMajor(from: "2.8.3")),
-        .package(url: "git@github.com:NikSativa/NQueue.git", .upToNextMajor(from: "1.1.7"))
+        .package(url: "https://github.com/NikSativa/NSpry.git", .upToNextMajor(from: "1.1.2")),
+        .package(url: "https://github.com/NikSativa/NCallback.git", .upToNextMajor(from: "2.8.3")),
+        .package(url: "https://github.com/NikSativa/NQueue.git", .upToNextMajor(from: "1.1.7"))
     ],
     targets: [
         .target(name: "NRequest",
