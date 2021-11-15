@@ -11,7 +11,8 @@ extension ResponseData: Equatable, SpryEquatable {
                                 body: Data? = nil,
                                 error: Error? = nil,
                                 userInfo: Parameters.UserInfo = .init()) -> Self {
-        return .init(body: body,
+        return .init(request: Impl.URLRequestable(URLRequest(url: url)),
+                     body: body,
                      response: HTTPURLResponse(url: url,
                                                statusCode: statusCode,
                                                httpVersion: httpVersion,
@@ -20,11 +21,13 @@ extension ResponseData: Equatable, SpryEquatable {
                      userInfo: userInfo)
     }
 
-    public static func testMake(body: Data? = nil,
+    public static func testMake(request: URLRequestable? = nil,
+                                body: Data? = nil,
                                 response: URLResponse? = nil,
                                 error: Error? = nil,
                                 userInfo: Parameters.UserInfo = .init()) -> Self {
-        return .init(body: body,
+        return .init(request: request,
+                     body: body,
                      response: response,
                      error: error,
                      userInfo: userInfo)

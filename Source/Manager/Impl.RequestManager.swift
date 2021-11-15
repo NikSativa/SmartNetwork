@@ -170,16 +170,36 @@ extension Impl.RequestManager: RequestManager {
     func requestPureData(with parameters: Parameters) -> Callback<ResponseData> {
         let request: Request = factory.make(for: parameters,
                                             pluginContext: pluginProvider)
-        return prepare(request)
+        return prepare(request).beforeComplete { [pluginProvider] data in
+            for plugin in (pluginProvider?.plugins() ?? []) {
+                plugin.didFinish(parameters,
+                                 data: data,
+                                 dto: nil)
+            }
+        }
     }
 
     func requestCustomDecodable<T: CustomDecodable>(_: T.Type,
                                                     with parameters: Parameters) -> ResultCallback<T.Object, Error> {
         let request: Request = factory.make(for: parameters,
                                             pluginContext: pluginProvider)
-        return prepare(request).flatMap { response in
-            let payload = T(with: response)
-            return payload.result.mapError(Error.wrap)
+        return prepare(request).flatMap { [pluginProvider] data in
+            let payload = T(with: data)
+            let result = payload.result.mapError(Error.wrap)
+
+            switch result {
+            case .success:
+                data.error = nil
+            case .failure(let error):
+                data.error = error
+            }
+
+            for plugin in (pluginProvider?.plugins() ?? []) {
+                plugin.didFinish(parameters,
+                                 data: data,
+                                 dto: try? result.get())
+            }
+            return result
         }
     }
 }
