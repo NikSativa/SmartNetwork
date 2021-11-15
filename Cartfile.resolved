@@ -1,0 +1,4 @@
+github "Quick/Nimble" "v9.2.1"
+github "maxkazakov/NCallback" "3e4475a151362176f5a3f21c06d47d57913a0830"
+github "maxkazakov/NQueue" "3f4dc3fee1e6c91e0ebb18976c987d5e4e457a4d"
+github "maxkazakov/NSpry" "ee0ef36dc4ec6c9734741538c567b4d521f4f97d"
