@@ -8,9 +8,11 @@ public protocol Plugin {
 
     func willSend(_ parameters: Parameters,
                   request: URLRequestable)
-    func didFinish(_ parameters: Parameters,
-                   request: URLRequestable,
+    func didReceive(_ parameters: Parameters,
                    data: ResponseData)
+    func didFinish(_ parameters: Parameters,
+                   data: ResponseData,
+                   dto: Any?)
 
     func verify(data: ResponseData) throws
 }

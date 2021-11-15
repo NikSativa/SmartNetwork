@@ -32,7 +32,10 @@ public enum Plugins {
         public func willSend(_: Parameters, request _: URLRequestable) {
         }
 
-        public func didFinish(_: Parameters, request _: URLRequestable, data _: ResponseData) {
+        public func didReceive(_ parameters: Parameters, data: ResponseData) {
+        }
+
+        public func didFinish(_ parameters: Parameters, data: ResponseData, dto: Any?) {
         }
 
         public func verify(data: ResponseData) throws {
@@ -85,7 +88,10 @@ public enum Plugins {
         public func willSend(_: Parameters, request _: URLRequestable) {
         }
 
-        public func didFinish(_: Parameters, request _: URLRequestable, data _: ResponseData) {
+        public func didReceive(_ parameters: Parameters, data: ResponseData) {
+        }
+
+        public func didFinish(_ parameters: Parameters, data: ResponseData, dto: Any?) {
         }
 
         public func verify(data _: ResponseData) throws {
