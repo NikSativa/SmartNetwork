@@ -228,14 +228,17 @@ extension Impl.Request {
         }
 
         let text: String
-        if let data = data {
-            if let json = try? JSONSerialization.jsonObject(with: data, options: []) {
-                let str = String(describing: json)
-                text = "response: \n" + str
-            } else if let strFromData = String(data: data, encoding: .utf8) {
-                text = strFromData
-            } else {
-                text = "response: not empty body (can't decode for logging)"
+        if let body = data, !body.isEmpty {
+            do {
+                let json = try JSONSerialization.jsonObject(with: body, options: [.allowFragments])
+                let prettyData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+                if let prettyStr = String(data: prettyData, encoding: .utf8) {
+                    text = prettyStr
+                } else {
+                    text = String(data: body, encoding: .utf8) ?? "unexpected body"
+                }
+            } catch {
+                text = "serialization error: " + error.localizedDescription
             }
         } else {
             text = "response: empty body"
