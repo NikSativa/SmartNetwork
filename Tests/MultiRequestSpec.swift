@@ -44,7 +44,7 @@ final class MultiRequestSpec: QuickSpec {
                 var tasks: [Int: ThreadSafeFakeSessionTask]!
 
                 @Atomic
-                var completionHandlers: [Int: Session.CompletionHandler]!
+                var completionHandlers: [Int: Session.CompletionHandler] = [:]
 
                 beforeEach {
                     completionHandlers = [:]
