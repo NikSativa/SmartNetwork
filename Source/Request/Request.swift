@@ -46,7 +46,8 @@ extension Impl {
 
                 start(with: requestable)
             } catch {
-                let data = ResponseData(body: nil,
+                let data = ResponseData(request: nil,
+                                        body: nil,
                                         response: nil,
                                         error: error,
                                         userInfo: parameters.userInfo)
@@ -79,7 +80,8 @@ extension Impl {
 
                 if shouldUseCache, let cached = cacheSettings.cache.cachedResponse(for: sdkRequest) {
                     tologSelf(sdkRequest)
-                    let responseData = ResponseData(body: cached.data,
+                    let responseData = ResponseData(request: requestable,
+                                                    body: cached.data,
                                                     response: cached.response,
                                                     error: nil,
                                                     userInfo: self.parameters.userInfo)
@@ -114,7 +116,8 @@ extension Impl {
 
                 self.tologSelf(sdkRequest)
 
-                let responseData = ResponseData(body: data,
+                let responseData = ResponseData(request: requestable,
+                                                body: data,
                                                 response: response,
                                                 error: error,
                                                 userInfo: self.parameters.userInfo)
@@ -148,9 +151,8 @@ extension Impl {
             }
 
             plugins.forEach {
-                $0.didFinish(parameters,
-                             request: sdkRequest,
-                             data: data)
+                $0.didReceive(parameters,
+                              data: data)
             }
 
             complete(in: queue,
@@ -226,14 +228,17 @@ extension Impl.Request {
         }
 
         let text: String
-        if let data = data {
-            if let json = try? JSONSerialization.jsonObject(with: data, options: []) {
-                let str = String(describing: json)
-                text = "response: \n" + str
-            } else if let strFromData = String(data: data, encoding: .utf8) {
-                text = strFromData
-            } else {
-                text = "response: not empty body (can't decode for logging)"
+        if let body = data, !body.isEmpty {
+            do {
+                let json = try JSONSerialization.jsonObject(with: body, options: [.allowFragments])
+                let prettyData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+                if let prettyStr = String(data: prettyData, encoding: .utf8) {
+                    text = prettyStr
+                } else {
+                    text = String(data: body, encoding: .utf8) ?? "unexpected body"
+                }
+            } catch {
+                text = "serialization error: " + error.localizedDescription
             }
         } else {
             text = "response: empty body"

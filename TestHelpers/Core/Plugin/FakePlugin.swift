@@ -11,7 +11,8 @@ public final class FakePlugin: Plugin, Spryable {
     public enum Function: String, StringRepresentable {
         case prepare = "prepare(_:request:userInfo:)"
         case willSend = "willSend(_:request:)"
-        case didFinish = "didFinish(_:response:request:data:)"
+        case didReceive = "didReceive(_:data:)"
+        case didFinish = "didFinish(_:data:dto:)"
         case verify = "verify(data:)"
     }
 
@@ -28,8 +29,12 @@ public final class FakePlugin: Plugin, Spryable {
         return spryify(arguments: parameters, request)
     }
 
-    public func didFinish(_ parameters: Parameters, request: URLRequestable, data: ResponseData) {
-        return spryify(arguments: parameters, request, data)
+    public func didReceive(_ parameters: Parameters, data: ResponseData) {
+        return spryify(arguments: parameters, data)
+    }
+
+    public func didFinish(_ parameters: Parameters, data: ResponseData, dto: Any?) {
+        return spryify(arguments: parameters, data, dto)
     }
 
     public func verify(data: ResponseData) throws {
