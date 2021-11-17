@@ -1,4 +1,4 @@
-github "maxkazakov/NSpry.git" "carthage"
-github "maxkazakov/NQueue.git" "carthage"
-github "maxkazakov/NCallback.git" "carthage"
+github "NikSativa/NSpry.git" "carthage"
+github "NikSativa/NQueue.git" "carthage"
+github "NikSativa/NCallback.git" "carthage"
 
