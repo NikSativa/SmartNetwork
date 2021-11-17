@@ -44,10 +44,10 @@ final class MultiRequestSpec: QuickSpec {
                 var tasks: [Int: ThreadSafeFakeSessionTask]!
 
                 @Atomic
-                var completionHandlers: [Int: Session.CompletionHandler] = [:]
+                var completionHandlers: [Int: Session.CompletionHandler]!
 
                 beforeEach {
-                    completionHandlers = [:]
+                    _completionHandlers = .init(wrappedValue: [:])
                     tasks = [:]
 
                     session.stub(.task).andDo { args in
