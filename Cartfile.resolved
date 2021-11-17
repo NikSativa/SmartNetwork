@@ -1,4 +1,4 @@
 github "Quick/Nimble" "v9.2.1"
-github "NikSativa/NCallback" "01ca1dba996bdf417d8630bf63c7c0424152ca76"
-github "NikSativa/NQueue" "2b73024eb123a74c9c3e92b26a83a3ae9abf270d"
-github "NikSativa/NSpry" "44544773dc97606644e2e9c41a90086db58e3b97"
+github "NikSativa/NCallback" "v2.9.3"
+github "NikSativa/NQueue" "v1.1.9"
+github "NikSativa/NSpry" "v1.2.5"
