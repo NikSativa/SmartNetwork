@@ -9,7 +9,12 @@ import Quick
 
 final class MultiRequestSpec: QuickSpec {
     fileprivate enum Constant {
-        static let numberOfRequests = 1000
+        #if os(macOS)
+        static let numberOfRequests = 500
+        #else
+        static let numberOfRequests = 100
+        #endif
+
         static let headerIndexKey = "headerIndexKey"
         static let error: RequestError = .decoding(.nilResponse)
         static let success: ResponseData = .testMake()
@@ -19,7 +24,7 @@ final class MultiRequestSpec: QuickSpec {
     private typealias Response = Subject.Response
 
     override func spec() {
-        xdescribe("MultiRequestSpec") {
+        describe("MultiRequestSpec") {
             var subject: Subject!
             var session: ThreadSafeFakeSession!
 
@@ -119,29 +124,45 @@ final class MultiRequestSpec: QuickSpec {
                     }
 
                     context("simple completion") {
+                        var result: DispatchTimeoutResult!
+
                         beforeEach {
+                            let group = DispatchGroup()
+
                             for index in 0..<chunkSize {
+                                group.enter()
                                 subject.randomQueue.asyncAfter(deadline: .now() + .milliseconds(Int.random(in: 10...maxDelayInMilliseconds))) {
                                     completionHandlers[index]?(nil, nil, nil)
+                                    group.leave()
                                 }
                             }
 
                             for index in chunkSize..<Constant.numberOfRequests {
+                                group.enter()
                                 subject.randomQueue.asyncAfter(deadline: .now() + .milliseconds(Int.random(in: 10...maxDelayInMilliseconds))) {
                                     completionHandlers[index]?(nil, nil, Constant.error)
+                                    group.leave()
                                 }
                             }
+
+                            result = group.wait(timeout: .now() + .milliseconds(maxDelayInMilliseconds + 300))
                         }
 
                         it("should not crash on multithreading") {
+                            expect(result) == .success
+
                             let expectedResponses: [Response] = Array(repeating: .finished(success: true), count: chunkSize) +
                             Array(repeating: .finished(success: false), count: chunkSize)
-                            expect(subject.responses).toEventually(equal(expectedResponses), timeout: .milliseconds(maxDelayInMilliseconds + 200))
+                            expect(subject.responses).to(equal(expectedResponses))
                         }
                     }
 
                     context("random completion") {
+                        var result: DispatchTimeoutResult!
+
                         beforeEach {
+                            let group = DispatchGroup()
+
                             for index in 0..<Constant.numberOfRequests {
                                 let delay = Int.random(in: 10...maxDelayInMilliseconds)
                                 subject.randomQueue.asyncAfter(deadline: .now() + .milliseconds(delay)) {
@@ -149,23 +170,22 @@ final class MultiRequestSpec: QuickSpec {
                                 }
 
                                 subject.randomQueue.asyncAfter(deadline: .now() + .milliseconds(delay)) {
-                                    subject.requests[index].cancel()
-                                }
-
-                                subject.randomQueue.asyncAfter(deadline: .now() + .milliseconds(delay)) {
-                                    subject.requests[index].restartIfNeeded()
-                                }
-
-                                subject.randomQueue.asyncAfter(deadline: .now() + .milliseconds(maxDelayInMilliseconds)) {
                                     completionHandlers[index]?(nil, nil, nil)
                                 }
+
+                                group.enter()
+                                subject.randomQueue.asyncAfter(deadline: .now() + .milliseconds(maxDelayInMilliseconds + 300)) {
+                                    completionHandlers[index]?(nil, nil, nil)
+                                    group.leave()
+                                }
                             }
+
+                            result = group.wait(timeout: .now() + .milliseconds(maxDelayInMilliseconds + 1000))
                         }
 
                         it("should not crash on multithreading") {
-                            expect(subject.responses.enumerated().filter { $0.element == .pending }.map(\.offset))
-                                .toEventually(beEmpty(),
-                                              timeout: .milliseconds(maxDelayInMilliseconds + 200))
+                            expect(result) == .success
+                            expect(subject.responses.enumerated().filter { $0.element == .pending }.map(\.offset)).to(beEmpty())
                         }
                     }
                 }
@@ -192,12 +212,10 @@ private final class Subject {
     }
 
     let queues: [Queueable] = [Queue.background,
-                               Queue.background,
                                Queue.utility,
-                               Queue.utility,
-                               Queue.userInteractive,
-                               Queue.userInteractive,
-                               Queue.main]
+                               Queue.default,
+                               Queue.userInitiated,
+                               Queue.userInteractive]
     var randomQueue: Queueable {
         return queues.randomElement() ?? Queue.utility
     }
