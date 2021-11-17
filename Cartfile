@@ -1,0 +1,4 @@
+github "maxkazakov/NSpry.git" "carthage"
+github "maxkazakov/NQueue.git" "carthage"
+github "maxkazakov/NCallback.git" "carthage"
+
