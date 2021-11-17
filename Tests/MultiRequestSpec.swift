@@ -42,12 +42,10 @@ final class MultiRequestSpec: QuickSpec {
 
             context("requesting") {
                 var tasks: [Int: ThreadSafeFakeSessionTask]!
-
-                @Atomic
-                var completionHandlers: [Int: Session.CompletionHandler]!
+                var completionHandlers: CompletionHandlers!
 
                 beforeEach {
-                    _completionHandlers = .init(wrappedValue: [:])
+                    completionHandlers = .init()
                     tasks = [:]
 
                     session.stub(.task).andDo { args in
@@ -324,6 +322,34 @@ private final class ThreadSafeFakeSessionTask: SessionTask, Spryable, SpryEquata
     public func observe(_ progressHandler: @escaping ProgressHandler) -> AnyObject {
         return lock.sync {
             return spryify(arguments: progressHandler)
+        }
+    }
+}
+
+private final class CompletionHandlers {
+    @Atomic
+    private var completionHandlers: [Int: Session.CompletionHandler]
+
+    init() {
+        let mutex: Mutexing = Mutex.barrier(Queue.custom(label: "CompletionHandlers",
+                                                         qos: .background,
+                                                         attributes: .serial))
+        _completionHandlers = .init(wrappedValue: [:],
+                                    mutex: mutex,
+                                    read: .sync,
+                                    write: .sync)
+    }
+
+    var count: Int {
+        return completionHandlers.count
+    }
+
+    subscript(_ key: Int) -> Session.CompletionHandler? {
+        get {
+            return completionHandlers[key]
+        }
+        set {
+            completionHandlers[key] = newValue
         }
     }
 }
