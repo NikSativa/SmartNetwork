@@ -1,7 +1,6 @@
 import Foundation
 import NCallback
 import NSpry
-import UIKit
 
 @testable import NRequest
 
@@ -53,11 +52,11 @@ public final class FakeRequestManager<Error: AnyError>: RequestManager, Spryable
 
     // MARK: - Image
 
-    public func requestImage(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
+    public func requestImage(with parameters: Parameters) -> ResultCallback<Image, Error> {
         return spryify(arguments: parameters)
     }
 
-    public func requestOptionalImage(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {
+    public func requestOptionalImage(with parameters: Parameters) -> ResultCallback<Image?, Error> {
         return spryify(arguments: parameters)
     }
 

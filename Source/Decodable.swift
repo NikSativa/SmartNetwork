@@ -1,5 +1,4 @@
 import Foundation
-import UIKit
 
 // sourcery: fakable
 public protocol CustomDecodable {
@@ -65,13 +64,13 @@ struct DecodableContent<Response: Decodable>: CustomDecodable {
 }
 
 struct ImageContent: CustomDecodable {
-    var result: Result<UIImage?, Error>
+    var result: Result<Image?, Error>
 
     init(with data: ResponseData) {
         if let error = data.error {
             result = .failure(error)
         } else if let data = data.body {
-            if let image = UIImage(data: data) {
+            if let image = PlatformImage(data: data)?.sdk {
                 result = .success(image)
             } else {
                 result = .failure(DecodingError.brokenResponse)

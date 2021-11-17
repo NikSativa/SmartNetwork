@@ -1,7 +1,6 @@
 import Foundation
 import NCallback
 import NQueue
-import UIKit
 
 extension Impl {
     final class RequestManager<Error: AnyError> {
