@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/NikSativa/NCallback.git",
         "state": {
           "branch": null,
-          "revision": "c07887aafef94bf765710549ccb72a5a9dde78cc",
-          "version": "2.8.3"
+          "revision": "4442eec3de4cd6de602b52f150d0edeecd3785e4",
+          "version": "2.9.3"
         }
       },
       {
@@ -42,8 +42,8 @@
         "repositoryURL": "https://github.com/NikSativa/NQueue.git",
         "state": {
           "branch": null,
-          "revision": "b3a9c69c0774770ec00f63aa13ae5a56aca885cf",
-          "version": "1.1.7"
+          "revision": "2b73024eb123a74c9c3e92b26a83a3ae9abf270d",
+          "version": "1.1.8"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/NikSativa/NSpry.git",
         "state": {
           "branch": null,
-          "revision": "1dafbc3393aba85753e96947b6c9d80fd81347c1",
-          "version": "1.1.2"
+          "revision": "44544773dc97606644e2e9c41a90086db58e3b97",
+          "version": "1.2.4"
         }
       },
       {

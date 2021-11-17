@@ -1,6 +1,5 @@
 import Foundation
 import NCallback
-import UIKit
 
 public struct AnyRequestManager<Error: AnyError>: RequestManager {
     private let box: AbstractRequestFactory<Error>
@@ -29,11 +28,11 @@ public struct AnyRequestManager<Error: AnyError>: RequestManager {
         return box.request(with: parameters)
     }
 
-    public func requestImage(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
+    public func requestImage(with parameters: Parameters) -> ResultCallback<Image, Error> {
         return box.requestImage(with: parameters)
     }
 
-    public func requestOptionalImage(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {
+    public func requestOptionalImage(with parameters: Parameters) -> ResultCallback<Image?, Error> {
         return box.requestOptionalImage(with: parameters)
     }
 
@@ -75,11 +74,11 @@ private class AbstractRequestFactory<Error: AnyError>: RequestManager {
         fatalError("abstract needs override")
     }
 
-    func requestImage(with _: Parameters) -> ResultCallback<UIImage, Error> {
+    func requestImage(with _: Parameters) -> ResultCallback<Image, Error> {
         fatalError("abstract needs override")
     }
 
-    func requestOptionalImage(with _: Parameters) -> ResultCallback<UIImage?, Error> {
+    func requestOptionalImage(with _: Parameters) -> ResultCallback<Image?, Error> {
         fatalError("abstract needs override")
     }
 
@@ -127,11 +126,11 @@ private final class RequestFactoryBox<T: RequestManager>: AbstractRequestFactory
         return concrete.request(with: parameters)
     }
 
-    override func requestImage(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
+    override func requestImage(with parameters: Parameters) -> ResultCallback<Image, Error> {
         return concrete.requestImage(with: parameters)
     }
 
-    override func requestOptionalImage(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {
+    override func requestOptionalImage(with parameters: Parameters) -> ResultCallback<Image?, Error> {
         return concrete.requestOptionalImage(with: parameters)
     }
 

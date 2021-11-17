@@ -1,6 +1,5 @@
 import Foundation
 import NCallback
-import UIKit
 
 // sourcery: fakable
 public protocol RequestManager {
@@ -23,8 +22,8 @@ public protocol RequestManager {
 
     // MARK: - Image
 
-    func requestImage(with parameters: Parameters) -> ResultCallback<UIImage, Error>
-    func requestOptionalImage(with parameters: Parameters) -> ResultCallback<UIImage?, Error>
+    func requestImage(with parameters: Parameters) -> ResultCallback<Image, Error>
+    func requestOptionalImage(with parameters: Parameters) -> ResultCallback<Image?, Error>
 
     // MARK: - Data
 
@@ -62,11 +61,11 @@ public extension RequestManager {
 
     // MARK: - Image
 
-    func requestImage(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
+    func requestImage(with parameters: Parameters) -> ResultCallback<Image, Error> {
         return requestCustomDecodable(ImageContent.self, with: parameters).recoverResponse()
     }
 
-    func requestOptionalImage(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {
+    func requestOptionalImage(with parameters: Parameters) -> ResultCallback<Image?, Error> {
         return requestCustomDecodable(ImageContent.self, with: parameters)
     }
 
@@ -107,11 +106,11 @@ public extension RequestManager {
 
     // MARK: - Image
 
-    func request(with parameters: Parameters) -> ResultCallback<UIImage, Error> {
+    func request(with parameters: Parameters) -> ResultCallback<Image, Error> {
         return requestImage(with: parameters)
     }
 
-    func request(with parameters: Parameters) -> ResultCallback<UIImage?, Error> {
+    func request(with parameters: Parameters) -> ResultCallback<Image?, Error> {
         return requestOptionalImage(with: parameters)
     }
 

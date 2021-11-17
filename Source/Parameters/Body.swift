@@ -1,5 +1,5 @@
 import Foundation
-import UIKit
+import CoreGraphics
 
 public enum Body {
     public struct AnyEncodable: Encodable {
@@ -15,8 +15,10 @@ public enum Body {
     }
 
     public enum Image: Equatable {
-        case png(UIImage)
-        case jpeg(UIImage, compressionQuality: CGFloat)
+        case png(NRequest.Image)
+#if !os(macOS)
+        case jpeg(NRequest.Image, compressionQuality: CGFloat)
+#endif
     }
 
     public struct Form: Equatable {
@@ -116,9 +118,11 @@ extension Body {
             let data: Data
             switch image {
             case .png(let image):
-                data = try image.pngData().unwrap(orThrow: EncodingError.cantEncodeImage)
+                data = try PlatformImage(image).pngData().unwrap(orThrow: EncodingError.cantEncodeImage)
+#if !os(macOS)
             case .jpeg(let image, let quality):
-                data = try image.jpegData(compressionQuality: quality).unwrap(orThrow: EncodingError.cantEncodeImage)
+                data = try PlatformImage(image).jpegData(compressionQuality: quality).unwrap(orThrow: EncodingError.cantEncodeImage)
+#endif
             }
 
             tempRequest.httpBody = data

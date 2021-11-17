@@ -1,6 +1,4 @@
 import Foundation
-import UIKit
-
 import Nimble
 import NSpry
 import NSpry_Nimble
@@ -71,7 +69,7 @@ final class RequestManagerSpec: QuickSpec {
                 }
 
                 describe("image response") {
-                    var actualCallback: ResultCallback<UIImage, Error>!
+                    var actualCallback: ResultCallback<Image, Error>!
                     var parameters: Parameters!
 
                     beforeEach {
@@ -87,7 +85,7 @@ final class RequestManagerSpec: QuickSpec {
                 }
 
                 describe("optional image response") {
-                    var actualCallback: ResultCallback<UIImage?, Error>!
+                    var actualCallback: ResultCallback<Image?, Error>!
                     var parameters: Parameters!
 
                     beforeEach {
