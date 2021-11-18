@@ -12,27 +12,23 @@ public typealias Image = NSImage
 #error("unsupported os")
 #endif
 
-private struct Screen {
-#if os(iOS) || os(tvOS)
+private enum Screen {
+    #if os(iOS) || os(tvOS)
     static var scale: CGFloat {
         return UIScreen.main.scale
     }
-#elseif os(watchOS)
+
+    #elseif os(watchOS)
     static var scale: CGFloat {
         return WKInterfaceDevice.current().screenScale
     }
-#elseif os(macOS)
+
+    #elseif os(macOS)
     static var scale: CGFloat {
         return 1
     }
-#endif
+    #endif
 }
-
-//#if os(macOS)
-//typealias Color = NSColor
-//#else
-//typealias Color = UIColor
-//#endif
 
 internal struct PlatformImage {
     let sdk: Image
@@ -41,7 +37,7 @@ internal struct PlatformImage {
         self.sdk = image
     }
 
-#if os(macOS)
+    #if os(macOS)
     init?(data: Data) {
         if let image = NSImage(data: data) {
             self.init(image)
@@ -53,7 +49,8 @@ internal struct PlatformImage {
     func pngData() -> Data? {
         return sdk.png
     }
-#elseif os(iOS) || os(tvOS) || os(watchOS)
+
+    #elseif os(iOS) || os(tvOS) || os(watchOS)
     init?(data: Data) {
         if let image = UIImage(data: data, scale: Screen.scale) {
             self.init(image)
@@ -69,18 +66,20 @@ internal struct PlatformImage {
     func jpegData(compressionQuality: CGFloat) -> Data? {
         return sdk.jpegData(compressionQuality: CGFloat(compressionQuality))
     }
-#else
-#error("unsupported os")
-#endif
+    #else
+    #error("unsupported os")
+    #endif
 }
 
 #if os(macOS)
 extension NSBitmapImageRep {
     var png: Data? { representation(using: .png, properties: [:]) }
 }
+
 extension Data {
     var bitmap: NSBitmapImageRep? { NSBitmapImageRep(data: self) }
 }
+
 extension NSImage {
     var png: Data? { tiffRepresentation?.bitmap?.png }
 }

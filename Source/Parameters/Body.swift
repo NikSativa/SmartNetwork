@@ -1,5 +1,5 @@
-import Foundation
 import CoreGraphics
+import Foundation
 
 public enum Body {
     public struct AnyEncodable: Encodable {
@@ -16,9 +16,9 @@ public enum Body {
 
     public enum Image: Equatable {
         case png(NRequest.Image)
-#if !os(macOS)
+        #if !os(macOS)
         case jpeg(NRequest.Image, compressionQuality: CGFloat)
-#endif
+        #endif
     }
 
     public struct Form: Equatable {
@@ -119,10 +119,10 @@ extension Body {
             switch image {
             case .png(let image):
                 data = try PlatformImage(image).pngData().unwrap(orThrow: EncodingError.cantEncodeImage)
-#if !os(macOS)
+            #if !os(macOS)
             case .jpeg(let image, let quality):
                 data = try PlatformImage(image).jpegData(compressionQuality: quality).unwrap(orThrow: EncodingError.cantEncodeImage)
-#endif
+            #endif
             }
 
             tempRequest.httpBody = data

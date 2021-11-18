@@ -9,12 +9,7 @@ import Quick
 
 final class MultiRequestSpec: QuickSpec {
     fileprivate enum Constant {
-        #if os(macOS)
-        static let numberOfRequests = 500
-        #else
         static let numberOfRequests = 100
-        #endif
-
         static let headerIndexKey = "headerIndexKey"
         static let error: RequestError = .decoding(.nilResponse)
         static let success: ResponseData = .testMake()
@@ -57,8 +52,8 @@ final class MultiRequestSpec: QuickSpec {
                         guard let request = args[0] as? URLRequest,
                               let value = request.value(forHTTPHeaderField: Constant.headerIndexKey),
                               let offset = Int(value) else {
-                                  return nil
-                              }
+                            return nil
+                        }
 
                         if let handler = args[1] as? Session.CompletionHandler {
                             completionHandlers[offset] = handler
@@ -152,7 +147,7 @@ final class MultiRequestSpec: QuickSpec {
                             expect(result) == .success
 
                             let expectedResponses: [Response] = Array(repeating: .finished(success: true), count: chunkSize) +
-                            Array(repeating: .finished(success: false), count: chunkSize)
+                                Array(repeating: .finished(success: false), count: chunkSize)
                             expect(subject.responses).to(equal(expectedResponses))
                         }
                     }

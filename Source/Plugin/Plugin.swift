@@ -9,7 +9,7 @@ public protocol Plugin {
     func willSend(_ parameters: Parameters,
                   request: URLRequestable)
     func didReceive(_ parameters: Parameters,
-                   data: ResponseData)
+                    data: ResponseData)
     func didFinish(_ parameters: Parameters,
                    data: ResponseData,
                    dto: Any?)
