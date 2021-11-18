@@ -70,6 +70,7 @@
 		9B8F3D392742A93B000B4702 /* NQueue.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B8F3D342742A93B000B4702 /* NQueue.xcframework */; };
 		9B8F3D3B2742A948000B4702 /* NQueue.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B8F3D342742A93B000B4702 /* NQueue.xcframework */; };
 		9B8F3D3F2742A95E000B4702 /* NCallback.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B8F3D3E2742A95E000B4702 /* NCallback.xcframework */; };
+		9BA6255A2746309900E2E38A /* CrossPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA625592746309900E2E38A /* CrossPlatform.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -148,6 +149,7 @@
 		9B8F3D332742A93B000B4702 /* NSpry.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = NSpry.xcframework; path = ../Carthage/Build/NSpry.xcframework; sourceTree = "<group>"; };
 		9B8F3D342742A93B000B4702 /* NQueue.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = NQueue.xcframework; path = ../Carthage/Build/NQueue.xcframework; sourceTree = "<group>"; };
 		9B8F3D3E2742A95E000B4702 /* NCallback.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = NCallback.xcframework; path = ../Carthage/Build/NCallback.xcframework; sourceTree = "<group>"; };
+		9BA625592746309900E2E38A /* CrossPlatform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CrossPlatform.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -216,6 +218,7 @@
 		9B8F3C972742A68E000B4702 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				9BA625592746309900E2E38A /* CrossPlatform.swift */,
 				9B8F3C982742A68E000B4702 /* Session+URLSession.swift */,
 				9B8F3C992742A68E000B4702 /* Session.swift */,
 				9B8F3C9A2742A68E000B4702 /* Optional+Payload.swift */,
@@ -504,6 +507,7 @@
 				9B8F3CDA2742A68E000B4702 /* AnyError.swift in Sources */,
 				9B8F3CD32742A68E000B4702 /* URLRepresentation.swift in Sources */,
 				9B8F3CC42742A68E000B4702 /* CustomizedEncodable.swift in Sources */,
+				9BA6255A2746309900E2E38A /* CrossPlatform.swift in Sources */,
 				9B8F3CD52742A68E000B4702 /* Body.swift in Sources */,
 				9B8F3CC62742A68E000B4702 /* Decodable.swift in Sources */,
 				9B8F3CCF2742A68E000B4702 /* Impl.RequestManager.swift in Sources */,
