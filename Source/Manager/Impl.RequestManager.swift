@@ -170,7 +170,7 @@ extension Impl.RequestManager: RequestManager {
         let request: Request = factory.make(for: parameters,
                                             pluginContext: pluginProvider)
         return prepare(request).beforeComplete { [pluginProvider] data in
-            for plugin in (pluginProvider?.plugins() ?? []) {
+            for plugin in pluginProvider?.plugins() ?? [] {
                 plugin.didFinish(parameters,
                                  data: data,
                                  dto: nil)
@@ -193,7 +193,7 @@ extension Impl.RequestManager: RequestManager {
                 data.error = error
             }
 
-            for plugin in (pluginProvider?.plugins() ?? []) {
+            for plugin in pluginProvider?.plugins() ?? [] {
                 plugin.didFinish(parameters,
                                  data: data,
                                  dto: try? result.get())
