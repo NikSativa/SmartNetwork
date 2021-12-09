@@ -9,6 +9,7 @@ public enum StatusCode: Error, Equatable {
     case timeout // 408
     case upgradeRequired // 426
     case serverError // 500
+    case tooManyRequests
     case other(Int)
 }
 
@@ -29,6 +30,8 @@ public extension StatusCode {
             return 408
         case .upgradeRequired:
             return 426
+        case .tooManyRequests:
+            return 429
         case .serverError:
             return 500
         case .other(let code):
@@ -60,6 +63,8 @@ public extension StatusCode {
             self = .timeout
         case 426:
             self = .upgradeRequired
+        case 429:
+            self = .tooManyRequests
         case 500:
             self = .serverError
         default:
