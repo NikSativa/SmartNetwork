@@ -8,8 +8,8 @@ public enum StatusCode: Error, Equatable {
     case notFound // 404
     case timeout // 408
     case upgradeRequired // 426
+    case tooManyRequests // 429
     case serverError // 500
-    case tooManyRequests
     case other(Int)
 }
 
