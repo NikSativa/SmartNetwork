@@ -3,13 +3,14 @@ import NQueue
 
 // sourcery: fakable
 public protocol Request: AnyObject {
+    typealias CompletionCallback = (ResponseData) -> Void
+
+    var completion: CompletionCallback? { get set }
     var parameters: Parameters { get }
 
     func restartIfNeeded()
     func cancel()
-
-    typealias CompletionCallback = (ResponseData) -> Void
-    func start(with completion: @escaping CompletionCallback)
+    func start()
 }
 
 extension Impl {
@@ -31,7 +32,7 @@ extension Impl {
             sessionAdaptor?.stop()
         }
 
-        private func start() {
+        internal func startRealRequest() {
             cancel()
             isCanceled = false
 
@@ -171,15 +172,26 @@ extension Impl {
 }
 
 extension Impl.Request: Request {
-    func restartIfNeeded() {
-        if completeCallback != nil {
-            start()
+    var completion: CompletionCallback? {
+        get {
+            return completeCallback
+        }
+        set {
+            completeCallback = newValue
         }
     }
 
-    func start(with completion: @escaping CompletionCallback) {
+    func restartIfNeeded() {
+        if completeCallback != nil {
+            startRealRequest()
+        } else {
+            assert(false)
+        }
+    }
+
+    func start() {
         completeCallback = completion
-        start()
+        startRealRequest()
     }
 
     func cancel() {
