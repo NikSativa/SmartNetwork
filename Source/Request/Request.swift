@@ -8,7 +8,6 @@ public protocol Request: AnyObject {
 
     var parameters: Parameters { get }
 
-    func restartIfNeeded()
     func cancel()
     func start()
 }
@@ -17,10 +16,11 @@ extension Impl {
     final class Request {
         @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
         private var sessionAdaptor: SessionAdaptor?
-        private var completeCallback: CompletionCallback?
         private var isCanceled: Bool = false
         private let pluginContext: PluginProvider
         private(set) var parameters: Parameters
+
+        var completion: CompletionCallback?
 
         required init(parameters: Parameters,
                       pluginContext: PluginProvider?) {
@@ -165,32 +165,14 @@ extension Impl {
         private func complete(in queue: DelayedQueue,
                               with data: ResponseData) {
             queue.fire {
-                self.completeCallback?(data)
+                self.completion?(data)
             }
         }
     }
 }
 
 extension Impl.Request: Request {
-    var completion: CompletionCallback? {
-        get {
-            return completeCallback
-        }
-        set {
-            completeCallback = newValue
-        }
-    }
-
-    func restartIfNeeded() {
-        if completeCallback != nil {
-            startRealRequest()
-        } else {
-            assert(false)
-        }
-    }
-
     func start() {
-        completeCallback = completion
         startRealRequest()
     }
 

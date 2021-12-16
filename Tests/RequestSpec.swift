@@ -43,14 +43,6 @@ final class RequestSpec: QuickSpec {
                         expect(true).to(beTrue())
                     }
                 }
-
-                #if arch(x86_64) && canImport(Darwin)
-                describe("restarting") {
-                    it("should nothing happen") {
-                        expect(subject.restartIfNeeded()).toNot(throwAssertion())
-                    }
-                }
-                #endif
             }
 
             describe("starting") {
@@ -119,7 +111,7 @@ final class RequestSpec: QuickSpec {
                         task.stub(.resume).andReturn()
                         task.stub(.isRunning).andReturn(true)
                         task.stub(.cancel).andReturn()
-                        subject.restartIfNeeded()
+                        subject.start()
                     }
 
                     it("should cancel previous task and resume new") {
