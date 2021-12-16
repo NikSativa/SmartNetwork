@@ -124,22 +124,25 @@ extension Impl {
                             $0[key] = request
                         }
 
-                        if self.state == .idle {
-                            request.start { [weak self] data in
-                                if let self = self {
-                                    self.checkStopTheLine(actual: actual,
-                                                          request: request,
-                                                          result: data,
-                                                          key: key)
-                                } else {
-                                    actual.complete(data)
-                                }
+                        request.completion = { [weak self] data in
+                            if let self = self {
+                                self.checkStopTheLine(actual: actual,
+                                                      request: request,
+                                                      result: data,
+                                                      key: key)
+                            } else {
+                                actual.complete(data)
                             }
                         }
+
+                        if self.state == .idle {
+                            request.start()
+                        }
                     } else {
-                        request.start { data in
+                        request.completion = { data in
                             actual.complete(data)
                         }
+                        request.start()
                     }
                 }
 
@@ -149,9 +152,10 @@ extension Impl {
                 }
             } else {
                 start = { actual in
-                    request.start { data in
+                    request.completion = { data in
                         actual.complete(data)
                     }
+                    request.start()
                 }
 
                 stop = { _ in
