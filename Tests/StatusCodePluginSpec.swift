@@ -36,6 +36,7 @@ final class StatusCodePluginSpec: QuickSpec {
                                                     404: .notFound,
                                                     408: .timeout,
                                                     426: .upgradeRequired,
+                                                    429: .tooManyRequests,
                                                     500: .serverError]
 
                     for code in 0..<1000 where code != 200 {

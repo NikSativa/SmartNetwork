@@ -37,7 +37,7 @@ extension Impl {
 
             let scheduledRequests = self.scheduledRequests
             for request in scheduledRequests {
-                request.value.restartIfNeeded()
+                request.value.start()
             }
         }
 
@@ -94,7 +94,7 @@ extension Impl {
                         removeFromCache(key)
                         actual.complete(result)
                     case .retry:
-                        scheduledRequest.restartIfNeeded()
+                        scheduledRequest.start()
                     case .stopTheLine:
                         makeStopTheLineAction(actual: actual,
                                               refreshToken: stopTheLine,
