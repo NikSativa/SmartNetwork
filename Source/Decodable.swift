@@ -24,6 +24,7 @@ struct VoidContent: CustomDecodable {
                      .other,
                      .serverError,
                      .timeout,
+                     .tooManyRequests,
                      .unauthorized,
                      .upgradeRequired:
                     break

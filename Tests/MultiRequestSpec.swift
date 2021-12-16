@@ -241,7 +241,7 @@ private final class Subject {
     }
 
     func start(offset: Int) {
-        requests[offset].start { [weak self] data in
+        requests[offset].completion = { [weak self] data in
             guard let self = self else {
                 return
             }
@@ -252,6 +252,7 @@ private final class Subject {
                 self.responses.insert(.finished(success: data == Constant.success), at: offset)
             }
         }
+        requests[offset].start()
     }
 }
 

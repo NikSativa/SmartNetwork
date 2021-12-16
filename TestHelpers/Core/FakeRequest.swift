@@ -9,13 +9,23 @@ public final class FakeRequest: Request, Spryable {
     }
 
     public enum Function: String, StringRepresentable {
+        case completion
         case parameters
         case restartIfNeeded = "restartIfNeeded()"
-        case start = "start(with:)"
+        case start = "start()"
         case cancel = "cancel()"
     }
 
     public init() {
+    }
+
+    public var completion: CompletionCallback? {
+        get {
+            return stubbedValue()
+        }
+        set {
+            return recordCall(arguments: newValue)
+        }
     }
 
     public var parameters: Parameters {
@@ -30,7 +40,7 @@ public final class FakeRequest: Request, Spryable {
         return spryify()
     }
 
-    public func start(with completion: @escaping CompletionCallback) {
-        return spryify(arguments: completion)
+    public func start() {
+        return spryify()
     }
 }
