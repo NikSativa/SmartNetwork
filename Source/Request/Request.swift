@@ -4,8 +4,8 @@ import NQueue
 // sourcery: fakable
 public protocol Request: AnyObject {
     typealias CompletionCallback = (ResponseData) -> Void
-
     var completion: CompletionCallback? { get set }
+
     var parameters: Parameters { get }
 
     func restartIfNeeded()
@@ -32,7 +32,7 @@ extension Impl {
             sessionAdaptor?.stop()
         }
 
-        internal func startRealRequest() {
+        private func startRealRequest() {
             cancel()
             isCanceled = false
 

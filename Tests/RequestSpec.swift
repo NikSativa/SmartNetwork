@@ -71,9 +71,10 @@ final class RequestSpec: QuickSpec {
 
                     pluginContext.stub(.plugins).andReturn([])
 
-                    subject.start { data in
+                    subject.completion = { data in
                         responses.append(data)
                     }
+                    subject.start()
                 }
 
                 afterEach {
