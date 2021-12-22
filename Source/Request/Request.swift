@@ -20,6 +20,7 @@ extension Impl {
         private let pluginContext: PluginProvider
         private(set) var parameters: Parameters
 
+        @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
         var completion: CompletionCallback?
 
         required init(parameters: Parameters,
