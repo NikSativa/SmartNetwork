@@ -86,7 +86,7 @@ extension Impl {
                                                     body: cached.data,
                                                     response: cached.response,
                                                     error: nil,
-                                                    userInfo: self.parameters.userInfo)
+                                                    userInfo: parameters.userInfo)
                     fire(data: responseData,
                          queue: cacheSettings.queue,
                          sdkRequest: requestable)

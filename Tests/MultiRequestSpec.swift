@@ -221,7 +221,7 @@ private final class Subject {
 
     init(session: Session,
          numberOfRequests: Int) throws {
-        responses = Array(repeating: .pending, count: numberOfRequests)
+        self.responses = Array(repeating: .pending, count: numberOfRequests)
         for index in 0..<numberOfRequests {
             let plugin = Plugins.TokenPlugin(type: .header(.set(Constant.headerIndexKey))) {
                 return String(index)

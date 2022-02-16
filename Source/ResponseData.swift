@@ -7,21 +7,15 @@ public final class ResponseData {
     public internal(set) var error: Error?
     public var userInfo: Parameters.UserInfo
 
-    public lazy var url: URL? = {
-        return (response as? HTTPURLResponse)?.url
-    }()
+    public lazy var url: URL? = (response as? HTTPURLResponse)?.url
 
     public lazy var allHeaderFields: [AnyHashable: Any] = {
         return (response as? HTTPURLResponse)?.allHeaderFields ?? [:]
     }()
 
-    public lazy var statusCode: Int? = {
-        return (response as? HTTPURLResponse)?.statusCode
-    }()
+    public lazy var statusCode: Int? = (response as? HTTPURLResponse)?.statusCode
 
-    public lazy var urlError: URLError? = {
-        return error as? URLError
-    }()
+    public lazy var urlError: URLError? = error as? URLError
 
     init(request: URLRequestable?,
          body: Data?,

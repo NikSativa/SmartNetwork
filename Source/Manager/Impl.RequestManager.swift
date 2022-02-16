@@ -35,7 +35,7 @@ extension Impl {
         private func unfreeze() {
             state = .idle
 
-            let scheduledRequests = self.scheduledRequests
+            let scheduledRequests = scheduledRequests
             for request in scheduledRequests {
                 request.value.start()
             }
