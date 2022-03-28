@@ -36,7 +36,7 @@ final class Plugins_TokenPluginSpec: QuickSpec {
                     beforeEach {
                         request = .init()
                         parameters = .testMake()
-                        let authTokenProvider: Plugins.TokenPlugin.TokenProvider = {
+                        let authTokenProvider: Plugins.TokenProvider = {
                             return nil
                         }
 
@@ -69,7 +69,7 @@ final class Plugins_TokenPluginSpec: QuickSpec {
                     beforeEach {
                         request = .init()
                         parameters = .testMake()
-                        let authTokenProvider: Plugins.TokenPlugin.TokenProvider = {
+                        let authTokenProvider: Plugins.TokenProvider = {
                             return Constant.value
                         }
 

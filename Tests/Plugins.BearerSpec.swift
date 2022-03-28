@@ -11,14 +11,14 @@ final class Plugins_Bearer_ProviderSpec: QuickSpec {
     override func spec() {
         describe("Plugins.Bearer") {
             var subject: Plugin!
-            var authTokenProvider: Plugins.TokenPlugin.TokenProvider!
+            var authTokenProvider: Plugins.TokenProvider!
 
             beforeEach {
                 authTokenProvider = {
                     return "my_token_string"
                 }
 
-                subject = Plugins.Bearer(tokenProvider: authTokenProvider)
+                subject = ModuleFactory().bearerPlugin(tokenProvider: authTokenProvider)
             }
 
             describe("prepare") {

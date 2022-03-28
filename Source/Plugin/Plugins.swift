@@ -1,6 +1,8 @@
 import Foundation
 
 public enum Plugins {
+    public typealias TokenProvider = () -> String?
+
     public enum TokenType {
         public enum Operation {
             case set(String)
@@ -11,54 +13,42 @@ public enum Plugins {
         case queryParam(String)
     }
 
-    public final class Bearer: TokenPlugin {
-        public required init(tokenProvider: @escaping Plugins.TokenPlugin.TokenProvider) {
-            super.init(type: .header(.set("Authorization")),
-                       tokenProvider: {
-                           return tokenProvider().map { token in
-                               return "Bearer " + token
-                           }
-                       })
-        }
-    }
-
-    public final class StatusCode: Plugin {
-        public init() {
+    final class StatusCode: Plugin {
+        init() {
         }
 
-        public func prepare(_: Parameters, request _: inout URLRequestable, userInfo _: inout Parameters.UserInfo) {
+        func prepare(_: Parameters, request _: inout URLRequestable, userInfo _: inout Parameters.UserInfo) {
         }
 
-        public func willSend(_: Parameters, request _: URLRequestable) {
+        func willSend(_: Parameters, request _: URLRequestable) {
         }
 
-        public func didReceive(_ parameters: Parameters, data: ResponseData) {
+        func didReceive(_ parameters: Parameters, data: ResponseData) {
         }
 
-        public func didFinish(_ parameters: Parameters, data: ResponseData, dto: Any?) {
+        func didFinish(_ parameters: Parameters, data: ResponseData, dto: Any?) {
         }
 
-        public func verify(data: ResponseData) throws {
+        func verify(data: ResponseData) throws {
             if let error = NRequest.StatusCode(data.statusCode) {
                 throw error
             }
         }
     }
 
-    open class TokenPlugin: Plugin {
-        public typealias TokenProvider = () -> String?
+    final class TokenPlugin: Plugin {
         private let tokenProvider: TokenProvider
         private let type: TokenType
 
-        public init(type: TokenType,
-                    tokenProvider: @escaping TokenProvider) {
+        init(type: TokenType,
+             tokenProvider: @escaping TokenProvider) {
             self.tokenProvider = tokenProvider
             self.type = type
         }
 
-        public func prepare(_ parameters: Parameters,
-                            request: inout URLRequestable,
-                            userInfo: inout Parameters.UserInfo) {
+        func prepare(_ parameters: Parameters,
+                     request: inout URLRequestable,
+                     userInfo: inout Parameters.UserInfo) {
             guard let value = tokenProvider() else {
                 return
             }
@@ -85,16 +75,16 @@ public enum Plugins {
             }
         }
 
-        public func willSend(_: Parameters, request _: URLRequestable) {
+        func willSend(_: Parameters, request _: URLRequestable) {
         }
 
-        public func didReceive(_ parameters: Parameters, data: ResponseData) {
+        func didReceive(_ parameters: Parameters, data: ResponseData) {
         }
 
-        public func didFinish(_ parameters: Parameters, data: ResponseData, dto: Any?) {
+        func didFinish(_ parameters: Parameters, data: ResponseData, dto: Any?) {
         }
 
-        public func verify(data _: ResponseData) throws {
+        func verify(data _: ResponseData) throws {
         }
     }
 }

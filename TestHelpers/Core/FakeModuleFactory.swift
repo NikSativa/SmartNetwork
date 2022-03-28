@@ -13,6 +13,8 @@ final class FakeModuleFactory: ModuleFactory, Spryable {
         case manager = "start(factory:pluginProvider:stopTheLine:)"
         case managerWithPlugins = "start(factory:plugins:stopTheLine:)"
         case statusCodePlugin = "statusCodePlugin()"
+        case bearerPlugin = "bearerPlugin(tokenProvider:)"
+        case tokenPlugin = "tokenPlugin(type:tokenProvider:)"
     }
 
     override func factory() -> RequestFactory {
@@ -31,7 +33,16 @@ final class FakeModuleFactory: ModuleFactory, Spryable {
         return spryify(arguments: factory, plugins, stopTheLine)
     }
 
-    override func statusCodePlugin() -> Plugins.StatusCode {
+    override func statusCodePlugin() -> Plugin {
+        return spryify()
+    }
+
+    override func bearerPlugin(tokenProvider: @escaping Plugins.TokenProvider) -> Plugin {
+        return spryify()
+    }
+
+    override func tokenPlugin(type: Plugins.TokenType,
+                              tokenProvider: @escaping Plugins.TokenProvider) -> Plugin {
         return spryify()
     }
 }
