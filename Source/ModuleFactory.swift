@@ -24,7 +24,22 @@ public class ModuleFactory {
                        stopTheLine: stopTheLine).toAny()
     }
 
-    public func statusCodePlugin() -> Plugins.StatusCode {
+    public func statusCodePlugin() -> Plugin {
         return Plugins.StatusCode()
+    }
+
+    public func bearerPlugin(tokenProvider: @escaping Plugins.TokenProvider) -> Plugin {
+        return Plugins.TokenPlugin(type: .header(.set("Authorization")),
+                                   tokenProvider: {
+                                       return tokenProvider().map { token in
+                                           return "Bearer " + token
+                                       }
+                                   })
+    }
+
+    public func tokenPlugin(type: Plugins.TokenType,
+                            tokenProvider: @escaping Plugins.TokenProvider) -> Plugin {
+        return Plugins.TokenPlugin(type: type,
+                                   tokenProvider: tokenProvider)
     }
 }
