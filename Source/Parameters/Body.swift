@@ -3,7 +3,7 @@ import Foundation
 
 public enum Body {
     public struct AnyEncodable: Encodable {
-        private let encodable: Encodable
+        fileprivate let encodable: Encodable
 
         public init(_ encodable: Encodable) {
             self.encodable = encodable
@@ -135,7 +135,7 @@ extension Body {
                 tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
             }
         case .encodable(let object):
-            let encoder = (type(of: object) as? CustomizedEncodable.Type)?.encoder ?? JSONEncoder()
+            let encoder = object.encoder
             do {
                 let data = try encoder.encode(object)
 
@@ -177,6 +177,24 @@ extension Body {
             if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
                 tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
             }
+        }
+    }
+}
+
+public extension Body {
+    static func xform<M: Encodable>(_ object: M) throws -> Self {
+        do {
+            let encoder = (type(of: object) as? CustomizedEncodable.Type)?.encoder ?? JSONEncoder()
+            let originalData = try encoder.encode(object)
+            let parameters = try JSONSerialization.jsonObject(with: originalData)
+
+            if let parameters = parameters as? [String: Any] {
+                return .xform(parameters)
+            } else {
+                throw EncodingError.invalidJSON
+            }
+        } catch {
+            throw EncodingError.generic(.init(error))
         }
     }
 }
@@ -244,5 +262,16 @@ private enum XFormEncoder {
                 return "\(key)=\(self.percentEscapeString(value))"
             }
             .joined(separator: "&").data(using: String.Encoding.utf8) ?? Data()
+    }
+}
+
+extension Body.AnyEncodable {
+    var encoder: JSONEncoder {
+        if let object = type(of: self) as? CustomizedEncodable.Type {
+            return object.encoder
+        } else if let object = type(of: encodable) as? CustomizedEncodable.Type {
+            return object.encoder
+        }
+        return JSONEncoder()
     }
 }
