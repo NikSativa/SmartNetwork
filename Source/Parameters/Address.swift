@@ -51,15 +51,15 @@ public enum Address: Equatable {
     }
 
     public func append(_ pathComponents: [String]) -> Self {
-        self + pathComponents
+        return self + pathComponents
     }
 
     public func append(_ pathComponent: String) -> Self {
-        self + pathComponent
+        return self + pathComponent
     }
 
     public func append(_ queryItems: QueryItems) -> Self {
-        self + queryItems
+        return self + queryItems
     }
 
     public static func +(lhs: Self, rhs: QueryItems) -> Self {
