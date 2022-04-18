@@ -246,7 +246,7 @@ extension Impl.Request {
 
 extension Impl.Request: CustomDebugStringConvertible {
     var debugDescription: String {
-        let url = try? parameters.address.url()
+        let url = try? parameters.address.url(shouldAddSlashAfterEndpoint: parameters.shouldAddSlashAfterEndpoint)
         let text = url?.absoluteString ?? "broken url"
         return "<Request: \(text)>"
     }
@@ -381,7 +381,7 @@ private extension Parameters.TaskKind {
 
 private extension Parameters {
     func sdkRequest() throws -> URLRequest {
-        let url = try address.url()
+        let url = try address.url(shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint)
         var request = URLRequest(url: url,
                                  cachePolicy: requestPolicy,
                                  timeoutInterval: timeoutInterval)

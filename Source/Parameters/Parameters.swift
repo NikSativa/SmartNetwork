@@ -7,6 +7,7 @@ public struct Parameters {
     public typealias UserInfo = [String: Any]
     public static var sharedSession: Session = URLSession.shared
     public static var defaultResponseQueue: DelayedQueue = .async(Queue.main)
+    public static var shouldAddSlashAfterEndpoint: Bool = false
 
     public enum TaskKind {
         case download(progressHandler: ProgressHandler)
@@ -39,6 +40,7 @@ public struct Parameters {
     public var isLoggingEnabled: Bool
     public var taskKind: TaskKind?
     public var session: Session
+    public var shouldAddSlashAfterEndpoint: Bool = false
 
     /// used only on client side. best practice to use it to identify request in the Plugin's
     public var userInfo: UserInfo
@@ -55,7 +57,8 @@ public struct Parameters {
                 isLoggingEnabled: Bool = false,
                 taskKind: TaskKind? = nil,
                 userInfo: UserInfo = .init(),
-                session: Session = Self.sharedSession) {
+                session: Session = Self.sharedSession,
+                shouldAddSlashAfterEndpoint: Bool = Self.shouldAddSlashAfterEndpoint) {
         self.address = address
         self.header = header
         self.method = method
@@ -69,6 +72,7 @@ public struct Parameters {
         self.taskKind = taskKind
         self.userInfo = userInfo
         self.session = session
+        self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
     }
 }
 
