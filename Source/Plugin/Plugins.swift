@@ -14,20 +14,15 @@ public enum Plugins {
     }
 
     final class StatusCode: Plugin {
-        init() {
-        }
+        init() {}
 
-        func prepare(_: Parameters, request _: inout URLRequestable, userInfo _: inout Parameters.UserInfo) {
-        }
+        func prepare(_: Parameters, request _: inout URLRequestable, userInfo _: inout Parameters.UserInfo) {}
 
-        func willSend(_: Parameters, request _: URLRequestable) {
-        }
+        func willSend(_: Parameters, request _: URLRequestable) {}
 
-        func didReceive(_ parameters: Parameters, data: ResponseData) {
-        }
+        func didReceive(_ parameters: Parameters, data: ResponseData) {}
 
-        func didFinish(_ parameters: Parameters, data: ResponseData, dto: Any?) {
-        }
+        func didFinish(_ parameters: Parameters, data: ResponseData, dto: Any?) {}
 
         func verify(data: ResponseData) throws {
             if let error = NRequest.StatusCode(data.statusCode) {
@@ -75,16 +70,12 @@ public enum Plugins {
             }
         }
 
-        func willSend(_: Parameters, request _: URLRequestable) {
-        }
+        func willSend(_: Parameters, request _: URLRequestable) {}
 
-        func didReceive(_ parameters: Parameters, data: ResponseData) {
-        }
+        func didReceive(_ parameters: Parameters, data: ResponseData) {}
 
-        func didFinish(_ parameters: Parameters, data: ResponseData, dto: Any?) {
-        }
+        func didFinish(_ parameters: Parameters, data: ResponseData, dto: Any?) {}
 
-        func verify(data _: ResponseData) throws {
-        }
+        func verify(data _: ResponseData) throws {}
     }
 }

@@ -17,8 +17,7 @@ public final class FakeURLRequestable: URLRequestable, Spryable {
         case setValue = "setValue(_:forHTTPHeaderField:)"
     }
 
-    public init() {
-    }
+    public init() {}
 
     public var original: URLRequest {
         return spryify()

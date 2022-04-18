@@ -16,8 +16,7 @@ public final class FakeRequest: Request, Spryable {
         case cancel = "cancel()"
     }
 
-    public init() {
-    }
+    public init() {}
 
     public var completion: CompletionCallback? {
         get {

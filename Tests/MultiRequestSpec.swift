@@ -206,11 +206,13 @@ private final class Subject {
         }
     }
 
-    let queues: [Queueable] = [Queue.background,
-                               Queue.utility,
-                               Queue.default,
-                               Queue.userInitiated,
-                               Queue.userInteractive]
+    let queues: [Queueable] = [
+        Queue.background,
+        Queue.utility,
+        Queue.default,
+        Queue.userInitiated,
+        Queue.userInteractive,
+    ]
     var randomQueue: Queueable {
         return queues.randomElement() ?? Queue.utility
     }
@@ -269,8 +271,7 @@ private final class ThreadSafeFakeSession: Session, Spryable {
 
     private let lock: Mutexing = Mutex.barrier(Queue.custom(label: "Session", attributes: .serial))
 
-    public init() {
-    }
+    public init() {}
 
     public func copy(with delegate: SessionDelegate) -> Session {
         return lock.sync {
@@ -306,8 +307,7 @@ private final class ThreadSafeFakeSessionTask: SessionTask, Spryable, SpryEquata
 
     private let lock: Mutexing = Mutex.barrier(Queue.custom(label: "SessionTask", attributes: .serial))
 
-    init() {
-    }
+    init() {}
 
     public var progressContainer: NRequest.Progress {
         return lock.sync {

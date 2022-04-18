@@ -3,5 +3,4 @@ import NSpry
 
 @testable import NRequest
 
-extension StopTheLineAction: SpryEquatable {
-}
+extension StopTheLineAction: SpryEquatable {}

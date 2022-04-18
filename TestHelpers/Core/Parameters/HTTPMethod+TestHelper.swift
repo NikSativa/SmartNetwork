@@ -3,5 +3,4 @@ import NSpry
 
 import NRequest
 
-extension HTTPMethod: SpryEquatable {
-}
+extension HTTPMethod: SpryEquatable {}

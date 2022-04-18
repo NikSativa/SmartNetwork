@@ -50,8 +50,6 @@ extension Body.AnyEncodable: Equatable, SpryEquatable {
     }
 }
 
-extension Body.Image: SpryEquatable {
-}
+extension Body.Image: SpryEquatable {}
 
-extension Body.Form: SpryEquatable {
-}
+extension Body.Form: SpryEquatable {}

@@ -29,15 +29,17 @@ final class StatusCodePluginSpec: QuickSpec {
 
             context("when receiving status code 0..<1000") {
                 it("should throw corresponding error") {
-                    let codes: [Int: StatusCode] = [204: .noContent,
-                                                    400: .badRequest,
-                                                    401: .unauthorized,
-                                                    403: .forbidden,
-                                                    404: .notFound,
-                                                    408: .timeout,
-                                                    426: .upgradeRequired,
-                                                    429: .tooManyRequests,
-                                                    500: .serverError]
+                    let codes: [Int: StatusCode] = [
+                        204: .noContent,
+                        400: .badRequest,
+                        401: .unauthorized,
+                        403: .forbidden,
+                        404: .notFound,
+                        408: .timeout,
+                        426: .upgradeRequired,
+                        429: .tooManyRequests,
+                        500: .serverError,
+                    ]
 
                     for code in 0..<1000 where code != 200 {
                         let error = codes[code] ?? .other(code)

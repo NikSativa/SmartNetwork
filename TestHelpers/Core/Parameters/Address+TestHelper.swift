@@ -31,5 +31,4 @@ extension URLRepresentation: SpryEquatable {
     }
 }
 
-extension Address.Scheme: SpryEquatable {
-}
+extension Address.Scheme: SpryEquatable {}

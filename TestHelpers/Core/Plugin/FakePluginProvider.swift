@@ -13,8 +13,7 @@ public final class FakePluginProvider: PluginProvider, Spryable {
         case plugins = "plugins()"
     }
 
-    public init() {
-    }
+    public init() {}
 
     public func plugins() -> [Plugin] {
         return spryify()

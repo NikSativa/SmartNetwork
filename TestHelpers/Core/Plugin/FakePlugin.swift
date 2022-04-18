@@ -16,8 +16,7 @@ public final class FakePlugin: Plugin, Spryable {
         case verify = "verify(data:)"
     }
 
-    public init() {
-    }
+    public init() {}
 
     public func prepare(_ parameters: Parameters,
                         request: inout URLRequestable,
