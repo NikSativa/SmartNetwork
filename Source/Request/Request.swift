@@ -381,16 +381,35 @@ private extension Parameters.TaskKind {
 
 private extension Parameters {
     func sdkRequest() throws -> URLRequest {
-        var request = URLRequest(url: try address.url(),
+        let url = try address.url()
+        var request = URLRequest(url: url,
                                  cachePolicy: requestPolicy,
                                  timeoutInterval: timeoutInterval)
         request.httpMethod = method.toString()
 
         for (key, value) in header {
-            request.addValue(value, forHTTPHeaderField: key)
+            request.setValue(value, forHTTPHeaderField: key)
         }
 
         try body.fill(&request, isLoggingEnabled: isLoggingEnabled)
+
+        if let host = url.host,
+           request.value(forHTTPHeaderField: "Host") == nil {
+            request.setValue(host, forHTTPHeaderField: "Host")
+        }
+
+        if request.value(forHTTPHeaderField: "Accept") == nil {
+            request.setValue("application/json, text/plain, */*", forHTTPHeaderField: "Accept")
+        }
+
+        if request.value(forHTTPHeaderField: "Accept-Encoding") == nil {
+            request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
+        }
+
+        if request.value(forHTTPHeaderField: "Connection") == nil {
+            request.setValue("keep-alive", forHTTPHeaderField: "Connection")
+        }
+
         return request
     }
 }

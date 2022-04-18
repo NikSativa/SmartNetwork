@@ -3,6 +3,8 @@ import Foundation
 public typealias QueryItems = [String: String]
 
 public enum Address: Equatable {
+    public static var shouldAddSlashAfterEndpoint: Bool = false
+
     public enum Scheme: Equatable {
         case http
         case https
@@ -130,6 +132,10 @@ public extension Address {
             }
 
             if !url.queryItems.isEmpty {
+                if Self.shouldAddSlashAfterEndpoint {
+                    components.path += "/"
+                }
+
                 var result = components.queryItems ?? []
 
                 let keys = url.queryItems.keys
