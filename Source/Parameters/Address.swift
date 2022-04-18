@@ -3,8 +3,6 @@ import Foundation
 public typealias QueryItems = [String: String]
 
 public enum Address: Equatable {
-    public static var shouldAddSlashAfterEndpoint: Bool = false
-
     public enum Scheme: Equatable {
         case http
         case https
@@ -105,7 +103,7 @@ public enum Address: Equatable {
 }
 
 public extension Address {
-    func url() throws -> URL {
+    func url(shouldAddSlashAfterEndpoint: Bool) throws -> URL {
         switch self {
         case .url(let url):
             return url
@@ -132,7 +130,7 @@ public extension Address {
             }
 
             if !url.queryItems.isEmpty {
-                if Self.shouldAddSlashAfterEndpoint {
+                if shouldAddSlashAfterEndpoint {
                     components.path += "/"
                 }
 
