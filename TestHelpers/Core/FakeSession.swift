@@ -15,8 +15,7 @@ public final class FakeSession: Session, Spryable {
         case finishTasksAndInvalidate = "finishTasksAndInvalidate()"
     }
 
-    public init() {
-    }
+    public init() {}
 
     public func copy(with delegate: SessionDelegate) -> Session {
         return spryify(arguments: delegate)

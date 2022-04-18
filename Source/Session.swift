@@ -20,8 +20,7 @@ public protocol SessionTask: ProgressObservable {
 }
 
 // sourcery: fakable
-public protocol SessionDelegate: URLSessionDataDelegate {
-}
+public protocol SessionDelegate: URLSessionDataDelegate {}
 
 // sourcery: fakable
 public protocol Session: AnyObject {

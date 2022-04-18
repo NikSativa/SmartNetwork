@@ -23,8 +23,7 @@ public final class FakeRequestManager<Error: AnyError>: RequestManager, Spryable
         case requestOptionalAny = "requestOptionalAny(with:)"
     }
 
-    public init() {
-    }
+    public init() {}
 
     public func requestPureData(with parameters: Parameters) -> Callback<ResponseData> {
         return spryify(arguments: parameters)

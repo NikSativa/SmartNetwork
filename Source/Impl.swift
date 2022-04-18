@@ -1,4 +1,3 @@
 import Foundation
 
-enum Impl {
-}
+enum Impl {}

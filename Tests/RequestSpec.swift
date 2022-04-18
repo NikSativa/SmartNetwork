@@ -139,14 +139,16 @@ final class RequestSpec: QuickSpec {
                         }
 
                         it("should receive response") {
-                            expect(responses).to(equal([.testMake(body: nil,
-                                                                  response: nil,
-                                                                  error: nil,
-                                                                  userInfo: Constant.userInfo),
-                                                        .testMake(body: nil,
-                                                                  response: nil,
-                                                                  error: nil,
-                                                                  userInfo: Constant.userInfo)]))
+                            expect(responses).to(equal([
+                                .testMake(body: nil,
+                                          response: nil,
+                                          error: nil,
+                                          userInfo: Constant.userInfo),
+                                .testMake(body: nil,
+                                          response: nil,
+                                          error: nil,
+                                          userInfo: Constant.userInfo),
+                            ]))
                         }
                     }
                 }

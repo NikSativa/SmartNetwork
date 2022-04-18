@@ -11,8 +11,7 @@ import Quick
 
 final class RequestManagerSpec: QuickSpec {
     private typealias Error = RequestError
-    private struct TestInfo: Decodable {
-    }
+    private struct TestInfo: Decodable {}
 
     override func spec() {
         describe("RequestManager") {

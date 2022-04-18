@@ -6,8 +6,7 @@ public protocol RequestFactory {
 }
 
 extension Impl {
-    final class RequestFactory {
-    }
+    final class RequestFactory {}
 }
 
 extension Impl.RequestFactory: RequestFactory {

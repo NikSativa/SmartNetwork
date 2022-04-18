@@ -1,8 +1,7 @@
 import Foundation
 
 public class ModuleFactory {
-    public init() {
-    }
+    public init() {}
 
     public func factory() -> RequestFactory {
         return Impl.RequestFactory()
