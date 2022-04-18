@@ -11,6 +11,14 @@ final class AddressSpec: QuickSpec {
         describe("Address") {
             var subject: Address!
 
+            beforeEach {
+                Address.shouldAddSlashAfterEndpoint = true
+            }
+
+            afterEach {
+                Address.shouldAddSlashAfterEndpoint = false
+            }
+
             describe("url") {
                 context("without scheme") {
                     beforeEach {
@@ -100,7 +108,7 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect({ try subject.url() }) == .testMake("https://some.com/endpoint?item=value")
+                        expect({ try subject.url() }) == .testMake("https://some.com/endpoint/?item=value")
                     }
                 }
 
@@ -110,7 +118,7 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect({ try subject.url() }) == .testMake("https://some.com/endpoint?item=value")
+                        expect({ try subject.url() }) == .testMake("https://some.com/endpoint/?item=value")
                     }
                 }
 
@@ -120,7 +128,7 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect({ try subject.url() }) == .testMake("https://some.com%2Fitem=value/endpoint?item=value")
+                        expect({ try subject.url() }) == .testMake("https://some.com%2Fitem=value/endpoint/?item=value")
                     }
                 }
             }
