@@ -11,14 +11,6 @@ final class AddressSpec: QuickSpec {
         describe("Address") {
             var subject: Address!
 
-            beforeEach {
-                Address.shouldAddSlashAfterEndpoint = true
-            }
-
-            afterEach {
-                Address.shouldAddSlashAfterEndpoint = false
-            }
-
             describe("url") {
                 context("without scheme") {
                     beforeEach {
@@ -26,7 +18,17 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect({ try subject.url() }) == .testMake("some.com")
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: true) }) == .testMake("some.com")
+                    }
+                }
+
+                context("without scheme; shouldAddSlashAfterEndpoint: false") {
+                    beforeEach {
+                        subject = .url(.testMake("some.com"))
+                    }
+
+                    it("should pass the url") {
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: false) }) == .testMake("some.com")
                     }
                 }
 
@@ -36,7 +38,17 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect({ try subject.url() }) == .testMake("https://some.com/asd")
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: true) }) == .testMake("https://some.com/asd")
+                    }
+                }
+
+                context("https scheme and endpoint; shouldAddSlashAfterEndpoint: false") {
+                    beforeEach {
+                        subject = .url(.testMake("https://some.com/asd"))
+                    }
+
+                    it("should pass the url") {
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: false) }) == .testMake("https://some.com/asd")
                     }
                 }
 
@@ -46,7 +58,17 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect({ try subject.url() }) == .testMake("http://some.com")
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: true) }) == .testMake("http://some.com")
+                    }
+                }
+
+                context("http scheme; shouldAddSlashAfterEndpoint: false") {
+                    beforeEach {
+                        subject = .url(.testMake("http://some.com"))
+                    }
+
+                    it("should pass the url") {
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: false) }) == .testMake("http://some.com")
                     }
                 }
 
@@ -56,7 +78,17 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect({ try subject.url() }) == .testMake("https://some.com")
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: true) }) == .testMake("https://some.com")
+                    }
+                }
+
+                context("https scheme; shouldAddSlashAfterEndpoint: false") {
+                    beforeEach {
+                        subject = .url(.testMake("https://some.com"))
+                    }
+
+                    it("should pass the url") {
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: false) }) == .testMake("https://some.com")
                     }
                 }
             }
@@ -68,7 +100,17 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect({ try subject.url() }) == .testMake("https://some.com")
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: true) }) == .testMake("https://some.com")
+                    }
+                }
+
+                context("host; shouldAddSlashAfterEndpoint: false") {
+                    beforeEach {
+                        subject = .address(host: "some.com")
+                    }
+
+                    it("should pass the url") {
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: false) }) == .testMake("https://some.com")
                     }
                 }
 
@@ -78,7 +120,17 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should throw error") {
-                        expect({ try subject.url() }) == .testMake("https://%22some.com")
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: true) }) == .testMake("https://%22some.com")
+                    }
+                }
+
+                context("unexpected character in the host name; shouldAddSlashAfterEndpoint: false") {
+                    beforeEach {
+                        subject = .address(host: "\"some.com")
+                    }
+
+                    it("should throw error") {
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: false) }) == .testMake("https://%22some.com")
                     }
                 }
 
@@ -88,7 +140,17 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect({ try subject.url() }) == .testMake("https://some.com/endpoint")
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: true) }) == .testMake("https://some.com/endpoint")
+                    }
+                }
+
+                context("host; endpoint; shouldAddSlashAfterEndpoint: false") {
+                    beforeEach {
+                        subject = .address(host: "some.com", endpoint: "endpoint")
+                    }
+
+                    it("should pass the url") {
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: false) }) == .testMake("https://some.com/endpoint")
                     }
                 }
 
@@ -98,7 +160,17 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect({ try subject.url() }) == .testMake("https://some.com/endpoint")
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: true) }) == .testMake("https://some.com/endpoint")
+                    }
+                }
+
+                context("host; endpoint; queryItems; shouldAddSlashAfterEndpoint: false") {
+                    beforeEach {
+                        subject = .address(host: "some.com", endpoint: "endpoint", queryItems: ["item": "value"])
+                    }
+
+                    it("should pass the url") {
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: false) }) == .testMake("https://some.com/endpoint?item=value")
                     }
                 }
 
@@ -108,7 +180,7 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect({ try subject.url() }) == .testMake("https://some.com/endpoint/?item=value")
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: true) }) == .testMake("https://some.com/endpoint/?item=value")
                     }
                 }
 
@@ -118,7 +190,17 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect({ try subject.url() }) == .testMake("https://some.com/endpoint/?item=value")
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: true) }) == .testMake("https://some.com/endpoint/?item=value")
+                    }
+                }
+
+                context("host; endpoint with slashes; queryItems; shouldAddSlashAfterEndpoint: false") {
+                    beforeEach {
+                        subject = .address(host: "some.com", endpoint: "endpoint", queryItems: ["item": "value"])
+                    }
+
+                    it("should pass the url") {
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: false) }) == .testMake("https://some.com/endpoint?item=value")
                     }
                 }
 
@@ -128,7 +210,17 @@ final class AddressSpec: QuickSpec {
                     }
 
                     it("should pass the url") {
-                        expect({ try subject.url() }) == .testMake("https://some.com%2Fitem=value/endpoint/?item=value")
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: true) }) == .testMake("https://some.com%2Fitem=value/endpoint/?item=value")
+                    }
+                }
+
+                context("host qith query items; endpoint with slashes; queryItems with broken format; shouldAddSlashAfterEndpoint: false") {
+                    beforeEach {
+                        subject = .address(host: "some.com/item=value", endpoint: "/endpoint/", queryItems: ["item": "value"])
+                    }
+
+                    it("should pass the url") {
+                        expect({ try subject.url(shouldAddSlashAfterEndpoint: false) }) == .testMake("https://some.com%2Fitem=value/endpoint?item=value")
                     }
                 }
             }
