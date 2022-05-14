@@ -211,7 +211,7 @@ private final class Subject {
         Queue.utility,
         Queue.default,
         Queue.userInitiated,
-        Queue.userInteractive,
+        Queue.userInteractive
     ]
     var randomQueue: Queueable {
         return queues.randomElement() ?? Queue.utility

@@ -9,7 +9,7 @@ extension URLRequest: TestOutputStringConvertible {
         return [
             String(describing: type(of: self)),
             description,
-            String(describing: allHTTPHeaderFields),
+            String(describing: allHTTPHeaderFields)
         ].compactMap { $0 }.joined(separator: ", ")
     }
 }
