@@ -167,7 +167,7 @@ extension Body {
             }
         case .xform(let parameters):
             let data = XFormEncoder.encodeParameters(parameters: parameters)
-
+            tolog(isLoggingEnabled, "Body: " + (String(data: data, encoding: .utf8) ?? ""))
             tempRequest.httpBody = data
 
             if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
