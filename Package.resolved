@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/mattgallagher/CwlPreconditionTesting.git",
         "state": {
           "branch": null,
-          "revision": "fb7a26374e8570ff5c68142e5c83406d6abae0d8",
-          "version": "2.0.2"
+          "revision": "c21f7bab5ca8eee0a9998bbd17ca1d0eb45d4688",
+          "version": "2.1.0"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/NikSativa/NCallback.git",
         "state": {
           "branch": null,
-          "revision": "edcf66793a2b4e50d508840f693bfa2f2ba1085b",
-          "version": "2.9.3"
+          "revision": "1cc70845d1ac9e610645e7d96db4bd0373c982cc",
+          "version": "2.10.10"
         }
       },
       {
@@ -42,8 +42,8 @@
         "repositoryURL": "https://github.com/NikSativa/NQueue.git",
         "state": {
           "branch": null,
-          "revision": "bbe6f5af726d79e38ef8150e3b75ad1662323682",
-          "version": "1.1.9"
+          "revision": "3a8578bbd357ebcd5298f2e4d59d5c0fc9ae192b",
+          "version": "1.1.12"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/NikSativa/NSpry.git",
         "state": {
           "branch": null,
-          "revision": "db1c4936879a5c5e09856572b8399ce14c626b26",
-          "version": "1.2.5"
+          "revision": "8f1a5407d58c7bfab207c8c060261ab6ac8ece80",
+          "version": "1.2.8"
         }
       },
       {
