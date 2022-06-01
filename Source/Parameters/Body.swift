@@ -70,10 +70,10 @@ public enum Body {
 
 extension Body {
     private func tolog(_ isLoggingEnabled: Bool,
-                       _ text: @autoclosure () -> String,
                        file: String = #file,
                        method: String = #function,
-                       line: Int = #line) {
+                       line: Int = #line,
+                       _ text: () -> String) {
         guard isLoggingEnabled else {
             return
         }
@@ -102,7 +102,9 @@ extension Body {
             do {
                 let data = try JSONSerialization.data(withJSONObject: json, options: options)
                 tempRequest.httpBody = data
-                tolog(isLoggingEnabled, "JSON object:" + String(describing: try? JSONSerialization.jsonObject(with: data, options: [])))
+                tolog(isLoggingEnabled) {
+                    return "JSON object:" + String(describing: try? JSONSerialization.jsonObject(with: data, options: []))
+                }
 
                 if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
                     tempRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -140,7 +142,10 @@ extension Body {
                 let data = try encoder.encode(object)
 
                 tempRequest.httpBody = data
-                tolog(isLoggingEnabled, "Encodable object:" + String(describing: try? JSONSerialization.jsonObject(with: data, options: [])))
+                tolog(isLoggingEnabled) {
+                    let res = "Encodable object:\n" + (String(data: data, encoding: .utf8) ?? "<empty>")
+                    return res
+                }
 
                 if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
                     tempRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -154,7 +159,10 @@ extension Body {
             }
         case .form(let form):
             let data = FormEncoder.createBody(form)
-            tolog(isLoggingEnabled, String(data: FormEncoder.createBody(form, isLogging: true), encoding: .utf8) ?? "")
+            tolog(isLoggingEnabled) {
+                let data = FormEncoder.createBody(form, isLogging: true)
+                return String(data: data, encoding: .utf8) ?? ""
+            }
 
             tempRequest.httpBody = data
 
@@ -167,7 +175,10 @@ extension Body {
             }
         case .xform(let parameters):
             let data = XFormEncoder.encodeParameters(parameters: parameters)
-            tolog(isLoggingEnabled, "Body: " + (String(data: data, encoding: .utf8) ?? ""))
+            tolog(isLoggingEnabled) {
+                return "Body: " + (String(data: data, encoding: .utf8) ?? "")
+            }
+
             tempRequest.httpBody = data
 
             if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {

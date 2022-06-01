@@ -148,7 +148,9 @@ extension Impl {
                     try $0.verify(data: data)
                 }
             } catch let catchedError {
-                self.tolog("failed request: \(catchedError)")
+                self.tolog {
+                    return "failed request: \(catchedError)"
+                }
                 data.error = catchedError
             }
 
@@ -184,34 +186,37 @@ extension Impl.Request: Request {
 }
 
 extension Impl.Request {
-    private func tolog(_ text: @autoclosure () -> String,
-                       file: String = #file,
+    private func tolog(file: String = #file,
                        method: String = #function,
-                       line: Int = #line) {
+                       line: Int = #line,
+                       text: () -> String) {
         guard parameters.isLoggingEnabled else {
             return
         }
 
-        Logger.log("\(self)", file: file, method: method, line: line)
-        Logger.log(text(), file: file, method: method, line: line)
+        Logger.log([
+            "\(self)",
+            text()
+        ].joined(separator: "\n"),
+        file: file,
+        method: method,
+        line: line)
     }
 
     private func tologSelf(_ modifiedRequest: URLRequest,
                            file: String = #file,
                            method: String = #function,
                            line: Int = #line) {
-        tolog("request: " +
-            "\n" +
-            "method:" + parameters.method.toString() +
-            "\n" +
-            "\(modifiedRequest.url?.absoluteString ?? "<url is nil>")" +
-            "\n" +
-            "with headers: " +
-            "\n" +
-            "\(String(describing: modifiedRequest.allHTTPHeaderFields ?? [:]))",
-            file: file,
-            method: method,
-            line: line)
+        tolog(file: file,
+              method: method,
+              line: line) {
+            return [
+                parameters.method.toString() + " request:",
+                "\(modifiedRequest.url?.absoluteString ?? "<url is nil>")",
+                "with headers:",
+                modifiedRequest.allHTTPHeaderFields.postmanFormat
+            ].joined(separator: "\n")
+        }
     }
 
     private func tolog(_ data: Data?,
@@ -222,11 +227,13 @@ extension Impl.Request {
             return
         }
 
+        print(String(data: data ?? .init(), encoding: .utf8) ?? "")
+
         let text: String
         if let body = data, !body.isEmpty {
             do {
                 let json = try JSONSerialization.jsonObject(with: body, options: [.allowFragments])
-                let prettyData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+                let prettyData = try JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys])
                 if let prettyStr = String(data: prettyData, encoding: .utf8) {
                     text = prettyStr
                 } else {
@@ -239,16 +246,23 @@ extension Impl.Request {
             text = "response: empty body"
         }
 
-        Logger.log("\(self)", file: file, method: method, line: line)
-        Logger.log(text, file: file, method: method, line: line)
+        Logger.log(["\(self)", text].joined(separator: "\n"), file: file, method: method, line: line)
     }
 }
 
-extension Impl.Request: CustomDebugStringConvertible {
-    var debugDescription: String {
+extension Impl.Request: CustomDebugStringConvertible, CustomStringConvertible {
+    private func makeDescription() -> String {
         let url = try? parameters.address.url(shouldAddSlashAfterEndpoint: parameters.shouldAddSlashAfterEndpoint)
         let text = url?.absoluteString ?? "broken url"
-        return "<Request: \(text)>"
+        return "<\(parameters.method.toString()) request: \(text)>"
+    }
+
+    var debugDescription: String {
+        return makeDescription()
+    }
+
+    var description: String {
+        return makeDescription()
     }
 }
 
@@ -393,23 +407,15 @@ private extension Parameters {
 
         try body.fill(&request, isLoggingEnabled: isLoggingEnabled)
 
-        if let host = url.host,
-           request.value(forHTTPHeaderField: "Host") == nil {
-            request.setValue(host, forHTTPHeaderField: "Host")
-        }
-
-        if request.value(forHTTPHeaderField: "Accept") == nil {
-            request.setValue("application/json, text/plain, */*", forHTTPHeaderField: "Accept")
-        }
-
-        if request.value(forHTTPHeaderField: "Accept-Encoding") == nil {
-            request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
-        }
-
-        if request.value(forHTTPHeaderField: "Connection") == nil {
-            request.setValue("keep-alive", forHTTPHeaderField: "Connection")
-        }
-
         return request
+    }
+}
+
+private extension Optional where Wrapped == [String: String] {
+    var postmanFormat: String {
+        return (self ?? [:]).map {
+            return [$0, $1].joined(separator: ":")
+        }
+        .joined(separator: "\n")
     }
 }

@@ -5,6 +5,7 @@ public enum HTTPMethod: Equatable {
     case get
     case put
     case delete
+    case other(String)
 }
 
 extension HTTPMethod {
@@ -18,6 +19,8 @@ extension HTTPMethod {
             return "PUT"
         case .delete:
             return "DELETE"
+        case .other(let str):
+            return str
         }
     }
 }

@@ -61,5 +61,5 @@ final class ParametersSpec: QuickSpec {
 
 private func compare(_ lhs: [Plugin], _ rhs: [FakePlugin]) -> Bool {
     let zipped = zip(lhs.map { $0 as? FakePlugin }, rhs).map { $0 === $1 }
-    return lhs.count == rhs.count && zipped.contains(false) == false
+    return lhs.count == rhs.count && zipped.reduce(true) { $0 && $1 }
 }
