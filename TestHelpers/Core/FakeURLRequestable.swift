@@ -4,6 +4,10 @@ import NSpry
 @testable import NRequest
 
 public final class FakeURLRequestable: URLRequestable, Spryable {
+    public func value(forHTTPHeaderField field: String) -> String? {
+        return spryify(arguments: field)
+    }
+    
     public enum ClassFunction: String, StringRepresentable {
         case empty
     }
@@ -15,6 +19,7 @@ public final class FakeURLRequestable: URLRequestable, Spryable {
         case body
         case addValue = "addValue(_:forHTTPHeaderField:)"
         case setValue = "setValue(_:forHTTPHeaderField:)"
+        case value = "value(forHTTPHeaderField:)"
     }
 
     public init() {}
