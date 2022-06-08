@@ -14,63 +14,8 @@ struct VoidContent: CustomDecodable {
 
     init(with data: ResponseData) {
         if let error = data.error {
-            if let error = data.error as? StatusCode {
-                switch error {
-                case .noContent,
-                     .accepted,
-                     .created,
-                     .nonAuthoritativeInformation,
-                     .resetContent,
-                     .partialContent,
-                     .multiStatus,
-                     .alreadyReported,
-                     .imUsed:
-                    self.result = .success(())
-                case .badRequest,
-                     .multipleChoises,
-                     .movedPermanently,
-                     .found,
-                     .seeOther,
-                     .notModified,
-                     .temporaryRedirect,
-                     .permanentRedirect,
-                     .unauthorized,
-                     .notFound,
-                     .methodNotAllowed,
-                     .notAcceptable,
-                     .proxyAuthenticationRequiered,
-                     .timeout,
-                     .forbidden,
-                     .conflict,
-                     .gone,
-                     .lenghtRequired,
-                     .preconditionFailed,
-                     .payloadTooLarge,
-                     .uriTooLong,
-                     .unsupportedMediaType,
-                     .rangeNotSatisfiable,
-                     .expectationFailed,
-                     .teapot,
-                     .unprocessableEntity,
-                     .upgradeRequired,
-                     .preconditionRequired,
-                     .tooManyRequests,
-                     .headersTooLarge,
-                     .unavailableForLegalReasons,
-                     .serverError,
-                     .notImplemented,
-                     .badGateway,
-                     .serviceUnavailable,
-                     .gatewayTimeout,
-                     .httpVersionNotSupported,
-                     .variantAlsoNegotiates,
-                     .insufficiantStorage,
-                     .loopDetected,
-                     .notExtended,
-                     .networkAuthenticationRequired,
-                     .other:
-                    break
-                }
+            if let error = data.error as? StatusCode, error.isSuccess {
+                self.result = .success(())
             } else if let error = data.error as? DecodingError {
                 switch error {
                 case .nilResponse:

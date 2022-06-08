@@ -47,6 +47,5 @@ let package = Package(
                                    "Nimble",
                                    "Quick"],
                     path: "Tests")
-    ],
-    swiftLanguageVersions: [.v5]
+    ]
 )

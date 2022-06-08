@@ -35,7 +35,7 @@ final class RequestErrorSpec: QuickSpec {
                 }
 
                 it("should make statusCode") {
-                    let actual = StatusCode.forbidden
+                    let actual = StatusCode(.forbidden)
                     let expected: RequestError = .statusCode(actual)
                     expect(.wrap(actual)) == expected
                 }
@@ -66,7 +66,7 @@ final class RequestErrorSpec: QuickSpec {
                 }
 
                 it("should make statusCode") {
-                    let actual = StatusCode.forbidden
+                    let actual = StatusCode(.forbidden)
                     let expected: RequestError = .statusCode(actual)
                     expect(RequestError(actual)) == expected
                 }

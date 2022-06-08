@@ -7,7 +7,7 @@ public final class FakeURLRequestable: URLRequestable, Spryable {
     public func value(forHTTPHeaderField field: String) -> String? {
         return spryify(arguments: field)
     }
-    
+
     public enum ClassFunction: String, StringRepresentable {
         case empty
     }
