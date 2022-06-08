@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        swift: ["5.3", "5.4"]
+        swift: ["5.3", "5.4", "5.5"]
     name: Swift ${{ matrix.swift }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
