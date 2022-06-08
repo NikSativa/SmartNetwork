@@ -116,7 +116,7 @@ public enum StatusCode: Error, Equatable {
     case upgradeRequired
     
     /// 428
-    case preconditionFailed
+    case preconditionRequired
     
     /// 429
     case tooManyRequests
@@ -241,7 +241,7 @@ public extension StatusCode {
             return 422
         case .upgradeRequired:
             return 426
-        case .preconditionFailed:
+        case .preconditionRequired:
             return 428
         case .tooManyRequests:
             return 429

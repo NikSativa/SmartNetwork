@@ -52,34 +52,34 @@ final class StatusCodePluginSpec: QuickSpec {
                         404: .notFound,
                         405: .methodNotAllowed,
                         406: .notAcceptable,
-                        407: .proxyAuthenticationRequiered
-                        408: .timeout
-                        409: .conflict
-                        410: .gone
-                        411: .lenghtRequired
-                        412: .preconditionFailed
-                        413: .payloadTooLarge
-                        414: .uriTooLong
-                        415: .unsupportedMediaType
-                        416: .rangeNotSatisfiable
-                        417: .expectationFailed
-                        418: .teapot
-                        422: .unprocessableEntity
+                        407: .proxyAuthenticationRequiered,
+                        408: .timeout,
+                        409: .conflict,
+                        410: .gone,
+                        411: .lenghtRequired,
+                        412: .preconditionFailed,
+                        413: .payloadTooLarge,
+                        414: .uriTooLong,
+                        415: .unsupportedMediaType,
+                        416: .rangeNotSatisfiable,
+                        417: .expectationFailed,
+                        418: .teapot,
+                        422: .unprocessableEntity,
                         426: .upgradeRequired,
-                        428: .preconditionFailed
+                        428: .preconditionRequired,
                         429: .tooManyRequests,
-                        431: .headersTooLarge
-                        451: .unavailableForLegalReasons
-                        500: .serverError
-                        501: .notImplemented
-                        502: .badGateway
-                        503: .serviceUnavailable
-                        504: .gatewayTimeout
-                        505: .httpVersionNotSupported
-                        506: .variantAlsoNegotiates
-                        507: .insufficiantStorage
-                        508: .loopDetected
-                        510: .notExtended
+                        431: .headersTooLarge,
+                        451: .unavailableForLegalReasons,
+                        500: .serverError,
+                        501: .notImplemented,
+                        502: .badGateway,
+                        503: .serviceUnavailable,
+                        504: .gatewayTimeout,
+                        505: .httpVersionNotSupported,
+                        506: .variantAlsoNegotiates,
+                        507: .insufficiantStorage,
+                        508: .loopDetected,
+                        510: .notExtended,
                         511: .networkAuthenticationRequired
                     ]
 
