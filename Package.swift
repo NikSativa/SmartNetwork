@@ -12,11 +12,11 @@ let package = Package(
         .library(name: "NRequestExtraTestHelpers", targets: ["NRequestExtraTestHelpers"])
     ],
     dependencies: [
-        .package(url: "https://github.com/Quick/Quick.git", .upToNextMajor(from: "4.0.0")),
-        .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "9.2.1")),
-        .package(url: "https://github.com/NikSativa/NSpry.git", .upToNextMajor(from: "1.2.7")),
-        .package(url: "https://github.com/NikSativa/NCallback.git", .upToNextMajor(from: "2.10.3")),
-        .package(url: "https://github.com/NikSativa/NQueue.git", .upToNextMajor(from: "1.1.11"))
+        .package(url: "https://github.com/Quick/Quick.git", .upToNextMajor(from: "5.0.1")),
+        .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "10.0.0")),
+        .package(url: "https://github.com/NikSativa/NSpry.git", .upToNextMajor(from: "1.2.9")),
+        .package(url: "https://github.com/NikSativa/NCallback.git", .upToNextMajor(from: "2.10.12")),
+        .package(url: "https://github.com/NikSativa/NQueue.git", .upToNextMajor(from: "1.1.14"))
     ],
     targets: [
         .target(name: "NRequest",

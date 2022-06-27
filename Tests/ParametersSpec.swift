@@ -28,7 +28,7 @@ final class ParametersSpec: QuickSpec {
                 }
 
                 it("should create new instance") {
-                    expect(actual).toNot(be(subject))
+                    expect(actual).toNot(equal(subject))
                 }
 
                 it("should add plugin") {
@@ -47,7 +47,7 @@ final class ParametersSpec: QuickSpec {
                 }
 
                 it("should create new instance") {
-                    expect(actual).toNot(be(subject))
+                    expect(actual).toNot(equal(subject))
                 }
 
                 it("should add plugin") {

@@ -77,8 +77,8 @@ public extension Parameters.UserInfo {
 }
 
 private extension Array where Element == Plugin {
-    var descriptions: Set<String> {
+    var descriptions: [String] {
         let result = map { String(describing: type(of: $0)) }
-        return Set(result)
+        return result
     }
 }
