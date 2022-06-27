@@ -143,7 +143,8 @@ extension Impl {
                           queue: DelayedQueue,
                           sdkRequest: NRequest.URLRequestable) {
             do {
-                tolog(data.body)
+                tolog(data.body, allHTTPHeaderFields: sdkRequest.allHTTPHeaderFields)
+
                 try plugins.forEach {
                     try $0.verify(data: data)
                 }
@@ -211,23 +212,21 @@ extension Impl.Request {
               method: method,
               line: line) {
             return [
-                parameters.method.toString() + " request:",
-                "\(modifiedRequest.url?.absoluteString ?? "<url is nil>")",
-                "with headers:",
-                modifiedRequest.allHTTPHeaderFields.postmanFormat
+                "<with headers:",
+                modifiedRequest.allHTTPHeaderFields.postmanFormat,
+                ">"
             ].joined(separator: "\n")
         }
     }
 
     private func tolog(_ data: Data?,
+                       allHTTPHeaderFields: [String: String]?,
                        file: String = #file,
                        method: String = #function,
                        line: Int = #line) {
         guard parameters.isLoggingEnabled else {
             return
         }
-
-        print(String(data: data ?? .init(), encoding: .utf8) ?? "")
 
         let text: String
         if let body = data, !body.isEmpty {
@@ -246,7 +245,16 @@ extension Impl.Request {
             text = "response: empty body"
         }
 
-        Logger.log(["\(self)", text].joined(separator: "\n"), file: file, method: method, line: line)
+        Logger.log([
+            "\(self)",
+            "<with headers:",
+            allHTTPHeaderFields.postmanFormat,
+            ">",
+            text
+        ].joined(separator: "\n"),
+        file: file,
+        method: method,
+        line: line)
     }
 }
 
