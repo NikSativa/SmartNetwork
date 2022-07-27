@@ -20,7 +20,8 @@ struct VoidContent: CustomDecodable {
                 switch error {
                 case .nilResponse:
                     self.result = .success(())
-                case .brokenResponse:
+                case .brokenResponse,
+                     .generic:
                     break
                 }
             }

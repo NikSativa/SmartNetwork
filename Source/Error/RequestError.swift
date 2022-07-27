@@ -15,8 +15,12 @@ public enum RequestError: AnyError {
             self = .connection(error)
         case let error as EncodingError:
             self = .encoding(error)
+        case let error as Swift.EncodingError:
+            self = .encoding(.generic(.init(error)))
         case let error as DecodingError:
             self = .decoding(error)
+        case let error as Swift.DecodingError:
+            self = .decoding(.generic(.init(error)))
         case let error as StatusCode:
             self = .statusCode(error)
         default:
