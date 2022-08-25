@@ -142,17 +142,17 @@ extension Impl {
         private func fire(data: ResponseData,
                           queue: DelayedQueue,
                           sdkRequest: NRequest.URLRequestable) {
-            do {
-                tolog(data.body, allHTTPHeaderFields: sdkRequest.allHTTPHeaderFields)
+            tolog(data.body, allHTTPHeaderFields: sdkRequest.allHTTPHeaderFields)
 
-                try plugins.forEach {
-                    try $0.verify(data: data)
+            for plugin in plugins {
+                do {
+                    try plugin.verify(data: data)
+                } catch let catchedError {
+                    self.tolog {
+                        return "failed request: \(catchedError)"
+                    }
+                    data.error = catchedError
                 }
-            } catch let catchedError {
-                self.tolog {
-                    return "failed request: \(catchedError)"
-                }
-                data.error = catchedError
             }
 
             plugins.forEach {
