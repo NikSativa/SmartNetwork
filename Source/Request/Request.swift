@@ -6,6 +6,7 @@ public protocol Request: AnyObject {
     typealias CompletionCallback = (ResponseData) -> Void
     var completion: CompletionCallback? { get set }
 
+    var userInfo: Parameters.UserInfo { get set }
     var parameters: Parameters { get }
 
     func cancel()
@@ -51,8 +52,7 @@ extension Impl {
                 let data = ResponseData(request: nil,
                                         body: nil,
                                         response: nil,
-                                        error: error,
-                                        userInfo: parameters.userInfo)
+                                        error: error)
                 complete(in: parameters.queue,
                          with: data)
             }
@@ -60,7 +60,9 @@ extension Impl {
 
         private func start(with requestable: NRequest.URLRequestable) {
             plugins.forEach {
-                $0.willSend(parameters, request: requestable)
+                $0.willSend(parameters,
+                            request: requestable,
+                            userInfo: &userInfo)
             }
 
             let sdkRequest = requestable.original
@@ -85,8 +87,7 @@ extension Impl {
                     let responseData = ResponseData(request: requestable,
                                                     body: cached.data,
                                                     response: cached.response,
-                                                    error: nil,
-                                                    userInfo: parameters.userInfo)
+                                                    error: nil)
                     fire(data: responseData,
                          queue: cacheSettings.queue,
                          sdkRequest: requestable)
@@ -121,8 +122,7 @@ extension Impl {
                 let responseData = ResponseData(request: requestable,
                                                 body: data,
                                                 response: response,
-                                                error: error,
-                                                userInfo: self.parameters.userInfo)
+                                                error: error)
 
                 self.fire(data: responseData,
                           queue: self.parameters.queue,
@@ -146,7 +146,8 @@ extension Impl {
 
             for plugin in plugins {
                 do {
-                    try plugin.verify(data: data)
+                    try plugin.verify(data: data,
+                                      userInfo: &userInfo)
                 } catch let catchedError {
                     self.tolog {
                         return "failed request: \(catchedError)"
@@ -157,7 +158,8 @@ extension Impl {
 
             plugins.forEach {
                 $0.didReceive(parameters,
-                              data: data)
+                              data: data,
+                              userInfo: &userInfo)
             }
 
             complete(in: queue,
@@ -176,6 +178,15 @@ extension Impl {
 }
 
 extension Impl.Request: Request {
+    var userInfo: Parameters.UserInfo {
+        get {
+            return parameters.userInfo
+        }
+        set {
+            parameters.userInfo = newValue
+        }
+    }
+
     func start() {
         startRealRequest()
     }

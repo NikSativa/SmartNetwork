@@ -20,32 +20,40 @@ let package = Package(
     ],
     targets: [
         .target(name: "NRequest",
-                dependencies: ["NQueue",
-                               "NCallback"],
+                dependencies: [
+                    "NQueue",
+                    "NCallback"
+                ],
                 path: "Source"),
         .target(name: "NRequestTestHelpers",
-                dependencies: ["NRequest",
-                               "NQueue",
-                               .product(name: "NQueueTestHelpers", package: "NQueue"),
-                               "NSpry"],
+                dependencies: [
+                    "NRequest",
+                    "NQueue",
+                    .product(name: "NQueueTestHelpers", package: "NQueue"),
+                    "NSpry"
+                ],
                 path: "TestHelpers/Core"),
         .target(name: "NRequestExtraTestHelpers",
-                dependencies: ["NRequest",
-                               "Nimble",
-                               "NSpry"],
+                dependencies: [
+                    "NRequest",
+                    "Nimble",
+                    "NSpry"
+                ],
                 path: "TestHelpers/Extra"),
         .testTarget(name: "NRequestTests",
-                    dependencies: ["NCallback",
-                                   .product(name: "NCallbackTestHelpers", package: "NCallback"),
-                                   "NRequest",
-                                   "NRequestTestHelpers",
-                                   "NRequestExtraTestHelpers",
-                                   "NQueue",
-                                   .product(name: "NQueueTestHelpers", package: "NQueue"),
-                                   "NSpry",
-                                   .product(name: "NSpry_Nimble", package: "NSpry"),
-                                   "Nimble",
-                                   "Quick"],
+                    dependencies: [
+                        "NCallback",
+                        .product(name: "NCallbackTestHelpers", package: "NCallback"),
+                        "NRequest",
+                        "NRequestTestHelpers",
+                        "NRequestExtraTestHelpers",
+                        "NQueue",
+                        .product(name: "NQueueTestHelpers", package: "NQueue"),
+                        "NSpry",
+                        .product(name: "NSpry_Nimble", package: "NSpry"),
+                        "Nimble",
+                        "Quick"
+                    ],
                     path: "Tests")
     ]
 )

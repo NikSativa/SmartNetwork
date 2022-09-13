@@ -24,10 +24,12 @@ public protocol StopTheLine {
 
     func action(with manager: AnyRequestManager<Error>,
                 originalParameters parameters: Parameters,
-                response: ResponseData) -> Callback<StopTheLineResult>
+                response: ResponseData,
+                userInfo: inout Parameters.UserInfo) -> Callback<StopTheLineResult>
 
     func verify(response: ResponseData,
-                for parameters: Parameters) -> StopTheLineAction
+                for parameters: Parameters,
+                userInfo: inout Parameters.UserInfo) -> StopTheLineAction
 }
 
 public extension StopTheLine {
@@ -43,23 +45,27 @@ public extension StopTheLine {
 public struct AnyStopTheLine<Error: AnyError>: StopTheLine {
     private let _action: (_ manager: AnyRequestManager<Error>,
                           _ originalParameters: Parameters,
-                          _ data: ResponseData) -> Callback<StopTheLineResult>
+                          _ data: ResponseData,
+                          _ userInfo: inout Parameters.UserInfo) -> Callback<StopTheLineResult>
     private let _verify: (_ data: ResponseData,
-                          _ parameters: Parameters) -> StopTheLineAction
+                          _ parameters: Parameters,
+                          _ userInfo: inout Parameters.UserInfo) -> StopTheLineAction
 
     public init<K: StopTheLine>(_ provider: K) where K.Error == Error {
-        self._action = provider.action(with:originalParameters:response:)
-        self._verify = provider.verify(response:for:)
+        self._action = provider.action(with:originalParameters:response:userInfo:)
+        self._verify = provider.verify(response:for:userInfo:)
     }
 
     public func action(with manager: AnyRequestManager<Error>,
                        originalParameters parameters: Parameters,
-                       response: ResponseData) -> Callback<StopTheLineResult> {
-        return _action(manager, parameters, response)
+                       response: ResponseData,
+                       userInfo: inout Parameters.UserInfo) -> Callback<StopTheLineResult> {
+        return _action(manager, parameters, response, &userInfo)
     }
 
     public func verify(response: ResponseData,
-                       for parameters: Parameters) -> StopTheLineAction {
-        return _verify(response, parameters)
+                       for parameters: Parameters,
+                       userInfo: inout Parameters.UserInfo) -> StopTheLineAction {
+        return _verify(response, parameters, &userInfo)
     }
 }

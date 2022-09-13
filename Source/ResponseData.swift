@@ -5,7 +5,6 @@ public final class ResponseData {
     public let body: Data?
     public let response: URLResponse?
     public internal(set) var error: Error?
-    public var userInfo: Parameters.UserInfo
 
     public lazy var url: URL? = (response as? HTTPURLResponse)?.url
 
@@ -20,12 +19,10 @@ public final class ResponseData {
     init(request: URLRequestable?,
          body: Data?,
          response: URLResponse?,
-         error: Error?,
-         userInfo: Parameters.UserInfo) {
+         error: Error?) {
         self.request = request
         self.body = body
         self.response = response
         self.error = error
-        self.userInfo = userInfo
     }
 }

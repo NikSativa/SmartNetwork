@@ -10,18 +10,20 @@ public final class FakeStopTheLine<Error: AnyError>: StopTheLine, Spryable {
     }
 
     public enum Function: String, StringRepresentable {
-        case action = "action(with:originalParameters:response:)"
-        case verify = "verify(response:for:)"
+        case action = "action(with:originalParameters:response:userInfo:)"
+        case verify = "verify(response:for:userInfo:)"
     }
 
     public func action(with factory: AnyRequestManager<Error>,
                        originalParameters parameters: Parameters,
-                       response: ResponseData) -> Callback<StopTheLineResult> {
-        return spryify(arguments: factory, parameters, response)
+                       response: ResponseData,
+                       userInfo: inout Parameters.UserInfo) -> Callback<StopTheLineResult> {
+        return spryify(arguments: factory, parameters, response, userInfo)
     }
 
     public func verify(response: ResponseData,
-                       for parameters: Parameters) -> StopTheLineAction {
-        return spryify(arguments: response, parameters)
+                       for parameters: Parameters,
+                       userInfo: inout Parameters.UserInfo) -> StopTheLineAction {
+        return spryify(arguments: response, parameters, userInfo)
     }
 }

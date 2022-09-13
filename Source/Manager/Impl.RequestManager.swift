@@ -56,7 +56,8 @@ extension Impl {
                                           stopTheLine: nil).toAny()
             refreshToken.action(with: stopTheLineFactory,
                                 originalParameters: request.parameters,
-                                response: data).onComplete { [weak self] result in
+                                response: data,
+                                userInfo: &request.userInfo).onComplete { [weak self] result in
                 switch result {
                 case .useOriginal:
                     self?.removeFromCache(key)
@@ -88,7 +89,8 @@ extension Impl {
 
                 if let scheduledRequest = scheduledRequest {
                     let verificationResult = stopTheLine.verify(response: result,
-                                                                for: request.parameters)
+                                                                for: request.parameters,
+                                                                userInfo: &request.userInfo)
                     switch verificationResult {
                     case .passOver:
                         removeFromCache(key)
@@ -177,6 +179,7 @@ extension Impl.RequestManager: RequestManager {
             for plugin in pluginProvider?.plugins() ?? [] {
                 plugin.didFinish(parameters,
                                  data: data,
+                                 userInfo: &request.userInfo,
                                  dto: nil)
             }
         }
@@ -200,6 +203,7 @@ extension Impl.RequestManager: RequestManager {
             for plugin in pluginProvider?.plugins() ?? [] {
                 plugin.didFinish(parameters,
                                  data: data,
+                                 userInfo: &request.userInfo,
                                  dto: try? result.get())
             }
             return result

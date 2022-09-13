@@ -10,20 +10,30 @@ final class StatusCodePluginSpec: QuickSpec {
     override func spec() {
         describe("StatusCodePlugin") {
             var subject: Plugins.StatusCode!
+            var userInfo: Parameters.UserInfo!
 
             beforeEach {
                 subject = .init()
+                userInfo = .init()
             }
 
             context("when status code is absent") {
                 it("should pass") {
-                    expect({ try subject.verify(data: .testMake()) }).toNot(throwError())
+                    expect {
+                        try subject.verify(data: .testMake(),
+                                           userInfo: &userInfo)
+
+                    }.toNot(throwError())
                 }
             }
 
             context("when receiving status code 200") {
                 it("should pass") {
-                    expect({ try subject.verify(data: .testMake(statusCode: 200)) }).toNot(throwError())
+                    expect {
+                        try subject.verify(data: .testMake(statusCode: 200),
+                                           userInfo: &userInfo)
+
+                    }.toNot(throwError())
                 }
             }
 
@@ -34,7 +44,10 @@ final class StatusCodePluginSpec: QuickSpec {
                         if let typed = error.kind {
                             expect(typed.rawValue) == code
                         }
-                        expect({ try subject.verify(data: .testMake(statusCode: code)) }).to(throwError(error))
+                        expect {
+                            try subject.verify(data: .testMake(statusCode: code),
+                                               userInfo: &userInfo)
+                        }.to(throwError(error))
                     }
                 }
             }

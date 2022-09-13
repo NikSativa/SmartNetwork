@@ -24,19 +24,27 @@ public final class FakePlugin: Plugin, Spryable {
         return spryify(arguments: parameters, userInfo, request)
     }
 
-    public func willSend(_ parameters: Parameters, request: URLRequestable) {
+    public func willSend(_ parameters: Parameters,
+                         request: URLRequestable,
+                         userInfo: inout Parameters.UserInfo) {
         return spryify(arguments: parameters, request)
     }
 
-    public func didReceive(_ parameters: Parameters, data: ResponseData) {
+    public func didReceive(_ parameters: Parameters,
+                           data: ResponseData,
+                           userInfo: inout Parameters.UserInfo) {
         return spryify(arguments: parameters, data)
     }
 
-    public func didFinish(_ parameters: Parameters, data: ResponseData, dto: Any?) {
+    public func didFinish(_ parameters: Parameters,
+                          data: ResponseData,
+                          userInfo: inout Parameters.UserInfo,
+                          dto: Any?) {
         return spryify(arguments: parameters, data, dto)
     }
 
-    public func verify(data: ResponseData) throws {
+    public func verify(data: ResponseData,
+                       userInfo: inout Parameters.UserInfo) throws {
         return spryify(arguments: data)
     }
 }

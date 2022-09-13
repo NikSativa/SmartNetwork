@@ -8,10 +8,6 @@ import Quick
 @testable import NRequestTestHelpers
 
 final class RequestSpec: QuickSpec {
-    private enum Constant {
-        static let userInfo: Parameters.UserInfo = ["key": 123]
-    }
-
     override func spec() {
         describe("Request") {
             var subject: Request!
@@ -23,7 +19,6 @@ final class RequestSpec: QuickSpec {
                 session = .init()
                 pluginContext = .init()
                 parameters = .testMake(queue: .absent,
-                                       userInfo: Constant.userInfo,
                                        session: session)
                 subject = Impl.Request(parameters: parameters,
                                        pluginContext: pluginContext)
@@ -129,8 +124,7 @@ final class RequestSpec: QuickSpec {
                     it("should receive response") {
                         expect(responses).to(equal([.testMake(body: nil,
                                                               response: nil,
-                                                              error: nil,
-                                                              userInfo: Constant.userInfo)]))
+                                                              error: nil)]))
                     }
 
                     context("when request completed for the second time") {
@@ -142,12 +136,10 @@ final class RequestSpec: QuickSpec {
                             expect(responses).to(equal([
                                 .testMake(body: nil,
                                           response: nil,
-                                          error: nil,
-                                          userInfo: Constant.userInfo),
+                                          error: nil),
                                 .testMake(body: nil,
                                           response: nil,
-                                          error: nil,
-                                          userInfo: Constant.userInfo)
+                                          error: nil)
                             ]))
                         }
                     }
