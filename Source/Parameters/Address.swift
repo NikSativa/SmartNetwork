@@ -109,7 +109,14 @@ public extension Address {
             return url
         case .address(let url):
             var components = URLComponents()
+
+            #if os(macOS)
+            let originalHost: String = url.host
             components.host = url.host
+            #else
+            let originalHost: String = URL(string: url.host)?.host ?? url.host
+            components.host = originalHost
+            #endif
 
             switch url.scheme {
             case .none:
@@ -145,7 +152,7 @@ public extension Address {
                 components.queryItems = result
             }
 
-            if let componentsUrl = components.url {
+            if let componentsUrl = components.url, componentsUrl.host == originalHost {
                 return componentsUrl
             }
 

@@ -9,7 +9,12 @@ import Quick
 
 final class MultiRequestSpec: QuickSpec {
     fileprivate enum Constant {
+        #if os(macOS)
+        static let numberOfRequests = 1000
+        #elseif os(iOS)
         static let numberOfRequests = 100
+        #endif
+
         static let headerIndexKey = "headerIndexKey"
         static let error: RequestError = .decoding(.nilResponse)
         static let success: ResponseData = .testMake()
@@ -57,6 +62,8 @@ final class MultiRequestSpec: QuickSpec {
 
                         if let handler = args[1] as? Session.CompletionHandler {
                             completionHandlers[offset] = handler
+                        } else {
+                            assertionFailure()
                         }
                         return tasks[offset]
                     }
@@ -140,7 +147,7 @@ final class MultiRequestSpec: QuickSpec {
                                 }
                             }
 
-                            result = group.wait(timeout: .now() + .milliseconds(maxDelayInMilliseconds + 300))
+                            result = group.wait(timeout: .now() + .milliseconds(maxDelayInMilliseconds + min(maxDelayInMilliseconds, 1000)))
                         }
 
                         it("should not crash on multithreading") {
@@ -148,7 +155,12 @@ final class MultiRequestSpec: QuickSpec {
 
                             let expectedResponses: [Response] = Array(repeating: .finished(success: true), count: chunkSize) +
                                 Array(repeating: .finished(success: false), count: chunkSize)
-                            expect(subject.responses).to(equal(expectedResponses))
+                            let diff: [(Int, Response, Response)] = zip(subject.responses, expectedResponses).enumerated().compactMap { ind, zipped in
+                                let (a, b) = (zipped.0, zipped.1)
+                                return a != b ? (ind, a, b) : nil
+                            }
+                            expect(subject.responses).to(equal(expectedResponses), description: "\(diff)")
+                            expect(subject.requests.count) == expectedResponses.count
                         }
                     }
 
@@ -219,7 +231,7 @@ private final class Subject {
 
     private(set) var requests: [Request] = []
     private(set) var responses: [Response] = []
-    private let lock: Mutexing = Mutex.barrier(Queue.custom(label: "Subject", attributes: .serial))
+    private let lock: Mutexing = Mutex.pthread(.recursive)
 
     init(session: Session,
          numberOfRequests: Int) throws {
