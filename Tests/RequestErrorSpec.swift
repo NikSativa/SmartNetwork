@@ -17,8 +17,8 @@ final class RequestErrorSpec: QuickSpec {
                 }
 
                 it("should make connection") {
-                    let actual = ConnectionError.cannotConnectToHost
-                    let expected: RequestError = .connection(actual)
+                    let actual = URLError(.cannotConnectToHost)
+                    let expected: RequestError = .connection(actual, .cannotConnectToHost)
                     expect(.wrap(actual)) == expected
                 }
 
@@ -48,8 +48,8 @@ final class RequestErrorSpec: QuickSpec {
                 }
 
                 it("should make connection") {
-                    let actual = ConnectionError.cannotConnectToHost
-                    let expected: RequestError = .connection(actual)
+                    let actual = URLError(.cannotConnectToHost)
+                    let expected: RequestError = .connection(actual, .cannotConnectToHost)
                     expect(RequestError(actual)) == expected
                 }
 
