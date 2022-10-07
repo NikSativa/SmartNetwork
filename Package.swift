@@ -1,11 +1,10 @@
 // swift-tools-version:5.3
-
 import PackageDescription
 
 // swiftformat:disable all
 let package = Package(
     name: "NRequest",
-    platforms: [.iOS(.v12), .macOS(.v10_14)],
+    platforms: [.iOS(.v12), .macOS(.v10_13)],
     products: [
         .library(name: "NRequest", targets: ["NRequest"]),
         .library(name: "NRequestTestHelpers", targets: ["NRequestTestHelpers"]),
