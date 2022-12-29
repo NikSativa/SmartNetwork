@@ -18,6 +18,8 @@ public struct StatusCode: Error, Hashable {
     }
 }
 
+// MARK: - StatusCode.Kind
+
 public extension StatusCode {
     enum Kind: Int, Hashable, CaseIterable {
         // MARK: - Successful responses
@@ -159,6 +161,8 @@ public extension StatusCode.Kind {
         return name ?? "!unknown name!"
     }
 }
+
+// MARK: - StatusCode + CustomDebugStringConvertible, CustomStringConvertible
 
 extension StatusCode: CustomDebugStringConvertible, CustomStringConvertible {
     private func makeDescription() -> String {

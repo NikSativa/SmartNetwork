@@ -1,6 +1,5 @@
 import Foundation
 import NSpry
-
 @testable import NRequest
 
 extension StopTheLineResult: Equatable, SpryEquatable {

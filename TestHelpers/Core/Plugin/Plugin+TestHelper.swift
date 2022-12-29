@@ -1,7 +1,6 @@
 import Foundation
-import NSpry
-
 import NRequest
+import NSpry
 
 extension Plugin {
     func prepare(_ parameters: Parameters,

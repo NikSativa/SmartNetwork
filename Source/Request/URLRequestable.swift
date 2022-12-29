@@ -12,6 +12,8 @@ public protocol URLRequestable {
     mutating func setValue(_ value: String?, forHTTPHeaderField field: String)
 }
 
+// MARK: - Impl.URLRequestable
+
 extension Impl {
     struct URLRequestable {
         private(set) var original: URLRequest
@@ -21,6 +23,8 @@ extension Impl {
         }
     }
 }
+
+// MARK: - Impl.URLRequestable + URLRequestable
 
 extension Impl.URLRequestable: URLRequestable {
     var allHTTPHeaderFields: [String: String] {

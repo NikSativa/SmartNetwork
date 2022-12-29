@@ -2,6 +2,8 @@ import Foundation
 import NCallback
 import NQueue
 
+// MARK: - Impl.RequestManager
+
 extension Impl {
     final class RequestManager<Error: AnyError> {
         private typealias Request = NRequest.Request
@@ -170,6 +172,8 @@ extension Impl {
         }
     }
 }
+
+// MARK: - Impl.RequestManager + RequestManager
 
 extension Impl.RequestManager: RequestManager {
     func requestPureData(with parameters: Parameters) -> Callback<ResponseData> {

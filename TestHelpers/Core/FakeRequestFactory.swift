@@ -1,6 +1,5 @@
 import Foundation
 import NSpry
-
 @testable import NRequest
 
 public final class FakeRequestFactory: RequestFactory, Spryable {

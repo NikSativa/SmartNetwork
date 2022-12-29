@@ -1,7 +1,6 @@
 import Foundation
 import NCallback
 import NSpry
-
 @testable import NRequest
 
 public final class FakeStopTheLine<Error: AnyError>: StopTheLine, Spryable {

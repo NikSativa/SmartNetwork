@@ -3,7 +3,6 @@ import Nimble
 import NSpry
 import NSpry_Nimble
 import Quick
-
 @testable import NRequest
 @testable import NRequestTestHelpers
 
@@ -140,7 +139,7 @@ final class RequestSpec: QuickSpec {
                                 .testMake(body: nil,
                                           response: nil,
                                           error: nil)
-                            ]))
+                                ]))
                         }
                     }
                 }

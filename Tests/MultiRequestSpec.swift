@@ -3,7 +3,6 @@ import Nimble
 import NQueue
 import NSpry
 import Quick
-
 @testable import NRequest
 @testable import NRequestTestHelpers
 

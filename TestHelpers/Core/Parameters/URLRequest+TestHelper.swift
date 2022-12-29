@@ -1,7 +1,6 @@
 import Foundation
-import NSpry
-
 import NRequest
+import NSpry
 
 extension URLRequest: SpryEquatable {
     public static func testMake(url: String,

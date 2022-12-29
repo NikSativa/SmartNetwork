@@ -1,7 +1,5 @@
 import Foundation
-import NRequest
 import NSpry
-
 @testable import NRequest
 
 public final class FakePluginProvider: PluginProvider, Spryable {

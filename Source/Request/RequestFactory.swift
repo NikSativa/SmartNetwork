@@ -5,9 +5,13 @@ public protocol RequestFactory {
               pluginContext: PluginProvider?) -> Request
 }
 
+// MARK: - Impl.RequestFactory
+
 extension Impl {
     final class RequestFactory {}
 }
+
+// MARK: - Impl.RequestFactory + RequestFactory
 
 extension Impl.RequestFactory: RequestFactory {
     func make(for parameters: Parameters,

@@ -1,6 +1,5 @@
 import Foundation
 import NSpry
-
 @testable import NRequest
 
 final class FakeModuleFactory: ModuleFactory, Spryable {

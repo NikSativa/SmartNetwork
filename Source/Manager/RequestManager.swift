@@ -90,7 +90,7 @@ public extension RequestManager {
     }
 }
 
-// only proxy without `faking`
+/// only proxy without `faking`
 public extension RequestManager {
     // MARK: - Void
 

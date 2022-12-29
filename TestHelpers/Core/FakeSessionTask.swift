@@ -1,7 +1,6 @@
 import Foundation
 import NQueue
 import NSpry
-
 @testable import NRequest
 
 public final class FakeSessionTask: SessionTask, Spryable, SpryEquatable {

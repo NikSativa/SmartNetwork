@@ -1,7 +1,8 @@
 import Foundation
+import NRequest
 import NSpry
 
-import NRequest
+// MARK: - Address + SpryEquatable
 
 extension Address: SpryEquatable {
     public static func testMake(url: URL) -> Self {
@@ -18,6 +19,8 @@ extension Address: SpryEquatable {
                         queryItems: queryItems)
     }
 }
+
+// MARK: - URLRepresentation + SpryEquatable
 
 extension URLRepresentation: SpryEquatable {
     public static func testMake(scheme: Scheme? = .https,

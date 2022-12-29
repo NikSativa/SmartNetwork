@@ -1,8 +1,9 @@
 import Foundation
 import Nimble
 import NSpry
-
 @testable import NRequest
+
+// MARK: - Impl.URLRequestable + Equatable, SpryEquatable, TestOutputStringConvertible
 
 extension Impl.URLRequestable: Equatable, SpryEquatable, TestOutputStringConvertible {
     public static func ==(lhs: Self, rhs: Self) -> Bool {

@@ -13,6 +13,8 @@ public protocol Request: AnyObject {
     func start()
 }
 
+// MARK: - Impl.Request
+
 extension Impl {
     final class Request {
         @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
@@ -177,6 +179,8 @@ extension Impl {
     }
 }
 
+// MARK: - Impl.Request + Request
+
 extension Impl.Request: Request {
     var userInfo: Parameters.UserInfo {
         get {
@@ -269,6 +273,8 @@ extension Impl.Request {
     }
 }
 
+// MARK: - Impl.Request + CustomDebugStringConvertible, CustomStringConvertible
+
 extension Impl.Request: CustomDebugStringConvertible, CustomStringConvertible {
     private func makeDescription() -> String {
         let url = try? parameters.address.url(shouldAddSlashAfterEndpoint: parameters.shouldAddSlashAfterEndpoint)
@@ -353,6 +359,8 @@ private final class SessionAdaptor: NSObject {
         stop()
     }
 }
+
+// MARK: - SessionDelegate
 
 extension SessionAdaptor: SessionDelegate {
     func urlSession(_: URLSession, dataTask _: URLSessionDataTask, didReceive response: URLResponse, completionHandler: (URLSession.ResponseDisposition) -> Void) {

@@ -2,7 +2,6 @@ import Foundation
 import Nimble
 import NSpry
 import Quick
-
 @testable import NRequest
 @testable import NRequestTestHelpers
 

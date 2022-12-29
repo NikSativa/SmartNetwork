@@ -1,8 +1,7 @@
 import Foundation
-import NSpry
-
 import NQueue
 import NRequest
+import NSpry
 
 /// make NRequest hidden from main app, but all helpers can be visible via `public typealias Helpers = NRequestTestHelpers.Helpers`
 public enum Helpers {

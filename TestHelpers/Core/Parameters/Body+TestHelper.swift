@@ -1,7 +1,8 @@
 import Foundation
+import NRequest
 import NSpry
 
-import NRequest
+// MARK: - Body + Equatable, SpryEquatable
 
 extension Body: Equatable, SpryEquatable {
     private static func compare(_ lhs: Any, _ rhs: Any) -> Bool {
@@ -40,6 +41,8 @@ extension Body: Equatable, SpryEquatable {
         }
     }
 }
+
+// MARK: - Body.AnyEncodable + Equatable, SpryEquatable
 
 extension Body.AnyEncodable: Equatable, SpryEquatable {
     public static func ==(lhs: Body.AnyEncodable, rhs: Body.AnyEncodable) -> Bool {

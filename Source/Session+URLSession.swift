@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - URLSession + Session
+
 extension URLSession: Session {
     public func task(with request: URLRequest,
                      completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> SessionTask {
@@ -12,6 +14,8 @@ extension URLSession: Session {
                           delegateQueue: nil)
     }
 }
+
+// MARK: - URLSessionDataTask + SessionTask
 
 extension URLSessionDataTask: SessionTask {
     public var isRunning: Bool {
@@ -28,6 +32,8 @@ extension URLSessionDataTask: SessionTask {
         return progress.observe(progressHandler)
     }
 }
+
+// MARK: - Foundation.Progress + ProgressObservable
 
 extension Foundation.Progress: ProgressObservable {
     @available(iOS 11, *)

@@ -1,8 +1,7 @@
 import Foundation
 import Nimble
-import NSpry
-
 import NRequest
+import NSpry
 
 extension URLRequest: TestOutputStringConvertible {
     public var testDescription: String {

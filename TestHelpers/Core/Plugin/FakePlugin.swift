@@ -1,7 +1,6 @@
 import Foundation
-import NSpry
-
 import NRequest
+import NSpry
 
 public final class FakePlugin: Plugin, Spryable {
     public enum ClassFunction: String, StringRepresentable {

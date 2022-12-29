@@ -1,6 +1,5 @@
 import Foundation
-import NSpry
-
 import NRequest
+import NSpry
 
 extension HTTPMethod: SpryEquatable {}
