@@ -53,26 +53,26 @@ public func ==(lhs: URLRequestable, rhs: URLRequest) -> Bool {
     return lhs.original == rhs
 }
 
-public func ==(lhs: Expectation<URLRequest>, rhs: URLRequest?) {
+public func ==(lhs: SyncExpectation<URLRequest>, rhs: URLRequest?) {
     lhs.to(equal(rhs))
 }
 
-public func !=(lhs: Expectation<URLRequest>, rhs: URLRequest?) {
+public func !=(lhs: SyncExpectation<URLRequest>, rhs: URLRequest?) {
     lhs.toNot(equal(rhs))
 }
 
-public func ==(lhs: Expectation<URLRequestable>, rhs: URLRequest?) {
+public func ==(lhs: SyncExpectation<URLRequestable>, rhs: URLRequest?) {
     lhs.to(equal(rhs))
 }
 
-public func !=(lhs: Expectation<URLRequestable>, rhs: URLRequest?) {
+public func !=(lhs: SyncExpectation<URLRequestable>, rhs: URLRequest?) {
     lhs.toNot(equal(rhs))
 }
 
-public func ==(lhs: Expectation<URLRequest>, rhs: URLRequestable?) {
+public func ==(lhs: SyncExpectation<URLRequest>, rhs: URLRequestable?) {
     lhs.to(equal(rhs))
 }
 
-public func !=(lhs: Expectation<URLRequest>, rhs: URLRequestable?) {
+public func !=(lhs: SyncExpectation<URLRequest>, rhs: URLRequestable?) {
     lhs.toNot(equal(rhs))
 }
