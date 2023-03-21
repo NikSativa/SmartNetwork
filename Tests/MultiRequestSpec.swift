@@ -107,7 +107,7 @@ final class MultiRequestSpec: QuickSpec {
 
                         expect(completionHandlers[first]).toNot(beNil())
                         expect(completionHandlers[second]).toNot(beNil())
-                        expect(subject.responses).toEventually(equal(expectedResponses), timeout: .milliseconds(100))
+                        await expect(subject.responses).toEventually(equal(expectedResponses), timeout: .milliseconds(100))
                     }
                 }
 
@@ -255,7 +255,7 @@ private final class Subject {
 
     func start(offset: Int) {
         requests[offset].completion = { [weak self] data in
-            guard let self = self else {
+            guard let self else {
                 return
             }
 

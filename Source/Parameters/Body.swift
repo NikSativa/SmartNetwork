@@ -63,7 +63,7 @@ public enum Body {
     case form(Form) // form-data
     case xform([String: Any]) // x-www-form-urlencoded
 
-    public init<T: Encodable>(_ object: T) {
+    public init(_ object: some Encodable) {
         self = .encodable(AnyEncodable(object))
     }
 }
@@ -193,7 +193,7 @@ extension Body {
 }
 
 public extension Body {
-    static func xform<M: Encodable>(_ object: M) throws -> Self {
+    static func xform(_ object: some Encodable) throws -> Self {
         do {
             let encoder = (type(of: object) as? CustomizedEncodable.Type)?.encoder ?? JSONEncoder()
             let originalData = try encoder.encode(object)
@@ -270,7 +270,7 @@ private enum XFormEncoder {
     static func encodeParameters(parameters: [String: Any]) -> Data {
         return parameters
             .map { key, value -> String in
-                return "\(key)=\(self.percentEscapeString(value))"
+                return "\(key)=\(percentEscapeString(value))"
             }
             .joined(separator: "&").data(using: String.Encoding.utf8) ?? Data()
     }

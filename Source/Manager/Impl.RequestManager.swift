@@ -84,12 +84,12 @@ extension Impl {
                                       request: Request,
                                       result: ResponseData,
                                       key: Key) {
-            if let stopTheLine = stopTheLine {
+            if let stopTheLine {
                 let scheduledRequest = $scheduledRequests.mutate {
                     return $0[key]
                 }
 
-                if let scheduledRequest = scheduledRequest {
+                if let scheduledRequest {
                     let verificationResult = stopTheLine.verify(response: result,
                                                                 for: request.parameters,
                                                                 userInfo: &request.userInfo)
@@ -123,13 +123,13 @@ extension Impl {
 
             if let _ = stopTheLine {
                 start = { [weak self] actual in
-                    if let self = self {
+                    if let self {
                         self.$scheduledRequests.mutate {
                             $0[key] = request
                         }
 
                         request.completion = { [weak self] data in
-                            if let self = self {
+                            if let self {
                                 self.checkStopTheLine(actual: actual,
                                                       request: request,
                                                       result: data,

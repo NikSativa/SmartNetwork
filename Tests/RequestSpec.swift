@@ -139,7 +139,7 @@ final class RequestSpec: QuickSpec {
                                 .testMake(body: nil,
                                           response: nil,
                                           error: nil)
-                                ]))
+                            ]))
                         }
                     }
                 }

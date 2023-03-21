@@ -83,7 +83,7 @@ public extension Parameters.UserInfo {
     }
 }
 
-private extension Array where Element == Plugin {
+private extension [Plugin] {
     var descriptions: [String] {
         let result = map { String(describing: type(of: $0)) }
         return result

@@ -1,70 +1,68 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "CwlCatchException",
-        "repositoryURL": "https://github.com/mattgallagher/CwlCatchException.git",
-        "state": {
-          "branch": null,
-          "revision": "35f9e770f54ce62dd8526470f14c6e137cef3eea",
-          "version": "2.1.1"
-        }
-      },
-      {
-        "package": "CwlPreconditionTesting",
-        "repositoryURL": "https://github.com/mattgallagher/CwlPreconditionTesting.git",
-        "state": {
-          "branch": null,
-          "revision": "c21f7bab5ca8eee0a9998bbd17ca1d0eb45d4688",
-          "version": "2.1.0"
-        }
-      },
-      {
-        "package": "NCallback",
-        "repositoryURL": "https://github.com/NikSativa/NCallback.git",
-        "state": {
-          "branch": null,
-          "revision": "1da61ec3b514a4e2ecdedc2fe32b0ae1f8e205a2",
-          "version": "2.10.13"
-        }
-      },
-      {
-        "package": "Nimble",
-        "repositoryURL": "https://github.com/Quick/Nimble.git",
-        "state": {
-          "branch": null,
-          "revision": "1f3bde57bde12f5e7b07909848c071e9b73d6edc",
-          "version": "10.0.0"
-        }
-      },
-      {
-        "package": "NQueue",
-        "repositoryURL": "https://github.com/NikSativa/NQueue.git",
-        "state": {
-          "branch": null,
-          "revision": "3d4ccb9e5d98ad472e9cc66bf2ea38fe11c3b63e",
-          "version": "1.1.14"
-        }
-      },
-      {
-        "package": "NSpry",
-        "repositoryURL": "https://github.com/NikSativa/NSpry.git",
-        "state": {
-          "branch": null,
-          "revision": "43402e5d8fdafcd8ca7a46d5660fb0c19a5efb64",
-          "version": "1.2.10"
-        }
-      },
-      {
-        "package": "Quick",
-        "repositoryURL": "https://github.com/Quick/Quick.git",
-        "state": {
-          "branch": null,
-          "revision": "f9d519828bb03dfc8125467d8f7b93131951124c",
-          "version": "5.0.1"
-        }
+  "pins" : [
+    {
+      "identity" : "cwlcatchexception",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mattgallagher/CwlCatchException.git",
+      "state" : {
+        "revision" : "35f9e770f54ce62dd8526470f14c6e137cef3eea",
+        "version" : "2.1.1"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "cwlpreconditiontesting",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mattgallagher/CwlPreconditionTesting.git",
+      "state" : {
+        "revision" : "c21f7bab5ca8eee0a9998bbd17ca1d0eb45d4688",
+        "version" : "2.1.0"
+      }
+    },
+    {
+      "identity" : "ncallback",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/NikSativa/NCallback.git",
+      "state" : {
+        "revision" : "7207baba68a9aa9d2126d7df0ffb64bac38178c5",
+        "version" : "2.10.17"
+      }
+    },
+    {
+      "identity" : "nimble",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Quick/Nimble.git",
+      "state" : {
+        "revision" : "b7f6c49acdb247e3158198c5448b38c3cc595533",
+        "version" : "11.2.1"
+      }
+    },
+    {
+      "identity" : "nqueue",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/NikSativa/NQueue.git",
+      "state" : {
+        "revision" : "464565307a9336fdec5797a6c6311df5d17f6d64",
+        "version" : "1.1.17"
+      }
+    },
+    {
+      "identity" : "nspry",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/NikSativa/NSpry.git",
+      "state" : {
+        "revision" : "ac81bc9c46e2e79905b8b066d9f19964584f4dce",
+        "version" : "1.3.3"
+      }
+    },
+    {
+      "identity" : "quick",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Quick/Quick.git",
+      "state" : {
+        "revision" : "16910e406be96e08923918315388c3e989deac9e",
+        "version" : "6.1.0"
+      }
+    }
+  ],
+  "version" : 2
 }

@@ -66,7 +66,7 @@ public struct URLRepresentation: Equatable {
 
 private extension URLRepresentation.Scheme {
     init?(_ string: String?) {
-        guard let string = string, !string.isEmpty else {
+        guard let string, !string.isEmpty else {
             return nil
         }
 

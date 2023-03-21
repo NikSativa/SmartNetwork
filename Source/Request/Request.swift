@@ -104,11 +104,11 @@ extension Impl {
             }
 
             sessionAdaptor.dataTask(with: sdkRequest) { [weak self] data, response, error in
-                guard let self = self, !self.isCanceled else {
+                guard let self, !self.isCanceled else {
                     return
                 }
 
-                if let cacheSettings = self.parameters.cacheSettings, let response = response, let data = data, error == nil {
+                if let cacheSettings = self.parameters.cacheSettings, let response, let data, error == nil {
                     let cached = CachedURLResponse(response: response,
                                                    data: data,
                                                    userInfo: nil,
@@ -438,7 +438,7 @@ private extension Parameters {
     }
 }
 
-private extension Optional where Wrapped == [String: String] {
+private extension [String: String]? {
     var postmanFormat: String {
         return (self ?? [:]).map {
             return [$0, $1].joined(separator: ":")

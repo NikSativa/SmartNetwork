@@ -1,19 +1,12 @@
 import Foundation
 import Nimble
+import NRequestTestHelpers
 import NSpry
+
 @testable import NRequest
 
-// MARK: - Impl.URLRequestable + Equatable, SpryEquatable, TestOutputStringConvertible
-
-extension Impl.URLRequestable: Equatable, SpryEquatable, TestOutputStringConvertible {
-    public static func ==(lhs: Self, rhs: Self) -> Bool {
-        return lhs.original == rhs.original
-    }
-
-    public var testDescription: String {
-        return original.testDescription
-    }
-}
+extension URLRequestable where Self: SpryEquatable {}
+extension URLRequestable where Self: TestOutputStringConvertible {}
 
 public func equal(_ expectedValue: URLRequest?) -> Predicate<URLRequestable> {
     return Predicate.define("equal <\(stringify(expectedValue))>") { actualExpression, msg in
@@ -24,7 +17,7 @@ public func equal(_ expectedValue: URLRequest?) -> Predicate<URLRequestable> {
         case (_, nil):
             return PredicateResult(status: .fail, message: msg)
         case (let expected?, let actual?):
-            let matches = expected == actual
+            let matches = expected == actual.original
             return PredicateResult(bool: matches, message: msg)
         }
     }
@@ -39,18 +32,10 @@ public func equal(_ expectedValue: URLRequestable?) -> Predicate<URLRequest> {
         case (_, nil):
             return PredicateResult(status: .fail, message: msg)
         case (let expected?, let actual?):
-            let matches = expected == actual
+            let matches = expected.original == actual
             return PredicateResult(bool: matches, message: msg)
         }
     }
-}
-
-public func ==(lhs: URLRequest, rhs: URLRequestable) -> Bool {
-    return lhs == rhs.original
-}
-
-public func ==(lhs: URLRequestable, rhs: URLRequest) -> Bool {
-    return lhs.original == rhs
 }
 
 public func ==(lhs: SyncExpectation<URLRequest>, rhs: URLRequest?) {

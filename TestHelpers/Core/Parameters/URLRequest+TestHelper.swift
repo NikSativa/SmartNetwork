@@ -2,6 +2,8 @@ import Foundation
 import NRequest
 import NSpry
 
+// MARK: - URLRequest + SpryEquatable
+
 extension URLRequest: SpryEquatable {
     public static func testMake(url: String,
                                 headers: [String: String] = [:]) -> URLRequest {
@@ -16,5 +18,15 @@ extension URLRequest: SpryEquatable {
             request.addValue(value, forHTTPHeaderField: key)
         }
         return request
+    }
+}
+
+public extension URLRequest {
+    var testDescription: String {
+        return [
+            String(describing: type(of: self)),
+            description,
+            String(describing: allHTTPHeaderFields)
+        ].compactMap { $0 }.joined(separator: ", ")
     }
 }

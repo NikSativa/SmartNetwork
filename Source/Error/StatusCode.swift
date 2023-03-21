@@ -5,7 +5,7 @@ public struct StatusCode: Error, Hashable {
     public let kind: Kind?
 
     public init?(_ code: Int?) {
-        guard let code = code, code != 200 else {
+        guard let code, code != 200 else {
             return nil
         }
         self.rawValue = code

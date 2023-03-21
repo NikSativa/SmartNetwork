@@ -1,7 +1,7 @@
 import Foundation
 
 public extension Collection {
-    func throwIfEmpty<T: Error>(_ error: T) throws -> Self {
+    func throwIfEmpty(_ error: some Error) throws -> Self {
         if isEmpty {
             throw error
         }
