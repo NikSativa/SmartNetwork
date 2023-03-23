@@ -40,6 +40,8 @@ public struct Parameters {
     public var isLoggingEnabled: Bool
     public var taskKind: TaskKind?
     public var session: Session
+    public var encoder: JSONEncoder
+    public var decoder: JSONDecoder
     public var shouldAddSlashAfterEndpoint: Bool = false
 
     /// used only on client side. best practice to use it to identify request in the Plugin's
@@ -58,6 +60,8 @@ public struct Parameters {
                 taskKind: TaskKind? = nil,
                 userInfo: UserInfo = .init(),
                 session: Session = Self.sharedSession,
+                encoder: JSONEncoder = .init(),
+                decoder: JSONDecoder = .init(),
                 shouldAddSlashAfterEndpoint: Bool = Self.shouldAddSlashAfterEndpoint) {
         self.address = address
         self.header = header
@@ -72,6 +76,8 @@ public struct Parameters {
         self.taskKind = taskKind
         self.userInfo = userInfo
         self.session = session
+        self.encoder = encoder
+        self.decoder = decoder
         self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
     }
 }

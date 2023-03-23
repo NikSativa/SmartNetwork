@@ -1,6 +1,5 @@
 import Foundation
 
-
 public protocol PluginProvider {
     func plugins() -> [Plugin]
 }

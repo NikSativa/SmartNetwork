@@ -2,18 +2,6 @@ import CoreGraphics
 import Foundation
 
 public enum Body {
-    public struct AnyEncodable: Encodable {
-        fileprivate let encodable: Encodable
-
-        public init(_ encodable: Encodable) {
-            self.encodable = encodable
-        }
-
-        public func encode(to encoder: Encoder) throws {
-            try encodable.encode(to: encoder)
-        }
-    }
-
     public enum Image: Equatable {
         case png(NRequest.Image)
         #if !os(macOS)
@@ -56,16 +44,11 @@ public enum Body {
     }
 
     case empty
-    case json(Any, options: JSONSerialization.WritingOptions)
     case data(Data)
     case image(Image)
-    case encodable(AnyEncodable)
+    case encodable(any Encodable)
     case form(Form) // form-data
     case xform([String: Any]) // x-www-form-urlencoded
-
-    public init(_ object: some Encodable) {
-        self = .encodable(AnyEncodable(object))
-    }
 }
 
 extension Body {
@@ -84,7 +67,7 @@ extension Body {
                    line: line)
     }
 
-    func fill(_ tempRequest: inout URLRequest, isLoggingEnabled: Bool) throws {
+    func fill(_ tempRequest: inout URLRequest, isLoggingEnabled: Bool, encoder: @autoclosure () -> JSONEncoder) throws {
         switch self {
         case .empty:
             break
@@ -93,28 +76,6 @@ extension Body {
 
             if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
                 tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
-            }
-        case .json(let json, let options):
-            guard JSONSerialization.isValidJSONObject(json) else {
-                throw EncodingError.invalidJSON
-            }
-
-            do {
-                let data = try JSONSerialization.data(withJSONObject: json, options: options)
-                tempRequest.httpBody = data
-                tolog(isLoggingEnabled) {
-                    return "JSON object:" + String(describing: try? JSONSerialization.jsonObject(with: data, options: []))
-                }
-
-                if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
-                    tempRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
-                }
-
-                if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
-                    tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
-                }
-            } catch {
-                throw EncodingError.generic(.init(error))
             }
         case .image(let image):
             let data: Data
@@ -137,7 +98,7 @@ extension Body {
                 tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
             }
         case .encodable(let object):
-            let encoder = object.encoder
+            let encoder = encoder()
             do {
                 let data = try encoder.encode(object)
 
@@ -193,9 +154,8 @@ extension Body {
 }
 
 public extension Body {
-    static func xform(_ object: some Encodable) throws -> Self {
+    static func xform(_ object: some Encodable, encoder: JSONEncoder) throws -> Self {
         do {
-            let encoder = (type(of: object) as? CustomizedEncodable.Type)?.encoder ?? JSONEncoder()
             let originalData = try encoder.encode(object)
             let parameters = try JSONSerialization.jsonObject(with: originalData)
 
@@ -273,16 +233,5 @@ private enum XFormEncoder {
                 return "\(key)=\(percentEscapeString(value))"
             }
             .joined(separator: "&").data(using: String.Encoding.utf8) ?? Data()
-    }
-}
-
-extension Body.AnyEncodable {
-    var encoder: JSONEncoder {
-        if let object = type(of: self) as? CustomizedEncodable.Type {
-            return object.encoder
-        } else if let object = type(of: encodable) as? CustomizedEncodable.Type {
-            return object.encoder
-        }
-        return JSONEncoder()
     }
 }

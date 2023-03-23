@@ -1,15 +1,13 @@
 import Foundation
 
 public struct URLRepresentation: Equatable {
-    public typealias Scheme = Address.Scheme
-
-    public let scheme: Scheme?
+    public let scheme: Address.Scheme?
     public let host: String
     public let port: Int?
     public let path: [String]
     public let queryItems: QueryItems
 
-    public init(scheme: Scheme? = .https,
+    public init(scheme: Address.Scheme? = .https,
                 host: String,
                 port: Int? = nil,
                 path: [String] = [],
@@ -24,7 +22,7 @@ public struct URLRepresentation: Equatable {
     public init(url: URL) {
         let components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
 
-        self.scheme = Scheme(components.scheme)
+        self.scheme = Address.Scheme(components.scheme)
         self.host = components.host ?? ""
         self.port = components.port
         self.path = components.path.components(separatedBy: "/")
@@ -64,7 +62,7 @@ public struct URLRepresentation: Equatable {
     }
 }
 
-private extension URLRepresentation.Scheme {
+private extension Address.Scheme {
     init?(_ string: String?) {
         guard let string, !string.isEmpty else {
             return nil

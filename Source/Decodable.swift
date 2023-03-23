@@ -1,18 +1,17 @@
 import Foundation
 
-
 public protocol CustomDecodable {
     associatedtype Object
 
     var result: Result<Object, Error> { get }
 
-    init(with data: ResponseData)
+    init(with data: ResponseData, decoder: @autoclosure () -> JSONDecoder)
 }
 
 struct VoidContent: CustomDecodable {
     var result: Result<Void, Error>
 
-    init(with data: ResponseData) {
+    init(with data: ResponseData, decoder: @autoclosure () -> JSONDecoder) {
         if let error = data.error {
             if let error = data.error as? StatusCode, error.isSuccess {
                 self.result = .success(())
@@ -36,12 +35,12 @@ struct VoidContent: CustomDecodable {
 struct DecodableContent<Response: Decodable>: CustomDecodable {
     var result: Result<Response?, Error>
 
-    init(with data: ResponseData) {
+    init(with data: ResponseData, decoder: @autoclosure () -> JSONDecoder) {
         if let error = data.error {
             self.result = .failure(error)
         } else if let data = data.body {
             do {
-                let decoder = (Response.self as? CustomizedDecodable.Type)?.decoder ?? JSONDecoder()
+                let decoder = decoder()
                 self.result = .success(try decoder.decode(Response.self, from: data))
             } catch {
                 self.result = .failure(error)
@@ -55,7 +54,7 @@ struct DecodableContent<Response: Decodable>: CustomDecodable {
 struct ImageContent: CustomDecodable {
     var result: Result<Image?, Error>
 
-    init(with data: ResponseData) {
+    init(with data: ResponseData, decoder: @autoclosure () -> JSONDecoder) {
         if let error = data.error {
             self.result = .failure(error)
         } else if let data = data.body {
@@ -73,7 +72,7 @@ struct ImageContent: CustomDecodable {
 struct DataContent: CustomDecodable {
     var result: Result<Data?, Error>
 
-    init(with data: ResponseData) {
+    init(with data: ResponseData, decoder: @autoclosure () -> JSONDecoder) {
         if let error = data.error {
             self.result = .failure(error)
         } else if let data = data.body {
@@ -87,7 +86,7 @@ struct DataContent: CustomDecodable {
 struct JSONContent: CustomDecodable {
     var result: Result<Any?, Error>
 
-    init(with data: ResponseData) {
+    init(with data: ResponseData, decoder: @autoclosure () -> JSONDecoder) {
         if let error = data.error {
             self.result = .failure(error)
         } else if let data = data.body {

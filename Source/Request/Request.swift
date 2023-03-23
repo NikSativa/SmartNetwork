@@ -1,7 +1,6 @@
 import Foundation
 import NQueue
 
-
 public protocol Request: AnyObject {
     typealias CompletionCallback = (ResponseData) -> Void
     var completion: CompletionCallback? { get set }
@@ -384,7 +383,7 @@ private extension Parameters {
             request.setValue(value, forHTTPHeaderField: key)
         }
 
-        try body.fill(&request, isLoggingEnabled: isLoggingEnabled)
+        try body.fill(&request, isLoggingEnabled: isLoggingEnabled, encoder: encoder)
 
         return request
     }

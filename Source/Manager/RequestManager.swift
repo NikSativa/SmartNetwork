@@ -1,6 +1,5 @@
 import Foundation
 
-
 public protocol RequestManager {
     associatedtype Error: AnyError
 

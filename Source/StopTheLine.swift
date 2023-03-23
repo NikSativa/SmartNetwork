@@ -17,7 +17,6 @@ public enum StopTheLineResult {
     case retry
 }
 
-
 public protocol StopTheLine {
     associatedtype Error: AnyError
 

@@ -1,6 +1,5 @@
 import Foundation
 
-
 public protocol URLRequestable {
     var original: URLRequest { get }
     var allHTTPHeaderFields: [String: String] { get }
