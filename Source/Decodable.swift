@@ -1,6 +1,6 @@
 import Foundation
 
-// sourcery: fakable
+
 public protocol CustomDecodable {
     associatedtype Object
 

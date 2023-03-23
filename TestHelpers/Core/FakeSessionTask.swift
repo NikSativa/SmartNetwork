@@ -1,6 +1,7 @@
 import Foundation
 import NQueue
 import NSpry
+
 @testable import NRequest
 
 public final class FakeSessionTask: SessionTask, Spryable, SpryEquatable {
@@ -9,14 +10,14 @@ public final class FakeSessionTask: SessionTask, Spryable, SpryEquatable {
     }
 
     public enum Function: String, StringRepresentable {
-        case progressContainer
+        case progress
         case isRunning
         case resume = "resume()"
         case cancel = "cancel()"
         case observe = "observe(_:)"
     }
 
-    public var progressContainer: NRequest.Progress {
+    public var progress: Progress {
         return spryify()
     }
 
@@ -32,7 +33,9 @@ public final class FakeSessionTask: SessionTask, Spryable, SpryEquatable {
         return spryify()
     }
 
+    public var progressHandler: ProgressHandler?
     public func observe(_ progressHandler: @escaping ProgressHandler) -> AnyObject {
+        self.progressHandler = progressHandler
         return spryify(arguments: progressHandler)
     }
 }

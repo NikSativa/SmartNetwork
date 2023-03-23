@@ -3,6 +3,7 @@ import Nimble
 import NQueue
 import NSpry
 import Quick
+
 @testable import NRequest
 @testable import NRequestTestHelpers
 
@@ -284,21 +285,9 @@ private final class ThreadSafeFakeSession: Session, Spryable {
 
     public init() {}
 
-    public func copy(with delegate: SessionDelegate) -> Session {
-        return lock.sync {
-            return spryify(arguments: delegate)
-        }
-    }
-
     public func task(with request: URLRequest, completionHandler: @escaping CompletionHandler) -> SessionTask {
         return lock.sync {
             return spryify(arguments: request, completionHandler)
-        }
-    }
-
-    public func finishTasksAndInvalidate() {
-        return lock.sync {
-            return spryify()
         }
     }
 }
@@ -309,7 +298,7 @@ private final class ThreadSafeFakeSessionTask: SessionTask, Spryable, SpryEquata
     }
 
     public enum Function: String, StringRepresentable {
-        case progressContainer
+        case progress
         case isRunning
         case resume = "resume()"
         case cancel = "cancel()"
@@ -320,7 +309,7 @@ private final class ThreadSafeFakeSessionTask: SessionTask, Spryable, SpryEquata
 
     init() {}
 
-    public var progressContainer: NRequest.Progress {
+    public var progress: Progress {
         return lock.sync {
             return spryify()
         }

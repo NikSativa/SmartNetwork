@@ -1,4 +1,5 @@
 import Foundation
+import NCallback
 
 public enum StopTheLineAction: Equatable {
     case stopTheLine

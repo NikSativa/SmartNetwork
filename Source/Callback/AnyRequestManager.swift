@@ -1,13 +1,5 @@
 import Foundation
-
-public typealias ResultCallback<T, E: Error> = Callback<Result<T, E>>
-public struct Callback<ResultType> {
-    public let value: ResultType
-
-    func flatMap<N>(_ mapper: (ResultType) -> N) -> Callback<N> {
-        return .init(value: mapper(value))
-    }
-}
+import NCallback
 
 public struct AnyRequestManager<Error: AnyError>: RequestManager {
     private let box: AbstractRequestFactory<Error>

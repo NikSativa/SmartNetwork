@@ -1,7 +1,7 @@
 import Foundation
 import NQueue
 
-// sourcery: fakable
+
 public protocol Request: AnyObject {
     typealias CompletionCallback = (ResponseData) -> Void
     var completion: CompletionCallback? { get set }
@@ -296,19 +296,7 @@ private final class SessionAdaptor: NSObject {
     private var invalidator: (() -> Void)?
 
     private lazy var session: Session = {
-        if let _ = parameters.taskKind {
-            if #available(iOS 11, *) {
-                return parameters.session
-            } else {
-                let session = parameters.session.copy(with: self)
-                invalidator = { [weak session] in
-                    session?.finishTasksAndInvalidate()
-                }
-                return session
-            }
-        } else {
-            return parameters.session
-        }
+        return parameters.session
     }()
 
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
@@ -331,11 +319,7 @@ private final class SessionAdaptor: NSObject {
         }
 
         if let progressHandler = parameters.taskKind?.progressHandler {
-            if #available(iOS 11, *) {
-                observer = newTask.observe(progressHandler)
-            } else {
-                progressHandler(.init(fractionCompleted: 0))
-            }
+            observer = newTask.observe(progressHandler)
         }
         task = newTask
         newTask.resume()
@@ -357,38 +341,6 @@ private final class SessionAdaptor: NSObject {
     deinit {
         invalidator?()
         stop()
-    }
-}
-
-// MARK: - SessionDelegate
-
-extension SessionAdaptor: SessionDelegate {
-    func urlSession(_: URLSession, dataTask _: URLSessionDataTask, didReceive response: URLResponse, completionHandler: (URLSession.ResponseDisposition) -> Void) {
-        expectedContentLength = Int64(response.expectedContentLength)
-        completionHandler(.allow)
-    }
-
-    func urlSession(_: URLSession, dataTask _: URLSessionDataTask, didReceive data: Data) {
-        buffer.append(data)
-        parameters.taskKind?.downloadProgressHandler?(progress(totalBytesSent: Int64(buffer.length), totalBytesExpectedToSend: expectedContentLength))
-    }
-
-    func urlSession(_: URLSession, task _: URLSessionTask, didCompleteWithError _: Error?) {
-        parameters.taskKind?.downloadProgressHandler?(.init(fractionCompleted: 1))
-    }
-
-    func urlSession(_: URLSession, task _: URLSessionTask, didSendBodyData _: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
-        parameters.taskKind?.uploadProgressHandler?(progress(totalBytesSent: totalBytesSent, totalBytesExpectedToSend: totalBytesExpectedToSend))
-    }
-
-    private func progress(totalBytesSent: Int64, totalBytesExpectedToSend: Int64) -> Progress {
-        let percentageDownloaded: Double
-        if totalBytesExpectedToSend > 0 {
-            percentageDownloaded = min(1, max(0, Double(totalBytesSent) / Double(totalBytesExpectedToSend)))
-        } else {
-            percentageDownloaded = 0
-        }
-        return .init(fractionCompleted: percentageDownloaded)
     }
 }
 

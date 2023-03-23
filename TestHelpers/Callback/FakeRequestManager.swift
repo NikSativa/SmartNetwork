@@ -1,6 +1,6 @@
 import Foundation
+import NCallback
 import NSpry
-
 @testable import NRequest
 
 public final class FakeRequestManager<Error: AnyError>: RequestManager, Spryable {

@@ -24,10 +24,10 @@ let package = Package(
         .target(name: "NRequest",
                 dependencies: [
                     "NQueue",
-                    "NCallback"
+//                    "NCallback"
                 ],
-                path: "Source"),
-//                exclude: ["Callback"]),
+                path: "Source",
+                exclude: ["Callback"]),
         .target(name: "NRequestTestHelpers",
                 dependencies: [
                     "NRequest",

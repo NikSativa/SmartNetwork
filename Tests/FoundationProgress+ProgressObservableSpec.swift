@@ -2,10 +2,10 @@ import Foundation
 import Nimble
 import NSpry
 import Quick
+
 @testable import NRequest
 @testable import NRequestTestHelpers
 
-@available(iOS 11, *)
 final class FoundationProgress_ProgressObservableSpec: QuickSpec {
     override func spec() {
         describe("Progress") {

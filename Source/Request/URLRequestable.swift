@@ -1,6 +1,6 @@
 import Foundation
 
-// sourcery: fakable
+
 public protocol URLRequestable {
     var original: URLRequest { get }
     var allHTTPHeaderFields: [String: String] { get }
