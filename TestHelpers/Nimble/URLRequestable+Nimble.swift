@@ -5,10 +5,10 @@ import NSpry
 
 @testable import NRequest
 
-extension URLRequestable where Self: SpryEquatable {}
-extension URLRequestable where Self: TestOutputStringConvertible {}
+extension URLRequestWrapper where Self: SpryEquatable {}
+extension URLRequestWrapper where Self: TestOutputStringConvertible {}
 
-public func equal(_ expectedValue: URLRequest?) -> Predicate<URLRequestable> {
+public func equal(_ expectedValue: URLRequest?) -> Predicate<URLRequestWrapper> {
     return Predicate.define("equal <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
         switch (expectedValue, actualValue) {
@@ -23,7 +23,7 @@ public func equal(_ expectedValue: URLRequest?) -> Predicate<URLRequestable> {
     }
 }
 
-public func equal(_ expectedValue: URLRequestable?) -> Predicate<URLRequest> {
+public func equal(_ expectedValue: URLRequestWrapper?) -> Predicate<URLRequest> {
     return Predicate.define("equal <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
         switch (expectedValue, actualValue) {
@@ -46,18 +46,18 @@ public func !=(lhs: SyncExpectation<URLRequest>, rhs: URLRequest?) {
     lhs.toNot(equal(rhs))
 }
 
-public func ==(lhs: SyncExpectation<URLRequestable>, rhs: URLRequest?) {
+public func ==(lhs: SyncExpectation<URLRequestWrapper>, rhs: URLRequest?) {
     lhs.to(equal(rhs))
 }
 
-public func !=(lhs: SyncExpectation<URLRequestable>, rhs: URLRequest?) {
+public func !=(lhs: SyncExpectation<URLRequestWrapper>, rhs: URLRequest?) {
     lhs.toNot(equal(rhs))
 }
 
-public func ==(lhs: SyncExpectation<URLRequest>, rhs: URLRequestable?) {
+public func ==(lhs: SyncExpectation<URLRequest>, rhs: URLRequestWrapper?) {
     lhs.to(equal(rhs))
 }
 
-public func !=(lhs: SyncExpectation<URLRequest>, rhs: URLRequestable?) {
+public func !=(lhs: SyncExpectation<URLRequest>, rhs: URLRequestWrapper?) {
     lhs.toNot(equal(rhs))
 }

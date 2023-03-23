@@ -3,7 +3,7 @@ import NSpry
 
 @testable import NRequest
 
-public final class FakeRequest: Request, Spryable {
+public final class FakeRequest: Requestable, Spryable {
     public enum ClassFunction: String, StringRepresentable {
         case empty
     }
@@ -11,6 +11,7 @@ public final class FakeRequest: Request, Spryable {
     public enum Function: String, StringRepresentable {
         case completion
         case parameters
+        case urlRequestable
         case userInfo
         case restartIfNeeded = "restartIfNeeded()"
         case start = "start()"
@@ -18,6 +19,15 @@ public final class FakeRequest: Request, Spryable {
     }
 
     public init() {}
+
+    public var urlRequestable: NRequest.URLRequestWrapper {
+        get {
+            return stubbedValue()
+        }
+        set {
+            return recordCall(arguments: newValue)
+        }
+    }
 
     public var userInfo: Parameters.UserInfo {
         get {

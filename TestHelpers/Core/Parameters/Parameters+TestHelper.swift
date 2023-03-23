@@ -11,15 +11,18 @@ extension Parameters: SpryEquatable {
                                 header: HeaderFields = [:],
                                 method: HTTPMethod = .get,
                                 body: Body = .empty,
-                                plugins: [Plugin] = [],
+                                plugins: [RequestStatePlugin] = [],
                                 cacheSettings: CacheSettings? = nil,
                                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
                                 timeoutInterval: TimeInterval = 60,
                                 queue: DelayedQueue = Self.defaultResponseQueue,
                                 isLoggingEnabled: Bool = false,
-                                taskKind: TaskKind? = nil,
+                                progressHandler: ProgressHandler? = nil,
                                 userInfo: UserInfo = .init(),
-                                session: Session = FakeSession()) -> Self {
+                                session: Session = FakeSession(),
+                                encoder: JSONEncoder = .init(),
+                                decoder: JSONDecoder = .init(),
+                                shouldAddSlashAfterEndpoint: Bool = false) -> Self {
         return .init(address: address,
                      header: header,
                      method: method,
@@ -30,9 +33,12 @@ extension Parameters: SpryEquatable {
                      timeoutInterval: timeoutInterval,
                      queue: queue,
                      isLoggingEnabled: isLoggingEnabled,
-                     taskKind: taskKind,
+                     progressHandler: progressHandler,
                      userInfo: userInfo,
-                     session: session)
+                     session: session,
+                     encoder: encoder,
+                     decoder: decoder,
+                     shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint)
     }
 }
 
@@ -83,7 +89,7 @@ public extension Parameters.UserInfo {
     }
 }
 
-private extension [Plugin] {
+private extension [RequestStatePlugin] {
     var descriptions: [String] {
         let result = map { String(describing: type(of: $0)) }
         return result

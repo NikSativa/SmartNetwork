@@ -21,7 +21,7 @@ final class StatusCodePluginSpec: QuickSpec {
                 it("should pass") {
                     expect {
                         try subject.verify(data: .testMake(),
-                                           userInfo: &userInfo)
+                                           userInfo: userInfo)
 
                     }.toNot(throwError())
                 }
@@ -31,7 +31,7 @@ final class StatusCodePluginSpec: QuickSpec {
                 it("should pass") {
                     expect {
                         try subject.verify(data: .testMake(statusCode: 200),
-                                           userInfo: &userInfo)
+                                           userInfo: userInfo)
 
                     }.toNot(throwError())
                 }
@@ -46,7 +46,7 @@ final class StatusCodePluginSpec: QuickSpec {
                         }
                         expect {
                             try subject.verify(data: .testMake(statusCode: code),
-                                               userInfo: &userInfo)
+                                               userInfo: userInfo)
                         }.to(throwError(error))
                     }
                 }

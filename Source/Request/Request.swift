@@ -1,210 +1,238 @@
 import Foundation
 import NQueue
 
-public protocol Request: AnyObject {
+public protocol RequestStatePlugin {
+    func willSend(_ parameters: Parameters,
+                  request: URLRequestWrapper,
+                  userInfo: inout Parameters.UserInfo)
+    func didReceive(_ parameters: Parameters,
+                    request: URLRequestWrapper,
+                    data: ResponseData,
+                    userInfo: inout Parameters.UserInfo)
+}
+
+public protocol Requestable: AnyObject {
     typealias CompletionCallback = (ResponseData) -> Void
-    var completion: CompletionCallback? { get set }
 
     var userInfo: Parameters.UserInfo { get set }
+    #warning("needed?")
+    var completion: CompletionCallback? { get set }
+    var urlRequestable: URLRequestWrapper { get }
     var parameters: Parameters { get }
 
-    func cancel()
     func start()
+    func cancel()
 }
 
-// MARK: - Impl.Request
+public final class Request {
+    private let sessionAdaptor: SessionAdaptor
+    private var isCanceled: Bool = false
 
-extension Impl {
-    final class Request {
-        @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
-        private var sessionAdaptor: SessionAdaptor?
-        private var isCanceled: Bool = false
-        private let pluginContext: PluginProvider
-        private(set) var parameters: Parameters
+    public private(set) var parameters: Parameters
+    public var userInfo: Parameters.UserInfo
+    public let urlRequestable: URLRequestWrapper
 
-        @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
-        var completion: CompletionCallback?
+    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+    public var completion: CompletionCallback?
 
-        required init(parameters: Parameters,
-                      pluginContext: PluginProvider?) {
-            self.parameters = parameters
-            self.pluginContext = pluginContext ?? PluginProviderContext()
-        }
+    private var plugins: [RequestStatePlugin] {
+        return parameters.plugins
+    }
 
-        deinit {
-            sessionAdaptor?.stop()
-        }
+    private init(with parameters: Parameters,
+                 userInfo: Parameters.UserInfo,
+                 urlRequestable: URLRequestWrapper) {
+        self.parameters = parameters
+        self.userInfo = userInfo
+        self.urlRequestable = urlRequestable
+        self.sessionAdaptor = .init(session: parameters.session,
+                                    progressHandler: parameters.progressHandler)
+    }
 
-        private func startRealRequest() {
-            cancel()
-            isCanceled = false
+    public static func create(with parameters: Parameters,
+                              urlRequestable: URLRequestWrapper,
+                              userInfo: Parameters.UserInfo = [:]) -> Requestable {
+        return Self(with: parameters,
+                    userInfo: userInfo,
+                    urlRequestable: urlRequestable)
+    }
 
-            do {
-                let request = try parameters.sdkRequest()
-                var requestable: NRequest.URLRequestable = Impl.URLRequestable(request)
-                for plugin in plugins {
-                    plugin.prepare(parameters,
-                                   request: &requestable,
-                                   userInfo: &parameters.userInfo)
-                }
+    deinit {
+        sessionAdaptor.stop()
+    }
 
-                start(with: requestable)
-            } catch {
-                let data = ResponseData(request: nil,
-                                        body: nil,
-                                        response: nil,
-                                        error: error)
-                complete(in: parameters.queue,
-                         with: data)
-            }
-        }
+    private func startRealRequest() {
+        cancel()
+        isCanceled = false
 
-        private func start(with requestable: NRequest.URLRequestable) {
-            plugins.forEach {
-                $0.willSend(parameters,
-                            request: requestable,
+        for plugin in plugins {
+            plugin.willSend(parameters,
+                            request: urlRequestable,
                             userInfo: &userInfo)
+        }
+
+        let sdkRequest = urlRequestable.original
+        if let cacheSettings = parameters.cacheSettings {
+            let shouldUseCache: Bool
+            switch parameters.requestPolicy {
+            case .reloadIgnoringLocalAndRemoteCacheData,
+                 .reloadIgnoringLocalCacheData,
+                 .reloadRevalidatingCacheData:
+                parameters.cacheSettings?.cache.removeCachedResponse(for: sdkRequest)
+                shouldUseCache = false
+            case .returnCacheDataDontLoad,
+                 .returnCacheDataElseLoad,
+                 .useProtocolCachePolicy:
+                shouldUseCache = true
+            @unknown default:
+                shouldUseCache = true
             }
 
-            let sdkRequest = requestable.original
-            if let cacheSettings = parameters.cacheSettings {
-                let shouldUseCache: Bool
-                switch parameters.requestPolicy {
-                case .reloadIgnoringLocalAndRemoteCacheData,
-                     .reloadIgnoringLocalCacheData,
-                     .reloadRevalidatingCacheData:
-                    parameters.cacheSettings?.cache.removeCachedResponse(for: sdkRequest)
-                    shouldUseCache = false
-                case .returnCacheDataDontLoad,
-                     .returnCacheDataElseLoad,
-                     .useProtocolCachePolicy:
-                    shouldUseCache = true
-                @unknown default:
-                    shouldUseCache = true
-                }
-
-                if shouldUseCache, let cached = cacheSettings.cache.cachedResponse(for: sdkRequest) {
-                    tologSelf(sdkRequest)
-                    let responseData = ResponseData(request: requestable,
-                                                    body: cached.data,
-                                                    response: cached.response,
-                                                    error: nil)
-                    fire(data: responseData,
-                         queue: cacheSettings.queue,
-                         sdkRequest: requestable)
-                    return
-                }
-            }
-
-            let sessionAdaptor: SessionAdaptor = $sessionAdaptor.mutate { sessionAdaptor in
-                let new = SessionAdaptor(parameters: parameters)
-                sessionAdaptor = new
-                return new
-            }
-
-            sessionAdaptor.dataTask(with: sdkRequest) { [weak self] data, response, error in
-                guard let self, !self.isCanceled else {
-                    return
-                }
-
-                if let cacheSettings = self.parameters.cacheSettings, let response, let data, error == nil {
-                    let cached = CachedURLResponse(response: response,
-                                                   data: data,
-                                                   userInfo: nil,
-                                                   storagePolicy: cacheSettings.storagePolicy)
-                    cacheSettings.cache.storeCachedResponse(cached, for: sdkRequest)
-                }
-
-                self.sessionAdaptor?.clear()
-                self.sessionAdaptor = nil
-
-                self.tologSelf(sdkRequest)
-
-                let responseData = ResponseData(request: requestable,
-                                                body: data,
-                                                response: response,
-                                                error: error)
-
-                self.fire(data: responseData,
-                          queue: self.parameters.queue,
-                          sdkRequest: requestable)
+            if shouldUseCache, let cached = cacheSettings.cache.cachedResponse(for: sdkRequest) {
+                tologSelf(sdkRequest)
+                let responseData = ResponseData(request: urlRequestable,
+                                                body: cached.data,
+                                                response: cached.response,
+                                                error: nil)
+                fire(data: responseData,
+                     queue: cacheSettings.queue)
+                return
             }
         }
 
-        private func stopSessionRequest() {
-            sessionAdaptor?.stop()
-            sessionAdaptor = nil
-        }
-
-        private var plugins: [Plugin] {
-            return parameters.plugins + pluginContext.plugins()
-        }
-
-        private func fire(data: ResponseData,
-                          queue: DelayedQueue,
-                          sdkRequest: NRequest.URLRequestable) {
-            tolog(data.body, allHTTPHeaderFields: sdkRequest.allHTTPHeaderFields)
-
-            for plugin in plugins {
-                do {
-                    try plugin.verify(data: data,
-                                      userInfo: &userInfo)
-                } catch let catchedError {
-                    self.tolog {
-                        return "failed request: \(catchedError)"
-                    }
-                    data.error = catchedError
-                }
+        sessionAdaptor.dataTask(with: sdkRequest) { [weak self] data, response, error in
+            guard let self, !self.isCanceled else {
+                return
             }
 
-            plugins.forEach {
-                $0.didReceive(parameters,
+            if let cacheSettings = self.parameters.cacheSettings, let response, let data, error == nil {
+                let cached = CachedURLResponse(response: response,
+                                               data: data,
+                                               userInfo: nil,
+                                               storagePolicy: cacheSettings.storagePolicy)
+                cacheSettings.cache.storeCachedResponse(cached, for: sdkRequest)
+            }
+
+            self.tologSelf(sdkRequest)
+
+            let responseData = ResponseData(request: self.urlRequestable,
+                                            body: data,
+                                            response: response,
+                                            error: error)
+
+            self.fire(data: responseData,
+                      queue: self.parameters.queue)
+        }
+    }
+
+    private func stopSessionRequest() {
+        sessionAdaptor.stop()
+    }
+
+    private func fire(data: ResponseData,
+                      queue: DelayedQueue) {
+        tolog(data.body, allHTTPHeaderFields: urlRequestable.allHTTPHeaderFields)
+
+        for plugin in plugins {
+            plugin.didReceive(parameters,
+                              request: urlRequestable,
                               data: data,
                               userInfo: &userInfo)
-            }
-
-            complete(in: queue,
-                     with: data)
-
-            stopSessionRequest()
         }
 
-        private func complete(in queue: DelayedQueue,
-                              with data: ResponseData) {
-            queue.fire {
-                self.completion?(data)
-            }
+        complete(in: queue,
+                 with: data)
+
+        stopSessionRequest()
+    }
+
+    private func complete(in queue: DelayedQueue,
+                          with data: ResponseData) {
+        queue.fire {
+            self.completion?(data)
         }
     }
 }
 
-// MARK: - Impl.Request + Request
+// MARK: - Requestable
 
-extension Impl.Request: Request {
-    var userInfo: Parameters.UserInfo {
-        get {
-            return parameters.userInfo
-        }
-        set {
-            parameters.userInfo = newValue
-        }
-    }
-
-    func start() {
+extension Request: Requestable {
+    public func start() {
         startRealRequest()
     }
 
-    func cancel() {
+    public func cancel() {
         isCanceled = true
         stopSessionRequest()
     }
 }
 
-extension Impl.Request {
-    private func tolog(file: String = #file,
-                       method: String = #function,
-                       line: Int = #line,
-                       text: () -> String) {
+// MARK: - CustomDebugStringConvertible
+
+extension Request: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return makeDescription()
+    }
+}
+
+// MARK: - CustomStringConvertible
+
+extension Request: CustomStringConvertible {
+    public var description: String {
+        return makeDescription()
+    }
+}
+
+// MARK: - private
+
+private final class SessionAdaptor {
+    private let session: Session
+    private let progressHandler: ProgressHandler?
+    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+    private var task: SessionTask?
+    private var observer: Any?
+
+    required init(session: Session,
+                  progressHandler: ProgressHandler?) {
+        self.session = session
+        self.progressHandler = progressHandler
+    }
+
+    func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) {
+        stop()
+
+        let newTask = session.task(with: request) { [weak self] data, response, error in
+            completionHandler(data, response, error)
+            self?.stop()
+        }
+
+        if let progressHandler {
+            observer = newTask.observe(progressHandler)
+        }
+        task = newTask
+        newTask.resume()
+    }
+
+    func stop() {
+        $task.mutate { task in
+            if task?.isRunning == true {
+                task?.cancel()
+            }
+            task = nil
+        }
+        observer = nil
+    }
+
+    deinit {
+        stop()
+    }
+}
+
+private extension Request {
+    func tolog(file: String = #file,
+               method: String = #function,
+               line: Int = #line,
+               text: () -> String) {
         guard parameters.isLoggingEnabled else {
             return
         }
@@ -218,32 +246,36 @@ extension Impl.Request {
         line: line)
     }
 
-    private func tologSelf(_ modifiedRequest: URLRequest,
-                           file: String = #file,
-                           method: String = #function,
-                           line: Int = #line) {
+    func tologSelf(_ modifiedRequest: @autoclosure () -> URLRequest,
+                   file: String = #file,
+                   method: String = #function,
+                   line: Int = #line) {
+        guard parameters.isLoggingEnabled else {
+            return
+        }
+
         tolog(file: file,
               method: method,
               line: line) {
             return [
                 "<with headers:",
-                modifiedRequest.allHTTPHeaderFields.postmanFormat,
+                modifiedRequest().allHTTPHeaderFields.postmanFormat,
                 ">"
             ].joined(separator: "\n")
         }
     }
 
-    private func tolog(_ data: Data?,
-                       allHTTPHeaderFields: [String: String]?,
-                       file: String = #file,
-                       method: String = #function,
-                       line: Int = #line) {
+    func tolog(_ data: @autoclosure () -> Data?,
+               allHTTPHeaderFields: @autoclosure () -> [String: String]?,
+               file: String = #file,
+               method: String = #function,
+               line: Int = #line) {
         guard parameters.isLoggingEnabled else {
             return
         }
 
         let text: String
-        if let body = data, !body.isEmpty {
+        if let body = data(), !body.isEmpty {
             do {
                 let json = try JSONSerialization.jsonObject(with: body, options: [.allowFragments])
                 let prettyData = try JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys])
@@ -262,7 +294,7 @@ extension Impl.Request {
         Logger.log([
             "\(self)",
             "<with headers:",
-            allHTTPHeaderFields.postmanFormat,
+            allHTTPHeaderFields().postmanFormat,
             ">",
             text
         ].joined(separator: "\n"),
@@ -270,122 +302,11 @@ extension Impl.Request {
         method: method,
         line: line)
     }
-}
 
-// MARK: - Impl.Request + CustomDebugStringConvertible, CustomStringConvertible
-
-extension Impl.Request: CustomDebugStringConvertible, CustomStringConvertible {
-    private func makeDescription() -> String {
+    func makeDescription() -> String {
         let url = try? parameters.address.url(shouldAddSlashAfterEndpoint: parameters.shouldAddSlashAfterEndpoint)
         let text = url?.absoluteString ?? "broken url"
         return "<\(parameters.method.toString()) request: \(text)>"
-    }
-
-    var debugDescription: String {
-        return makeDescription()
-    }
-
-    var description: String {
-        return makeDescription()
-    }
-}
-
-private final class SessionAdaptor: NSObject {
-    private let parameters: Parameters
-    private var invalidator: (() -> Void)?
-
-    private lazy var session: Session = {
-        return parameters.session
-    }()
-
-    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
-    private var task: SessionTask?
-    private var buffer = NSMutableData()
-    private var dataTask: SessionTask?
-    private var expectedContentLength: Int64 = 0
-    private var observer: AnyObject?
-
-    required init(parameters: Parameters) {
-        self.parameters = parameters
-    }
-
-    func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) {
-        stop()
-
-        let newTask = session.task(with: request) { [weak self] data, response, error in
-            completionHandler(data, response, error)
-            self?.stop()
-        }
-
-        if let progressHandler = parameters.taskKind?.progressHandler {
-            observer = newTask.observe(progressHandler)
-        }
-        task = newTask
-        newTask.resume()
-    }
-
-    func stop() {
-        $task.mutate { task in
-            if task?.isRunning == true {
-                task?.cancel()
-            }
-            task = nil
-        }
-    }
-
-    func clear() {
-        task = nil
-    }
-
-    deinit {
-        invalidator?()
-        stop()
-    }
-}
-
-private extension Parameters.TaskKind {
-    var progressHandler: ProgressHandler {
-        switch self {
-        case .download(let progressHandler),
-             .upload(let progressHandler):
-            return progressHandler
-        }
-    }
-
-    var downloadProgressHandler: ProgressHandler? {
-        switch self {
-        case .download(let progressHandler):
-            return progressHandler
-        case .upload:
-            return nil
-        }
-    }
-
-    var uploadProgressHandler: ProgressHandler? {
-        switch self {
-        case .download:
-            return nil
-        case .upload(let progressHandler):
-            return progressHandler
-        }
-    }
-}
-
-private extension Parameters {
-    func sdkRequest() throws -> URLRequest {
-        let url = try address.url(shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint)
-        var request = URLRequest(url: url,
-                                 cachePolicy: requestPolicy,
-                                 timeoutInterval: timeoutInterval)
-        request.httpMethod = method.toString()
-
-        for (key, value) in header {
-            request.setValue(value, forHTTPHeaderField: key)
-        }
-
-        try body.fill(&request, isLoggingEnabled: isLoggingEnabled, encoder: encoder)
-
-        return request
     }
 }
 

@@ -1,6 +1,6 @@
-import Foundation
-import NSpry
-
-@testable import NRequest
-
-extension StopTheLineAction: SpryEquatable {}
+// import Foundation
+// import NSpry
+//
+// @testable import NRequest
+//
+// extension StopTheLineAction: SpryEquatable {}

@@ -23,7 +23,7 @@
 //
 //            describe("prepare") {
 //                var parameters: Parameters!
-//                var requestable: FakeURLRequestable!
+//                var requestable: FakeURLRequestWrapper!
 //
 //                beforeEach {
 //                    parameters = .testMake()

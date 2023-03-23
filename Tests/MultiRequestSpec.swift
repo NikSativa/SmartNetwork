@@ -229,7 +229,7 @@ private final class Subject {
         return queues.randomElement() ?? Queue.utility
     }
 
-    private(set) var requests: [Request] = []
+    private(set) var requests: [Requestable] = []
     private(set) var responses: [Response] = []
     private let lock: Mutexing = Mutex.pthread(.recursive)
 
@@ -237,19 +237,19 @@ private final class Subject {
          numberOfRequests: Int) throws {
         self.responses = Array(repeating: .pending, count: numberOfRequests)
         for index in 0..<numberOfRequests {
-            let plugin = Plugins.TokenPlugin(type: .header(.set(Constant.headerIndexKey))) {
-                return String(index)
-            }
-
             let queue = queues[index % queues.count]
             let delayedQueue: DelayedQueue = Bool.random() ? .async(queue) : .sync(queue)
             let address = Address.testMake(host: "google_\(index).com")
             let parameters = Parameters.testMake(address: address,
-                                                 plugins: [plugin],
                                                  queue: delayedQueue,
                                                  session: session)
-            let request: Request = Impl.Request(parameters: parameters,
-                                                pluginContext: nil)
+
+            var sdkRequest = URLRequest(url: try! address.url())
+            sdkRequest.setValue(String(index), forHTTPHeaderField: Constant.headerIndexKey)
+            let urlRequestable = Impl.URLRequestWrapper(sdkRequest)
+
+            let request = Request.create(with: parameters,
+                                         urlRequestable: urlRequestable)
             requests.append(request)
         }
     }

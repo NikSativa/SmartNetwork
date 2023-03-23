@@ -1,7 +1,7 @@
 import Foundation
 
-public protocol URLRequestable {
-    var original: URLRequest { get }
+public protocol URLRequestWrapper {
+    var original: Foundation.URLRequest { get }
     var allHTTPHeaderFields: [String: String] { get }
     var url: URL? { get set }
     var body: Data? { get }
@@ -11,21 +11,21 @@ public protocol URLRequestable {
     mutating func setValue(_ value: String?, forHTTPHeaderField field: String)
 }
 
-// MARK: - Impl.URLRequestable
+// MARK: - Impl.URLRequestWrapper
 
 extension Impl {
-    struct URLRequestable {
-        private(set) var original: URLRequest
+    struct URLRequestWrapper {
+        private(set) var original: Foundation.URLRequest
 
-        init(_ original: URLRequest) {
+        init(_ original: Foundation.URLRequest) {
             self.original = original
         }
     }
 }
 
-// MARK: - Impl.URLRequestable + URLRequestable
+// MARK: - Impl.URLRequestWrapper + URLRequestWrapper
 
-extension Impl.URLRequestable: URLRequestable {
+extension Impl.URLRequestWrapper: URLRequestWrapper {
     var allHTTPHeaderFields: [String: String] {
         return original.allHTTPHeaderFields ?? [:]
     }

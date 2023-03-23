@@ -1,17 +1,17 @@
-//import Foundation
-//import NQueue
-//import NRequest
-//import NSpry
+// import Foundation
+// import NQueue
+// import NRequest
+// import NSpry
 //
 ///// make NRequest hidden from main app, but all helpers can be visible via `public typealias Helpers = NRequestTestHelpers.Helpers`
-//public enum Helpers {
+// public enum Helpers {
 //    public typealias FakePlugin = NRequestTestHelpers.FakePlugin
 //    public typealias FakeRequest = NRequestTestHelpers.FakeRequest
 //    public typealias FakeRequestFactory = NRequestTestHelpers.FakeRequestFactory
 //    public typealias FakePluginProvider = NRequestTestHelpers.FakePluginProvider
 //    public typealias FakeRequestManager<Error: AnyError> = NRequestTestHelpers.FakeRequestManager<Error>
 //    public typealias FakeStopTheLine = NRequestTestHelpers.FakeStopTheLine
-//    public typealias FakeURLRequestable = NRequestTestHelpers.FakeURLRequestable
+//    public typealias FakeURLRequestWrapper = NRequestTestHelpers.FakeURLRequestWrapper
 //
 //    public static func testMake(scheme: Address.Scheme? = .https,
 //                                host: String = "",
@@ -80,4 +80,4 @@
 //        return .testMake(url: URL.testMake(url),
 //                         headers: headers)
 //    }
-//}
+// }

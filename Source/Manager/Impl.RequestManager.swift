@@ -1,215 +1,214 @@
-// import Foundation
-// import NQueue
+import Foundation
+import NQueue
+
+extension Impl {
+    private typealias Key = ObjectIdentifier
+    private typealias ResponseClosure = (ResponseData) -> Void
+
+    private final class Info {
+        let key: Key
+        let parameters: Parameters
+        let request: Requestable
+        let completion: ResponseClosure
+        var attemptNumber: UInt
+
+        init(parameters: Parameters,
+             request: Requestable,
+             completion: @escaping ResponseClosure) {
+            self.key = Key(request)
+            self.parameters = parameters
+            self.request = request
+            self.completion = completion
+            self.attemptNumber = 0
+        }
+    }
+
+    private final class State {
+        var isRunning: Bool = true
+        var queue: [Key: Info] = [:]
+    }
+
+    final class RequestManager {
+        @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+        private var state: State = .init()
+        private let pluginProvider: PluginProvider?
+        private let stopTheLine: StopTheLine?
+        private let maxAttemptNumber: UInt
+
+        init(pluginProvider: PluginProvider?,
+             stopTheLine: StopTheLine?,
+             maxAttemptNumber: UInt = 1) {
+            self.pluginProvider = pluginProvider
+            self.stopTheLine = stopTheLine
+            self.maxAttemptNumber = max(maxAttemptNumber, 1)
+        }
+
+        private func unfreeze() {
+            $state.mutate { state in
+                state.isRunning = true
+
+                let scheduledRequests = state.queue
+                for request in scheduledRequests {
+                    request.value.request.start()
+                }
+            }
+        }
+
+        private func makeStopTheLineAction(stopTheLine: StopTheLine,
+                                           info: Info,
+                                           data: ResponseData) {
+            Task { [weak self, pluginProvider, maxAttemptNumber] in
+                let newFactory = RequestManager(pluginProvider: pluginProvider,
+                                                stopTheLine: nil,
+                                                maxAttemptNumber: maxAttemptNumber)
+                let result = await stopTheLine.action(with: newFactory,
+                                                      originalParameters: info.request.parameters,
+                                                      response: data,
+                                                      userInfo: &info.request.userInfo)
+                switch result {
+                case .useOriginal:
+                    tryComplete(with: data, for: info)
+                case .passOver(let newResponse):
+                    tryComplete(with: newResponse, for: info)
+                case .retry:
+                    break
+                }
+                self?.unfreeze()
+            }
+        }
+
+        private func checkStopTheLine(_ result: ResponseData,
+                                      info: Info) -> Bool {
+            guard let stopTheLine else {
+                return true
+            }
+
+            let verificationResult = stopTheLine.verify(response: result,
+                                                        for: info.parameters,
+                                                        userInfo: &info.request.userInfo)
+            switch verificationResult {
+            case .stopTheLine:
+                if state.isRunning {
+                    state.isRunning = false
+                }
+                makeStopTheLineAction(stopTheLine: stopTheLine,
+                                      info: info,
+                                      data: result)
+                return false
+            case .passOver:
+                return true
+            case .retry:
+                if info.attemptNumber < maxAttemptNumber {
+                    info.attemptNumber += 1
+                    info.request.start()
+                }
+                return false
+            }
+        }
+
+        private func tryComplete(with result: ResponseData,
+                                 for info: Info) {
+            guard checkStopTheLine(result, info: info) else {
+                return
+            }
+
+            do {
+                let userInfo = info.request.userInfo
+                for plugin in pluginProvider?.plugins() ?? [] {
+                    try plugin.verify(data: result, userInfo: userInfo)
+                }
+            } catch {
+                result.set(error)
+            }
+
+            state.queue[info.key] = nil
+
+            let completion = info.completion
+            info.parameters.queue.fire {
+                completion(result)
+            }
+        }
+
+        private func createRequest(_ parameters: Parameters,
+                                   userInfo: inout Parameters.UserInfo) throws -> Requestable {
+            let sdkRequest = try parameters.sdkRequest()
+            var urlRequestable: NRequest.URLRequestWrapper = Impl.URLRequestWrapper(sdkRequest)
+
+            for plugin in pluginProvider?.plugins() ?? [] {
+                plugin.prepare(parameters,
+                               request: &urlRequestable,
+                               userInfo: &userInfo)
+            }
+
+            let request = Request.create(with: parameters,
+                                         urlRequestable: urlRequestable,
+                                         userInfo: userInfo)
+            return request
+        }
+
+        private func request(with parameters: Parameters,
+                             userInfo: inout Parameters.UserInfo,
+                             completion: @escaping ResponseClosure) throws {
+            let request = try self.createRequest(parameters, userInfo: &userInfo)
+            let info: Info = .init(parameters: parameters,
+                                   request: request,
+                                   completion: completion)
+            state.queue[info.key] = info
+
+            request.completion = { [weak self, unowned info] result in
+                self?.tryComplete(with: result, for: info)
+            }
+
+            if state.isRunning {
+                request.start()
+            }
+        }
+    }
+}
+
+// MARK: - Impl.RequestManager + RequestManager
+
+extension Impl.RequestManager: RequestManager {
+//        func requestCustomDecodable<T: CustomDecodable>(_: T.Type,
+//                                                        with parameters: Parameters) -> ResultCallback<T.Object, Error> {
+//            let request: Request = factory.make(for: parameters,
+//                                                pluginContext: pluginProvider)
+//            return prepare(request).flatMap { [pluginProvider] data in
+//                let payload = T(with: data)
+//                let result = payload.result.mapError(Error.wrap)
 //
-//// MARK: - Impl.RequestManager
-//
-// extension Impl {
-//    final class RequestManager<Error: AnyError> {
-//        private typealias Request = NRequest.Request
-//
-//        private enum State {
-//            case idle
-//            case stopped
-//        }
-//
-//        private typealias Key = ObjectIdentifier
-//
-//        @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
-//        private var state: State = .idle
-//
-//        @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
-//        private var scheduledRequests: [Key: Request] = [:]
-//        private var scheduledParameters: [Key: Parameters] = [:]
-//
-//        private let pluginProvider: PluginProvider?
-//        private let stopTheLine: AnyStopTheLine<Error>?
-//        private let factory: NRequest.RequestFactory
-//
-//        init(factory: NRequest.RequestFactory,
-//             pluginProvider: PluginProvider?,
-//             stopTheLine: AnyStopTheLine<Error>?) {
-//            self.factory = factory
-//            self.pluginProvider = pluginProvider
-//            self.stopTheLine = stopTheLine
-//        }
-//
-//        private func unfreeze() {
-//            state = .idle
-//
-//            let scheduledRequests = scheduledRequests
-//            for request in scheduledRequests {
-//                request.value.start()
-//            }
-//        }
-//
-//        private func makeStopTheLineAction(actual: Callback<ResponseData>,
-//                                           refreshToken: AnyStopTheLine<Error>,
-//                                           request: Request,
-//                                           data: ResponseData,
-//                                           key: Key) {
-//            if state == .stopped {
-//                return
-//            }
-//            state = .stopped
-//
-//            let stopTheLineFactory = Self(factory: factory,
-//                                          pluginProvider: pluginProvider,
-//                                          stopTheLine: nil).toAny()
-//            refreshToken.action(with: stopTheLineFactory,
-//                                originalParameters: request.parameters,
-//                                response: data,
-//                                userInfo: &request.userInfo).onComplete { [weak self] result in
 //                switch result {
-//                case .useOriginal:
-//                    self?.removeFromCache(key)
-//                    actual.complete(data)
-//                case .passOver(let newResponse):
-//                    self?.removeFromCache(key)
-//                    actual.complete(newResponse)
-//                case .retry:
-//                    break
+//                case .success:
+//                    data.error = nil
+//                case .failure(let error):
+//                    data.error = error
 //                }
-//                self?.unfreeze()
+//
+//                for plugin in pluginProvider?.plugins() ?? [] {
+//                    plugin.didFinish(parameters,
+//                                     data: data,
+//                                     userInfo: &request.userInfo,
+//                                     dto: try? result.get())
+//                }
+//                return result
 //            }
 //        }
-//
-//        private func removeFromCache(_ key: Key) {
-//            $scheduledRequests.mutate {
-//                $0[key] = nil
-//            }
-//        }
-//
-//        private func checkStopTheLine(actual: Callback<ResponseData>,
-//                                      request: Request,
-//                                      result: ResponseData,
-//                                      key: Key) {
-//            if let stopTheLine {
-//                let scheduledRequest = $scheduledRequests.mutate {
-//                    return $0[key]
-//                }
-//
-//                if let scheduledRequest {
-//                    let verificationResult = stopTheLine.verify(response: result,
-//                                                                for: request.parameters,
-//                                                                userInfo: &request.userInfo)
-//                    switch verificationResult {
-//                    case .passOver:
-//                        removeFromCache(key)
-//                        actual.complete(result)
-//                    case .retry:
-//                        scheduledRequest.start()
-//                    case .stopTheLine:
-//                        makeStopTheLineAction(actual: actual,
-//                                              refreshToken: stopTheLine,
-//                                              request: scheduledRequest,
-//                                              data: result,
-//                                              key: key)
-//                    }
-//                } else {
-//                    actual.complete(result)
-//                }
-//            } else {
-//                actual.complete(result)
-//            }
-//        }
-//
-//        private func prepare(_ request: Request) -> Callback<ResponseData> {
-//            typealias ServiceClosure = Callback<ResponseData>.ServiceClosure
-//
-//            let start: ServiceClosure
-//            let stop: ServiceClosure
-//            let key = Key(request)
-//
-//            if let _ = stopTheLine {
-//                start = { [weak self] actual in
-//                    if let self {
-//                        self.$scheduledRequests.mutate {
-//                            $0[key] = request
-//                        }
-//
-//                        request.completion = { [weak self] data in
-//                            if let self {
-//                                self.checkStopTheLine(actual: actual,
-//                                                      request: request,
-//                                                      result: data,
-//                                                      key: key)
-//                            } else {
-//                                actual.complete(data)
-//                            }
-//                        }
-//
-//                        if self.state == .idle {
-//                            request.start()
-//                        }
-//                    } else {
-//                        request.completion = { data in
-//                            actual.complete(data)
-//                        }
-//                        request.start()
-//                    }
-//                }
-//
-//                stop = { [weak self] _ in
-//                    self?.removeFromCache(key)
-//                    request.cancel()
-//                }
-//            } else {
-//                start = { actual in
-//                    request.completion = { data in
-//                        actual.complete(data)
-//                    }
-//                    request.start()
-//                }
-//
-//                stop = { _ in
-//                    request.cancel()
-//                }
-//            }
-//
-//            return .init(start: start,
-//                         stop: stop)
-//        }
-//    }
-// }
-//
-//// MARK: - Impl.RequestManager + RequestManager
-//
-// extension Impl.RequestManager: RequestManager {
-//    func requestPureData(with parameters: Parameters) -> Callback<ResponseData> {
-//        let request: Request = factory.make(for: parameters,
-//                                            pluginContext: pluginProvider)
-//        return prepare(request).beforeComplete { [pluginProvider] data in
-//            for plugin in pluginProvider?.plugins() ?? [] {
-//                plugin.didFinish(parameters,
-//                                 data: data,
-//                                 userInfo: &request.userInfo,
-//                                 dto: nil)
-//            }
-//        }
-//    }
-//
-//    func requestCustomDecodable<T: CustomDecodable>(_: T.Type,
-//                                                    with parameters: Parameters) -> ResultCallback<T.Object, Error> {
-//        let request: Request = factory.make(for: parameters,
-//                                            pluginContext: pluginProvider)
-//        return prepare(request).flatMap { [pluginProvider] data in
-//            let payload = T(with: data)
-//            let result = payload.result.mapError(Error.wrap)
-//
-//            switch result {
-//            case .success:
-//                data.error = nil
-//            case .failure(let error):
-//                data.error = error
-//            }
-//
-//            for plugin in pluginProvider?.plugins() ?? [] {
-//                plugin.didFinish(parameters,
-//                                 data: data,
-//                                 userInfo: &request.userInfo,
-//                                 dto: try? result.get())
-//            }
-//            return result
-//        }
-//    }
-// }
+}
+
+private extension Parameters {
+    func sdkRequest() throws -> URLRequest {
+        let url = try address.url(shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint)
+        var request = URLRequest(url: url,
+                                 cachePolicy: requestPolicy,
+                                 timeoutInterval: timeoutInterval)
+        request.httpMethod = method.toString()
+
+        for (key, value) in header {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+
+        try body.fill(&request, isLoggingEnabled: isLoggingEnabled, encoder: encoder)
+
+        return request
+    }
+}

@@ -1,10 +1,11 @@
 import Foundation
 
+#warning("rename to RequestResult")
 public final class ResponseData {
-    public let request: URLRequestable?
+    public let request: URLRequestWrapper?
     public let body: Data?
     public let response: URLResponse?
-    public internal(set) var error: Error?
+    public private(set) var error: Error?
 
     public lazy var url: URL? = (response as? HTTPURLResponse)?.url
 
@@ -16,13 +17,17 @@ public final class ResponseData {
 
     public lazy var urlError: URLError? = error as? URLError
 
-    init(request: URLRequestable?,
+    init(request: URLRequestWrapper?,
          body: Data?,
          response: URLResponse?,
          error: Error?) {
         self.request = request
         self.body = body
         self.response = response
+        self.error = error
+    }
+
+    func set(_ error: Error) {
         self.error = error
     }
 }

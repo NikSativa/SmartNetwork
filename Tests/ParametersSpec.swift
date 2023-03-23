@@ -10,7 +10,7 @@ final class ParametersSpec: QuickSpec {
     override func spec() {
         describe("Parameters") {
             var subject: Parameters!
-            var originalPlugin: FakePlugin!
+            var originalPlugin: FakeRequestStatePlugin!
 
             beforeEach {
                 originalPlugin = .init()
@@ -19,7 +19,7 @@ final class ParametersSpec: QuickSpec {
             }
 
             describe("add 1 plugin") {
-                var plugin: FakePlugin!
+                var plugin: FakeRequestStatePlugin!
                 var actual: Parameters!
 
                 beforeEach {
@@ -38,7 +38,7 @@ final class ParametersSpec: QuickSpec {
             }
 
             describe("add array of plugin") {
-                var plugins: [FakePlugin]!
+                var plugins: [FakeRequestStatePlugin]!
                 var actual: Parameters!
 
                 beforeEach {
@@ -59,7 +59,7 @@ final class ParametersSpec: QuickSpec {
     }
 }
 
-private func compare(_ lhs: [Plugin], _ rhs: [FakePlugin]) -> Bool {
-    let zipped = zip(lhs.map { $0 as? FakePlugin }, rhs).map { $0 === $1 }
+private func compare(_ lhs: [RequestStatePlugin], _ rhs: [FakeRequestStatePlugin]) -> Bool {
+    let zipped = zip(lhs.map { $0 as? FakeRequestStatePlugin }, rhs).map { $0 === $1 }
     return lhs.count == rhs.count && zipped.reduce(true) { $0 && $1 }
 }

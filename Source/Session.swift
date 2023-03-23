@@ -15,7 +15,7 @@ public protocol SessionTask: ProgressObservable {
     func cancel()
 }
 
-public protocol Session: AnyObject {
+public protocol Session {
     typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
     func task(with request: URLRequest, completionHandler: @escaping CompletionHandler) -> SessionTask
 }

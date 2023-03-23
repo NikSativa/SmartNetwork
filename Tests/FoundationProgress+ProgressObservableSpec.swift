@@ -11,7 +11,7 @@ final class FoundationProgress_ProgressObservableSpec: QuickSpec {
         describe("Progress") {
             var subject: Foundation.Progress!
             var events: [Int]!
-            var observer: AnyObject!
+            var observer: Any!
 
             beforeEach {
                 events = []

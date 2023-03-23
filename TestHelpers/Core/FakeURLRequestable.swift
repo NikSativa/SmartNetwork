@@ -3,7 +3,7 @@ import NSpry
 
 @testable import NRequest
 
-public final class FakeURLRequestable: URLRequestable, Spryable {
+public final class FakeURLRequestWrapper: URLRequestWrapper, Spryable {
     public func value(forHTTPHeaderField field: String) -> String? {
         return spryify(arguments: field)
     }

@@ -103,7 +103,7 @@ public enum Address: Equatable {
 }
 
 public extension Address {
-    func url(shouldAddSlashAfterEndpoint: Bool) throws -> URL {
+    func url(shouldAddSlashAfterEndpoint: Bool = Parameters.shouldAddSlashAfterEndpoint) throws -> URL {
         switch self {
         case .url(let url):
             return url

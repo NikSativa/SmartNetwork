@@ -10,18 +10,21 @@ import Quick
 final class RequestSpec: QuickSpec {
     override func spec() {
         describe("Request") {
-            var subject: Request!
+            var subject: Requestable!
             var parameters: Parameters!
             var session: FakeSession!
-            var pluginContext: FakePluginProvider!
+            var urlRequestable: FakeURLRequestWrapper!
 
             beforeEach {
                 session = .init()
-                pluginContext = .init()
                 parameters = .testMake(queue: .absent,
                                        session: session)
-                subject = Impl.Request(parameters: parameters,
-                                       pluginContext: pluginContext)
+
+                urlRequestable = .init()
+                urlRequestable.stub(.original).andReturn(URLRequest.testMake(url: "google.com"))
+
+                subject = Request.create(with: parameters,
+                                         urlRequestable: urlRequestable)
             }
 
             it("should save parameters to var") {
@@ -56,8 +59,6 @@ final class RequestSpec: QuickSpec {
                         return task
                     }
 
-                    pluginContext.stub(.plugins).andReturn([])
-
                     subject.completion = { data in
                         responses.append(data)
                     }
@@ -80,10 +81,6 @@ final class RequestSpec: QuickSpec {
 
                 it("should start session task") {
                     expect(task).to(haveReceived(.resume))
-                }
-
-                it("should take plugins") {
-                    expect(pluginContext).to(haveReceived(.plugins))
                 }
 
                 describe("canceling") {
@@ -118,6 +115,7 @@ final class RequestSpec: QuickSpec {
 
                 context("when request completed") {
                     beforeEach {
+                        task.stub(.isRunning).andReturn(false)
                         sessionCompletionHandler(nil, nil, nil)
                     }
 

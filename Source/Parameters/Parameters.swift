@@ -9,11 +9,6 @@ public struct Parameters {
     public static var defaultResponseQueue: DelayedQueue = .async(Queue.main)
     public static var shouldAddSlashAfterEndpoint: Bool = false
 
-    public enum TaskKind {
-        case download(progressHandler: ProgressHandler)
-        case upload(progressHandler: ProgressHandler)
-    }
-
     public struct CacheSettings {
         public let cache: URLCache
         public let storagePolicy: URLCache.StoragePolicy
@@ -36,9 +31,9 @@ public struct Parameters {
     public var cacheSettings: CacheSettings?
     public var requestPolicy: URLRequest.CachePolicy
     public var queue: DelayedQueue
-    public var plugins: [Plugin]
+    public var plugins: [RequestStatePlugin]
     public var isLoggingEnabled: Bool
-    public var taskKind: TaskKind?
+    public var progressHandler: ProgressHandler?
     public var session: Session
     public var encoder: JSONEncoder
     public var decoder: JSONDecoder
@@ -51,13 +46,13 @@ public struct Parameters {
                 header: HeaderFields = [:],
                 method: HTTPMethod = .get,
                 body: Body = .empty,
-                plugins: [Plugin] = [],
+                plugins: [RequestStatePlugin] = [],
                 cacheSettings: CacheSettings? = nil,
                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
                 timeoutInterval: TimeInterval = 60,
                 queue: DelayedQueue = Self.defaultResponseQueue,
                 isLoggingEnabled: Bool = false,
-                taskKind: TaskKind? = nil,
+                progressHandler: ProgressHandler? = nil,
                 userInfo: UserInfo = .init(),
                 session: Session = Self.sharedSession,
                 encoder: JSONEncoder = .init(),
@@ -73,7 +68,7 @@ public struct Parameters {
         self.requestPolicy = requestPolicy
         self.queue = queue
         self.isLoggingEnabled = isLoggingEnabled
-        self.taskKind = taskKind
+        self.progressHandler = progressHandler
         self.userInfo = userInfo
         self.session = session
         self.encoder = encoder
@@ -83,13 +78,13 @@ public struct Parameters {
 }
 
 public extension Parameters {
-    static func +(lhs: Parameters, plugin: Plugin) -> Parameters {
+    static func +(lhs: Parameters, plugin: RequestStatePlugin) -> Parameters {
         var new = lhs
         new.plugins.append(plugin)
         return new
     }
 
-    static func +(lhs: Parameters, plugins: [Plugin]) -> Parameters {
+    static func +(lhs: Parameters, plugins: [RequestStatePlugin]) -> Parameters {
         if plugins.isEmpty {
             return lhs
         }
