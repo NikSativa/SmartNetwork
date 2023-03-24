@@ -15,7 +15,9 @@ public final class FakeSession: Session, Spryable {
 
     public init() {}
 
+    var completionHandler: CompletionHandler?
     public func task(with request: URLRequest, completionHandler: @escaping CompletionHandler) -> SessionTask {
+        self.completionHandler = completionHandler
         return spryify(arguments: request, completionHandler)
     }
 }

@@ -6,7 +6,7 @@ import XCTest
 @testable import NRequestTestHelpers
 
 final class StatusCodePluginTests: XCTestCase {
-    func test_authToken() {
+    func test_code() {
         let subject = Plugins.StatusCode()
 
         XCTAssertNotThrowsError(try subject.verify(data: .testMake(), userInfo: .init()))

@@ -23,24 +23,24 @@ public struct Parameters {
         }
     }
 
-    public var address: Address
-    public var header: HeaderFields
-    public var method: HTTPMethod
-    public var body: Body
-    public var timeoutInterval: TimeInterval
-    public var cacheSettings: CacheSettings?
-    public var requestPolicy: URLRequest.CachePolicy
-    public var queue: DelayedQueue
-    public var plugins: [RequestStatePlugin]
-    public var isLoggingEnabled: Bool
-    public var progressHandler: ProgressHandler?
-    public var session: Session
-    public var encoder: JSONEncoder
-    public var decoder: JSONDecoder
-    public var shouldAddSlashAfterEndpoint: Bool = false
+    public private(set) var address: Address
+    public private(set) var header: HeaderFields
+    public private(set) var method: HTTPMethod
+    public private(set) var body: Body
+    public private(set) var timeoutInterval: TimeInterval
+    public private(set) var cacheSettings: CacheSettings?
+    public private(set) var requestPolicy: URLRequest.CachePolicy
+    public private(set) var queue: DelayedQueue
+    public private(set) var plugins: [RequestStatePlugin]
+    public private(set) var isLoggingEnabled: Bool
+    public private(set) var progressHandler: ProgressHandler?
+    public private(set) var session: Session
+    public private(set) var encoder: JSONEncoder
+    public private(set) var decoder: JSONDecoder
+    public private(set) var shouldAddSlashAfterEndpoint: Bool
 
     /// used only on client side. best practice to use it to identify request in the Plugin's
-    public var userInfo: UserInfo
+    public let userInfo: UserInfo
 
     public init(address: Address,
                 header: HeaderFields = [:],
@@ -74,6 +74,21 @@ public struct Parameters {
         self.encoder = encoder
         self.decoder = decoder
         self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
+    }
+
+    @discardableResult
+    public func set<T>(_ newValue: T, at path: WritableKeyPath<Self, T>) -> Self {
+        var new = self
+        new[keyPath: path] = newValue
+        return new
+    }
+
+    @discardableResult
+    public func modify<T>(at path: WritableKeyPath<Self, T>, _ modificator: (_ oldValue: T) -> T) -> Self {
+        var new = self
+        let oldValue = new[keyPath: path]
+        new[keyPath: path] = modificator(oldValue)
+        return new
     }
 }
 

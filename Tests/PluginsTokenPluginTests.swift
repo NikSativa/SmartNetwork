@@ -52,10 +52,13 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
         return value
     }
 
-    var parameters: Parameters = .testMake()
+    var userInfo: Parameters.UserInfo = .init()
+    let parameters: Parameters = .testMake()
     subject.prepare(parameters,
                     request: request,
-                    userInfo: &parameters.userInfo)
+                    userInfo: &userInfo)
+
+    XCTAssertTrue(userInfo.isEmpty)
 
     if let value {
         XCTAssertHaveRecordedCalls(request, file: file, line: line)
