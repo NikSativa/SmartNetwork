@@ -1,6 +1,7 @@
 import Foundation
 import XCTest
 
+#warning("mv to Spry")
 @inline(__always)
 @discardableResult
 public func XCTAssertNotThrowsError<T>(_ expression: @autoclosure () throws -> T,

@@ -13,31 +13,31 @@ public enum Plugins {
         case queryParam(String)
     }
 
-    final class StatusCode: Plugin {
+    public final class StatusCode: Plugin {
         init() {}
 
-        func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, userInfo: inout Parameters.UserInfo) {}
+        public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, userInfo: inout Parameters.UserInfo) {}
 
-        func verify(data: ResponseData, userInfo: Parameters.UserInfo) throws {
+        public func verify(data: ResponseData, userInfo: Parameters.UserInfo) throws {
             if let error = NRequest.StatusCode(data.statusCode) {
                 throw error
             }
         }
     }
 
-    final class TokenPlugin: Plugin {
+    public final class TokenPlugin: Plugin {
         private let tokenProvider: TokenProvider
         private let type: TokenType
 
-        init(type: TokenType,
-             tokenProvider: @escaping TokenProvider) {
+        public init(type: TokenType,
+                    tokenProvider: @escaping TokenProvider) {
             self.tokenProvider = tokenProvider
             self.type = type
         }
 
-        func prepare(_ parameters: Parameters,
-                     request: inout URLRequestRepresentation,
-                     userInfo: inout Parameters.UserInfo) {
+        public func prepare(_ parameters: Parameters,
+                            request: inout URLRequestRepresentation,
+                            userInfo: inout Parameters.UserInfo) {
             guard let value = tokenProvider() else {
                 return
             }
@@ -64,6 +64,15 @@ public enum Plugins {
             }
         }
 
-        func verify(data: ResponseData, userInfo: Parameters.UserInfo) throws {}
+        public func verify(data: ResponseData, userInfo: Parameters.UserInfo) throws {}
+    }
+
+    public static func BearerPlugin(with tokenProvider: @escaping TokenProvider) -> Plugin {
+        return TokenPlugin(type: .header(.set("Authorization")),
+                           tokenProvider: {
+                               return tokenProvider().map { token in
+                                   return "Bearer " + token
+                               }
+                           })
     }
 }
