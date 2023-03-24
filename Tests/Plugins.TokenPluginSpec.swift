@@ -30,7 +30,7 @@ final class Plugins_TokenPluginSpec: QuickSpec {
             describe(tokenType.name) {
                 context("when token is absent") {
                     var subject: Plugins.TokenPlugin!
-                    var request: FakeURLRequestWrapper!
+                    var request: FakeURLRequestRepresentation!
                     var parameters: Parameters!
 
                     beforeEach {
@@ -63,7 +63,7 @@ final class Plugins_TokenPluginSpec: QuickSpec {
 
                 context("when token is absent") {
                     var subject: Plugins.TokenPlugin!
-                    var request: FakeURLRequestWrapper!
+                    var request: FakeURLRequestRepresentation!
                     var parameters: Parameters!
 
                     beforeEach {

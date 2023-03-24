@@ -3,20 +3,16 @@ import NSpry
 
 @testable import NRequest
 
-public final class FakeURLRequestWrapper: URLRequestWrapper, Spryable {
-    public func value(forHTTPHeaderField field: String) -> String? {
-        return spryify(arguments: field)
-    }
-
+public final class FakeURLRequestRepresentation: URLRequestRepresentation, Spryable {
     public enum ClassFunction: String, StringRepresentable {
         case empty
     }
 
     public enum Function: String, StringRepresentable {
-        case original
+        case sdk
         case allHTTPHeaderFields
         case url
-        case body
+        case httpBody
         case addValue = "addValue(_:forHTTPHeaderField:)"
         case setValue = "setValue(_:forHTTPHeaderField:)"
         case value = "value(forHTTPHeaderField:)"
@@ -24,11 +20,11 @@ public final class FakeURLRequestWrapper: URLRequestWrapper, Spryable {
 
     public init() {}
 
-    public var original: URLRequest {
+    public var sdk: URLRequest {
         return spryify()
     }
 
-    public var allHTTPHeaderFields: [String: String] {
+    public var allHTTPHeaderFields: [String: String]? {
         return spryify()
     }
 
@@ -41,7 +37,7 @@ public final class FakeURLRequestWrapper: URLRequestWrapper, Spryable {
         }
     }
 
-    public var body: Data? {
+    public var httpBody: Data? {
         return spryify()
     }
 
@@ -51,5 +47,9 @@ public final class FakeURLRequestWrapper: URLRequestWrapper, Spryable {
 
     public func setValue(_ value: String?, forHTTPHeaderField field: String) {
         return spryify(arguments: value, field)
+    }
+
+    public func value(forHTTPHeaderField field: String) -> String? {
+        return spryify(arguments: field)
     }
 }

@@ -3,10 +3,10 @@ import NQueue
 
 public protocol RequestStatePlugin {
     func willSend(_ parameters: Parameters,
-                  request: URLRequestWrapper,
+                  request: URLRequestRepresentation,
                   userInfo: inout Parameters.UserInfo)
     func didReceive(_ parameters: Parameters,
-                    request: URLRequestWrapper,
+                    request: URLRequestRepresentation,
                     data: ResponseData,
                     userInfo: inout Parameters.UserInfo)
 }
@@ -17,7 +17,7 @@ public protocol Requestable: AnyObject {
     var userInfo: Parameters.UserInfo { get set }
     #warning("needed?")
     var completion: CompletionCallback? { get set }
-    var urlRequestable: URLRequestWrapper { get }
+    var urlRequestable: URLRequestRepresentation { get }
     var parameters: Parameters { get }
 
     func start()
@@ -30,7 +30,7 @@ public final class Request {
 
     public private(set) var parameters: Parameters
     public var userInfo: Parameters.UserInfo
-    public let urlRequestable: URLRequestWrapper
+    public let urlRequestable: URLRequestRepresentation
 
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     public var completion: CompletionCallback?
@@ -41,7 +41,7 @@ public final class Request {
 
     private init(with parameters: Parameters,
                  userInfo: Parameters.UserInfo,
-                 urlRequestable: URLRequestWrapper) {
+                 urlRequestable: URLRequestRepresentation) {
         self.parameters = parameters
         self.userInfo = userInfo
         self.urlRequestable = urlRequestable
@@ -50,7 +50,7 @@ public final class Request {
     }
 
     public static func create(with parameters: Parameters,
-                              urlRequestable: URLRequestWrapper,
+                              urlRequestable: URLRequestRepresentation,
                               userInfo: Parameters.UserInfo = [:]) -> Requestable {
         return Self(with: parameters,
                     userInfo: userInfo,
@@ -71,7 +71,7 @@ public final class Request {
                             userInfo: &userInfo)
         }
 
-        let sdkRequest = urlRequestable.original
+        let sdkRequest = urlRequestable.sdk
         if let cacheSettings = parameters.cacheSettings {
             let shouldUseCache: Bool
             switch parameters.requestPolicy {

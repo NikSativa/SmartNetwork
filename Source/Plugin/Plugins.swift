@@ -16,7 +16,7 @@ public enum Plugins {
     final class StatusCode: Plugin {
         init() {}
 
-        func prepare(_ parameters: Parameters, request: inout URLRequestWrapper, userInfo: inout Parameters.UserInfo) {}
+        func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, userInfo: inout Parameters.UserInfo) {}
 
         func verify(data: ResponseData, userInfo: Parameters.UserInfo) throws {
             if let error = NRequest.StatusCode(data.statusCode) {
@@ -36,7 +36,7 @@ public enum Plugins {
         }
 
         func prepare(_ parameters: Parameters,
-                     request: inout URLRequestWrapper,
+                     request: inout URLRequestRepresentation,
                      userInfo: inout Parameters.UserInfo) {
             guard let value = tokenProvider() else {
                 return

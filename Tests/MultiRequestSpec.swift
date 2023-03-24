@@ -246,8 +246,7 @@ private final class Subject {
 
             var sdkRequest = URLRequest(url: try! address.url())
             sdkRequest.setValue(String(index), forHTTPHeaderField: Constant.headerIndexKey)
-            let urlRequestable = Impl.URLRequestWrapper(sdkRequest)
-
+            let urlRequestable: URLRequestRepresentation = sdkRequest
             let request = Request.create(with: parameters,
                                          urlRequestable: urlRequestable)
             requests.append(request)

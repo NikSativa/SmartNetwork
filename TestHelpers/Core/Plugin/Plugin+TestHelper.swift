@@ -4,9 +4,9 @@ import NSpry
 
 extension Plugin {
     func prepare(_ parameters: Parameters,
-                 request: FakeURLRequestWrapper,
+                 request: FakeURLRequestRepresentation,
                  userInfo: inout Parameters.UserInfo) {
-        var request: URLRequestWrapper = request
+        var request: URLRequestRepresentation = request
         prepare(parameters,
                 request: &request,
                 userInfo: &userInfo)

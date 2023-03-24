@@ -13,7 +13,7 @@ final class RequestSpec: QuickSpec {
             var subject: Requestable!
             var parameters: Parameters!
             var session: FakeSession!
-            var urlRequestable: FakeURLRequestWrapper!
+            var urlRequestable: FakeURLRequestRepresentation!
 
             beforeEach {
                 session = .init()
@@ -21,7 +21,7 @@ final class RequestSpec: QuickSpec {
                                        session: session)
 
                 urlRequestable = .init()
-                urlRequestable.stub(.original).andReturn(URLRequest.testMake(url: "google.com"))
+                urlRequestable.stub(.sdk).andReturn(URLRequest.testMake(url: "google.com"))
 
                 subject = Request.create(with: parameters,
                                          urlRequestable: urlRequestable)

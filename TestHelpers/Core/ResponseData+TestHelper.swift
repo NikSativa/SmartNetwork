@@ -10,7 +10,7 @@ extension ResponseData: Equatable, SpryEquatable {
                                 headerFields: [String: String]? = nil,
                                 body: Data? = nil,
                                 error: Error? = nil) -> Self {
-        return .init(request: Impl.URLRequestWrapper(URLRequest(url: url)),
+        return .init(request: URLRequest(url: url),
                      body: body,
                      response: HTTPURLResponse(url: url,
                                                statusCode: statusCode,
@@ -19,7 +19,7 @@ extension ResponseData: Equatable, SpryEquatable {
                      error: error)
     }
 
-    public static func testMake(request: URLRequestWrapper? = nil,
+    public static func testMake(request: URLRequestRepresentation? = nil,
                                 body: Data? = nil,
                                 response: URLResponse? = nil,
                                 error: Error? = nil) -> Self {

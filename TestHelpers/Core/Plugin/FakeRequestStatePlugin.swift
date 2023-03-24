@@ -15,13 +15,13 @@ public final class FakeRequestStatePlugin: RequestStatePlugin, Spryable {
     public init() {}
 
     public func willSend(_ parameters: Parameters,
-                         request: URLRequestWrapper,
+                         request: URLRequestRepresentation,
                          userInfo: inout Parameters.UserInfo) {
         return spryify(arguments: parameters, request)
     }
 
     public func didReceive(_ parameters: Parameters,
-                           request: NRequest.URLRequestWrapper,
+                           request: URLRequestRepresentation,
                            data: ResponseData,
                            userInfo: inout Parameters.UserInfo) {
         return spryify(arguments: parameters, request, data, userInfo)

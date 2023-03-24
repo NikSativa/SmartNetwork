@@ -2,7 +2,7 @@ import Foundation
 
 #warning("rename to RequestResult")
 public final class ResponseData {
-    public let request: URLRequestWrapper?
+    public let request: URLRequestRepresentation?
     public let body: Data?
     public let response: URLResponse?
     public private(set) var error: Error?
@@ -17,7 +17,7 @@ public final class ResponseData {
 
     public lazy var urlError: URLError? = error as? URLError
 
-    init(request: URLRequestWrapper?,
+    init(request: URLRequestRepresentation?,
          body: Data?,
          response: URLResponse?,
          error: Error?) {

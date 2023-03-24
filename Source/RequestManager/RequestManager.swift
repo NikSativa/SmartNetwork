@@ -110,17 +110,15 @@ public final class RequestManager {
 
     private func createRequest(_ parameters: Parameters,
                                userInfo: inout Parameters.UserInfo) throws -> Requestable {
-        let sdkRequest = try parameters.sdkRequest()
-        var urlRequestable: NRequest.URLRequestWrapper = Impl.URLRequestWrapper(sdkRequest)
-
+        var urlRequest = try parameters.urlRequestRepresentation()
         for plugin in pluginProvider?.plugins() ?? [] {
             plugin.prepare(parameters,
-                           request: &urlRequestable,
+                           request: &urlRequest,
                            userInfo: &userInfo)
         }
 
         let request = Request.create(with: parameters,
-                                     urlRequestable: urlRequestable,
+                                     urlRequestable: urlRequest,
                                      userInfo: userInfo)
         return request
     }
@@ -205,7 +203,7 @@ private extension RequestManager {
 }
 
 private extension Parameters {
-    func sdkRequest() throws -> URLRequest {
+    func urlRequestRepresentation() throws -> URLRequestRepresentation {
         let url = try address.url(shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint)
         var request = URLRequest(url: url,
                                  cachePolicy: requestPolicy,

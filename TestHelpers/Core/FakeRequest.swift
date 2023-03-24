@@ -20,7 +20,7 @@ public final class FakeRequest: Requestable, Spryable {
 
     public init() {}
 
-    public var urlRequestable: NRequest.URLRequestWrapper {
+    public var urlRequestable: URLRequestRepresentation {
         get {
             return stubbedValue()
         }
