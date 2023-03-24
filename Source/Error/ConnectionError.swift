@@ -1,6 +1,6 @@
 import Foundation
 
-public enum ConnectionError: Error, Equatable {
+public enum ConnectionError: Error {
     case userAuthenticationRequired
     case notConnectedToInternet
     case networkConnectionLost

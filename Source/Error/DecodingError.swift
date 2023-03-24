@@ -1,7 +1,7 @@
 import Foundation
 
-public enum DecodingError: Error, Equatable {
-    case generic(EquatableError)
+public enum DecodingError: Error {
+    case other(Error)
     case brokenResponse
     case nilResponse
 }

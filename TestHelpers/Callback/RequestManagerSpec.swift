@@ -4,8 +4,6 @@ import NSpry
 import NSpry_Nimble
 import Quick
 
-@testable import NCallback
-@testable import NCallbackTestHelpers
 @testable import NRequest
 @testable import NRequestTestHelpers
 

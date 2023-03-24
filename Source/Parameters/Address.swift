@@ -110,13 +110,8 @@ public extension Address {
         case .address(let url):
             var components = URLComponents()
 
-            #if os(macOS)
-            let originalHost: String = url.host
-            components.host = url.host
-            #else
-            let originalHost: String = URL(string: url.host)?.host ?? url.host
+            let originalHost = url.host
             components.host = originalHost
-            #endif
 
             switch url.scheme {
             case .none:

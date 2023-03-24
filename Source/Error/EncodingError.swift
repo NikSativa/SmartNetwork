@@ -1,7 +1,7 @@
 import Foundation
 
-public enum EncodingError: Error, Equatable {
-    case generic(EquatableError)
+public enum EncodingError: Error {
+    case other(Error)
     case lackParameters
     case lackAdress
     case cantEncodeImage

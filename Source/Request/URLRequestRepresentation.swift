@@ -11,6 +11,8 @@ public protocol URLRequestRepresentation {
     mutating func setValue(_ value: String?, forHTTPHeaderField field: String)
 }
 
+// MARK: - URLRequest + URLRequestRepresentation
+
 extension URLRequest: URLRequestRepresentation {
     public var sdk: URLRequest {
         return self

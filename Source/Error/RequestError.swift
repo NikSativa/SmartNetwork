@@ -1,13 +1,14 @@
 import Foundation
 
-public enum RequestError: AnyError {
-    case generic(EquatableError)
+public enum RequestError: Error {
+    case generic
+    case other(Error)
     case connection(URLError, ConnectionError?)
     case encoding(EncodingError)
     case decoding(DecodingError)
     case statusCode(StatusCode)
 
-    public init?(_ error: Swift.Error) {
+    public init(_ error: Swift.Error) {
         switch error {
         case let error as Self:
             self = error
@@ -16,19 +17,21 @@ public enum RequestError: AnyError {
         case let error as EncodingError:
             self = .encoding(error)
         case let error as Swift.EncodingError:
-            self = .encoding(.generic(.init(error)))
+            self = .encoding(.other(error))
         case let error as DecodingError:
             self = .decoding(error)
         case let error as Swift.DecodingError:
-            self = .decoding(.generic(.init(error)))
+            self = .decoding(.other(error))
         case let error as StatusCode:
             self = .statusCode(error)
         default:
-            return nil
+            self = .other(error)
         }
     }
+}
 
-    public init(_ error: EquatableError) {
-        self = .generic(error)
+public extension Error {
+    var requestError: RequestError {
+        return .init(self)
     }
 }

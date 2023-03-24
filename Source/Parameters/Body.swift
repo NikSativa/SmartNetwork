@@ -116,7 +116,7 @@ extension Body {
                     tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
                 }
             } catch {
-                throw EncodingError.generic(.init(error))
+                throw EncodingError.other(error)
             }
         case .form(let form):
             let data = FormEncoder.createBody(form)
@@ -165,7 +165,7 @@ public extension Body {
                 throw EncodingError.invalidJSON
             }
         } catch {
-            throw EncodingError.generic(.init(error))
+            throw EncodingError.other(error)
         }
     }
 }

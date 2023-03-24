@@ -17,17 +17,14 @@ let package = Package(
         .package(url: "https://github.com/Quick/Quick.git", .upToNextMajor(from: "6.1.0")),
         .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "11.2.1")),
         .package(url: "https://github.com/NikSativa/NSpry.git", .upToNextMajor(from: "1.3.3")),
-        .package(url: "https://github.com/NikSativa/NCallback.git", .upToNextMajor(from: "2.10.17")),
         .package(url: "https://github.com/NikSativa/NQueue.git", .upToNextMajor(from: "1.1.17"))
     ],
     targets: [
         .target(name: "NRequest",
                 dependencies: [
                     "NQueue",
-//                    "NCallback"
                 ],
-                path: "Source",
-                exclude: ["Callback"]),
+                path: "Source"),
         .target(name: "NRequestTestHelpers",
                 dependencies: [
                     "NRequest",
@@ -46,8 +43,6 @@ let package = Package(
                 path: "TestHelpers/Nimble"),
         .testTarget(name: "NRequestTests",
                     dependencies: [
-                        "NCallback",
-                        .product(name: "NCallbackTestHelpers", package: "NCallback"),
                         "NRequest",
                         "NRequestTestHelpers",
                         "NRequestExtraTestHelpers",

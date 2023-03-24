@@ -1,9 +1,9 @@
 import Foundation
-import NCallback
 import NSpry
+
 @testable import NRequest
 
-public final class FakeRequestManager<Error: AnyError>: RequestManager, Spryable {
+public final class FakeRequestManager: RequestManagering, Spryable {
     public enum ClassFunction: String, StringRepresentable {
         case empty
     }
@@ -23,58 +23,4 @@ public final class FakeRequestManager<Error: AnyError>: RequestManager, Spryable
     }
 
     public init() {}
-
-    public func requestPureData(with parameters: Parameters) -> Callback<ResponseData> {
-        return spryify(arguments: parameters)
-    }
-
-    public func requestCustomDecodable<T: CustomDecodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T.Object, Error> {
-        return spryify(arguments: type, parameters)
-    }
-
-    // MARK: - Void
-
-    public func requestVoid(with parameters: Parameters) -> ResultCallback<Void, Error> {
-        return spryify(arguments: parameters)
-    }
-
-    // MARK: - Decodable
-
-    public func requestDecodable<T: Decodable>(_ type: T.Type, with parameters: Parameters) -> ResultCallback<T, Error> {
-        return spryify(arguments: type, parameters)
-    }
-
-    public func request<T: Decodable>(with parameters: Parameters) -> ResultCallback<T, Error> {
-        return spryify(arguments: parameters)
-    }
-
-    // MARK: - Image
-
-    public func requestImage(with parameters: Parameters) -> ResultCallback<Image, Error> {
-        return spryify(arguments: parameters)
-    }
-
-    public func requestOptionalImage(with parameters: Parameters) -> ResultCallback<Image?, Error> {
-        return spryify(arguments: parameters)
-    }
-
-    // MARK: - Data
-
-    public func requestData(with parameters: Parameters) -> ResultCallback<Data, Error> {
-        return spryify(arguments: parameters)
-    }
-
-    public func requestOptionalData(with parameters: Parameters) -> ResultCallback<Data?, Error> {
-        return spryify(arguments: parameters)
-    }
-
-    // MARK: - Any/JSON
-
-    public func requestAny(with parameters: Parameters) -> ResultCallback<Any, Error> {
-        return spryify(arguments: parameters)
-    }
-
-    public func requestOptionalAny(with parameters: Parameters) -> ResultCallback<Any?, Error> {
-        return spryify(arguments: parameters)
-    }
 }
