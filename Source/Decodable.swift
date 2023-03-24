@@ -21,11 +21,11 @@ struct VoidContent: CustomDecodable {
                     self.result = .success(())
                 case .brokenResponse,
                      .generic:
-                    break
+                    self.result = .failure(error)
                 }
+            } else {
+                self.result = .failure(error)
             }
-
-            self.result = .failure(error)
         } else {
             self.result = .success(())
         }

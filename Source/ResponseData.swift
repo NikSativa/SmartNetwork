@@ -27,7 +27,7 @@ public final class ResponseData {
         self.error = error
     }
 
-    func set(_ error: Error) {
+    func set(_ error: Error?) {
         self.error = error
     }
 }
