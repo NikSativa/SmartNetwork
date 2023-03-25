@@ -1,14 +1,20 @@
-// import Foundation
-// import Nimble
-// import NSpry
-// import NSpry_Nimble
-// import Quick
-//
-// @testable import NCallback
-// @testable import NCallbackTestHelpers
-// @testable import NRequest
-// @testable import NRequestTestHelpers
-//
+import Foundation
+import NSpry
+import XCTest
+
+@testable import NRequest
+@testable import NRequestTestHelpers
+
+final class RequestManagerTests: XCTestCase {
+    private typealias Error = RequestError
+    private struct TestInfo: Decodable {}
+
+    func test_request() {
+        let subject = RequestManager.create(withPluginProvider: nil,
+                                            stopTheLine: nil)
+    }
+}
+
 // final class RequestManagerSpec: QuickSpec {
 //    private typealias Error = RequestError
 //    private struct TestInfo: Decodable {}

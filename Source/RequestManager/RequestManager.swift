@@ -16,9 +16,9 @@ public final class RequestManager {
         self.maxAttemptNumber = max(maxAttemptNumber, 1)
     }
 
-    public func create(withPluginProvider pluginProvider: PluginProvider?,
-                       stopTheLine: StopTheLine?,
-                       maxAttemptNumber: UInt = 1) -> RequestManagering {
+    public static func create(withPluginProvider pluginProvider: PluginProvider?,
+                              stopTheLine: StopTheLine?,
+                              maxAttemptNumber: UInt = 1) -> RequestManagering {
         return Self(pluginProvider: pluginProvider,
                     stopTheLine: stopTheLine,
                     maxAttemptNumber: maxAttemptNumber)
@@ -202,7 +202,7 @@ private extension RequestManager {
     }
 }
 
-private extension Parameters {
+internal extension Parameters {
     func urlRequestRepresentation() throws -> URLRequestRepresentation {
         let url = try address.url(shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint)
         var request = URLRequest(url: url,

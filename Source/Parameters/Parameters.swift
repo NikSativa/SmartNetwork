@@ -23,21 +23,21 @@ public struct Parameters {
         }
     }
 
-    public private(set) var address: Address
-    public private(set) var header: HeaderFields
-    public private(set) var method: HTTPMethod
-    public private(set) var body: Body
-    public private(set) var timeoutInterval: TimeInterval
-    public private(set) var cacheSettings: CacheSettings?
-    public private(set) var requestPolicy: URLRequest.CachePolicy
-    public private(set) var queue: DelayedQueue
-    public private(set) var plugins: [RequestStatePlugin]
-    public private(set) var isLoggingEnabled: Bool
-    public private(set) var progressHandler: ProgressHandler?
-    public private(set) var session: Session
-    public private(set) var encoder: JSONEncoder
-    public private(set) var decoder: JSONDecoder
-    public private(set) var shouldAddSlashAfterEndpoint: Bool
+    public let address: Address
+    public let header: HeaderFields
+    public let method: HTTPMethod
+    public let body: Body
+    public let timeoutInterval: TimeInterval
+    public let cacheSettings: CacheSettings?
+    public let requestPolicy: URLRequest.CachePolicy
+    public let queue: DelayedQueue
+    public let plugins: [RequestStatePlugin]
+    public let isLoggingEnabled: Bool
+    public let progressHandler: ProgressHandler?
+    public let session: Session
+    public let encoder: JSONEncoder
+    public let decoder: JSONDecoder
+    public let shouldAddSlashAfterEndpoint: Bool
 
     /// used only on client side. best practice to use it to identify request in the Plugin's
     public let userInfo: UserInfo
@@ -74,38 +74,5 @@ public struct Parameters {
         self.encoder = encoder
         self.decoder = decoder
         self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
-    }
-
-    @discardableResult
-    public func set<T>(_ newValue: T, at path: WritableKeyPath<Self, T>) -> Self {
-        var new = self
-        new[keyPath: path] = newValue
-        return new
-    }
-
-    @discardableResult
-    public func modify<T>(at path: WritableKeyPath<Self, T>, _ modificator: (_ oldValue: T) -> T) -> Self {
-        var new = self
-        let oldValue = new[keyPath: path]
-        new[keyPath: path] = modificator(oldValue)
-        return new
-    }
-}
-
-public extension Parameters {
-    static func +(lhs: Parameters, plugin: RequestStatePlugin) -> Parameters {
-        var new = lhs
-        new.plugins.append(plugin)
-        return new
-    }
-
-    static func +(lhs: Parameters, plugins: [RequestStatePlugin]) -> Parameters {
-        if plugins.isEmpty {
-            return lhs
-        }
-
-        var new = lhs
-        new.plugins += plugins
-        return new
     }
 }

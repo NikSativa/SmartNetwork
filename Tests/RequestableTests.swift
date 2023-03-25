@@ -6,7 +6,7 @@ import XCTest
 @testable import NRequestTestHelpers
 
 final class RequestableTests: XCTestCase {
-    func test_code() {
+    func test_request() {
         var responses: [ResponseData] = []
         let task: FakeSessionTask = .init()
         let session: FakeSession = .init()
@@ -27,7 +27,7 @@ final class RequestableTests: XCTestCase {
 
         XCTAssertHaveNotRecordedCalls(session)
         XCTAssertHaveNotRecordedCalls(task)
-        
+
         // start
         task.stub(.resume).andReturn()
         session.stub(.task).andReturn(task)
@@ -39,7 +39,7 @@ final class RequestableTests: XCTestCase {
         // cancel
         task.resetCallsAndStubs()
         session.resetCallsAndStubs()
-        
+
         task.stub(.isRunning).andReturn(true)
         task.stub(.cancel).andReturn()
         subject.cancel()
