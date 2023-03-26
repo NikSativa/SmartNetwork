@@ -9,7 +9,7 @@ public final class FakePlugin: Plugin, Spryable {
 
     public enum Function: String, StringRepresentable {
         case prepare = "prepare(_:request:userInfo:)"
-        case verify = "verify(data:)"
+        case verify = "verify(data:userInfo:)"
     }
 
     public init() {}

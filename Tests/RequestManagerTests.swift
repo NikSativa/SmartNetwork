@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import NSpry
 import XCTest
@@ -6,235 +7,104 @@ import XCTest
 @testable import NRequestTestHelpers
 
 final class RequestManagerTests: XCTestCase {
-    private typealias Error = RequestError
-    private struct TestInfo: Decodable {}
+    private enum Constant {
+        static let host1 = "example1.com"
+        static let address1: Address = .testMake(string: "http://example1.com/signin")
 
-    func test_request() {
-        let subject = RequestManager.create(withPluginProvider: nil,
-                                            stopTheLine: nil)
+        static let host2 = "example2.com"
+        static let address2: Address = .testMake(string: "http://example2.com/signin")
+    }
+
+    private typealias Error = RequestError
+    private struct TestInfo: Codable, Equatable {
+        let id: Int
+    }
+
+    private var observers: [AnyCancellable] = []
+
+    override func setUp() {
+        super.setUp()
+        HTTPStubServer.shared.add(condition: .isHost(Constant.host1),
+                                  body: .encodable(TestInfo(id: 1))).store(in: &observers)
+        HTTPStubServer.shared.add(condition: .isHost(Constant.host2),
+                                  body: .encodable(TestInfo(id: 2))).store(in: &observers)
+    }
+
+    override func tearDown() {
+        super.tearDown()
+        observers = []
+    }
+
+    func test_stubbing() {
+        var expectation: XCTestExpectation = .init(description: "should receive response")
+        let subject = RequestManager.create()
+        var response: TestInfo?
+        subject.requestDecodable(TestInfo.self,
+                                 with: .init(address: Constant.address1)) {
+            response = try? $0.get()
+            expectation.fulfill()
+        }.start().store(in: &observers)
+
+        wait(for: [expectation], timeout: 1)
+        XCTAssertEqual(response, .init(id: 1))
+
+        expectation = .init(description: "should receive response")
+        subject.requestDecodable(TestInfo.self,
+                                 with: .init(address: Constant.address2)) {
+            response = try? $0.get()
+            expectation.fulfill()
+        }.start().store(in: &observers)
+
+        wait(for: [expectation], timeout: 1)
+        XCTAssertEqual(response, .init(id: 2))
+    }
+
+    func test_plugins() {
+        let plugin: FakePlugin = .init()
+        plugin.stub(.prepare).andReturn()
+        plugin.stub(.verify).andReturn()
+
+        let requestPlugin: FakeRequestStatePlugin = .init()
+        requestPlugin.stub(.willSend).andReturn()
+        requestPlugin.stub(.didReceive).andReturn()
+
+        let pluginProvider = PluginProvider.create(plugins: [Plugins.StatusCode(), plugin])
+        let subject = RequestManager.create(withPluginProvider: pluginProvider)
+
+        var response: TestInfo?
+        var expectation: XCTestExpectation = .init(description: "should receive response")
+        subject.requestDecodable(TestInfo.self,
+                                 with: .init(address: Constant.address1,
+                                             plugins: [requestPlugin])) {
+            response = try? $0.get()
+            expectation.fulfill()
+        }.start().store(in: &observers)
+
+        wait(for: [expectation], timeout: 1)
+        XCTAssertEqual(response, .init(id: 1))
+        XCTAssertHaveReceived(plugin, .prepare, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(plugin, .verify, countSpecifier: .exactly(1))
+
+        XCTAssertHaveReceived(requestPlugin, .willSend, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(requestPlugin, .didReceive, countSpecifier: .exactly(1))
+
+        plugin.resetCalls()
+        requestPlugin.resetCalls()
+
+        expectation = .init(description: "should receive response")
+        subject.requestDecodable(TestInfo.self,
+                                 with: .init(address: Constant.address2,
+                                             plugins: [requestPlugin])) {
+            response = try? $0.get()
+            expectation.fulfill()
+        }.start().store(in: &observers)
+
+        wait(for: [expectation], timeout: 1)
+        XCTAssertEqual(response, .init(id: 2))
+        XCTAssertHaveReceived(plugin, .prepare, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(plugin, .verify, countSpecifier: .exactly(1))
+
+        XCTAssertHaveReceived(requestPlugin, .willSend, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(requestPlugin, .didReceive, countSpecifier: .exactly(1))
     }
 }
-
-// final class RequestManagerSpec: QuickSpec {
-//    private typealias Error = RequestError
-//    private struct TestInfo: Decodable {}
-//
-//    override func spec() {
-//        describe("RequestManager") {
-//            var subject: AnyRequestManager<Error>!
-//            var factory: FakeRequestFactory!
-//            var stubResponse: ((ResponseData) -> Void)!
-//
-//            beforeEach {
-//                factory = .init()
-//
-//                stubResponse = { data in
-//                    factory.stub(.make).andDo { args in
-//                        let request = FakeRequest()
-//                        request.stub(.start).andDo { args in
-//                            let callback = args[0] as! Request.CompletionCallback
-//                            callback(data)
-//                            return ()
-//                        }
-//                        request.stub(.cancel).andReturn()
-//                        return request
-//                    }
-//                }
-//            }
-//
-//            describe("containing plugin provider") {
-//                var pluginProvider: FakePluginProvider!
-//                var factoryArgument: Argument!
-//
-//                beforeEach {
-//                    pluginProvider = .init()
-//                    factoryArgument = Argument.validator {
-//                        return pluginProvider === ($0 as AnyObject)
-//                    }
-//
-//                    subject = Impl.RequestManager(factory: factory,
-//                                                  pluginProvider: pluginProvider,
-//                                                  stopTheLine: nil).toAny()
-//                }
-//
-//                describe("void response") {
-//                    var actualCallback: ResultCallback<Void, Error>!
-//                    var parameters: Parameters!
-//
-//                    beforeEach {
-//                        parameters = .testMake()
-//                        stubResponse(.testMake())
-//                        actualCallback = subject.requestVoid(with: parameters)
-//                    }
-//
-//                    it("should make request") {
-//                        expect(actualCallback).toNot(beNil())
-//                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
-//                    }
-//                }
-//
-//                describe("image response") {
-//                    var actualCallback: ResultCallback<Image, Error>!
-//                    var parameters: Parameters!
-//
-//                    beforeEach {
-//                        parameters = .testMake()
-//                        stubResponse(.testMake())
-//                        actualCallback = subject.requestImage(with: parameters)
-//                    }
-//
-//                    it("should make request") {
-//                        expect(actualCallback).toNot(beNil())
-//                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
-//                    }
-//                }
-//
-//                describe("optional image response") {
-//                    var actualCallback: ResultCallback<Image?, Error>!
-//                    var parameters: Parameters!
-//
-//                    beforeEach {
-//                        parameters = .testMake()
-//                        stubResponse(.testMake())
-//                        actualCallback = subject.requestOptionalImage(with: parameters)
-//                    }
-//
-//                    it("should make request") {
-//                        expect(actualCallback).toNot(beNil())
-//                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
-//                    }
-//                }
-//
-//                describe("decodable response") {
-//                    var actualCallback: ResultCallback<TestInfo, Error>!
-//                    var parameters: Parameters!
-//
-//                    beforeEach {
-//                        parameters = .testMake()
-//                        stubResponse(.testMake())
-//                        actualCallback = subject.request(with: parameters)
-//                    }
-//
-//                    it("should make request") {
-//                        expect(actualCallback).toNot(beNil())
-//                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
-//                    }
-//                }
-//
-//                describe("optional decodable response") {
-//                    var actualCallback: ResultCallback<TestInfo?, Error>!
-//                    var parameters: Parameters!
-//
-//                    beforeEach {
-//                        parameters = .testMake()
-//                        stubResponse(.testMake())
-//                        actualCallback = subject.request(with: parameters)
-//                    }
-//
-//                    it("should make request") {
-//                        expect(actualCallback).toNot(beNil())
-//                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
-//                    }
-//                }
-//
-//                describe("decodable response with Type as parameter (proxy method)") {
-//                    var actualCallback: ResultCallback<TestInfo, Error>!
-//                    var parameters: Parameters!
-//
-//                    beforeEach {
-//                        parameters = .testMake()
-//                        stubResponse(.testMake())
-//                        actualCallback = subject.requestDecodable(TestInfo.self, with: parameters)
-//                    }
-//
-//                    it("should make request") {
-//                        expect(actualCallback).toNot(beNil())
-//                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
-//                    }
-//                }
-//
-//                describe("data response") {
-//                    var actualCallback: ResultCallback<Data, Error>!
-//                    var parameters: Parameters!
-//
-//                    beforeEach {
-//                        parameters = .testMake()
-//                        stubResponse(.testMake())
-//                        actualCallback = subject.request(with: parameters)
-//                    }
-//
-//                    it("should make request") {
-//                        expect(actualCallback).toNot(beNil())
-//                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
-//                    }
-//                }
-//
-//                describe("optional data response") {
-//                    var actualCallback: ResultCallback<Data?, Error>!
-//                    var parameters: Parameters!
-//
-//                    beforeEach {
-//                        parameters = .testMake()
-//                        stubResponse(.testMake())
-//                        actualCallback = subject.request(with: parameters)
-//                    }
-//
-//                    it("should make request") {
-//                        expect(actualCallback).toNot(beNil())
-//                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
-//                    }
-//                }
-//
-//                describe("any response") {
-//                    var actualCallback: ResultCallback<Any, Error>!
-//                    var parameters: Parameters!
-//
-//                    beforeEach {
-//                        parameters = .testMake()
-//                        stubResponse(.testMake())
-//                        actualCallback = subject.requestAny(with: parameters)
-//                    }
-//
-//                    it("should make request") {
-//                        expect(actualCallback).toNot(beNil())
-//                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
-//                    }
-//                }
-//
-//                describe("optional any response") {
-//                    var actualCallback: ResultCallback<Any?, Error>!
-//                    var parameters: Parameters!
-//
-//                    beforeEach {
-//                        parameters = .testMake()
-//                        stubResponse(.testMake())
-//                        actualCallback = subject.requestOptionalAny(with: parameters)
-//                    }
-//
-//                    it("should make request") {
-//                        expect(actualCallback).toNot(beNil())
-//                        expect(factory).to(haveReceived(.make, with: parameters, factoryArgument))
-//                    }
-//                }
-//            }
-//
-//            describe("data response; when plugin provider is absent") {
-//                var actualCallback: ResultCallback<Data, Error>!
-//                var parameters: Parameters!
-//
-//                beforeEach {
-//                    subject = Impl.RequestManager(factory: factory,
-//                                                  pluginProvider: nil,
-//                                                  stopTheLine: nil).toAny()
-//                    parameters = .testMake()
-//                    stubResponse(.testMake())
-//                    actualCallback = subject.request(with: parameters)
-//                }
-//
-//                it("should make request") {
-//                    expect(actualCallback).toNot(beNil())
-//                }
-//            }
-//        }
-//    }
-// }

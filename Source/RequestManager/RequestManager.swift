@@ -4,11 +4,11 @@ import NQueue
 public final class RequestManager {
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var state: State = .init()
-    private let pluginProvider: PluginProvider?
+    private let pluginProvider: PluginProviding?
     private let stopTheLine: StopTheLine?
     private let maxAttemptNumber: UInt
 
-    private init(pluginProvider: PluginProvider?,
+    private init(pluginProvider: PluginProviding?,
                  stopTheLine: StopTheLine?,
                  maxAttemptNumber: UInt) {
         self.pluginProvider = pluginProvider
@@ -16,8 +16,8 @@ public final class RequestManager {
         self.maxAttemptNumber = max(maxAttemptNumber, 1)
     }
 
-    public static func create(withPluginProvider pluginProvider: PluginProvider?,
-                              stopTheLine: StopTheLine?,
+    public static func create(withPluginProvider pluginProvider: PluginProviding? = nil,
+                              stopTheLine: StopTheLine? = nil,
                               maxAttemptNumber: UInt = 1) -> RequestManagering {
         return Self(pluginProvider: pluginProvider,
                     stopTheLine: stopTheLine,
@@ -144,7 +144,7 @@ extension RequestManager: RequestManagering {
     }
 
     public func request(with parameters: Parameters,
-                        completion: @escaping ResponseClosure) -> LoadingTask {
+                        completion: @escaping ResponseClosure) -> RequestingTask {
         do {
             var userInfo = parameters.userInfo
             let request = try createRequest(parameters, userInfo: &userInfo)
@@ -157,7 +157,7 @@ extension RequestManager: RequestManagering {
                 self?.tryComplete(with: result, for: info)
             }
 
-            return LoadingTask(runAction: { [state] in
+            return RequestingTask(runAction: { [state] in
                 if state.isRunning {
                     request.start()
                 }
@@ -165,7 +165,7 @@ extension RequestManager: RequestManagering {
                 request.cancel()
             })
         } catch {
-            return LoadingTask(runAction: {
+            return RequestingTask(runAction: {
                 let result = ResponseData(request: nil, body: nil, response: nil, error: error)
                 completion(result)
             })

@@ -9,6 +9,10 @@ extension Address: SpryEquatable {
         return .url(url)
     }
 
+    public static func testMake(string url: String) -> Self {
+        return .url(URL(string: url).unsafelyUnwrapped)
+    }
+
     public static func testMake(scheme: Scheme? = .https,
                                 host: String = "google.com",
                                 path: [String] = [],

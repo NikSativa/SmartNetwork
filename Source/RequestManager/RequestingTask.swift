@@ -1,7 +1,8 @@
+import Combine
 import Foundation
 import NQueue
 
-public final class LoadingTask {
+public final class RequestingTask {
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var cancelAction: (() -> Void)?
 
@@ -14,10 +15,12 @@ public final class LoadingTask {
         self.cancelAction = cancelAction
     }
 
-    public func resume() {
+    @discardableResult
+    public func start() -> Self {
         let runAction = runAction
         self.runAction = nil
         runAction?()
+        return self
     }
 
     public func cancel() {
@@ -28,5 +31,17 @@ public final class LoadingTask {
 
     deinit {
         cancelAction?()
+    }
+}
+
+// MARK: - Cancellable
+
+extension RequestingTask: Cancellable {
+    /// only for the convenience of the Combine interface
+    /// e.g. manager.request(with: parameters).store(in: &bag)
+    public func toAny() -> AnyCancellable {
+        return AnyCancellable { [self] in
+            cancel()
+        }
     }
 }

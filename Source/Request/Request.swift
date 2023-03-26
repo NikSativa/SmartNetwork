@@ -1,16 +1,6 @@
 import Foundation
 import NQueue
 
-public protocol RequestStatePlugin {
-    func willSend(_ parameters: Parameters,
-                  request: URLRequestRepresentation,
-                  userInfo: inout Parameters.UserInfo)
-    func didReceive(_ parameters: Parameters,
-                    request: URLRequestRepresentation,
-                    data: ResponseData,
-                    userInfo: inout Parameters.UserInfo)
-}
-
 public protocol Requestable: AnyObject {
     typealias CompletionCallback = (ResponseData) -> Void
 
@@ -72,6 +62,22 @@ public final class Request {
         }
 
         let sdkRequest = urlRequestable.sdk
+        tologSelf(sdkRequest)
+
+        if let stub = HTTPStubServer.shared.response(for: sdkRequest) {
+            let response = HTTPURLResponse(url: sdkRequest.url ?? URL(string: "unknown.com").unsafelyUnwrapped,
+                                           statusCode: stub.statusCode,
+                                           httpVersion: nil,
+                                           headerFields: stub.header)
+            let responseData = ResponseData(request: urlRequestable,
+                                            body: stub.body.data,
+                                            response: response,
+                                            error: nil)
+            fire(data: responseData,
+                 queue: parameters.queue)
+            return
+        }
+
         if let cacheSettings = parameters.cacheSettings {
             let shouldUseCache: Bool
             switch parameters.requestPolicy {
@@ -89,7 +95,6 @@ public final class Request {
             }
 
             if shouldUseCache, let cached = cacheSettings.cache.cachedResponse(for: sdkRequest) {
-                tologSelf(sdkRequest)
                 let responseData = ResponseData(request: urlRequestable,
                                                 body: cached.data,
                                                 response: cached.response,
