@@ -41,17 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/NikSativa/NSpry.git",
       "state" : {
-        "revision" : "ac81bc9c46e2e79905b8b066d9f19964584f4dce",
-        "version" : "1.3.3"
-      }
-    },
-    {
-      "identity" : "quick",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Quick/Quick.git",
-      "state" : {
-        "revision" : "16910e406be96e08923918315388c3e989deac9e",
-        "version" : "6.1.0"
+        "revision" : "1acbb548d09bff6643984359c86d77216f882bf4",
+        "version" : "1.3.4"
       }
     }
   ],

@@ -10,13 +10,10 @@ let package = Package(
     ],
     products: [
         .library(name: "NRequest", targets: ["NRequest"]),
-        .library(name: "NRequestTestHelpers", targets: ["NRequestTestHelpers"]),
-        .library(name: "NRequestExtraTestHelpers", targets: ["NRequestExtraTestHelpers"])
+        .library(name: "NRequestTestHelpers", targets: ["NRequestTestHelpers"])
     ],
     dependencies: [
-        .package(url: "https://github.com/Quick/Quick.git", .upToNextMajor(from: "6.1.0")),
-        .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "11.2.1")),
-        .package(url: "https://github.com/NikSativa/NSpry.git", .upToNextMajor(from: "1.3.3")),
+        .package(url: "https://github.com/NikSativa/NSpry.git", .upToNextMajor(from: "1.3.4")),
         .package(url: "https://github.com/NikSativa/NQueue.git", .upToNextMajor(from: "1.1.17"))
     ],
     targets: [
@@ -32,26 +29,14 @@ let package = Package(
                     .product(name: "NQueueTestHelpers", package: "NQueue"),
                     "NSpry"
                 ],
-                path: "TestHelpers/Core"),
-        .target(name: "NRequestExtraTestHelpers",
-                dependencies: [
-                    "NRequestTestHelpers",
-                    "NRequest",
-                    "Nimble",
-                    "NSpry"
-                ],
-                path: "TestHelpers/Nimble"),
+                path: "TestHelpers"),
         .testTarget(name: "NRequestTests",
                     dependencies: [
                         "NRequest",
                         "NRequestTestHelpers",
-                        "NRequestExtraTestHelpers",
                         "NQueue",
                         .product(name: "NQueueTestHelpers", package: "NQueue"),
-                        "NSpry",
-                        .product(name: "NSpry_Nimble", package: "NSpry"),
-                        "Nimble",
-                        "Quick"
+                        "NSpry"
                     ],
                     path: "Tests")
     ]
