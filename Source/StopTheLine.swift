@@ -8,7 +8,7 @@ public enum StopTheLineAction: Equatable {
 
 public enum StopTheLineResult {
     /// pass over new response
-    case passOver(ResponseData)
+    case passOver(RequestResult)
 
     /// use original response
     case useOriginal
@@ -20,10 +20,10 @@ public enum StopTheLineResult {
 public protocol StopTheLine {
     func action(with manager: some RequestManager,
                 originalParameters parameters: Parameters,
-                response: ResponseData,
+                response: RequestResult,
                 userInfo: inout Parameters.UserInfo) async -> StopTheLineResult
 
-    func verify(response: ResponseData,
+    func verify(response: RequestResult,
                 for parameters: Parameters,
                 userInfo: inout Parameters.UserInfo) -> StopTheLineAction
 }

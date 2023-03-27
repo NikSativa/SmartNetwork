@@ -2,10 +2,10 @@ import CoreGraphics
 import Foundation
 
 public enum Body {
-    public enum Image: Equatable {
-        case png(NRequest.Image)
+    public enum ImageFormat: Equatable {
+        case png(Image)
         #if !os(macOS)
-        case jpeg(NRequest.Image, compressionQuality: CGFloat)
+        case jpeg(Image, compressionQuality: CGFloat)
         #endif
     }
 
@@ -45,7 +45,7 @@ public enum Body {
 
     case empty
     case data(Data)
-    case image(Image)
+    case image(ImageFormat)
     case encodable(any Encodable)
     case form(Form) // form-data
     case xform([String: Any]) // x-www-form-urlencoded
@@ -81,10 +81,10 @@ extension Body {
             let data: Data
             switch image {
             case .png(let image):
-                data = try PlatformImage(image).pngData().unwrap(orThrow: EncodingError.cantEncodeImage)
+                data = try PlatformImage(image).pngData().unwrap(orThrow: RequestEncodingError.cantEncodeImage)
             #if !os(macOS)
             case .jpeg(let image, let quality):
-                data = try PlatformImage(image).jpegData(compressionQuality: quality).unwrap(orThrow: EncodingError.cantEncodeImage)
+                data = try PlatformImage(image).jpegData(compressionQuality: quality).unwrap(orThrow: RequestEncodingError.cantEncodeImage)
             #endif
             }
 
@@ -116,7 +116,7 @@ extension Body {
                     tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
                 }
             } catch {
-                throw EncodingError.other(error)
+                throw error.requestError
             }
         case .form(let form):
             let data = FormEncoder.createBody(form)
@@ -162,10 +162,10 @@ public extension Body {
             if let parameters = parameters as? [String: Any] {
                 return .xform(parameters)
             } else {
-                throw EncodingError.invalidJSON
+                throw RequestEncodingError.invalidJSON
             }
         } catch {
-            throw EncodingError.other(error)
+            throw error.requestError
         }
     }
 }

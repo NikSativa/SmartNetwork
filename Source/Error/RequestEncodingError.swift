@@ -1,7 +1,7 @@
 import Foundation
 
-public enum EncodingError: Error {
-    case other(Error)
+public enum RequestEncodingError: Error {
+    case other(EncodingError)
     case lackParameters
     case lackAdress
     case cantEncodeImage

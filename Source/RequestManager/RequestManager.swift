@@ -37,7 +37,7 @@ public final class RequestManager {
 
     private func makeStopTheLineAction(stopTheLine: StopTheLine,
                                        info: Info,
-                                       data: ResponseData) {
+                                       data: RequestResult) {
         Task { [weak self, pluginProvider, maxAttemptNumber] in
             let newFactory = RequestManager(pluginProvider: pluginProvider,
                                             stopTheLine: nil,
@@ -58,7 +58,7 @@ public final class RequestManager {
         }
     }
 
-    private func checkStopTheLine(_ result: ResponseData,
+    private func checkStopTheLine(_ result: RequestResult,
                                   info: Info) -> Bool {
         guard let stopTheLine else {
             return true
@@ -87,7 +87,7 @@ public final class RequestManager {
         }
     }
 
-    private func tryComplete(with result: ResponseData,
+    private func tryComplete(with result: RequestResult,
                              for info: Info) {
         guard checkStopTheLine(result, info: info) else {
             return
@@ -127,7 +127,7 @@ public final class RequestManager {
 // MARK: - RequestManagering
 
 extension RequestManager: RequestManagering {
-    public static func map<T: CustomDecodable>(data: ResponseData,
+    public static func map<T: CustomDecodable>(data: RequestResult,
                                                to _: T.Type,
                                                with parameters: Parameters) -> Result<T.Object, Error> {
         let payload = T(with: data, decoder: parameters.decoder)
@@ -166,7 +166,7 @@ extension RequestManager: RequestManagering {
             })
         } catch {
             return RequestingTask(runAction: {
-                let result = ResponseData(request: nil, body: nil, response: nil, error: error)
+                let result = RequestResult(request: nil, body: nil, response: nil, error: error)
                 completion(result)
             })
         }

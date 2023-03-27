@@ -50,7 +50,7 @@ extension Body: Equatable, SpryEquatable {
     }
 }
 
-extension Body.Image: SpryEquatable {}
+extension Body.ImageFormat: SpryEquatable {}
 
 extension Body.Form: SpryEquatable {}
 

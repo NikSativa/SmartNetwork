@@ -3,9 +3,9 @@ import Foundation
 public enum RequestError: Error {
     case generic
     case other(Error)
-    case connection(URLError, ConnectionError?)
-    case encoding(EncodingError)
-    case decoding(DecodingError)
+    case connection(URLError)
+    case encoding(RequestEncodingError)
+    case decoding(RequestDecodingError)
     case statusCode(StatusCode)
 
     public init(_ error: Swift.Error) {
@@ -13,14 +13,14 @@ public enum RequestError: Error {
         case let error as Self:
             self = error
         case let error as URLError:
-            self = .connection(error, ConnectionError(error))
-        case let error as EncodingError:
+            self = .connection(error)
+        case let error as RequestEncodingError:
             self = .encoding(error)
-        case let error as Swift.EncodingError:
+        case let error as EncodingError:
             self = .encoding(.other(error))
-        case let error as DecodingError:
+        case let error as RequestDecodingError:
             self = .decoding(error)
-        case let error as Swift.DecodingError:
+        case let error as DecodingError:
             self = .decoding(.other(error))
         case let error as StatusCode:
             self = .statusCode(error)

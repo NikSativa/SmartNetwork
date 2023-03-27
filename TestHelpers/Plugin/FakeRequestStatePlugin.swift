@@ -22,7 +22,7 @@ public final class FakeRequestStatePlugin: RequestStatePlugin, Spryable {
 
     public func didReceive(_ parameters: Parameters,
                            request: URLRequestRepresentation,
-                           data: ResponseData,
+                           data: RequestResult,
                            userInfo: inout Parameters.UserInfo) {
         return spryify(arguments: parameters, request, data, userInfo)
     }

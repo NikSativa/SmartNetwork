@@ -11,7 +11,7 @@ public extension Optional {
     }
 
     func unwrap() throws -> Wrapped {
-        try unwrap(orThrow: DecodingError.brokenResponse)
+        try unwrap(orThrow: RequestDecodingError.brokenResponse)
     }
 
     func unwrapOrEmpty<Element>() -> [Element] where Wrapped == [Element] {

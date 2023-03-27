@@ -1,7 +1,6 @@
 import Foundation
 
-#warning("rename to RequestResult")
-public final class ResponseData {
+public final class RequestResult {
     public let request: URLRequestRepresentation?
     public let body: Data?
     public let response: URLResponse?

@@ -1,9 +1,9 @@
 import Foundation
 
 public protocol RequestManagering {
-    typealias ResponseClosure = (ResponseData) -> Void
+    typealias ResponseClosure = (RequestResult) -> Void
 
-    static func map<T: CustomDecodable>(data: ResponseData,
+    static func map<T: CustomDecodable>(data: RequestResult,
                                         to _: T.Type,
                                         with parameters: Parameters) -> Result<T.Object, Error>
     func request(with parameters: Parameters,
@@ -43,7 +43,7 @@ public extension RequestManagering {
 public extension RequestManagering {
     // MARK: - ResponseData
 
-    func request(with parameters: Parameters) async -> ResponseData {
+    func request(with parameters: Parameters) async -> RequestResult {
         return await withCheckedContinuation { completion in
             let task = request(with: parameters) { [parameters] result in
                 parameters.queue.fire {
@@ -194,7 +194,7 @@ private extension Result {
         case .success(.some(let response)):
             return .success(response)
         case .success(.none):
-            return .failure(DecodingError.nilResponse)
+            return .failure(RequestDecodingError.nilResponse)
         case .failure(let error):
             return .failure(error)
         }

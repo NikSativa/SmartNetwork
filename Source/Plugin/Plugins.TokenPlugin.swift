@@ -1,9 +1,9 @@
 import Foundation
 
-public enum Plugins {
-    public typealias TokenProvider = () -> String?
+public extension Plugins {
+    typealias TokenProvider = () -> String?
 
-    public enum TokenType {
+    enum TokenType {
         public enum Operation {
             case set(String)
             case add(String)
@@ -13,19 +13,7 @@ public enum Plugins {
         case queryParam(String)
     }
 
-    public final class StatusCode: Plugin {
-        init() {}
-
-        public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, userInfo: inout Parameters.UserInfo) {}
-
-        public func verify(data: ResponseData, userInfo: Parameters.UserInfo) throws {
-            if let error = NRequest.StatusCode(data.statusCode) {
-                throw error
-            }
-        }
-    }
-
-    public final class TokenPlugin: Plugin {
+    final class TokenPlugin: Plugin {
         private let tokenProvider: TokenProvider
         private let type: TokenType
 
@@ -64,15 +52,6 @@ public enum Plugins {
             }
         }
 
-        public func verify(data: ResponseData, userInfo: Parameters.UserInfo) throws {}
-    }
-
-    public static func BearerPlugin(with tokenProvider: @escaping TokenProvider) -> Plugin {
-        return TokenPlugin(type: .header(.set("Authorization")),
-                           tokenProvider: {
-                               return tokenProvider().map { token in
-                                   return "Bearer " + token
-                               }
-                           })
+        public func verify(data: RequestResult, userInfo: Parameters.UserInfo) throws {}
     }
 }

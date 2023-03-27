@@ -94,15 +94,15 @@ final class AddressTests: XCTestCase {
         XCTAssertEqual(expected, .testMake("https://some.com/endpoint?item=value"))
 
         subject = .address(host: "\"some.com")
-        XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: true), EncodingError.lackAdress)
+        XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: true), RequestEncodingError.lackAdress)
 
         subject = .address(host: "\"some.com")
-        XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: false), EncodingError.lackAdress)
+        XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: false), RequestEncodingError.lackAdress)
 
         subject = .address(host: "some.com/item=value", endpoint: "/endpoint/", queryItems: ["item": "value"])
-        XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: true), EncodingError.lackAdress)
+        XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: true), RequestEncodingError.lackAdress)
 
         subject = .address(host: "some.com/item=value", endpoint: "/endpoint/", queryItems: ["item": "value"])
-        XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: false), EncodingError.lackAdress)
+        XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: false), RequestEncodingError.lackAdress)
     }
 }

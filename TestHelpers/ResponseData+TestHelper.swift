@@ -3,7 +3,7 @@ import NSpry
 
 @testable import NRequest
 
-extension ResponseData: Equatable, SpryEquatable {
+extension RequestResult: Equatable, SpryEquatable {
     public static func testMake(url: URL = .testMake(),
                                 statusCode: Int,
                                 httpVersion: String? = nil,
@@ -29,7 +29,7 @@ extension ResponseData: Equatable, SpryEquatable {
                      error: error)
     }
 
-    public static func ==(lhs: ResponseData, rhs: ResponseData) -> Bool {
+    public static func ==(lhs: RequestResult, rhs: RequestResult) -> Bool {
         return lhs.body == rhs.body &&
             lhs.response == rhs.response &&
             (lhs.error as NSError?) == (rhs.error as NSError?)

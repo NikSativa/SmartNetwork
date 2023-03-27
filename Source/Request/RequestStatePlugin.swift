@@ -6,6 +6,6 @@ public protocol RequestStatePlugin {
                   userInfo: inout Parameters.UserInfo)
     func didReceive(_ parameters: Parameters,
                     request: URLRequestRepresentation,
-                    data: ResponseData,
+                    data: RequestResult,
                     userInfo: inout Parameters.UserInfo)
 }

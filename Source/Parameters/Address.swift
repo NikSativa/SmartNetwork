@@ -151,7 +151,7 @@ public extension Address {
                 return componentsUrl
             }
 
-            throw EncodingError.lackAdress
+            throw RequestEncodingError.lackAdress
         }
     }
 }

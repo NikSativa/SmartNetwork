@@ -13,16 +13,16 @@ final class RequestErrorTests: XCTestCase {
         XCTAssertEqualError(RequestError(actual1), expected1)
 
         let actual2 = URLError(.cannotConnectToHost)
-        let expected2 = RequestError.connection(actual2, .cannotConnectToHost)
+        let expected2 = RequestError.connection(actual2)
         XCTAssertEqualError(actual2.requestError, expected2)
         XCTAssertEqualError(RequestError(actual2), expected2)
 
-        let actual3 = EncodingError.invalidJSON
+        let actual3 = RequestEncodingError.invalidJSON
         let expected3 = RequestError.encoding(actual3)
         XCTAssertEqualError(actual3.requestError, expected3)
         XCTAssertEqualError(RequestError(actual3), expected3)
 
-        let actual4 = DecodingError.brokenResponse
+        let actual4 = RequestDecodingError.brokenResponse
         let expected4 = RequestError.decoding(actual4)
         XCTAssertEqualError(actual4.requestError, expected4)
         XCTAssertEqualError(RequestError(actual4), expected4)
@@ -41,5 +41,15 @@ final class RequestErrorTests: XCTestCase {
         let expected7 = actual7
         XCTAssertEqualError(actual7.requestError, expected7)
         XCTAssertEqualError(RequestError(actual7), expected7)
+
+        let actual8 = EncodingError.invalidValue(11, .init(codingPath: [], debugDescription: ""))
+        let expected8 = RequestError.encoding(.other(actual8))
+        XCTAssertEqualError(actual8.requestError, expected8)
+        XCTAssertEqualError(RequestError(actual8), expected8)
+
+        let actual9 = DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: ""))
+        let expected9 = RequestError.decoding(.other(actual9))
+        XCTAssertEqualError(actual9.requestError, expected9)
+        XCTAssertEqualError(RequestError(actual9), expected9)
     }
 }

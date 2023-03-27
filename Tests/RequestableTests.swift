@@ -7,7 +7,7 @@ import XCTest
 
 final class RequestableTests: XCTestCase {
     func test_request() {
-        var responses: [ResponseData] = []
+        var responses: [RequestResult] = []
         let task: FakeSessionTask = .init()
         let session: FakeSession = .init()
         let parameters: Parameters = .testMake(queue: .absent,

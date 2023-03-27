@@ -2,10 +2,9 @@ import Foundation
 import NQueue
 
 public protocol Requestable: AnyObject {
-    typealias CompletionCallback = (ResponseData) -> Void
+    typealias CompletionCallback = (RequestResult) -> Void
 
     var userInfo: Parameters.UserInfo { get set }
-    #warning("needed?")
     var completion: CompletionCallback? { get set }
     var urlRequestable: URLRequestRepresentation { get }
     var parameters: Parameters { get }
@@ -69,10 +68,10 @@ public final class Request {
                                            statusCode: stub.statusCode,
                                            httpVersion: nil,
                                            headerFields: stub.header)
-            let responseData = ResponseData(request: urlRequestable,
-                                            body: stub.body.data,
-                                            response: response,
-                                            error: nil)
+            let responseData = RequestResult(request: urlRequestable,
+                                             body: stub.body.data,
+                                             response: response,
+                                             error: nil)
             fire(data: responseData,
                  queue: parameters.queue)
             return
@@ -95,10 +94,10 @@ public final class Request {
             }
 
             if shouldUseCache, let cached = cacheSettings.cache.cachedResponse(for: sdkRequest) {
-                let responseData = ResponseData(request: urlRequestable,
-                                                body: cached.data,
-                                                response: cached.response,
-                                                error: nil)
+                let responseData = RequestResult(request: urlRequestable,
+                                                 body: cached.data,
+                                                 response: cached.response,
+                                                 error: nil)
                 fire(data: responseData,
                      queue: cacheSettings.queue)
                 return
@@ -120,10 +119,10 @@ public final class Request {
 
             self.tologSelf(sdkRequest)
 
-            let responseData = ResponseData(request: self.urlRequestable,
-                                            body: data,
-                                            response: response,
-                                            error: error)
+            let responseData = RequestResult(request: self.urlRequestable,
+                                             body: data,
+                                             response: response,
+                                             error: error)
 
             self.fire(data: responseData,
                       queue: self.parameters.queue)
@@ -134,7 +133,7 @@ public final class Request {
         sessionAdaptor.stop()
     }
 
-    private func fire(data: ResponseData,
+    private func fire(data: RequestResult,
                       queue: DelayedQueue) {
         tolog(data.body, allHTTPHeaderFields: urlRequestable.allHTTPHeaderFields)
 
@@ -152,7 +151,7 @@ public final class Request {
     }
 
     private func complete(in queue: DelayedQueue,
-                          with data: ResponseData) {
+                          with data: RequestResult) {
         queue.fire {
             self.completion?(data)
         }

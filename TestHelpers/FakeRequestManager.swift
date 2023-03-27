@@ -24,7 +24,7 @@
 //
 //    public init() {}
 //
-//    public func requestPureData(with parameters: Parameters) -> Callback<ResponseData> {
+//    public func requestPureData(with parameters: Parameters) -> Callback<RequestResult> {
 //        return spryify(arguments: parameters)
 //    }
 //

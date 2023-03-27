@@ -20,7 +20,7 @@ public final class FakePlugin: Plugin, Spryable {
         return spryify(arguments: parameters, userInfo, request)
     }
 
-    public func verify(data: ResponseData,
+    public func verify(data: RequestResult,
                        userInfo: Parameters.UserInfo) throws {
         return spryify(arguments: data)
     }

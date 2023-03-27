@@ -15,7 +15,7 @@
 //
 //    public func action(with factory: AnyRequestManager<Error>,
 //                       originalParameters parameters: Parameters,
-//                       response: ResponseData,
+//                       response: RequestResult,
 //                       userInfo: inout Parameters.UserInfo) -> Callback<StopTheLineResult> {
 //        return spryify(arguments: factory, parameters, response, userInfo)
 //    }

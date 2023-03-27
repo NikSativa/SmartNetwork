@@ -1,13 +1,13 @@
-//import Foundation
-//import Nimble
-//import NQueue
-//import NSpry
-//import Quick
+// import Foundation
+// import Nimble
+// import NQueue
+// import NSpry
+// import Quick
 //
-//@testable import NRequest
-//@testable import NRequestTestHelpers
+// @testable import NRequest
+// @testable import NRequestTestHelpers
 //
-//final class MultiRequestSpec: QuickSpec {
+// final class MultiRequestSpec: QuickSpec {
 //    fileprivate enum Constant {
 //        #if os(macOS)
 //        static let numberOfRequests = 1000
@@ -17,7 +17,7 @@
 //
 //        static let headerIndexKey = "headerIndexKey"
 //        static let error: RequestError = .decoding(.nilResponse)
-//        static let success: ResponseData = .testMake()
+//        static let success: RequestResult = .testMake()
 //        static let failure: ResponseData = .testMake(error: error)
 //    }
 //
@@ -199,9 +199,9 @@
 //            }
 //        }
 //    }
-//}
+// }
 //
-//private final class Subject {
+// private final class Subject {
 //    private typealias Constant = MultiRequestSpec.Constant
 //
 //    enum Response: Equatable, SpryEquatable, CustomDebugStringConvertible {
@@ -267,9 +267,9 @@
 //        }
 //        requests[offset].start()
 //    }
-//}
+// }
 //
-//private final class ThreadSafeFakeSession: Session, Spryable {
+// private final class ThreadSafeFakeSession: Session, Spryable {
 //    public enum ClassFunction: String, StringRepresentable {
 //        case empty
 //    }
@@ -289,9 +289,9 @@
 //            return spryify(arguments: request, completionHandler)
 //        }
 //    }
-//}
+// }
 //
-//private final class ThreadSafeFakeSessionTask: SessionTask, Spryable, SpryEquatable {
+// private final class ThreadSafeFakeSessionTask: SessionTask, Spryable, SpryEquatable {
 //    public enum ClassFunction: String, StringRepresentable {
 //        case empty
 //    }
@@ -337,9 +337,9 @@
 //            return spryify(arguments: progressHandler)
 //        }
 //    }
-//}
+// }
 //
-//private final class CompletionHandlers {
+// private final class CompletionHandlers {
 //    @Atomic
 //    private var completionHandlers: [Int: Session.CompletionHandler]
 //
@@ -365,4 +365,4 @@
 //            completionHandlers[key] = newValue
 //        }
 //    }
-//}
+// }

@@ -1,19 +1,16 @@
 import Foundation
 
 public struct StatusCode: Error, Hashable {
-    public let rawValue: Int
+    public let code: Int
     public let kind: Kind?
 
-    public init?(_ code: Int?) {
-        guard let code, code != 200 else {
-            return nil
-        }
-        self.rawValue = code
+    public init(code: Int) {
+        self.code = code
         self.kind = Kind(rawValue: code)
     }
 
     public init(_ kind: Kind) {
-        self.rawValue = kind.rawValue
+        self.code = kind.rawValue
         self.kind = kind
     }
 }
@@ -24,6 +21,7 @@ public extension StatusCode {
     enum Kind: Int, Hashable, CaseIterable {
         // MARK: - Successful responses
 
+        case success = 200
         case created = 201
         case accepted = 202
         case nonAuthoritativeInformation = 203
@@ -108,7 +106,8 @@ public extension StatusCode.Kind {
              .noContent,
              .nonAuthoritativeInformation,
              .partialContent,
-             .resetContent:
+             .resetContent,
+             .success:
             return true
         case .badGateway,
              .badRequest,
@@ -169,7 +168,7 @@ extension StatusCode: CustomDebugStringConvertible, CustomStringConvertible {
         let name = (kind?.name).map {
             return " (\($0))"
         }
-        return "StatusCode \(rawValue)" + (name ?? "")
+        return "StatusCode \(code)" + (name ?? "")
     }
 
     public var debugDescription: String {

@@ -10,7 +10,7 @@ public extension Collection {
 
     func throwIfEmpty() throws -> Self {
         if isEmpty {
-            throw DecodingError.brokenResponse
+            throw RequestDecodingError.brokenResponse
         }
         return self
     }
