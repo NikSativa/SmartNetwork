@@ -1,5 +1,4 @@
 import Foundation
-import NSpry
 import XCTest
 
 @testable import NRequest

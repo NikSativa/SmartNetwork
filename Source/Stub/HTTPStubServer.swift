@@ -14,11 +14,13 @@ public final class HTTPStubServer {
     public func add(condition: HTTPStubCondition,
                     statusCode: Int = 200,
                     header: HeaderFields = [:],
-                    body: HTTPStubBody = .empty) -> AnyCancellable {
+                    body: HTTPStubBody = .empty,
+                    delayInSeconds: TimeInterval? = nil) -> AnyCancellable {
         return $responses.mutate { responses in
             let response = HTTPStubResponse(statusCode: statusCode,
                                             header: header,
-                                            body: body)
+                                            body: body,
+                                            delayInSeconds: delayInSeconds)
             let id = counter
             counter &+= 1
 

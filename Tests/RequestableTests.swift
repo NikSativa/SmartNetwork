@@ -13,8 +13,9 @@ final class RequestableTests: XCTestCase {
         let parameters: Parameters = .testMake(queue: .absent,
                                                session: session)
 
+        let sdkRequst = URLRequest.testMake(url: "google.com")
         let urlRequestable: FakeURLRequestRepresentation = .init()
-        urlRequestable.stub(.sdk).andReturn(URLRequest.testMake(url: "google.com"))
+        urlRequestable.stub(.sdk).andReturn(sdkRequst)
 
         let subject: Requestable = Request.create(with: parameters, urlRequestable: urlRequestable)
         subject.completion = { data in
@@ -69,12 +70,12 @@ final class RequestableTests: XCTestCase {
         // receive response
         session.completionHandler?(nil, nil, nil)
 
-        XCTAssertEqual(responses, [.testMake()])
+        XCTAssertEqual(responses, [.testMake(request: sdkRequst)])
         XCTAssertHaveReceived(task, .cancel, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(task, .isRunning, countSpecifier: .exactly(1))
 
         // impossible behavior, but expected that response can be received more then once
         session.completionHandler?(nil, nil, nil)
-        XCTAssertEqual(responses, [.testMake(), .testMake()])
+        XCTAssertEqual(responses, [.testMake(request: sdkRequst), .testMake(request: sdkRequst)])
     }
 }

@@ -53,6 +53,7 @@ extension Body: Equatable, SpryEquatable {
 extension Body.ImageFormat: SpryEquatable {}
 
 extension Body.Form: SpryEquatable {}
+extension Body.Form.MimeType: SpryEquatable {}
 
 private extension Encodable {
     func string() -> String? {

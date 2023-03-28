@@ -8,31 +8,26 @@ public struct QueryItem: Equatable {
         self.key = key
         self.value = value
     }
-}
 
-public typealias QueryItems = [QueryItem]
-
-public extension QueryItems {
-    /// add new one
-    @discardableResult
-    mutating func add(_ item: Element) -> Self {
-        append(item)
-        return self
-    }
-
-    /// - NOTE: replacing all previously added items and add new one
-    @discardableResult
-    mutating func set(_ item: Element) -> Self {
-        self = filter {
-            return $0.key == item.key
-        }
-        append(item)
-        return self
+    private var myDescription: String {
+        return [key, value].compactMap {
+            return $0
+        }.joined(separator: ": ")
     }
 }
 
-extension QueryItems: ExpressibleByDictionaryLiteral {
-    public init(dictionaryLiteral elements: (String, String)...) {
-        self = elements.map(Element.init(key:value:))
+// MARK: - CustomStringConvertible
+
+extension QueryItem: CustomStringConvertible {
+    public var description: String {
+        return myDescription
+    }
+}
+
+// MARK: - CustomDebugStringConvertible
+
+extension QueryItem: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return myDescription
     }
 }

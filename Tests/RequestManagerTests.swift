@@ -27,7 +27,8 @@ final class RequestManagerTests: XCTestCase {
         HTTPStubServer.shared.add(condition: .isHost(Constant.host1),
                                   body: .encodable(TestInfo(id: 1))).store(in: &observers)
         HTTPStubServer.shared.add(condition: .isHost(Constant.host2),
-                                  body: .encodable(TestInfo(id: 2))).store(in: &observers)
+                                  body: .encodable(TestInfo(id: 2)),
+                                  delayInSeconds: 0.5).store(in: &observers)
     }
 
     override func tearDown() {
@@ -49,13 +50,17 @@ final class RequestManagerTests: XCTestCase {
         XCTAssertEqual(response, .init(id: 1))
 
         expectation = .init(description: "should receive response")
+        let expectationReverted: XCTestExpectation = .init(description: "should not receive response")
+        expectationReverted.isInverted = true
         subject.requestDecodable(TestInfo.self,
                                  with: .init(address: Constant.address2)) {
             response = try? $0.get()
             expectation.fulfill()
+            expectationReverted.fulfill()
         }.start().store(in: &observers)
 
-        wait(for: [expectation], timeout: 1)
+        wait(for: [expectationReverted], timeout: 0.48) // delayed response 0.5
+        wait(for: [expectation], timeout: 0.52) // magic number = 1 - 0.48 = 0.52
         XCTAssertEqual(response, .init(id: 2))
     }
 

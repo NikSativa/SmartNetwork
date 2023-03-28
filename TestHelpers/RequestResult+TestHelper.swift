@@ -30,7 +30,8 @@ extension RequestResult: Equatable, SpryEquatable {
     }
 
     public static func ==(lhs: RequestResult, rhs: RequestResult) -> Bool {
-        return lhs.body == rhs.body &&
+        return lhs.request?.sdk == rhs.request?.sdk &&
+            lhs.body == rhs.body &&
             lhs.response == rhs.response &&
             (lhs.error as NSError?) == (rhs.error as NSError?)
     }

@@ -72,8 +72,15 @@ public final class Request {
                                              body: stub.body.data,
                                              response: response,
                                              error: nil)
-            fire(data: responseData,
-                 queue: parameters.queue)
+            if let delay = stub.delayInSeconds {
+                Queue.background.asyncAfter(deadline: .now() + delay) { [self] in
+                    fire(data: responseData,
+                         queue: parameters.queue)
+                }
+            } else {
+                fire(data: responseData,
+                     queue: parameters.queue)
+            }
             return
         }
 

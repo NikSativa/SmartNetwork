@@ -113,6 +113,14 @@ final class AddressTests: XCTestCase {
         actualURL = XCTAssertNotThrowsError(try subject.url(shouldAddSlashAfterEndpoint: false, shouldRemoveSlashesBeforeEmptyScheme: true))
         XCTAssertEqual(actualURL, .testMake("some.com/endpoint?item=value#fr"))
 
+        subject = .address(scheme: nil, host: "some.com", endpoint: "/endpoint/", queryItems: ["item": "value", "item": "value"], fragment: "fr")
+        actualURL = XCTAssertNotThrowsError(try subject.url(shouldAddSlashAfterEndpoint: false, shouldRemoveSlashesBeforeEmptyScheme: true))
+        XCTAssertEqual(actualURL, .testMake("some.com/endpoint?item=value&item=value#fr"))
+
+        subject = .address(scheme: nil, host: "some.com", endpoint: "/endpoint/", queryItems: ["item": "value", "item": "value", "item": nil], fragment: "fr")
+        actualURL = XCTAssertNotThrowsError(try subject.url(shouldAddSlashAfterEndpoint: false, shouldRemoveSlashesBeforeEmptyScheme: true))
+        XCTAssertEqual(actualURL, .testMake("some.com/endpoint?item=value&item=value&item#fr"))
+
         subject = .address(host: "\"some.com")
         XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: true), RequestEncodingError.lackAdress)
 
