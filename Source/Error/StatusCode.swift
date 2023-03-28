@@ -20,6 +20,20 @@ public struct StatusCode: Error, Hashable {
         }
         return "StatusCode \(code)" + (name ?? "")
     }
+
+    public var localizedDescription: String {
+        return makeDescription()
+    }
+}
+
+public extension StatusCode {
+    var isSuccess: Bool {
+        return kind?.isSuccess == true
+    }
+
+    static var noContent: Self {
+        return .init(.noContent)
+    }
 }
 
 // MARK: - StatusCode.Kind
@@ -28,7 +42,6 @@ public extension StatusCode {
     enum Kind: Int, Hashable, CaseIterable {
         // MARK: - Successful responses
 
-        case success = 200
         case created = 201
         case accepted = 202
         case nonAuthoritativeInformation = 203
@@ -92,16 +105,6 @@ public extension StatusCode {
     }
 }
 
-public extension StatusCode {
-    var isSuccess: Bool {
-        return kind?.isSuccess == true
-    }
-
-    static var noContent: Self {
-        return .init(.noContent)
-    }
-}
-
 public extension StatusCode.Kind {
     var isSuccess: Bool {
         switch self {
@@ -113,8 +116,7 @@ public extension StatusCode.Kind {
              .noContent,
              .nonAuthoritativeInformation,
              .partialContent,
-             .resetContent,
-             .success:
+             .resetContent:
             return true
         case .badGateway,
              .badRequest,

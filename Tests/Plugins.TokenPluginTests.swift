@@ -80,4 +80,6 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
     } else {
         XCTAssertHaveNotRecordedCalls(request, file: file, line: line)
     }
+
+    XCTAssertNotThrowsError(try subject.verify(data: .testMake(), userInfo: userInfo))
 }

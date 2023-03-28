@@ -63,66 +63,68 @@ public enum HTTPStubCondition {
     /// - Parameter regex: The Regular Expression we want the path to match
     ///
     /// - Note: URL paths are usually absolute and thus starts with a '/'
-    @available(iOS 16.0, *)
+    @available(macOS 13.0, iOS 16.0, *)
     public static func pathMatches(_ regex: Regex<some Any>) -> Self {
         return .custom { request in
             return request.path.map { path in
                 let match = path.firstMatch(of: regex)
                 return match != nil
-            } ?? false
+            }
         }
     }
 
     /// RegEx matches the **absolute atring**
     ///
     /// - Parameter regex: The Regular Expression we want the absolute string to match
-    @available(iOS 16.0, *)
+    @available(macOS 13.0, iOS 16.0, *)
     public static func absoluteStringMatches(_ regex: Regex<some Any>) -> Self {
         return .custom { request in
             return request.absoluteString.map { path in
                 let match = path.firstMatch(of: regex)
                 return match != nil
-            } ?? false
+            }
         }
     }
 
-    public typealias TestClosure = (_ request: URLRequest) -> Bool
+    public typealias TestClosure = (_ request: URLRequest) -> Bool?
     case custom(TestClosure)
 
     func test(_ request: URLRequest) -> Bool {
+        let result: Bool?
         switch self {
         case .isPath(let string):
-            return request.url?.path == string
+            result = request.url?.path == string
         case .isHost(let string):
-            precondition(!string.contains("/"), "The host part of an URL never contains any slash. Only use strings like 'api.example.com' for this value, and not things like 'https://api.example.com/'")
-            return request.url?.host == string
+            assert(!string.contains("/"), "The host part of an URL never contains any slash. Only use strings like 'api.example.com' for this value, and not things like 'https://api.example.com/'")
+            result = request.url?.host == string
         case .isAbsoluteURLString(let string):
-            return request.absoluteString == string
+            result = request.absoluteString == string
         case .isMethod(let string):
-            return request.httpMethod == string
+            result = request.httpMethod == string
         case .isScheme(let string):
-            precondition(!string.contains("://"), "The scheme part of an URL never contains '://'. Only use strings like 'https' for this value, and not things like 'https://'")
-            precondition(!string.contains("/"), "The scheme part of an URL never contains any slash. Only use strings like 'https' for this value, and not things like 'https://api.example.com/'")
-            return request.url?.scheme == string
+            assert(!string.contains("://"), "The scheme part of an URL never contains '://'. Only use strings like 'https' for this value, and not things like 'https://'")
+            assert(!string.contains("/"), "The scheme part of an URL never contains any slash. Only use strings like 'https' for this value, and not things like 'https://api.example.com/'")
+            result = request.url?.scheme == string
         case .pathStartsWith(let string):
-            return request.path?.hasPrefix(string) ?? false
+            result = request.path?.hasPrefix(string)
         case .pathEndsWith(let string):
-            return request.path?.hasSuffix(string) ?? false
+            result = request.path?.hasSuffix(string)
         case .pathNSMatches(let regex):
-            return request.path.map { path in
+            result = request.path.map { path in
                 let range = NSRange(location: 0, length: path.utf16.count)
                 let matches = regex.firstMatch(in: path, options: [], range: range)
                 return matches != nil
-            } ?? false
+            }
         case .absoluteStringNSMatches(let regex):
-            return request.absoluteString.map { path in
+            result = request.absoluteString.map { path in
                 let range = NSRange(location: 0, length: path.utf16.count)
                 let matches = regex.firstMatch(in: path, options: [], range: range)
                 return matches != nil
-            } ?? false
+            }
         case .custom(let closure):
-            return closure(request)
+            result = closure(request)
         }
+        return result ?? false
     }
 }
 

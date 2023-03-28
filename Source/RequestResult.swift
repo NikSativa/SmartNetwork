@@ -12,7 +12,8 @@ public final class RequestResult {
         return (response as? HTTPURLResponse)?.allHeaderFields ?? [:]
     }()
 
-    public lazy var statusCode: Int? = (response as? HTTPURLResponse)?.statusCode
+    public lazy var statusCode: StatusCode? = statusCodeInt.map(StatusCode.init(code:))
+    public lazy var statusCodeInt: Int? = (response as? HTTPURLResponse)?.statusCode
 
     public lazy var urlError: URLError? = error as? URLError
 

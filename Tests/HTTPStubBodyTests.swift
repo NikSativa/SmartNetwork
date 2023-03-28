@@ -48,14 +48,3 @@ final class HTTPStubBodyTests: XCTestCase {
         XCTAssertEqual(body.data?.info(), info)
     }
 }
-
-private struct TestInfo: Codable, Equatable {
-    let id: Int
-}
-
-private extension Data {
-    func info() -> TestInfo? {
-        let encoder = JSONDecoder()
-        return try? encoder.decode(TestInfo.self, from: self)
-    }
-}

@@ -12,12 +12,11 @@ public extension Plugins {
         public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, userInfo: inout Parameters.UserInfo) {}
 
         public func verify(data: RequestResult, userInfo: Parameters.UserInfo) throws {
-            guard let statusCode = data.statusCode else {
+            guard data.statusCodeInt != 200, let error = data.statusCode else {
                 return
             }
 
-            let error = NRequest.StatusCode(code: statusCode)
-            guard let kind = error.kind, kind != .success else {
+            guard let kind = error.kind else {
                 return
             }
 

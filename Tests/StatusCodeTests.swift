@@ -13,8 +13,18 @@ final class StatusCodeTests: XCTestCase {
         }
 
         XCTAssertEqual(StatusCode(.accepted).kind, .accepted)
-        XCTAssertEqual(StatusCode(.success).kind, .success)
-        XCTAssertEqual(StatusCode(.success).code, 200)
-        XCTAssertTrue(StatusCode(.success).isSuccess)
+        XCTAssertEqual(StatusCode(.lenghtRequired).kind, .lenghtRequired)
+        XCTAssertEqual(StatusCode(.lenghtRequired).code, 411)
+        XCTAssertTrue(StatusCode(.accepted).isSuccess)
+    }
+
+    func test_name() {
+        XCTAssertEqual(StatusCode.Kind.lenghtRequired.name, "lenghtRequired")
+    }
+
+    func test_description() {
+        XCTAssertEqual(StatusCode(.lenghtRequired).description, "StatusCode 411 (lenghtRequired)")
+        XCTAssertEqual(StatusCode(.lenghtRequired).debugDescription, "StatusCode 411 (lenghtRequired)")
+        XCTAssertEqual(StatusCode(.lenghtRequired).localizedDescription, "StatusCode 411 (lenghtRequired)")
     }
 }

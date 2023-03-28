@@ -9,9 +9,6 @@ public extension Collection {
     }
 
     func throwIfEmpty() throws -> Self {
-        if isEmpty {
-            throw RequestDecodingError.brokenResponse
-        }
-        return self
+        return try throwIfEmpty(RequestDecodingError.brokenResponse)
     }
 }

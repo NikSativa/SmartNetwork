@@ -16,11 +16,7 @@ final class StatusCodePluginTests: XCTestCase {
         XCTAssertNotThrowsError(try subject.verify(data: .testMake(statusCode: -1), userInfo: .init()))
 
         for code in StatusCode.Kind.allCases {
-            if code == .success {
-                XCTAssertNotThrowsError(try subject.verify(data: .testMake(statusCode: code.rawValue), userInfo: .init()), "\(code)")
-            } else {
-                XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: code.rawValue), userInfo: .init()), StatusCode(code), "\(code)")
-            }
+            XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: code.rawValue), userInfo: .init()), StatusCode(code), "\(code)")
         }
 
         XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 204), userInfo: .init()), StatusCode.noContent)

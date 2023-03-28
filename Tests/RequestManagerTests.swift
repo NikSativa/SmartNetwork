@@ -16,9 +16,6 @@ final class RequestManagerTests: XCTestCase {
     }
 
     private typealias Error = RequestError
-    private struct TestInfo: Codable, Equatable {
-        let id: Int
-    }
 
     private var observers: [AnyCancellable] = []
 
