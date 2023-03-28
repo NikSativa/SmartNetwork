@@ -17,9 +17,18 @@ public final class RequestingTask {
 
     @discardableResult
     public func start() -> Self {
+        precondition(runAction != nil, "should be called only once")
         let runAction = runAction
         self.runAction = nil
         runAction?()
+        return self
+    }
+
+    @discardableResult
+    public func deferredStart(in queue: Queueable = Queue.main) -> Self {
+        queue.async {
+            self.start()
+        }
         return self
     }
 
@@ -38,10 +47,8 @@ public final class RequestingTask {
 
 extension RequestingTask: Cancellable {
     /// only for the convenience of the Combine interface
-    /// e.g. manager.request(with: parameters).store(in: &bag)
+    /// e.g. manager.request(with: parameters).deferredStart().store(in: &bag)
     public func toAny() -> AnyCancellable {
-        return AnyCancellable { [self] in
-            cancel()
-        }
+        return AnyCancellable(cancel)
     }
 }

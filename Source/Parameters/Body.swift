@@ -99,24 +99,20 @@ extension Body {
             }
         case .encodable(let object):
             let encoder = encoder()
-            do {
-                let data = try encoder.encode(object)
+            let data = try encoder.encode(object)
 
-                tempRequest.httpBody = data
-                tolog(isLoggingEnabled) {
-                    let res = "Encodable object:\n" + (String(data: data, encoding: .utf8) ?? "<empty>")
-                    return res
-                }
+            tempRequest.httpBody = data
+            tolog(isLoggingEnabled) {
+                let res = "Encodable object:\n" + (String(data: data, encoding: .utf8) ?? "<empty>")
+                return res
+            }
 
-                if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
-                    tempRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
-                }
+            if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
+                tempRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            }
 
-                if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
-                    tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
-                }
-            } catch {
-                throw error.requestError
+            if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
+                tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
             }
         case .form(let form):
             let data = FormEncoder.createBody(form)
@@ -155,17 +151,13 @@ extension Body {
 
 public extension Body {
     static func xform(_ object: some Encodable, encoder: JSONEncoder) throws -> Self {
-        do {
-            let originalData = try encoder.encode(object)
-            let parameters = try JSONSerialization.jsonObject(with: originalData)
+        let originalData = try encoder.encode(object)
+        let parameters = try JSONSerialization.jsonObject(with: originalData)
 
-            if let parameters = parameters as? [String: Any] {
-                return .xform(parameters)
-            } else {
-                throw RequestEncodingError.invalidJSON
-            }
-        } catch {
-            throw error.requestError
+        if let parameters = parameters as? [String: Any] {
+            return .xform(parameters)
+        } else {
+            throw RequestEncodingError.invalidJSON
         }
     }
 }

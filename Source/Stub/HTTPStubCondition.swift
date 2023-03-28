@@ -95,7 +95,7 @@ public enum HTTPStubCondition {
         case .isPath(let string):
             result = request.url?.path == string
         case .isHost(let string):
-            assert(!string.contains("/"), "The host part of an URL never contains any slash. Only use strings like 'api.example.com' for this value, and not things like 'https://api.example.com/'")
+            precondition(!string.contains("/"), "The host part of an URL never contains any slash. Only use strings like 'api.example.com' for this value, and not things like 'https://api.example.com/'")
             result = request.url?.host == string
         case .isAbsoluteURLString(let string):
             result = request.absoluteString == string

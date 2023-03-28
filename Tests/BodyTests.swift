@@ -53,7 +53,7 @@ final class BodyTests: XCTestCase {
         XCTAssertNotThrowsError(try Body.encodable(info).fill(&request, isLoggingEnabled: false, encoder: .init()))
         XCTAssertEqual(request.httpBody?.info(), info)
 
-        XCTAssertThrowsError(try Body.encodable(BrokenTestInfo(id: 1)).fill(&request, isLoggingEnabled: false, encoder: .init()), RequestError.encoding(.invalidJSON))
+        XCTAssertThrowsError(try Body.encodable(BrokenTestInfo(id: 1)).fill(&request, isLoggingEnabled: false, encoder: .init()), RequestEncodingError.invalidJSON)
     }
 
     func test_form() {
@@ -95,7 +95,7 @@ final class BodyTests: XCTestCase {
         let expected = "id=1&id3=3&id2=2"
         XCTAssertEqual(text?.components(separatedBy: "&").sorted(), expected.components(separatedBy: "&").sorted())
 
-        XCTAssertThrowsError(try Body.xform(BrokenTestInfo(id: 1), encoder: .init()).fill(&request, isLoggingEnabled: false, encoder: .init()), RequestError.encoding(.invalidJSON))
+        XCTAssertThrowsError(try Body.xform(BrokenTestInfo(id: 1), encoder: .init()).fill(&request, isLoggingEnabled: false, encoder: .init()), RequestEncodingError.invalidJSON)
     }
 }
 

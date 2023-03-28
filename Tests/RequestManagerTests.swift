@@ -8,14 +8,15 @@ import XCTest
 
 final class RequestManagerTests: XCTestCase {
     private enum Constant {
+        static let timeoutInSeconds: TimeInterval = 0.5
+        static let stubbedTimeoutInSeconds: TimeInterval = 0.2
+
         static let host1 = "example1.com"
         static let address1: Address = .testMake(string: "http://example1.com/signin")
 
         static let host2 = "example2.com"
         static let address2: Address = .testMake(string: "http://example2.com/signin")
     }
-
-    private typealias Error = RequestError
 
     private var observers: [AnyCancellable] = []
 
@@ -25,7 +26,7 @@ final class RequestManagerTests: XCTestCase {
                                   body: .encodable(TestInfo(id: 1))).store(in: &observers)
         HTTPStubServer.shared.add(condition: .isHost(Constant.host2),
                                   body: .encodable(TestInfo(id: 2)),
-                                  delayInSeconds: 0.5).store(in: &observers)
+                                  delayInSeconds: Constant.stubbedTimeoutInSeconds).store(in: &observers)
     }
 
     override func tearDown() {
@@ -43,7 +44,7 @@ final class RequestManagerTests: XCTestCase {
             expectation.fulfill()
         }.start().store(in: &observers)
 
-        wait(for: [expectation], timeout: 1)
+        wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response, .init(id: 1))
 
         expectation = .init(description: "should receive response")
@@ -56,8 +57,8 @@ final class RequestManagerTests: XCTestCase {
             expectationReverted.fulfill()
         }.start().store(in: &observers)
 
-        wait(for: [expectationReverted], timeout: 0.48) // delayed response 0.5
-        wait(for: [expectation], timeout: 0.52) // magic number = 1 - 0.48 = 0.52
+        wait(for: [expectationReverted], timeout: Constant.stubbedTimeoutInSeconds - 0.01)
+        wait(for: [expectation], timeout: Constant.timeoutInSeconds - Constant.stubbedTimeoutInSeconds + 0.01)
         XCTAssertEqual(response, .init(id: 2))
     }
 
@@ -83,7 +84,7 @@ final class RequestManagerTests: XCTestCase {
             expectation.fulfill()
         }.start().store(in: &observers)
 
-        wait(for: [expectation], timeout: 1)
+        wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response, .init(id: 1))
         XCTAssertHaveReceived(plugin, .prepare, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(plugin, .verify, countSpecifier: .exactly(1))
@@ -102,12 +103,27 @@ final class RequestManagerTests: XCTestCase {
             expectation.fulfill()
         }.start().store(in: &observers)
 
-        wait(for: [expectation], timeout: 1)
+        wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response, .init(id: 2))
         XCTAssertHaveReceived(plugin, .prepare, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(plugin, .verify, countSpecifier: .exactly(1))
 
         XCTAssertHaveReceived(requestPlugin, .willSend, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(requestPlugin, .didReceive, countSpecifier: .exactly(1))
+    }
+
+    func test_lack_parameters() {
+        let expectation: XCTestExpectation = .init(description: "should receive response")
+        let subject = RequestManager.create()
+        var result: Result<TestInfo, Error>?
+        subject.requestDecodable(TestInfo.self,
+                                 with: .init(address: Constant.address1,
+                                             body: .encodable(BrokenTestInfo(id: 1)))) {
+            result = $0
+            expectation.fulfill()
+        }.start().store(in: &observers)
+
+        wait(for: [expectation], timeout: Constant.timeoutInSeconds)
+        XCTAssertThrowsError(try result?.get(), RequestEncodingError.invalidJSON)
     }
 }
