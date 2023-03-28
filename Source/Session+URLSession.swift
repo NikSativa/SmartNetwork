@@ -15,16 +15,12 @@ extension URLSessionDataTask: SessionTask {
     public var isRunning: Bool {
         return state == .running
     }
-
-    public func observe(_ progressHandler: @escaping ProgressHandler) -> AnyObject {
-        return progress.observe(progressHandler)
-    }
 }
 
-// MARK: - Foundation.Progress + ProgressObservable
+// MARK: - Foundation.Progress
 
-extension Foundation.Progress: ProgressObservable {
-    public func observe(_ progressHandler: @escaping ProgressHandler) -> AnyObject {
+public extension Progress {
+    func observe(_ progressHandler: @escaping ProgressHandler) -> AnyObject {
         return observe(\.fractionCompleted, changeHandler: { progress, _ in
             progressHandler(progress)
         })

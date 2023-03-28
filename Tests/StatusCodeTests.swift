@@ -15,5 +15,6 @@ final class StatusCodeTests: XCTestCase {
         XCTAssertEqual(StatusCode(.accepted).kind, .accepted)
         XCTAssertEqual(StatusCode(.success).kind, .success)
         XCTAssertEqual(StatusCode(.success).code, 200)
+        XCTAssertTrue(StatusCode(.success).isSuccess)
     }
 }

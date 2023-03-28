@@ -2,11 +2,7 @@ import Foundation
 
 public typealias ProgressHandler = (Progress) -> Void
 
-public protocol ProgressObservable {
-    func observe(_ progressHandler: @escaping ProgressHandler) -> AnyObject
-}
-
-public protocol SessionTask: ProgressObservable {
+public protocol SessionTask {
     var progress: Progress { get }
 
     var isRunning: Bool { get }

@@ -80,7 +80,8 @@ final class RequestManagerTests: XCTestCase {
         var expectation: XCTestExpectation = .init(description: "should receive response")
         subject.requestDecodable(TestInfo.self,
                                  with: .init(address: Constant.address1,
-                                             plugins: [requestPlugin])) {
+                                             plugins: [requestPlugin],
+                                             cacheSettings: .testMake())) {
             response = try? $0.get()
             expectation.fulfill()
         }.start().store(in: &observers)

@@ -38,6 +38,9 @@ let package = Package(
                         .product(name: "NQueueTestHelpers", package: "NQueue"),
                         "NSpry"
                     ],
-                    path: "Tests")
+                    path: "Tests",
+                    resources: [
+                        .copy("JSON/HTTPStubBody.json")
+                    ])
     ]
 )

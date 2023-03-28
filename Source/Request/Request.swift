@@ -218,7 +218,7 @@ private final class SessionAdaptor {
         }
 
         if let progressHandler {
-            observer = newTask.observe(progressHandler)
+            observer = newTask.progress.observe(progressHandler)
         }
         task = newTask
         newTask.resume()

@@ -13,6 +13,13 @@ public struct StatusCode: Error, Hashable {
         self.code = kind.rawValue
         self.kind = kind
     }
+
+    private func makeDescription() -> String {
+        let name = (kind?.name).map {
+            return " (\($0))"
+        }
+        return "StatusCode \(code)" + (name ?? "")
+    }
 }
 
 // MARK: - StatusCode.Kind
@@ -161,21 +168,18 @@ public extension StatusCode.Kind {
     }
 }
 
-// MARK: - StatusCode + CustomDebugStringConvertible, CustomStringConvertible
+// MARK: - StatusCode + CustomStringConvertible
 
-extension StatusCode: CustomDebugStringConvertible, CustomStringConvertible {
-    private func makeDescription() -> String {
-        let name = (kind?.name).map {
-            return " (\($0))"
-        }
-        return "StatusCode \(code)" + (name ?? "")
-    }
-
-    public var debugDescription: String {
+extension StatusCode: CustomStringConvertible {
+    public var description: String {
         return makeDescription()
     }
+}
 
-    public var description: String {
+// MARK: - StatusCode + CustomDebugStringConvertible
+
+extension StatusCode: CustomDebugStringConvertible {
+    public var debugDescription: String {
         return makeDescription()
     }
 }

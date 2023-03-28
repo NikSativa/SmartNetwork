@@ -7,6 +7,8 @@ public enum HTTPStubBody {
     case data(Data)
     case encodable(any Encodable)
     case encodableWithEncoder(any Encodable, JSONEncoder)
+
+    internal static var iOSVerificationEnabled: Bool = true
 }
 
 extension HTTPStubBody {
@@ -21,18 +23,15 @@ extension HTTPStubBody {
             let data = try? Data(contentsOf: path)
             return data
         case .filePath(let path):
-            ///            if #available(iOS 16.0, *) {
-            ///                guard let path = URL.init(filePath: path) else {
-            ///                    return nil
-            ///                }
-            ///                let data = try? Data(contentsOf: path)
-            ///                return data
-            ///            } else {
-            let path = URL(fileURLWithPath: path)
-            let data = try? Data(contentsOf: path)
-            return data
-//            }
-
+            if Self.iOSVerificationEnabled, #available(iOS 16.0, *) {
+                let path = URL(filePath: path)
+                let data = try? Data(contentsOf: path)
+                return data
+            } else {
+                let path = URL(fileURLWithPath: path)
+                let data = try? Data(contentsOf: path)
+                return data
+            }
         case .data(let data):
             return data
         case .encodable(let encodable):
