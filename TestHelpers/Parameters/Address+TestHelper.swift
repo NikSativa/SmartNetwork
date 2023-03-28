@@ -13,14 +13,16 @@ extension Address: SpryEquatable {
         return .url(URL(string: url).unsafelyUnwrapped)
     }
 
-    public static func testMake(scheme: Scheme? = .https,
+    public static func testMake(scheme: Scheme = .https,
                                 host: String = "google.com",
                                 path: [String] = [],
-                                queryItems: [String: String] = [:]) -> Self {
+                                queryItems: QueryItems = [],
+                                fragment: String? = nil) -> Self {
         return .address(scheme: scheme,
                         host: host,
                         path: path,
-                        queryItems: queryItems)
+                        queryItems: queryItems,
+                        fragment: fragment)
     }
 }
 

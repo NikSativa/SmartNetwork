@@ -1,7 +1,5 @@
 import Foundation
 
-public typealias QueryItems = [String: String]
-
 public enum Address: Equatable {
     public enum Scheme: Equatable {
         case http
@@ -16,12 +14,14 @@ public enum Address: Equatable {
                 host: String,
                 port: Int? = nil,
                 path: [String] = [],
-                queryItems: QueryItems = [:]) {
+                queryItems: QueryItems = [],
+                fragment: String? = nil) {
         let representable = URLRepresentation(scheme: scheme,
                                               host: host,
                                               port: port,
                                               path: path,
-                                              queryItems: queryItems)
+                                              queryItems: queryItems,
+                                              fragment: fragment)
         self = .address(representable)
     }
 
@@ -29,12 +29,14 @@ public enum Address: Equatable {
                                host: String,
                                port: Int? = nil,
                                endpoint: String,
-                               queryItems: QueryItems = [:]) -> Address {
+                               queryItems: QueryItems = [],
+                               fragment: String? = nil) -> Address {
         let representable = URLRepresentation(scheme: scheme,
                                               host: host,
                                               port: port,
                                               path: [endpoint].compactMap { $0 },
-                                              queryItems: queryItems)
+                                              queryItems: queryItems,
+                                              fragment: fragment)
         return .address(representable)
     }
 
@@ -42,12 +44,14 @@ public enum Address: Equatable {
                                host: String,
                                port: Int? = nil,
                                path: [String] = [],
-                               queryItems: QueryItems = [:]) -> Address {
+                               queryItems: QueryItems = [],
+                               fragment: String? = nil) -> Address {
         return .init(scheme: scheme,
                      host: host,
                      port: port,
                      path: path,
-                     queryItems: queryItems)
+                     queryItems: queryItems,
+                     fragment: fragment)
     }
 
     public func append(_ pathComponents: [String]) -> Self {
@@ -103,19 +107,17 @@ public enum Address: Equatable {
 }
 
 public extension Address {
-    func url(shouldAddSlashAfterEndpoint: Bool = Parameters.shouldAddSlashAfterEndpoint) throws -> URL {
+    func url(shouldAddSlashAfterEndpoint: Bool = Parameters.shouldAddSlashAfterEndpoint,
+             shouldRemoveSlashesBeforeEmptyScheme: Bool = Parameters.shouldRemoveSlashesBeforeEmptyScheme) throws -> URL {
         switch self {
         case .url(let url):
             return url
         case .address(let url):
             var components = URLComponents()
 
-            let originalHost = url.host
-            components.host = originalHost
-
             switch url.scheme {
             case .none:
-                break
+                components.scheme = nil
             case .http:
                 components.scheme = "http"
             case .https:
@@ -124,6 +126,7 @@ public extension Address {
                 components.scheme = string
             }
 
+            components.host = url.host
             components.port = url.port
 
             let path = url.path.flatMap { $0.components(separatedBy: "/") }.filter { !$0.isEmpty }
@@ -131,23 +134,38 @@ public extension Address {
                 components.path = "/" + path.joined(separator: "/")
             }
 
+            if shouldAddSlashAfterEndpoint {
+                components.path += "/"
+            }
+
             if !url.queryItems.isEmpty {
-                if shouldAddSlashAfterEndpoint {
-                    components.path += "/"
-                }
-
                 var result = components.queryItems ?? []
-
-                let keys = url.queryItems.keys
-                result = result.filter { !keys.contains($0.name) }
-
-                for (key, value) in url.queryItems {
-                    result.append(URLQueryItem(name: key, value: value))
+                for item in url.queryItems {
+                    result.append(URLQueryItem(name: item.key, value: item.value))
                 }
                 components.queryItems = result
             }
 
-            if let componentsUrl = components.url, componentsUrl.host == originalHost {
+            if let fragment = url.fragment {
+                components.fragment = fragment
+            }
+
+            let componentsUrl: URL?
+            let host: String?
+            if shouldRemoveSlashesBeforeEmptyScheme,
+               components.scheme == nil,
+               let componentsString = components.string,
+               componentsString.hasPrefix("//") {
+                let strUrl = String(componentsString.dropFirst(2))
+                componentsUrl = URL(string: strUrl)
+                host = url.host
+            } else {
+                componentsUrl = components.url
+                host = componentsUrl?.host
+            }
+
+            if let componentsUrl,
+               host == url.host {
                 return componentsUrl
             }
 

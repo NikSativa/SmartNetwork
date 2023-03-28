@@ -6,10 +6,12 @@ extension URLRepresentation: SpryEquatable {
     public static func testMake(scheme: Address.Scheme? = .https,
                                 host: String = "",
                                 path: [String] = [],
-                                queryItems: [String: String] = [:]) -> Self {
+                                queryItems: QueryItems = [],
+                                fragment: String? = nil) -> Self {
         return .init(scheme: scheme,
                      host: host,
                      path: path,
-                     queryItems: queryItems)
+                     queryItems: queryItems,
+                     fragment: fragment)
     }
 }

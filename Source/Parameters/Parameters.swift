@@ -9,6 +9,10 @@ public struct Parameters {
     public static var defaultResponseQueue: DelayedQueue = .async(Queue.main)
     public static var shouldAddSlashAfterEndpoint: Bool = false
 
+    /// URLComponents is require scheme and generates url like '//some.com/end/?param=value'
+    /// this parameter will remove '//' from the begining of new URL
+    public static var shouldRemoveSlashesBeforeEmptyScheme: Bool = false
+
     public struct CacheSettings {
         public let cache: URLCache
         public let storagePolicy: URLCache.StoragePolicy
@@ -38,6 +42,7 @@ public struct Parameters {
     public let encoder: JSONEncoder
     public let decoder: JSONDecoder
     public let shouldAddSlashAfterEndpoint: Bool
+    public let shouldRemoveSlashesBeforeEmptyScheme: Bool
 
     /// used only on client side. best practice to use it to identify request in the Plugin's
     public let userInfo: UserInfo
@@ -57,7 +62,8 @@ public struct Parameters {
                 session: Session = Self.sharedSession,
                 encoder: JSONEncoder = .init(),
                 decoder: JSONDecoder = .init(),
-                shouldAddSlashAfterEndpoint: Bool = Self.shouldAddSlashAfterEndpoint) {
+                shouldAddSlashAfterEndpoint: Bool = Self.shouldAddSlashAfterEndpoint,
+                shouldRemoveSlashesBeforeEmptyScheme: Bool = Self.shouldRemoveSlashesBeforeEmptyScheme) {
         self.address = address
         self.header = header
         self.method = method
@@ -74,5 +80,6 @@ public struct Parameters {
         self.encoder = encoder
         self.decoder = decoder
         self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
+        self.shouldRemoveSlashesBeforeEmptyScheme = shouldRemoveSlashesBeforeEmptyScheme
     }
 }

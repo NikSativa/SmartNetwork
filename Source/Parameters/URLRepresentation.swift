@@ -6,17 +6,20 @@ public struct URLRepresentation: Equatable {
     public let port: Int?
     public let path: [String]
     public let queryItems: QueryItems
+    public let fragment: String?
 
     public init(scheme: Address.Scheme? = .https,
                 host: String,
                 port: Int? = nil,
                 path: [String] = [],
-                queryItems: QueryItems = [:]) {
+                queryItems: QueryItems = [],
+                fragment: String? = nil) {
         self.scheme = scheme
         self.host = host
         self.port = port
         self.path = path
         self.queryItems = queryItems
+        self.fragment = fragment
     }
 
     public init(url: URL) {
@@ -26,7 +29,12 @@ public struct URLRepresentation: Equatable {
         self.host = components.host ?? ""
         self.port = components.port
         self.path = components.path.components(separatedBy: "/")
-        self.queryItems = (components.queryItems ?? []).reduce(into: [:]) { $0[$1.name] = $1.value }
+        self.fragment = components.fragment
+
+        let items: [QueryItems.Element] = (components.queryItems ?? []).map {
+            return .init(key: $0.name, value: $0.value)
+        }
+        self.queryItems = .init(items)
     }
 
     public func append(_ pathComponent: String) -> Self {
@@ -42,7 +50,7 @@ public struct URLRepresentation: Equatable {
                     host: lhs.host,
                     port: lhs.port,
                     path: lhs.path,
-                    queryItems: lhs.queryItems.merging(rhs, uniquingKeysWith: { _, new in new }))
+                    queryItems: lhs.queryItems + rhs)
     }
 
     public static func +(lhs: Self, rhs: [String]) -> Self {
