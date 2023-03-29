@@ -6,6 +6,40 @@ import XCTest
 @testable import NRequestTestHelpers
 
 final class AddressTests: XCTestCase {
+    func test_url_extension() {
+        var subject: Address
+        var actualURL: URL?
+
+        subject = .url(.testMake("//some.com")) + "endpoint"
+        actualURL = XCTAssertNotThrowsError(try subject.url())
+        XCTAssertEqual(actualURL, .testMake("//some.com/endpoint"))
+
+        subject = .url(.testMake("my://some.com")) + "endpoint"
+        actualURL = XCTAssertNotThrowsError(try subject.url())
+        XCTAssertEqual(actualURL, .testMake("my://some.com/endpoint"))
+
+        subject = .url(.testMake("http://some.com/asd")) + "endpoint"
+        actualURL = XCTAssertNotThrowsError(try subject.url())
+        XCTAssertEqual(actualURL, .testMake("http://some.com/asd/endpoint"))
+
+        subject = .url(.testMake("https://some.com/asd")) + "endpoint"
+        actualURL = XCTAssertNotThrowsError(try subject.url())
+        XCTAssertEqual(actualURL, .testMake("https://some.com/asd/endpoint"))
+
+        subject = .address(host: "some.com").append("endpoint")
+        actualURL = XCTAssertNotThrowsError(try subject.url())
+        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint"))
+
+        subject = .address(host: "some.com").append(["param": "value"])
+        actualURL = XCTAssertNotThrowsError(try subject.url())
+        XCTAssertEqual(actualURL, .testMake("https://some.com?param=value"))
+
+        let representation: URLRepresentation = .init(host: "some.com").append("endpoint").append(["param": "value"])
+        subject = .address(representation)
+        actualURL = XCTAssertNotThrowsError(try subject.url())
+        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint?param=value"))
+    }
+
     func test_url() {
         var subject: Address
         var actualURL: URL?
@@ -138,8 +172,8 @@ final class AddressTests: XCTestCase {
     }
 
     func test_append() {
-        append(to: .address(host: "some.com"), name: ".address")
-        append(to: .url(.testMake("https://some.com")), name: ".url")
+        append(to: .address(host: "some.com", queryItems: ["param": "value"], fragment: "page"), name: "address")
+        append(to: .url(.testMake("https://some.com?param=value#page")), name: "url")
     }
 
     private func append(to subject: Address,
@@ -147,31 +181,31 @@ final class AddressTests: XCTestCase {
                         file: StaticString = #filePath,
                         line: UInt = #line) {
         var actualURL = XCTAssertNotThrowsError(try subject.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com"), name)
+        XCTAssertEqual(actualURL, .testMake("https://some.com?param=value#page"), name)
 
         var subject1 = subject
         subject1 = subject1 + "endpoint"
         actualURL = XCTAssertNotThrowsError(try subject1.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint"), name)
+        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint?param=value#page"), name)
 
         var subject2 = subject
         subject2 = subject2.append("endpoint")
         actualURL = XCTAssertNotThrowsError(try subject2.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint"), name)
+        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint?param=value#page"), name)
 
         var subject3 = subject
         subject3 = subject3.append(["endpoint", "endpoint"])
         actualURL = XCTAssertNotThrowsError(try subject3.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint/endpoint"), name)
+        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint/endpoint?param=value#page"), name)
 
         var subject4 = subject
         subject4 = subject4 + ["param": "value"]
         actualURL = XCTAssertNotThrowsError(try subject4.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com?param=value"), name)
+        XCTAssertEqual(actualURL, .testMake("https://some.com?param=value&param=value#page"), name)
 
         var subject5 = subject
         subject5 = subject5.append(["param": "value"])
         actualURL = XCTAssertNotThrowsError(try subject5.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com?param=value"), name)
+        XCTAssertEqual(actualURL, .testMake("https://some.com?param=value&param=value#page"), name)
     }
 }

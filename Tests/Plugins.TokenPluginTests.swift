@@ -81,5 +81,7 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
         XCTAssertHaveNotRecordedCalls(request, file: file, line: line)
     }
 
-    XCTAssertNotThrowsError(try subject.verify(data: .testMake(), userInfo: userInfo))
+    let data: RequestResult = .testMake()
+    XCTAssertNotThrowsError(try subject.verify(data: data, userInfo: userInfo))
+    XCTAssertTrue(data.allHeaderFields.isEmpty)
 }

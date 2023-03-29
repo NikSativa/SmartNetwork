@@ -38,11 +38,11 @@ public struct URLRepresentation: Equatable {
     }
 
     public func append(_ pathComponent: String) -> Self {
-        self + pathComponent
+        return self + pathComponent
     }
 
     public func append(_ queryItems: QueryItems) -> Self {
-        self + queryItems
+        return self + queryItems
     }
 
     public static func +(lhs: Self, rhs: QueryItems) -> Self {
@@ -50,7 +50,8 @@ public struct URLRepresentation: Equatable {
                     host: lhs.host,
                     port: lhs.port,
                     path: lhs.path,
-                    queryItems: lhs.queryItems + rhs)
+                    queryItems: lhs.queryItems + rhs,
+                    fragment: lhs.fragment)
     }
 
     public static func +(lhs: Self, rhs: [String]) -> Self {
@@ -58,7 +59,8 @@ public struct URLRepresentation: Equatable {
                     host: lhs.host,
                     port: lhs.port,
                     path: lhs.path + rhs,
-                    queryItems: lhs.queryItems)
+                    queryItems: lhs.queryItems,
+                    fragment: lhs.fragment)
     }
 
     public static func +(lhs: Self, rhs: String) -> Self {
@@ -66,7 +68,8 @@ public struct URLRepresentation: Equatable {
                     host: lhs.host,
                     port: lhs.port,
                     path: lhs.path + [rhs],
-                    queryItems: lhs.queryItems)
+                    queryItems: lhs.queryItems,
+                    fragment: lhs.fragment)
     }
 }
 
