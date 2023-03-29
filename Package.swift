@@ -13,7 +13,7 @@ let package = Package(
         .library(name: "NRequestTestHelpers", targets: ["NRequestTestHelpers"])
     ],
     dependencies: [
-        .package(url: "https://github.com/NikSativa/NSpry.git", .upToNextMajor(from: "1.3.4")),
+        .package(url: "https://github.com/NikSativa/NSpry.git", .revision("6f1f761e69875e9111a35a5241f4ab7933437d1a")),
         .package(url: "https://github.com/NikSativa/NQueue.git", .upToNextMajor(from: "1.1.17"))
     ],
     targets: [

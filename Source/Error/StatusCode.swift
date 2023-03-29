@@ -166,7 +166,7 @@ public extension StatusCode.Kind {
 
     var name: String {
         let name: String? = String(reflecting: self).components(separatedBy: ".").last
-        return name ?? "!unknown name!"
+        return name.unsafelyUnwrapped
     }
 }
 

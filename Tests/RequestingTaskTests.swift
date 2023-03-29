@@ -20,6 +20,9 @@ final class RequestingTaskTests: XCTestCase {
 
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
             subject?.start()
+            XCTAssertThrowsAssertion {
+                subject?.start()
+            }
 
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
                 subject?.cancel()

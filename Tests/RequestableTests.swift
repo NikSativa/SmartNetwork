@@ -26,8 +26,8 @@ final class RequestableTests: XCTestCase {
         // idle request -> nothing happen
         XCTAssertNoThrow(subject.cancel())
 
-        XCTAssertHaveNotRecordedCalls(session)
-        XCTAssertHaveNotRecordedCalls(task)
+        XCTAssertHaveNoRecordedCalls(session)
+        XCTAssertHaveNoRecordedCalls(task)
 
         // start
         task.stub(.resume).andReturn()

@@ -10,6 +10,6 @@ final class CollectionTests: XCTestCase {
         var subject: [Int] = []
         XCTAssertThrowsError(try subject.throwIfEmpty(), RequestDecodingError.brokenResponse)
         subject = [1]
-        XCTAssertNotThrowsError(try subject.throwIfEmpty())
+        XCTAssertNoThrowError(try subject.throwIfEmpty())
     }
 }

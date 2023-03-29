@@ -10,7 +10,7 @@ final class OptionalTests: XCTestCase {
         var subject: Int?
         XCTAssertThrowsError(try subject.unwrap(), RequestDecodingError.brokenResponse)
         subject = 1
-        XCTAssertNotThrowsError(try subject.unwrap())
+        XCTAssertNoThrowError(try subject.unwrap())
     }
 
     func test_unwrap_array() {

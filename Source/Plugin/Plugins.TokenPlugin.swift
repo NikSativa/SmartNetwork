@@ -10,7 +10,7 @@ public extension Plugins {
         }
 
         case header(Operation)
-        case queryParam(String)
+        case queryParam(Operation)
     }
 
     final class TokenPlugin: Plugin {
@@ -26,9 +26,7 @@ public extension Plugins {
         public func prepare(_ parameters: Parameters,
                             request: inout URLRequestRepresentation,
                             userInfo: inout Parameters.UserInfo) {
-            guard let value = tokenProvider() else {
-                return
-            }
+            let value = tokenProvider()
 
             switch type {
             case .header(let operation):
@@ -36,18 +34,29 @@ public extension Plugins {
                 case .set(let key):
                     request.setValue(value, forHTTPHeaderField: key)
                 case .add(let key):
-                    request.addValue(value, forHTTPHeaderField: key)
+                    if let value {
+                        request.addValue(value, forHTTPHeaderField: key)
+                    }
                 }
-            case .queryParam(let key):
+            case .queryParam(let operation):
                 if let requestURL = request.url, var urlComponents = URLComponents(url: requestURL, resolvingAgainstBaseURL: false) {
                     var queryItems: [URLQueryItem] = urlComponents.queryItems ?? []
-                    queryItems = queryItems.filter { $0.name != key }
-                    queryItems.append(URLQueryItem(name: key, value: value))
+
+                    switch operation {
+                    case .set(let key):
+                        queryItems = queryItems.filter { $0.name != key }
+                        queryItems.append(URLQueryItem(name: key, value: value))
+                    case .add(let key):
+                        queryItems.append(URLQueryItem(name: key, value: value))
+                    }
+
                     urlComponents.queryItems = queryItems
 
                     if let url = urlComponents.url {
                         request.url = url
                     }
+                } else {
+                    fatalError()
                 }
             }
         }
