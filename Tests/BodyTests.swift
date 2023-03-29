@@ -97,6 +97,7 @@ final class BodyTests: XCTestCase {
         XCTAssertEqual(text?.components(separatedBy: "&").sorted(), expected.components(separatedBy: "&").sorted())
 
         XCTAssertThrowsError(try Body.xform(BrokenTestInfo(id: 1), encoder: .init()).fill(&request, isLoggingEnabled: false, encoder: .init()), RequestEncodingError.invalidJSON)
+        XCTAssertThrowsError(try Body.xform([1, 2], encoder: .init()).fill(&request, isLoggingEnabled: false, encoder: .init()), RequestEncodingError.invalidJSON)
         XCTAssertNoThrowError(try Body.xform([11: "2"], encoder: .init()).fill(&request, isLoggingEnabled: true, encoder: .init()))
     }
 }

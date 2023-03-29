@@ -103,7 +103,8 @@ extension Body {
 
             tempRequest.httpBody = data
             tolog(isLoggingEnabled) {
-                let res = "Encodable object:\n" + (String(data: data, encoding: .utf8) ?? "<empty>")
+                let text = String(data: data, encoding: .utf8)
+                let res = ["Encodable object:", text].compactMap { $0 }.joined(separator: "\n")
                 return res
             }
 
@@ -118,7 +119,7 @@ extension Body {
             let data = FormEncoder.createBody(form)
             tolog(isLoggingEnabled) {
                 let data = FormEncoder.createBody(form, isLogging: true)
-                return String(data: data, encoding: .utf8) ?? ""
+                return "Form:\n" + String(describing: String(data: data, encoding: .utf8))
             }
 
             tempRequest.httpBody = data
@@ -133,7 +134,11 @@ extension Body {
         case .xform(let parameters):
             let data = XFormEncoder.encodeParameters(parameters: parameters)
             tolog(isLoggingEnabled) {
-                return "Body: " + (String(data: data, encoding: .utf8) ?? "")
+                let text = data.flatMap {
+                   return String(data: $0, encoding: .utf8)
+                }
+                let res = ["Body:", text].compactMap { $0 }.joined(separator: "\n")
+                return res
             }
 
             tempRequest.httpBody = data
@@ -142,7 +147,8 @@ extension Body {
                 tempRequest.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
             }
 
-            if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
+            if let data,
+                tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
                 tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
             }
         }
@@ -152,13 +158,12 @@ extension Body {
 public extension Body {
     static func xform(_ object: some Encodable, encoder: JSONEncoder) throws -> Self {
         let originalData = try encoder.encode(object)
-        let parameters = try JSONSerialization.jsonObject(with: originalData)
+        let json = try JSONSerialization.jsonObject(with: originalData)
 
-        if let parameters = parameters as? [String: Any] {
+        if let parameters = json as? [String: Any] {
             return .xform(parameters)
-        } else {
-            throw RequestEncodingError.invalidJSON
         }
+        throw RequestEncodingError.invalidJSON
     }
 }
 
@@ -198,17 +203,17 @@ private enum FormEncoder {
 }
 
 private enum XFormEncoder {
-    private static func percentEscapeString(_ string: String) -> String {
+    private static func percentEscapeString(_ string: String) -> String? {
         var characterSet = CharacterSet.alphanumerics
         characterSet.insert(charactersIn: "-._* ")
 
         return string
             .addingPercentEncoding(withAllowedCharacters: characterSet)?
             .replacingOccurrences(of: " ", with: "+")
-            .replacingOccurrences(of: " ", with: "+", options: [], range: nil) ?? ""
+            .replacingOccurrences(of: " ", with: "+", options: [], range: nil)
     }
 
-    private static func percentEscapeString(_ value: Any) -> String {
+    private static func percentEscapeString(_ value: Any) -> String? {
         switch value {
         case let value as String:
             return percentEscapeString(value)
@@ -219,11 +224,11 @@ private enum XFormEncoder {
         }
     }
 
-    static func encodeParameters(parameters: [String: Any]) -> Data {
+    static func encodeParameters(parameters: [String: Any]) -> Data? {
         return parameters
             .map { key, value -> String in
-                return "\(key)=\(percentEscapeString(value))"
+                return [key, percentEscapeString(value)].compactMap { $0 }.joined(separator: "=")
             }
-            .joined(separator: "&").data(using: String.Encoding.utf8) ?? Data()
+            .joined(separator: "&").data(using: String.Encoding.utf8)
     }
 }

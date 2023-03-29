@@ -55,8 +55,6 @@ public extension Plugins {
                     if let url = urlComponents.url {
                         request.url = url
                     }
-                } else {
-                    fatalError()
                 }
             }
         }

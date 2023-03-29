@@ -124,7 +124,8 @@ public enum HTTPStubCondition {
         case .custom(let closure):
             result = closure(request)
         }
-        return result ?? false
+
+        return result == true
     }
 }
 

@@ -1,4 +1,5 @@
 import Foundation
+import NSpry
 import XCTest
 
 @testable import NRequest
@@ -10,6 +11,7 @@ final class HTTPStubTest_Tests: XCTestCase {
                                                                host: "api.example.com",
                                                                path: ["signin", "v1.0"],
                                                                queryItems: ["user": "foo"]),
+                                            header: ["key": "value"],
                                             method: .get,
                                             shouldAddSlashAfterEndpoint: true)
         let repr = try! parameter.urlRequestRepresentation()
@@ -28,6 +30,9 @@ final class HTTPStubTest_Tests: XCTestCase {
 
     func test_isHost() {
         XCTAssertTrue(HTTPStubCondition.isHost("api.example.com").test(request))
+        XCTAssertThrowsAssertion {
+            HTTPStubCondition.isHost("/api.example.com").test(self.request)
+        }
     }
 
     func test_isAbsoluteURLString() {
@@ -42,6 +47,12 @@ final class HTTPStubTest_Tests: XCTestCase {
     func test_isScheme() {
         XCTAssertTrue(HTTPStubCondition.isScheme("https").test(request))
         XCTAssertFalse(HTTPStubCondition.isScheme("http").test(request))
+        XCTAssertThrowsAssertion {
+            HTTPStubCondition.isScheme("https://").test(self.request)
+        }
+        XCTAssertThrowsAssertion {
+            HTTPStubCondition.isScheme("https/").test(self.request)
+        }
     }
 
     func test_pathStartsWith() {
