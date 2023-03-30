@@ -7,7 +7,7 @@ import XCTest
 
 final class PluginsBearerTests: XCTestCase {
     func test_authToken() {
-        let subject = Plugins.BearerPlugin {
+        let subject = Plugins.Bearer {
             return "my_token_string"
         }
 
@@ -20,5 +20,8 @@ final class PluginsBearerTests: XCTestCase {
                         userInfo: &userInfo)
         XCTAssertHaveReceived(requestable, .setValue, with: "Bearer my_token_string", "Authorization", countSpecifier: .exactly(1))
         XCTAssertTrue(userInfo.isEmpty)
+        XCTAssertNoThrowError {
+            try subject.verify(data: .testMake(), userInfo: .init())
+        }
     }
 }

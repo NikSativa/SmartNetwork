@@ -3,8 +3,8 @@ import NSpry
 
 @testable import NRequest
 
-extension URLRequestRepresentation where Self: FriendlyStringConvertible {
-    public var friendlyDescription: String {
+public extension URLRequestRepresentation where Self: FriendlyStringConvertible {
+    var friendlyDescription: String {
         return sdk.friendlyDescription
     }
 }
