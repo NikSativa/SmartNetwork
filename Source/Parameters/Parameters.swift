@@ -4,7 +4,6 @@ import NQueue
 public typealias HeaderFields = [String: String]
 
 public struct Parameters {
-    public typealias UserInfo = [String: Any]
     public static var sharedSession: Session = URLSession.shared
     public static var defaultResponseQueue: DelayedQueue = .async(Queue.main)
     public static var shouldAddSlashAfterEndpoint: Bool = false

@@ -9,9 +9,9 @@ public extension Plugins {
             self.shouldIgnore200th = shouldIgnore200th
         }
 
-        public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, userInfo: inout Parameters.UserInfo) {}
+        public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation) {}
 
-        public func verify(data: RequestResult, userInfo: Parameters.UserInfo) throws {
+        public func verify(data: RequestResult, userInfo: UserInfo) throws {
             guard data.statusCodeInt != 200, let error = data.statusCode else {
                 return
             }

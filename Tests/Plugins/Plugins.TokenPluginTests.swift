@@ -67,13 +67,11 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
         return value
     }
 
-    var userInfo: Parameters.UserInfo = .init()
     let parameters: Parameters = .testMake(address: .url(url))
     subject.prepare(parameters,
-                    request: request,
-                    userInfo: &userInfo)
+                    request: request)
 
-    XCTAssertTrue(userInfo.isEmpty)
+    XCTAssertTrue(parameters.userInfo.isEmpty)
 
     switch type {
     case .header(let operation):
@@ -110,6 +108,6 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
     }
 
     let data: RequestResult = .testMake()
-    XCTAssertNoThrowError(try subject.verify(data: data, userInfo: userInfo))
+    XCTAssertNoThrowError(try subject.verify(data: data, userInfo: parameters.userInfo))
     XCTAssertTrue(data.allHeaderFields.isEmpty)
 }

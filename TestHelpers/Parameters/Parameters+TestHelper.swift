@@ -81,14 +81,6 @@ extension Parameters: Equatable {
     }
 }
 
-public extension Parameters.UserInfo {
-    static func ==(lhs: Parameters.UserInfo, _: Parameters.UserInfo) -> Bool {
-        let a = try? JSONSerialization.data(withJSONObject: lhs, options: [])
-        let b = try? JSONSerialization.data(withJSONObject: lhs, options: [])
-        return a != nil && a == b
-    }
-}
-
 private extension [RequestStatePlugin] {
     var descriptions: [String] {
         let result = map { String(describing: type(of: $0)) }

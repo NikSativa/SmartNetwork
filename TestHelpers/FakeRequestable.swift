@@ -29,7 +29,7 @@ public final class FakeRequestable: Requestable, Spryable {
         }
     }
 
-    public var userInfo: Parameters.UserInfo {
+    public var userInfo: UserInfo {
         get {
             return stubbedValue()
         }

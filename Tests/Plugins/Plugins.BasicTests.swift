@@ -11,18 +11,16 @@ final class PluginsBasicTests: XCTestCase {
             return ("my_token_username", "my_token_password")
         }
 
-        var userInfo: Parameters.UserInfo = .init()
         let parameters: Parameters = .testMake()
         let requestable: FakeURLRequestRepresentation = .init()
         requestable.stub(.setValue).andReturn()
         subject.prepare(parameters,
-                        request: requestable,
-                        userInfo: &userInfo)
+                        request: requestable)
         let token = "Basic bXlfdG9rZW5fdXNlcm5hbWU6bXlfdG9rZW5fcGFzc3dvcmQ="
         XCTAssertHaveReceived(requestable, .setValue, with: token, "Authorization", countSpecifier: .exactly(1))
-        XCTAssertTrue(userInfo.isEmpty)
         XCTAssertNoThrowError {
             try subject.verify(data: .testMake(), userInfo: .init())
         }
+        XCTAssertTrue(parameters.userInfo.isEmpty)
     }
 }

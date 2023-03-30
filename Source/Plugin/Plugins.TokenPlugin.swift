@@ -24,8 +24,7 @@ public extension Plugins {
         }
 
         public func prepare(_ parameters: Parameters,
-                            request: inout URLRequestRepresentation,
-                            userInfo: inout Parameters.UserInfo) {
+                            request: inout URLRequestRepresentation) {
             let value = tokenProvider()
 
             switch type {
@@ -59,6 +58,6 @@ public extension Plugins {
             }
         }
 
-        public func verify(data: RequestResult, userInfo: Parameters.UserInfo) throws {}
+        public func verify(data: RequestResult, userInfo: UserInfo) throws {}
     }
 }

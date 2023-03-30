@@ -45,7 +45,7 @@ public final class RequestManager {
             let result = await stopTheLine.action(with: newFactory,
                                                   originalParameters: info.request.parameters,
                                                   response: data,
-                                                  userInfo: &info.request.userInfo)
+                                                  userInfo: info.userInfo)
             switch result {
             case .useOriginal:
                 tryComplete(with: data, for: info)
@@ -66,7 +66,7 @@ public final class RequestManager {
 
         let verificationResult = stopTheLine.verify(response: result,
                                                     for: info.parameters,
-                                                    userInfo: &info.request.userInfo)
+                                                    userInfo: info.userInfo)
         switch verificationResult {
         case .stopTheLine:
             if state.isRunning {
@@ -94,7 +94,7 @@ public final class RequestManager {
         }
 
         do {
-            let userInfo = info.request.userInfo
+            let userInfo = info.userInfo
             for plugin in pluginProvider?.plugins() ?? [] {
                 try plugin.verify(data: result, userInfo: userInfo)
             }
@@ -109,17 +109,15 @@ public final class RequestManager {
     }
 
     private func createRequest(_ parameters: Parameters,
-                               userInfo: inout Parameters.UserInfo) throws -> Requestable {
+                               userInfo: UserInfo) throws -> Requestable {
         var urlRequest = try parameters.urlRequestRepresentation()
         for plugin in pluginProvider?.plugins() ?? [] {
             plugin.prepare(parameters,
-                           request: &urlRequest,
-                           userInfo: &userInfo)
+                           request: &urlRequest)
         }
 
         let request = Request.create(with: parameters,
-                                     urlRequestable: urlRequest,
-                                     userInfo: userInfo)
+                                     urlRequestable: urlRequest)
         return request
     }
 }
@@ -146,8 +144,7 @@ extension RequestManager: RequestManagering {
     public func request(with parameters: Parameters,
                         completion: @escaping ResponseClosure) -> RequestingTask {
         do {
-            var userInfo = parameters.userInfo
-            let request = try createRequest(parameters, userInfo: &userInfo)
+            let request = try createRequest(parameters, userInfo: parameters.userInfo)
             let info: Info = .init(parameters: parameters,
                                    request: request,
                                    completion: completion)
@@ -184,6 +181,10 @@ private extension RequestManager {
         let request: Requestable
         let completion: RequestManager.ResponseClosure
         var attemptNumber: UInt
+
+        var userInfo: UserInfo {
+            return parameters.userInfo
+        }
 
         init(parameters: Parameters,
              request: Requestable,

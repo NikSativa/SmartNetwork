@@ -4,7 +4,6 @@ import NQueue
 public protocol Requestable: AnyObject {
     typealias CompletionCallback = (RequestResult) -> Void
 
-    var userInfo: Parameters.UserInfo { get set }
     var completion: CompletionCallback? { get set }
     var urlRequestable: URLRequestRepresentation { get }
     var parameters: Parameters { get }
@@ -17,8 +16,11 @@ public final class Request {
     private let sessionAdaptor: SessionAdaptor
     private var isCanceled: Bool = false
 
-    public private(set) var parameters: Parameters
-    public var userInfo: Parameters.UserInfo
+    public let parameters: Parameters
+    public var userInfo: UserInfo {
+        return parameters.userInfo
+    }
+
     public let urlRequestable: URLRequestRepresentation
 
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
@@ -29,20 +31,16 @@ public final class Request {
     }
 
     private init(with parameters: Parameters,
-                 userInfo: Parameters.UserInfo,
                  urlRequestable: URLRequestRepresentation) {
         self.parameters = parameters
-        self.userInfo = userInfo
         self.urlRequestable = urlRequestable
         self.sessionAdaptor = .init(session: parameters.session,
                                     progressHandler: parameters.progressHandler)
     }
 
     public static func create(with parameters: Parameters,
-                              urlRequestable: URLRequestRepresentation,
-                              userInfo: Parameters.UserInfo = [:]) -> Requestable {
+                              urlRequestable: URLRequestRepresentation) -> Requestable {
         return Self(with: parameters,
-                    userInfo: userInfo,
                     urlRequestable: urlRequestable)
     }
 
@@ -57,7 +55,7 @@ public final class Request {
         for plugin in plugins {
             plugin.willSend(parameters,
                             request: urlRequestable,
-                            userInfo: &userInfo)
+                            userInfo: userInfo)
         }
 
         let sdkRequest = urlRequestable.sdk
@@ -148,7 +146,7 @@ public final class Request {
             plugin.didReceive(parameters,
                               request: urlRequestable,
                               data: data,
-                              userInfo: &userInfo)
+                              userInfo: userInfo)
         }
 
         complete(in: queue,
