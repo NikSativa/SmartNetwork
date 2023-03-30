@@ -135,7 +135,7 @@ extension Body {
             let data = XFormEncoder.encodeParameters(parameters: parameters)
             tolog(isLoggingEnabled) {
                 let text = data.flatMap {
-                   return String(data: $0, encoding: .utf8)
+                    return String(data: $0, encoding: .utf8)
                 }
                 let res = ["Body:", text].compactMap { $0 }.joined(separator: "\n")
                 return res
@@ -148,7 +148,7 @@ extension Body {
             }
 
             if let data,
-                tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
+               tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
                 tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
             }
         }

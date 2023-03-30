@@ -6,8 +6,8 @@ import XCTest
 @testable import NRequestTestHelpers
 
 final class CustomDecodableTests: XCTestCase {
-    private lazy var image: Image = .circle
-    private lazy var imageData: Data = image.pngData()!
+    private lazy var image: NSpry.Image = .spry.testImage
+    private lazy var imageData: Data = image.testData()!
 
     private lazy var bodyData: Data = {
         return try! JSONSerialization.data(withJSONObject: ["id": 1], options: [.sortedKeys, .prettyPrinted])
@@ -36,7 +36,7 @@ final class CustomDecodableTests: XCTestCase {
 
     func test_image() {
         XCTAssertNil(try custom(ImageContent.self).get())
-        XCTAssertEqual(try custom(ImageContent.self, body: imageData).get()?.pngData(), image.pngData())
+        XCTAssertEqual(try custom(ImageContent.self, body: imageData).get()?.testData().unwrap(), imageData)
         XCTAssertThrowsError(try custom(ImageContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
         XCTAssertThrowsError(try custom(ImageContent.self, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
         XCTAssertThrowsError(try custom(ImageContent.self, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
@@ -63,7 +63,7 @@ final class CustomDecodableTests: XCTestCase {
     }
 
     private func custom<T: CustomDecodable>(_ type: T.Type, body: Data? = nil, error: Error? = nil) -> Result<T.Object, Error> {
-        let decodable = type.init(with: .testMake(url: .testMake(),
+        let decodable = type.init(with: .testMake(url: .spry.testMake(),
                                                   statusCode: 200,
                                                   body: body,
                                                   error: error),
@@ -71,12 +71,6 @@ final class CustomDecodableTests: XCTestCase {
         return decodable.result
     }
 }
-
-func XCTAssertEqual(_ expression1: @autoclosure () throws -> Image,
-                    _ expression2: @autoclosure () throws -> Image,
-                    _ message: @autoclosure () -> String = "",
-                    file: StaticString = #filePath,
-                    line: UInt = #line) {}
 
 private extension Result where Success == Void {
     var isSuccess: Bool {

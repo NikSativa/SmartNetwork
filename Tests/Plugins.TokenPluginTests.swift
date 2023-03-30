@@ -40,8 +40,8 @@ private enum Constant {
     static let value = "my_token_string"
     static let key = "my_token_key"
 
-    static let url = URL.testMake("https://www.google.com")
-    static let urlWithQuery = URL.testMake("https://www.google.com?my_token_key=broken_token_string")
+    static let url = URL.spry.testMake("https://www.google.com")
+    static let urlWithQuery = URL.spry.testMake("https://www.google.com?my_token_key=broken_token_string")
 }
 
 @inline(__always)
@@ -106,7 +106,7 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
             }
         }
 
-        XCTAssertHaveReceived(request, .url, with: URL.testMake(newUrl), countSpecifier: .exactly(1), file: file, line: line)
+        XCTAssertHaveReceived(request, .url, with: URL.spry.testMake(newUrl), countSpecifier: .exactly(1), file: file, line: line)
     }
 
     let data: RequestResult = .testMake()

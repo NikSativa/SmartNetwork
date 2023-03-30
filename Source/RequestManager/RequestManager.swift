@@ -201,21 +201,3 @@ private extension RequestManager {
         var queue: [Key: Info] = [:]
     }
 }
-
-internal extension Parameters {
-    func urlRequestRepresentation() throws -> URLRequestRepresentation {
-        let url = try address.url(shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint)
-        var request = URLRequest(url: url,
-                                 cachePolicy: requestPolicy,
-                                 timeoutInterval: timeoutInterval)
-        request.httpMethod = method.toString()
-
-        for (key, value) in header {
-            request.setValue(value, forHTTPHeaderField: key)
-        }
-
-        try body.fill(&request, isLoggingEnabled: isLoggingEnabled, encoder: encoder)
-
-        return request
-    }
-}

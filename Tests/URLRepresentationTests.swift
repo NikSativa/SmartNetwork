@@ -13,9 +13,9 @@ final class URLRepresentationTests: XCTestCase {
         let representation: URLRepresentation = .init(host: "some.com").append("endpoint").append(["param": "value"])
         subject = .address(representation)
         actualURL = XCTAssertNoThrowError(try subject.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint?param=value"))
+        XCTAssertEqual(actualURL, .spry.testMake("https://some.com/endpoint?param=value"))
 
-        let representation2: URLRepresentation = .init(url: .testMake("some.com"))
+        let representation2: URLRepresentation = .init(url: .spry.testMake("some.com"))
         subject = .address(representation2)
         XCTAssertThrowsError(try subject.url(), RequestEncodingError.lackAdress)
     }

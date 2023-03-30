@@ -64,14 +64,14 @@ public final class Request {
         tologSelf(sdkRequest)
 
         if let stub = HTTPStubServer.shared.response(for: sdkRequest) {
-            let response = HTTPURLResponse(url: sdkRequest.url ?? URL(string: "unknown.com").unsafelyUnwrapped,
+            let response = HTTPURLResponse(url: sdkRequest.url.unsafelyUnwrapped,
                                            statusCode: stub.statusCode,
                                            httpVersion: nil,
                                            headerFields: stub.header)
             let responseData = RequestResult(request: urlRequestable,
                                              body: stub.body.data,
                                              response: response,
-                                             error: nil)
+                                             error: stub.error)
             if let delay = stub.delayInSeconds {
                 Queue.background.asyncAfter(deadline: .now() + delay) { [self] in
                     fire(data: responseData,

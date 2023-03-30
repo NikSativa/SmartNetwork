@@ -72,15 +72,15 @@ internal struct PlatformImage {
 }
 
 #if os(macOS)
-extension NSBitmapImageRep {
+private extension NSBitmapImageRep {
     var png: Data? { representation(using: .png, properties: [:]) }
 }
 
-extension Data {
+private extension Data {
     var bitmap: NSBitmapImageRep? { NSBitmapImageRep(data: self) }
 }
 
-extension NSImage {
+private extension NSImage {
     var png: Data? { tiffRepresentation?.bitmap?.png }
 }
 #endif

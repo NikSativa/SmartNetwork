@@ -11,11 +11,13 @@ final class RequestableTests: XCTestCase {
         let task: FakeSessionTask = .init()
         let session: FakeSession = .init()
         let parameters: Parameters = .testMake(queue: .absent,
+                                               isLoggingEnabled: true,
                                                session: session)
 
-        let sdkRequst = URLRequest.testMake(url: "google.com")
+        let sdkRequst = URLRequest.spry.testMake(url: "google.com")
         let urlRequestable: FakeURLRequestRepresentation = .init()
         urlRequestable.stub(.sdk).andReturn(sdkRequst)
+        urlRequestable.stub(.allHTTPHeaderFields).andReturn([String: String]())
 
         let subject: Requestable = Request.create(with: parameters, urlRequestable: urlRequestable)
         subject.completion = { data in

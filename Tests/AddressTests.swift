@@ -204,3 +204,9 @@ final class AddressTests: XCTestCase {
         XCTAssertEqual(actualURL, .testMake("https://some.com?param=value&param=value#page"), name)
     }
 }
+
+private extension URL {
+    static func testMake(_ string: String = "http://www.some.com") -> URL {
+        return .spry.testMake(string)
+    }
+}

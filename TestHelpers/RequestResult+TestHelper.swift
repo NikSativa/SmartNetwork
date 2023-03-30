@@ -4,7 +4,7 @@ import NSpry
 @testable import NRequest
 
 extension RequestResult: Equatable, SpryEquatable {
-    public static func testMake(url: URL = .testMake(),
+    public static func testMake(url: URL = .spry.testMake(),
                                 statusCode: Int,
                                 httpVersion: String? = nil,
                                 headerFields: [String: String]? = nil,

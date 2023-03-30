@@ -1,4 +1,4 @@
-// swift-tools-version:5.6
+// swift-tools-version:5.7
 // swiftformat:disable all
 import PackageDescription
 
@@ -6,15 +6,15 @@ let package = Package(
     name: "NRequest",
     platforms: [
         .iOS(.v13),
-        .macOS(.v10_15)
+        .macOS(.v11)
     ],
     products: [
         .library(name: "NRequest", targets: ["NRequest"]),
         .library(name: "NRequestTestHelpers", targets: ["NRequestTestHelpers"])
     ],
     dependencies: [
-        .package(url: "https://github.com/NikSativa/NSpry.git", .revision("6f1f761e69875e9111a35a5241f4ab7933437d1a")),
-        .package(url: "https://github.com/NikSativa/NQueue.git", .upToNextMajor(from: "1.1.17"))
+        .package(url: "https://github.com/NikSativa/NSpry.git", .upToNextMajor(from: "2.0.0")),
+        .package(url: "https://github.com/NikSativa/NQueue.git", .upToNextMajor(from: "1.2.0"))
     ],
     targets: [
         .target(name: "NRequest",

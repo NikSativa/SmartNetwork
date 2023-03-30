@@ -7,10 +7,10 @@ import XCTest
 
 final class CrossPlatformTests: XCTestCase {
     func test_scale() {
-        let image = Image.circle
+        let image = Image.spry.testImage
 
         #if os(macOS)
-        XCTAssertEqual(PlatformImage(data: image.png.unsafelyUnwrapped)?.pngData(), image.png)
+        XCTAssertEqual(PlatformImage(data: image.testData().unsafelyUnwrapped)?.pngData(), image.testData())
         XCTAssertNil(PlatformImage(data: Data()))
         #elseif os(iOS) || os(tvOS) || os(watchOS)
         XCTAssertEqual(PlatformImage(image).pngData(), image.pngData())

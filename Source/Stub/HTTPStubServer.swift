@@ -9,17 +9,24 @@ public final class HTTPStubServer {
     private var responses: [Info] = []
     private var counter: UInt = 0
 
+    private init() {
+        let registered = URLProtocol.registerClass(HTTPStubProtocol.self)
+        assert(registered)
+    }
+
     /// - Parameter path: only for the convenience of the Combine interface
     /// e.g. *stubTask.store(in: &bag)*
     public func add(condition: HTTPStubCondition,
                     statusCode: Int = 200,
                     header: HeaderFields = [:],
                     body: HTTPStubBody = .empty,
+                    error: Error? = nil,
                     delayInSeconds: TimeInterval? = nil) -> AnyCancellable {
         return $responses.mutate { responses in
             let response = HTTPStubResponse(statusCode: statusCode,
                                             header: header,
                                             body: body,
+                                            error: error,
                                             delayInSeconds: delayInSeconds)
             let id = counter
             counter &+= 1

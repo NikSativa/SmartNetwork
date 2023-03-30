@@ -10,7 +10,7 @@ final class BodyTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        request = .testMake(url: "some.com")
+        request = .spry.testMake(url: "some.com")
     }
 
     override func tearDown() {
@@ -30,14 +30,14 @@ final class BodyTests: XCTestCase {
     }
 
     func test_image_png() {
-        let image = Image.circle
+        let image = Image.spry.testImage
         XCTAssertNoThrowError(try Body.image(.png(image)).fill(&request, isLoggingEnabled: true, encoder: .init()))
-        XCTAssertEqual(request.httpBody, image.pngData())
+        XCTAssertEqual(request.httpBody, image.testData())
     }
 
     #if !os(macOS)
     func test_image_jpeg() {
-        let image = Image.circle
+        let image = Image.spry.testImage
         XCTAssertNoThrowError(try Body.image(.jpeg(image, compressionQuality: 1)).fill(&request, isLoggingEnabled: true, encoder: .init()))
         XCTAssertEqual(request.httpBody, image.jpegData(compressionQuality: 1))
     }
