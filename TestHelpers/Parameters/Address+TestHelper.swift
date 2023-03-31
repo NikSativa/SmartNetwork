@@ -6,7 +6,7 @@ import NSpry
 
 extension Address: SpryEquatable {
     public static func testMake(scheme: Scheme? = .https,
-                                host: String = "https://google.com",
+                                host: String = "google.com",
                                 path: [String] = [],
                                 queryItems: QueryItems = [],
                                 fragment: String? = nil,
@@ -22,7 +22,7 @@ extension Address: SpryEquatable {
     }
 
     public static func testMake(scheme: Scheme? = .https,
-                                host: String = "https://google.com",
+                                host: String = "google.com",
                                 endpoint: String,
                                 queryItems: QueryItems = [],
                                 fragment: String? = nil,

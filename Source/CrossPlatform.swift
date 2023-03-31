@@ -22,11 +22,6 @@ private enum Screen {
     static var scale: CGFloat {
         return WKInterfaceDevice.current().screenScale
     }
-
-    #elseif os(macOS)
-    static var scale: CGFloat {
-        return 1
-    }
     #endif
 }
 

@@ -258,10 +258,6 @@ private extension Request {
                    file: String = #file,
                    method: String = #function,
                    line: Int = #line) {
-        guard parameters.isLoggingEnabled else {
-            return
-        }
-
         tolog(file: file,
               method: method,
               line: line) {
@@ -290,7 +286,7 @@ private extension Request {
                 if let prettyStr = String(data: prettyData, encoding: .utf8) {
                     text = prettyStr
                 } else {
-                    text = String(data: body, encoding: .utf8) ?? "unexpected body"
+                    text = String(data: body, encoding: .utf8).unsafelyUnwrapped
                 }
             } catch {
                 text = "serialization error: " + error.localizedDescription

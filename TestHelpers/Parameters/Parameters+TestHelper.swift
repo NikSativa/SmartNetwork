@@ -1,6 +1,4 @@
 import Foundation
-import NQueue
-import NQueueTestHelpers
 import NRequest
 import NSpry
 
@@ -33,25 +31,6 @@ extension Parameters: SpryEquatable {
                      session: session,
                      encoder: encoder,
                      decoder: decoder)
-    }
-}
-
-// MARK: - Parameters.CacheSettings + SpryEquatable
-
-extension Parameters.CacheSettings: SpryEquatable {
-    public static func testMake(cache: URLCache = .init(),
-                                storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly) -> Self {
-        return .init(cache: cache,
-                     storagePolicy: storagePolicy)
-    }
-}
-
-// MARK: - Parameters.CacheSettings + Equatable
-
-extension Parameters.CacheSettings: Equatable {
-    public static func ==(lhs: Parameters.CacheSettings, rhs: Parameters.CacheSettings) -> Bool {
-        return lhs.cache == rhs.cache
-            && lhs.storagePolicy == rhs.storagePolicy
     }
 }
 

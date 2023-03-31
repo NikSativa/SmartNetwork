@@ -4,17 +4,6 @@ import NQueue
 public typealias HeaderFields = [String: String]
 
 public struct Parameters {
-    public struct CacheSettings {
-        public let cache: URLCache
-        public let storagePolicy: URLCache.StoragePolicy
-
-        public init(cache: URLCache,
-                    storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly) {
-            self.cache = cache
-            self.storagePolicy = storagePolicy
-        }
-    }
-
     public let header: HeaderFields
     public let method: HTTPMethod
     public let body: Body

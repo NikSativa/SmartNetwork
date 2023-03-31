@@ -12,10 +12,6 @@ public final class UserInfo {
         return values.isEmpty
     }
 
-    public var keys: [String] {
-        return .init(values.keys)
-    }
-
     public subscript<T>(_ key: String) -> T? {
         get {
             return values[key] as? T
