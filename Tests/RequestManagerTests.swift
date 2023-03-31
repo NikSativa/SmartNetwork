@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import NQueue
 import NSpry
 import XCTest
 
@@ -11,11 +12,15 @@ final class RequestManagerTests: XCTestCase {
         static let timeoutInSeconds: TimeInterval = 0.5
         static let stubbedTimeoutInSeconds: TimeInterval = 0.2
 
+        /// requirement: returns response immediately
         static let host1 = "example1.com"
         static let address1: Address = .testMake(string: "http://example1.com/signin")
 
         static let host2 = "example2.com"
         static let address2: Address = .testMake(string: "http://example2.com/signin")
+
+        static let brokenHost = "broken.com"
+        static let brokenAddress: Address = .testMake(string: "http://broken.com/signin")
     }
 
     private var observers: [AnyCancellable] = []
@@ -23,8 +28,13 @@ final class RequestManagerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         HTTPStubServer.shared.add(condition: .isHost(Constant.host1),
-                                  body: .encodable(TestInfo(id: 1))).store(in: &observers)
+                                  body: .encodable(TestInfo(id: 1)),
+                                  delayInSeconds: nil).store(in: &observers)
         HTTPStubServer.shared.add(condition: .isHost(Constant.host2),
+                                  body: .encodable(TestInfo(id: 2)),
+                                  delayInSeconds: Constant.stubbedTimeoutInSeconds).store(in: &observers)
+        HTTPStubServer.shared.add(condition: .isHost(Constant.brokenHost),
+                                  statusCode: 400,
                                   body: .encodable(TestInfo(id: 2)),
                                   delayInSeconds: Constant.stubbedTimeoutInSeconds).store(in: &observers)
     }
@@ -127,5 +137,118 @@ final class RequestManagerTests: XCTestCase {
 
         wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertThrowsError(try result?.get(), RequestEncodingError.invalidJSON)
+    }
+
+    func test_stop_the_line_verify_passOver() {
+        let stopTheLine: FakeStopTheLine = .init()
+
+        let pluginProvider = PluginProvider.create(plugins: [Plugins.StatusCode()])
+        let subject = RequestManager.create(withPluginProvider: pluginProvider,
+                                            stopTheLine: stopTheLine,
+                                            maxAttemptNumber: 1)
+        var result: Result<TestInfo, Error>?
+
+        // passOver
+        let expectation: XCTestExpectation = .init(description: "should receive response")
+        stopTheLine.stub(.verify).andReturn(StopTheLineAction.passOver)
+        subject.requestDecodable(TestInfo.self,
+                                 address: Constant.brokenAddress,
+                                 with: .init(body: .init(TestInfo(id: 1)))) {
+            result = $0
+            expectation.fulfill()
+        }.start().store(in: &observers)
+
+        wait(for: [expectation], timeout: Constant.timeoutInSeconds)
+        XCTAssertThrowsError(try result?.get(), StatusCode(.badRequest))
+    }
+
+    func test_stop_the_line_verify_retry() {
+        let stopTheLine: FakeStopTheLine = .init()
+
+        let pluginProvider = PluginProvider.create(plugins: [Plugins.StatusCode()])
+        let subject = RequestManager.create(withPluginProvider: pluginProvider,
+                                            stopTheLine: stopTheLine,
+                                            maxAttemptNumber: 1)
+        var result: Result<TestInfo, Error>?
+
+        // retry (maxAttemptNumber: 1)
+        let expectation2: XCTestExpectation = .init(description: "should receive response")
+        stopTheLine.stubAgain(.verify).andReturn(StopTheLineAction.retry)
+        subject.requestDecodable(TestInfo.self,
+                                 address: Constant.brokenAddress,
+                                 with: .init(body: .init(TestInfo(id: 1)))) {
+            result = $0
+            expectation2.fulfill()
+        }.start().store(in: &observers)
+
+        wait(for: [expectation2], timeout: Constant.timeoutInSeconds)
+        XCTAssertThrowsError(try result?.get(), StatusCode(.badRequest))
+    }
+
+    func test_stop_the_line_action_useOriginal() {
+        stop_the_line(.useOriginal)
+    }
+
+    func test_stop_the_line_action_retry() {
+        stop_the_line(.retry)
+    }
+
+    func test_stop_the_line_action_passOver() {
+        stop_the_line(.passOver(.testMake(statusCode: StatusCode.Kind.badGateway.rawValue)),
+                      newCode: .badGateway)
+    }
+
+    private func stop_the_line(_ action: StopTheLineResult, newCode: StatusCode.Kind? = nil) {
+        let stopTheLine: FakeStopTheLine = .init()
+        let pluginProvider = PluginProvider.create(plugins: [Plugins.StatusCode()])
+        let subject = RequestManager.create(withPluginProvider: pluginProvider,
+                                            stopTheLine: stopTheLine,
+                                            maxAttemptNumber: 1)
+        var result: Result<TestInfo, Error>?
+
+        // stopTheLine
+        stopTheLine.resetCallsAndStubs()
+        stopTheLine.stub(.action).andReturn()
+        stopTheLine.stub(.verify).andDo { args in
+            guard let result = args[0] as? RequestResult else {
+                fatalError()
+            }
+            if result.request?.url?.host == Constant.brokenHost {
+                return StopTheLineAction.stopTheLine
+            }
+            return StopTheLineAction.passOver
+        }
+
+        let expectation3: XCTestExpectation = .init(description: "should receive response")
+        subject.requestDecodable(TestInfo.self,
+                                 address: Constant.brokenAddress,
+                                 with: .init(body: .init(TestInfo(id: 1)))) {
+            result = $0
+            expectation3.fulfill()
+        }.start().store(in: &observers)
+
+        let expectation7: XCTestExpectation = .init(description: "should not receive response")
+        expectation7.isInverted = true
+        wait(for: [expectation7], timeout: Constant.stubbedTimeoutInSeconds)
+
+        // waiter
+        let expectation4: XCTestExpectation = .init(description: "should receive response")
+        subject.requestDecodable(TestInfo.self,
+                                 address: Constant.address1,
+                                 with: .init(body: .empty)) { _ in
+            expectation4.fulfill()
+        }.start().store(in: &observers)
+
+        // returns response immediately, but in queue while stop the line activated
+        let expectation8: XCTestExpectation = .init(description: "should not receive response")
+        expectation8.isInverted = true
+        wait(for: [expectation8], timeout: Constant.stubbedTimeoutInSeconds)
+
+        stopTheLine.resetCallsAndStubs()
+        stopTheLine.stub(.verify).andReturn(StopTheLineAction.passOver)
+        stopTheLine.completion?(action)
+
+        wait(for: [expectation3, expectation4], timeout: Constant.timeoutInSeconds * 3)
+        XCTAssertThrowsError(try result?.get(), StatusCode(newCode ?? .badRequest))
     }
 }

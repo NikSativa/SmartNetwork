@@ -4,7 +4,8 @@ public protocol StopTheLine {
     func action(with manager: some RequestManager,
                 originalParameters parameters: Parameters,
                 response: RequestResult,
-                userInfo: UserInfo) async -> StopTheLineResult
+                userInfo: UserInfo,
+                completion: @escaping (StopTheLineResult) -> Void)
 
     func verify(response: RequestResult,
                 for parameters: Parameters,

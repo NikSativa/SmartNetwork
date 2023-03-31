@@ -6,11 +6,11 @@ public final class RequestManager {
     private var state: State = .init()
     private let pluginProvider: PluginProviding?
     private let stopTheLine: StopTheLine?
-    private let maxAttemptNumber: UInt
+    private let maxAttemptNumber: Int
 
     private init(pluginProvider: PluginProviding?,
                  stopTheLine: StopTheLine?,
-                 maxAttemptNumber: UInt) {
+                 maxAttemptNumber: Int) {
         self.pluginProvider = pluginProvider
         self.stopTheLine = stopTheLine
         self.maxAttemptNumber = max(maxAttemptNumber, 1)
@@ -18,43 +18,42 @@ public final class RequestManager {
 
     public static func create(withPluginProvider pluginProvider: PluginProviding? = nil,
                               stopTheLine: StopTheLine? = nil,
-                              maxAttemptNumber: UInt = 1) -> RequestManagering {
+                              maxAttemptNumber: Int = 1) -> RequestManagering {
         return Self(pluginProvider: pluginProvider,
                     stopTheLine: stopTheLine,
                     maxAttemptNumber: maxAttemptNumber)
     }
 
     private func unfreeze() {
-        $state.mutate { state in
+        let scheduledRequests = $state.mutate { state in
             state.isRunning = true
+            return state.tasksQueue
+        }
 
-            let scheduledRequests = state.tasksQueue
-            for request in scheduledRequests {
-                request.value.request.start()
-            }
+        for request in scheduledRequests {
+            request.value.request.start()
         }
     }
 
     private func makeStopTheLineAction(stopTheLine: StopTheLine,
                                        info: Info,
                                        data: RequestResult) {
-        Task { [weak self, pluginProvider, maxAttemptNumber] in
-            let newFactory = RequestManager(pluginProvider: pluginProvider,
-                                            stopTheLine: nil,
-                                            maxAttemptNumber: maxAttemptNumber)
-            let result = await stopTheLine.action(with: newFactory,
-                                                  originalParameters: info.request.parameters,
-                                                  response: data,
-                                                  userInfo: info.userInfo)
+        let newFactory = RequestManager(pluginProvider: pluginProvider,
+                                        stopTheLine: nil,
+                                        maxAttemptNumber: maxAttemptNumber)
+        stopTheLine.action(with: newFactory,
+                           originalParameters: info.request.parameters,
+                           response: data,
+                           userInfo: info.userInfo) { [self] result in
             switch result {
             case .useOriginal:
-                tryComplete(with: data, for: info)
+                self.complete(with: data, for: info)
             case .passOver(let newResponse):
-                tryComplete(with: newResponse, for: info)
+                self.complete(with: newResponse, for: info)
             case .retry:
                 break
             }
-            self?.unfreeze()
+            self.unfreeze()
         }
     }
 
@@ -82,8 +81,9 @@ public final class RequestManager {
             if info.attemptNumber < maxAttemptNumber {
                 info.attemptNumber += 1
                 info.request.start()
+                return false
             }
-            return false
+            return true
         }
     }
 
@@ -93,6 +93,11 @@ public final class RequestManager {
             return
         }
 
+        complete(with: result, for: info)
+    }
+
+    private func complete(with result: RequestResult,
+                          for info: Info) {
         do {
             let userInfo = info.userInfo
             for plugin in pluginProvider?.plugins() ?? [] {
@@ -102,7 +107,9 @@ public final class RequestManager {
             result.set(error)
         }
 
-        state.tasksQueue[info.key] = nil
+        $state.mutate {
+            $0.tasksQueue[info.key] = nil
+        }
 
         let completion = info.completion
         completion(result)
@@ -157,7 +164,9 @@ extension RequestManager: RequestManagering {
             let info: Info = .init(parameters: parameters,
                                    request: request,
                                    completion: completion)
-            state.tasksQueue[info.key] = info
+            $state.mutate {
+                $0.tasksQueue[info.key] = info
+            }
 
             request.completion = { [weak self, unowned info] result in
                 self?.tryComplete(with: result, for: info)
@@ -166,6 +175,8 @@ extension RequestManager: RequestManagering {
             return RequestingTask(runAction: { [state] in
                 if state.isRunning {
                     request.start()
+                } else {
+                    print("")
                 }
             }, cancelAction: { [request] in
                 request.cancel()
@@ -189,7 +200,7 @@ private extension RequestManager {
         let parameters: Parameters
         let request: Requestable
         let completion: RequestManager.ResponseClosure
-        var attemptNumber: UInt
+        var attemptNumber: Int
 
         var userInfo: UserInfo {
             return parameters.userInfo

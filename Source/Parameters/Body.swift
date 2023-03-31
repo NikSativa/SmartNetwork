@@ -49,6 +49,10 @@ public enum Body {
     case encodable(any Encodable)
     case form(Form) // form-data
     case xform([String: Any]) // x-www-form-urlencoded
+
+    public init(_ encodable: some Encodable) {
+        self = .encodable(encodable)
+    }
 }
 
 extension Body {

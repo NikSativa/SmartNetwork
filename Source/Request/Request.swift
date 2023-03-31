@@ -81,11 +81,13 @@ public final class Request {
                                              response: response,
                                              error: stub.error)
             if let delay = stub.delayInSeconds {
-                Queue.background.asyncAfter(deadline: .now() + delay) { [self] in
+                HTTPStubServer.defaultResponseQueue.asyncAfter(deadline: .now() + delay) { [self] in
                     fire(data: responseData)
                 }
             } else {
-                fire(data: responseData)
+                HTTPStubServer.defaultResponseQueue.sync {
+                    fire(data: responseData)
+                }
             }
             return
         }
