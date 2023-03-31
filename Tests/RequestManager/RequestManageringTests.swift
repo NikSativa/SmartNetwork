@@ -44,7 +44,6 @@ final class RequestManageringTests: XCTestCase {
         exps.append(exp)
         subject.request(address: address) { [exp] in
             result.append($0)
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -52,7 +51,6 @@ final class RequestManageringTests: XCTestCase {
         exps.append(exp)
         subject.request(address: address, with: .testMake()) { [exp] in
             result.append($0)
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -72,7 +70,6 @@ final class RequestManageringTests: XCTestCase {
         subject.requestCustomDecodable(DecodableContent<TestInfo>.self,
                                        address: address) { [exp] in
             result.append(try! $0.get())
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -82,7 +79,6 @@ final class RequestManageringTests: XCTestCase {
                                        address: address,
                                        with: .testMake()) { [exp] in
             result.append(try! $0.get())
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -97,7 +93,6 @@ final class RequestManageringTests: XCTestCase {
         exps.append(exp)
         subject.requestVoid(address: address) { [exp] in
             result.append(try! $0.get())
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -105,7 +100,6 @@ final class RequestManageringTests: XCTestCase {
         exps.append(exp)
         subject.requestVoid(address: address, with: .testMake()) { [exp] in
             result.append(try! $0.get())
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -121,7 +115,6 @@ final class RequestManageringTests: XCTestCase {
         subject.requestDecodable(TestInfo.self,
                                  address: address) { [exp] in
             result.append(try! $0.get())
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -129,7 +122,6 @@ final class RequestManageringTests: XCTestCase {
         exps.append(exp)
         subject.requestOptionalDecodable(TestInfo.self, address: address) { [exp] in
             result.append(try! $0.get())
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -144,7 +136,6 @@ final class RequestManageringTests: XCTestCase {
         exps.append(exp)
         subject.requestImage(address: addressImage) { [exp] in
             result.append(try! $0.get())
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -152,7 +143,6 @@ final class RequestManageringTests: XCTestCase {
         exps.append(exp)
         subject.requestOptionalImage(address: addressImage) { [exp] in
             result.append(try! $0.get())
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -169,7 +159,6 @@ final class RequestManageringTests: XCTestCase {
         exps.append(exp)
         subject.requestData(address: address) { [exp] in
             result.append(try! $0.get())
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -177,7 +166,6 @@ final class RequestManageringTests: XCTestCase {
         exps.append(exp)
         subject.requestOptionalData(address: address) { [exp] in
             result.append(try! $0.get())
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -196,7 +184,6 @@ final class RequestManageringTests: XCTestCase {
         exps.append(exp)
         subject.requestAny(address: address) { [exp] in
             result.append(try! $0.get())
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -204,7 +191,6 @@ final class RequestManageringTests: XCTestCase {
         exps.append(exp)
         subject.requestOptionalAny(address: address) { [exp] in
             result.append(try! $0.get())
-            print(exp.description)
             exp.fulfill()
         }.deferredStart().store(in: &observers)
 
@@ -256,8 +242,8 @@ final class RequestManageringTests: XCTestCase {
 
     func test_decodable() async throws {
         let result: [Result<TestInfo?, Error>] = await [
-            subject.requestDecodable(TestInfo.self, address: address).map  { $0 } ,
-            subject.requestDecodable(TestInfo.self, address: address, with: .testMake()).map  { $0 },
+            subject.requestDecodable(TestInfo.self, address: address).map { $0 },
+            subject.requestDecodable(TestInfo.self, address: address, with: .testMake()).map { $0 },
             subject.requestOptionalDecodable(TestInfo.self, address: address),
             subject.requestOptionalDecodable(TestInfo.self, address: address, with: .testMake())
         ]
@@ -270,8 +256,8 @@ final class RequestManageringTests: XCTestCase {
 
     func test_image() async throws {
         let result: [Result<Image?, Error>] = await [
-            subject.requestImage(address: addressImage).map  { $0 } ,
-            subject.requestImage(address: addressImage, with: .testMake()).map  { $0 },
+            subject.requestImage(address: addressImage).map { $0 },
+            subject.requestImage(address: addressImage, with: .testMake()).map { $0 },
             subject.requestOptionalImage(address: addressImage),
             subject.requestOptionalImage(address: addressImage, with: .testMake())
         ]
@@ -283,8 +269,8 @@ final class RequestManageringTests: XCTestCase {
 
     func test_data() async throws {
         let result: [Result<Data?, Error>] = await [
-            subject.requestData(address: address).map  { $0 } ,
-            subject.requestData(address: address, with: .testMake()).map  { $0 },
+            subject.requestData(address: address).map { $0 },
+            subject.requestData(address: address, with: .testMake()).map { $0 },
             subject.requestOptionalData(address: address),
             subject.requestOptionalData(address: address, with: .testMake())
         ]
@@ -297,8 +283,8 @@ final class RequestManageringTests: XCTestCase {
 
     func test_json() async throws {
         let result: [Result<Any?, Error>] = await [
-            subject.requestAny(address: address).map  { $0 } ,
-            subject.requestAny(address: address, with: .testMake()).map  { $0 },
+            subject.requestAny(address: address).map { $0 },
+            subject.requestAny(address: address, with: .testMake()).map { $0 },
             subject.requestOptionalAny(address: address),
             subject.requestOptionalAny(address: address, with: .testMake())
         ]
@@ -313,6 +299,7 @@ final class RequestManageringTests: XCTestCase {
     }
 
     // MARK: -
+
     func test_recoverResponse() throws {
         let a = Result<Int?, Error>.success(2)
         let b = a.recoverResponse()

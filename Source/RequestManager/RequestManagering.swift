@@ -277,7 +277,7 @@ public extension RequestManagering {
 }
 
 internal extension Result {
-    func recoverResponse<T>() -> Result<T, Error> where Success == T?  {
+    func recoverResponse<T>() -> Result<T, Error> where Success == T? {
         switch self {
         case .success(.some(let response)):
             return .success(response)
