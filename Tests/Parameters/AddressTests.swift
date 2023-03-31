@@ -51,7 +51,6 @@ final class AddressTests: XCTestCase {
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd?param=value"))
 
-
         XCTAssertThrowsError(try Address(host: "").url(), RequestEncodingError.brokenAddress)
 
         actualURL = XCTAssertNoThrowError {

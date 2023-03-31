@@ -29,4 +29,17 @@ final class StatusCodeTests: XCTestCase {
         XCTAssertEqual(StatusCode(.lenghtRequired).description, "StatusCode.lenghtRequired(411)")
         XCTAssertEqual(StatusCode(.alreadyReported).debugDescription, "StatusCode.alreadyReported(208)")
     }
+
+    func test_subname() {
+        for code in 0...1000 {
+            let error = StatusCode(code: code)
+            XCTAssertNotNil(error, "\(code)")
+            XCTAssertEqual(error.code, code)
+
+            let subname: String = error.kind.map {
+                return String(reflecting: $0).components(separatedBy: ".").last ?? ""
+            } ?? "unknown"
+            XCTAssertEqual(error.subname, subname + "(\(code))")
+        }
+    }
 }

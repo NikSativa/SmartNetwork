@@ -36,21 +36,29 @@ public extension Error {
     }
 }
 
-public protocol RequestErrorDescription: Error, CustomDebugStringConvertible, CustomStringConvertible {
-    var subname: String { get }
-}
+// MARK: - RequestError + RequestErrorDescription
 
-public extension RequestErrorDescription {
-    private func makeDescription() -> String {
-        let className: String = .init(reflecting: Self.self).components(separatedBy: ".").last.unsafelyUnwrapped
-        return className + "." + subname
-    }
-
-    var description: String {
-        return makeDescription()
-    }
-
-    var debugDescription: String {
-        return makeDescription()
+extension RequestError: RequestErrorDescription {
+    public var subname: String {
+        switch self {
+        case .generic:
+            return "generic"
+        case .other(let error):
+            let description: String
+            if let subname = (error as? RequestErrorDescription)?.subname {
+                description = subname
+            } else {
+                description = (error as NSError).description
+            }
+            return "other(\(description))"
+        case .connection(let error):
+            return "connection(URLError \(error.code.rawValue))"
+        case .encoding(let error):
+            return "encoding(.\(error.subname))"
+        case .decoding(let error):
+            return "decoding(.\(error.subname))"
+        case .statusCode(let error):
+            return "statusCode(.\(error.subname))"
+        }
     }
 }

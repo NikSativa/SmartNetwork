@@ -52,4 +52,14 @@ final class RequestErrorTests: XCTestCase {
         XCTAssertEqualError(actual9.requestError, expected9)
         XCTAssertEqualError(RequestError(actual9), expected9)
     }
+
+    func test_subname() {
+        XCTAssertEqual(RequestError.generic.subname, "generic")
+        XCTAssertEqual(RequestError.other(NSError(domain: "descr", code: 111)).subname, "other(Error Domain=descr Code=111 \"(null)\")")
+        XCTAssertEqual(RequestError.other(RequestError.generic).subname, "other(generic)")
+        XCTAssertEqual(RequestError.connection(.init(.badURL)).subname, "connection(URLError -1000)")
+        XCTAssertEqual(RequestError.encoding(.brokenURL).subname, "encoding(.brokenURL)")
+        XCTAssertEqual(RequestError.decoding(.nilResponse).subname, "decoding(.nilResponse)")
+        XCTAssertEqual(RequestError.statusCode(.noContent).subname, "statusCode(.noContent(204))")
+    }
 }

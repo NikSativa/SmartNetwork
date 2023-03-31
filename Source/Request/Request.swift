@@ -48,10 +48,10 @@ public final class Request {
                               with parameters: Parameters,
                               urlRequestable: URLRequestRepresentation,
                               completionQueue: DelayedQueue) -> Requestable {
-        return Self.init(address: address,
-                         with: parameters,
-                         urlRequestable: urlRequestable,
-                         completionQueue: completionQueue)
+        return Self(address: address,
+                    with: parameters,
+                    urlRequestable: urlRequestable,
+                    completionQueue: completionQueue)
     }
 
     deinit {
