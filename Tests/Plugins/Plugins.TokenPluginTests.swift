@@ -67,7 +67,7 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
         return value
     }
 
-    let parameters: Parameters = .testMake(address: .testMake(url: url))
+    let parameters: Parameters = .testMake()
     subject.prepare(parameters,
                     request: request)
 

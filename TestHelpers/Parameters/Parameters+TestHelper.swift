@@ -7,8 +7,7 @@ import NSpry
 // MARK: - Parameters + SpryEquatable
 
 extension Parameters: SpryEquatable {
-    public static func testMake(address: Address = .testMake(),
-                                header: HeaderFields = [:],
+    public static func testMake(header: HeaderFields = [:],
                                 method: HTTPMethod = .get,
                                 body: Body = .empty,
                                 plugins: [RequestStatePlugin] = [],
@@ -21,8 +20,7 @@ extension Parameters: SpryEquatable {
                                 session: Session = FakeSession(),
                                 encoder: JSONEncoder = .init(),
                                 decoder: JSONDecoder = .init()) -> Self {
-        return .init(address: address,
-                     header: header,
+        return .init(header: header,
                      method: method,
                      body: body,
                      plugins: plugins,
@@ -61,8 +59,7 @@ extension Parameters.CacheSettings: Equatable {
 
 extension Parameters: Equatable {
     public static func ==(lhs: Parameters, rhs: Parameters) -> Bool {
-        return lhs.address == rhs.address
-            && lhs.header == rhs.header
+        return lhs.header == rhs.header
             && lhs.method == rhs.method
             && lhs.body == rhs.body
             && lhs.timeoutInterval == rhs.timeoutInterval

@@ -17,7 +17,7 @@ final class LoggerTests: XCTestCase {
         var line: Int?
 
         RS.logger = {
-            text = $0
+            text = $0()
             file = $1
             method = $2
             line = $3

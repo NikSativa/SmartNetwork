@@ -108,16 +108,18 @@ public final class RequestManager {
         completion(result)
     }
 
-    private func createRequest(_ parameters: Parameters,
+    private func createRequest(address: Address,
+                               with parameters: Parameters,
                                inQueue completionQueue: DelayedQueue,
                                userInfo: UserInfo) throws -> Requestable {
-        var urlRequest = try parameters.urlRequestRepresentation()
+        var urlRequest = try parameters.urlRequest(for: address)
         for plugin in pluginProvider?.plugins() ?? [] {
             plugin.prepare(parameters,
                            request: &urlRequest)
         }
 
-        let request = Request.create(with: parameters,
+        let request = Request.create(address: address,
+                                     with: parameters,
                                      urlRequestable: urlRequest,
                                      completionQueue: completionQueue)
         return request
@@ -143,11 +145,13 @@ extension RequestManager: RequestManagering {
         return result
     }
 
-    public func request(with parameters: Parameters,
+    public func request(address: Address,
+                        with parameters: Parameters,
                         inQueue completionQueue: DelayedQueue,
                         completion: @escaping ResponseClosure) -> RequestingTask {
         do {
-            let request = try createRequest(parameters,
+            let request = try createRequest(address: address,
+                                            with: parameters,
                                             inQueue: completionQueue,
                                             userInfo: parameters.userInfo)
             let info: Info = .init(parameters: parameters,

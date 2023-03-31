@@ -14,6 +14,7 @@ public protocol Requestable: AnyObject {
 
 public final class Request {
     private let sessionAdaptor: SessionAdaptor
+    private let address: Address
     private let completionQueue: DelayedQueue
     private var isCanceled: Bool = false
 
@@ -31,9 +32,11 @@ public final class Request {
         return parameters.plugins
     }
 
-    private init(with parameters: Parameters,
+    private init(address: Address,
+                 with parameters: Parameters,
                  urlRequestable: URLRequestRepresentation,
                  completionQueue: DelayedQueue) {
+        self.address = address
         self.parameters = parameters
         self.urlRequestable = urlRequestable
         self.completionQueue = completionQueue
@@ -41,12 +44,14 @@ public final class Request {
                                     progressHandler: parameters.progressHandler)
     }
 
-    public static func create(with parameters: Parameters,
+    public static func create(address: Address,
+                              with parameters: Parameters,
                               urlRequestable: URLRequestRepresentation,
                               completionQueue: DelayedQueue) -> Requestable {
-        return Self(with: parameters,
-                    urlRequestable: urlRequestable,
-                    completionQueue: completionQueue)
+        return Self.init(address: address,
+                         with: parameters,
+                         urlRequestable: urlRequestable,
+                         completionQueue: completionQueue)
     }
 
     deinit {
@@ -307,7 +312,7 @@ private extension Request {
     }
 
     func makeDescription() -> String {
-        let url = try? parameters.address.url()
+        let url = try? address.url()
         let text = url?.absoluteString ?? "broken url"
         return "<\(parameters.method.toString()) request: \(text)>"
     }

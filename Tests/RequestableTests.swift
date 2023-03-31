@@ -19,7 +19,8 @@ final class RequestableTests: XCTestCase {
         urlRequestable.stub(.sdk).andReturn(sdkRequst)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn([String: String]())
 
-        let subject: Requestable = Request.create(with: parameters,
+        let subject: Requestable = Request.create(address: .testMake(),
+                                                  with: parameters,
                                                   urlRequestable: urlRequestable,
                                                   completionQueue: .sync(Queue.main))
         subject.completion = { data in

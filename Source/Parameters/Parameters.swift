@@ -15,7 +15,6 @@ public struct Parameters {
         }
     }
 
-    public let address: Address
     public let header: HeaderFields
     public let method: HTTPMethod
     public let body: Body
@@ -32,8 +31,7 @@ public struct Parameters {
     /// used only on client side. best practice to use it to identify request in the Plugin's
     public let userInfo: UserInfo
 
-    public init(address: Address,
-                header: HeaderFields = [:],
+    public init(header: HeaderFields = [:],
                 method: HTTPMethod = .get,
                 body: Body = .empty,
                 plugins: [RequestStatePlugin] = [],
@@ -46,7 +44,6 @@ public struct Parameters {
                 session: Session = RequestSettings.sharedSession,
                 encoder: JSONEncoder = .init(),
                 decoder: JSONDecoder = .init()) {
-        self.address = address
         self.header = header
         self.method = method
         self.body = body
@@ -62,7 +59,7 @@ public struct Parameters {
         self.decoder = decoder
     }
 
-    public func urlRequestRepresentation() throws -> URLRequestRepresentation {
+    public func urlRequest(for address: Address) throws -> URLRequestRepresentation {
         let url = try address.url()
         var request = URLRequest(url: url,
                                  cachePolicy: requestPolicy,

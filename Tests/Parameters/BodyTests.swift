@@ -10,11 +10,16 @@ final class BodyTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        RS.logger = { text, _, _, _ in
+            // nothing, for code coverage only
+            XCTAssertNotNil(text())
+        }
         request = .spry.testMake(url: "some.com")
     }
 
     override func tearDown() {
         super.tearDown()
+        RS.logger = nil
         request = nil
     }
 

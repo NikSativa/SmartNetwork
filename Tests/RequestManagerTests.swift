@@ -39,7 +39,8 @@ final class RequestManagerTests: XCTestCase {
         let subject = RequestManager.create()
         var response: TestInfo?
         subject.requestDecodable(TestInfo.self,
-                                 with: .init(address: Constant.address1)) {
+                                 address: Constant.address1,
+                                 with: .init()) {
             response = try? $0.get()
             expectation.fulfill()
         }.start().store(in: &observers)
@@ -51,7 +52,8 @@ final class RequestManagerTests: XCTestCase {
         let expectationReverted: XCTestExpectation = .init(description: "should not receive response")
         expectationReverted.isInverted = true
         subject.requestDecodable(TestInfo.self,
-                                 with: .init(address: Constant.address2)) {
+                                 address: Constant.address2,
+                                 with: .testMake()) {
             response = try? $0.get()
             expectation.fulfill()
             expectationReverted.fulfill()
@@ -77,8 +79,8 @@ final class RequestManagerTests: XCTestCase {
         var response: TestInfo?
         var expectation: XCTestExpectation = .init(description: "should receive response")
         subject.requestDecodable(TestInfo.self,
-                                 with: .init(address: Constant.address1,
-                                             plugins: [requestPlugin],
+                                 address: Constant.address1,
+                                 with: .init(plugins: [requestPlugin],
                                              cacheSettings: .testMake())) {
             response = try? $0.get()
             expectation.fulfill()
@@ -97,8 +99,8 @@ final class RequestManagerTests: XCTestCase {
 
         expectation = .init(description: "should receive response")
         subject.requestDecodable(TestInfo.self,
-                                 with: .init(address: Constant.address2,
-                                             plugins: [requestPlugin])) {
+                                 address: Constant.address2,
+                                 with: .init(plugins: [requestPlugin])) {
             response = try? $0.get()
             expectation.fulfill()
         }.start().store(in: &observers)
@@ -117,8 +119,8 @@ final class RequestManagerTests: XCTestCase {
         let subject = RequestManager.create()
         var result: Result<TestInfo, Error>?
         subject.requestDecodable(TestInfo.self,
-                                 with: .init(address: Constant.address1,
-                                             body: .encodable(BrokenTestInfo(id: 1)))) {
+                                 address: Constant.address1,
+                                 with: .init(body: .encodable(BrokenTestInfo(id: 1)))) {
             result = $0
             expectation.fulfill()
         }.start().store(in: &observers)
