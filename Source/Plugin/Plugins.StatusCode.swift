@@ -4,7 +4,6 @@ public extension Plugins {
     final class StatusCode: Plugin {
         private let shouldIgnore200th: Bool
 
-        #warning("make create instead of init")
         /// - Parameter shouldIgnoreSuccess: ignore status code in range 200..<300
         public init(shouldIgnore200th: Bool = true) {
             self.shouldIgnore200th = shouldIgnore200th

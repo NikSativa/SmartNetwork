@@ -31,7 +31,7 @@ public extension RequestManagering {
 public extension RequestManagering {
     func requestCustomDecodable<T: CustomDecodable>(_ type: T.Type,
                                                     address: Address,
-                                                    with parameters: Parameters) async -> Result<T.Object, Error> {
+                                                    with parameters: Parameters = .init()) async -> Result<T.Object, Error> {
         return await withCheckedContinuation { completion in
             let task = request(address: address,
                                with: parameters,
@@ -66,7 +66,7 @@ public extension RequestManagering {
     // MARK: - ResponseData
 
     func request(address: Address,
-                 with parameters: Parameters) async -> RequestResult {
+                 with parameters: Parameters = .init()) async -> RequestResult {
         return await withCheckedContinuation { completion in
             let task = request(address: address,
                                with: parameters,
@@ -80,7 +80,7 @@ public extension RequestManagering {
     // MARK: - Void
 
     func requestVoid(address: Address,
-                     with parameters: Parameters) async -> Result<Void, Error> {
+                     with parameters: Parameters = .init()) async -> Result<Void, Error> {
         return await requestCustomDecodable(VoidContent.self,
                                             address: address,
                                             with: parameters)
@@ -90,7 +90,7 @@ public extension RequestManagering {
 
     func requestDecodable<T: Decodable>(_: T.Type,
                                         address: Address,
-                                        with parameters: Parameters) async -> Result<T, Error> {
+                                        with parameters: Parameters = .init()) async -> Result<T, Error> {
         return await requestCustomDecodable(DecodableContent<T>.self,
                                             address: address,
                                             with: parameters).recoverResponse()
@@ -98,7 +98,7 @@ public extension RequestManagering {
 
     func requestOptionalDecodable<T: Decodable>(_: T.Type,
                                                 address: Address,
-                                                with parameters: Parameters) async -> Result<T?, Error> {
+                                                with parameters: Parameters = .init()) async -> Result<T?, Error> {
         return await requestCustomDecodable(DecodableContent<T>.self,
                                             address: address,
                                             with: parameters)
@@ -107,14 +107,14 @@ public extension RequestManagering {
     // MARK: - Image
 
     func requestImage(address: Address,
-                      with parameters: Parameters) async -> Result<Image, Error> {
+                      with parameters: Parameters = .init()) async -> Result<Image, Error> {
         return await requestCustomDecodable(ImageContent.self,
                                             address: address,
                                             with: parameters).recoverResponse()
     }
 
     func requestOptionalImage(address: Address,
-                              with parameters: Parameters) async -> Result<Image?, Error> {
+                              with parameters: Parameters = .init()) async -> Result<Image?, Error> {
         return await requestCustomDecodable(ImageContent.self,
                                             address: address,
                                             with: parameters)
@@ -123,14 +123,14 @@ public extension RequestManagering {
     // MARK: - Data
 
     func requestData(address: Address,
-                     with parameters: Parameters) async -> Result<Data, Error> {
+                     with parameters: Parameters = .init()) async -> Result<Data, Error> {
         return await requestCustomDecodable(DataContent.self,
                                             address: address,
                                             with: parameters).recoverResponse()
     }
 
     func requestOptionalData(address: Address,
-                             with parameters: Parameters) async -> Result<Data?, Error> {
+                             with parameters: Parameters = .init()) async -> Result<Data?, Error> {
         return await requestCustomDecodable(DataContent.self,
                                             address: address,
                                             with: parameters)
@@ -139,14 +139,14 @@ public extension RequestManagering {
     // MARK: - Any/JSON
 
     func requestAny(address: Address,
-                    with parameters: Parameters) async -> Result<Any, Error> {
+                    with parameters: Parameters = .init()) async -> Result<Any, Error> {
         return await requestCustomDecodable(JSONContent.self,
                                             address: address,
                                             with: parameters).recoverResponse()
     }
 
     func requestOptionalAny(address: Address,
-                            with parameters: Parameters) async -> Result<Any?, Error> {
+                            with parameters: Parameters = .init()) async -> Result<Any?, Error> {
         return await requestCustomDecodable(JSONContent.self,
                                             address: address,
                                             with: parameters)
@@ -276,8 +276,8 @@ public extension RequestManagering {
     }
 }
 
-private extension Result {
-    func recoverResponse<T>() -> Result<T, Error> where Success == T? {
+internal extension Result {
+    func recoverResponse<T>() -> Result<T, Error> where Success == T?  {
         switch self {
         case .success(.some(let response)):
             return .success(response)

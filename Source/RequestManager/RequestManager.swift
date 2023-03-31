@@ -47,13 +47,13 @@ public final class RequestManager {
                            userInfo: info.userInfo) { [self] result in
             switch result {
             case .useOriginal:
-                self.complete(with: data, for: info)
+                complete(with: data, for: info)
             case .passOver(let newResponse):
-                self.complete(with: newResponse, for: info)
+                complete(with: newResponse, for: info)
             case .retry:
                 break
             }
-            self.unfreeze()
+            unfreeze()
         }
     }
 
