@@ -23,8 +23,10 @@ final class StatusCodeTests: XCTestCase {
     }
 
     func test_description() {
-        XCTAssertEqual(StatusCode(.lenghtRequired).description, "StatusCode 411 (lenghtRequired)")
-        XCTAssertEqual(StatusCode(.lenghtRequired).debugDescription, "StatusCode 411 (lenghtRequired)")
-        XCTAssertEqual(StatusCode(.lenghtRequired).localizedDescription, "StatusCode 411 (lenghtRequired)")
+        XCTAssertEqual(StatusCode(code: 555).description, "StatusCode.unknown(555)")
+        XCTAssertEqual(StatusCode(code: 545).debugDescription, "StatusCode.unknown(545)")
+
+        XCTAssertEqual(StatusCode(.lenghtRequired).description, "StatusCode.lenghtRequired(411)")
+        XCTAssertEqual(StatusCode(.alreadyReported).debugDescription, "StatusCode.alreadyReported(208)")
     }
 }

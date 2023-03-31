@@ -5,25 +5,43 @@ import NSpry
 // MARK: - Address + SpryEquatable
 
 extension Address: SpryEquatable {
+    public static func testMake(scheme: Scheme? = .https,
+                                host: String = "https://google.com",
+                                path: [String] = [],
+                                queryItems: QueryItems = [],
+                                fragment: String? = nil,
+                                shouldAddSlashAfterEndpoint: Bool = false,
+                                shouldRemoveSlashesForEmptyScheme: Bool = false) -> Self {
+        return .init(scheme: scheme,
+                     host: host,
+                     path: path,
+                     queryItems: queryItems,
+                     fragment: fragment,
+                     shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
+                     shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
+    }
+
+    public static func testMake(scheme: Scheme? = .https,
+                                host: String = "https://google.com",
+                                endpoint: String,
+                                queryItems: QueryItems = [],
+                                fragment: String? = nil,
+                                shouldAddSlashAfterEndpoint: Bool = false,
+                                shouldRemoveSlashesForEmptyScheme: Bool = false) -> Self {
+        return .init(scheme: scheme,
+                     host: host,
+                     path: [endpoint],
+                     queryItems: queryItems,
+                     fragment: fragment,
+                     shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
+                     shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
+    }
+
     public static func testMake(url: URL) -> Self {
-        return .url(url)
+        return try! .init(url: url)
     }
 
     public static func testMake(string url: String) -> Self {
-        return .url(URL(string: url).unsafelyUnwrapped)
-    }
-
-    public static func testMake(scheme: Scheme = .https,
-                                host: String = "google.com",
-                                path: [String] = [],
-                                queryItems: QueryItems = [],
-                                fragment: String? = nil) -> Self {
-        return .address(scheme: scheme,
-                        host: host,
-                        path: path,
-                        queryItems: queryItems,
-                        fragment: fragment)
+        return try! .init(string: url)
     }
 }
-
-extension Address.Scheme: SpryEquatable {}

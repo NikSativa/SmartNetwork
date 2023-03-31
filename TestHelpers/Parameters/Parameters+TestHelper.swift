@@ -15,14 +15,12 @@ extension Parameters: SpryEquatable {
                                 cacheSettings: CacheSettings? = nil,
                                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
                                 timeoutInterval: TimeInterval = 60,
-                                queue: DelayedQueue = Self.defaultResponseQueue,
                                 isLoggingEnabled: Bool = false,
                                 progressHandler: ProgressHandler? = nil,
                                 userInfo: UserInfo = .init(),
                                 session: Session = FakeSession(),
                                 encoder: JSONEncoder = .init(),
-                                decoder: JSONDecoder = .init(),
-                                shouldAddSlashAfterEndpoint: Bool = false) -> Self {
+                                decoder: JSONDecoder = .init()) -> Self {
         return .init(address: address,
                      header: header,
                      method: method,
@@ -31,14 +29,12 @@ extension Parameters: SpryEquatable {
                      cacheSettings: cacheSettings,
                      requestPolicy: requestPolicy,
                      timeoutInterval: timeoutInterval,
-                     queue: queue,
                      isLoggingEnabled: isLoggingEnabled,
                      progressHandler: progressHandler,
                      userInfo: userInfo,
                      session: session,
                      encoder: encoder,
-                     decoder: decoder,
-                     shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint)
+                     decoder: decoder)
     }
 }
 
@@ -46,11 +42,9 @@ extension Parameters: SpryEquatable {
 
 extension Parameters.CacheSettings: SpryEquatable {
     public static func testMake(cache: URLCache = .init(),
-                                storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
-                                queue: DelayedQueue = Parameters.defaultResponseQueue) -> Self {
+                                storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly) -> Self {
         return .init(cache: cache,
-                     storagePolicy: storagePolicy,
-                     queue: queue)
+                     storagePolicy: storagePolicy)
     }
 }
 
@@ -60,7 +54,6 @@ extension Parameters.CacheSettings: Equatable {
     public static func ==(lhs: Parameters.CacheSettings, rhs: Parameters.CacheSettings) -> Bool {
         return lhs.cache == rhs.cache
             && lhs.storagePolicy == rhs.storagePolicy
-            && lhs.queue == rhs.queue
     }
 }
 
@@ -69,20 +62,18 @@ extension Parameters.CacheSettings: Equatable {
 extension Parameters: Equatable {
     public static func ==(lhs: Parameters, rhs: Parameters) -> Bool {
         return lhs.address == rhs.address
-            && lhs.cacheSettings == rhs.cacheSettings
             && lhs.header == rhs.header
-            && lhs.isLoggingEnabled == rhs.isLoggingEnabled
             && lhs.method == rhs.method
             && lhs.body == rhs.body
-            && lhs.plugins.descriptions == rhs.plugins.descriptions
-            && lhs.queue == rhs.queue
             && lhs.timeoutInterval == rhs.timeoutInterval
-            && lhs.userInfo == rhs.userInfo
+            && lhs.cacheSettings == rhs.cacheSettings
+            && lhs.requestPolicy == rhs.requestPolicy
+            && lhs.plugins.hashingString == rhs.plugins.hashingString
     }
 }
 
 private extension [RequestStatePlugin] {
-    var descriptions: [String] {
+    var hashingString: [String] {
         let result = map { String(describing: type(of: $0)) }
         return result
     }

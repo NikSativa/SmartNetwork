@@ -12,18 +12,4 @@ final class OptionalTests: XCTestCase {
         subject = 1
         XCTAssertNoThrowError(try subject.unwrap())
     }
-
-    func test_unwrap_array() {
-        var subject: [Int]? = nil
-        XCTAssertEqual(subject.unwrapOrEmpty(), [])
-        subject = [1]
-        XCTAssertEqual(subject.unwrapOrEmpty(), [1])
-    }
-
-    func test_unwrap_dictionary() {
-        var subject: [Int: Int]? = nil
-        XCTAssertEqual(subject.unwrapOrEmpty(), [:])
-        subject = [1: 1]
-        XCTAssertEqual(subject.unwrapOrEmpty(), [1: 1])
-    }
 }

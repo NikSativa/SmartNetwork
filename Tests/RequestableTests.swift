@@ -1,4 +1,5 @@
 import Foundation
+import NQueue
 import NSpry
 import XCTest
 
@@ -10,8 +11,7 @@ final class RequestableTests: XCTestCase {
         var responses: [RequestResult] = []
         let task: FakeSessionTask = .init()
         let session: FakeSession = .init()
-        let parameters: Parameters = .testMake(queue: .absent,
-                                               isLoggingEnabled: true,
+        let parameters: Parameters = .testMake(isLoggingEnabled: true, // code coverage
                                                session: session)
 
         let sdkRequst = URLRequest.spry.testMake(url: "google.com")
@@ -19,7 +19,9 @@ final class RequestableTests: XCTestCase {
         urlRequestable.stub(.sdk).andReturn(sdkRequst)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn([String: String]())
 
-        let subject: Requestable = Request.create(with: parameters, urlRequestable: urlRequestable)
+        let subject: Requestable = Request.create(with: parameters,
+                                                  urlRequestable: urlRequestable,
+                                                  completionQueue: .sync(Queue.main))
         subject.completion = { data in
             responses.append(data)
         }

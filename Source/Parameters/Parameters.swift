@@ -4,25 +4,14 @@ import NQueue
 public typealias HeaderFields = [String: String]
 
 public struct Parameters {
-    public static var sharedSession: Session = URLSession.shared
-    public static var defaultResponseQueue: DelayedQueue = .async(Queue.main)
-    public static var shouldAddSlashAfterEndpoint: Bool = false
-
-    /// URLComponents is require scheme and generates url like '//some.com/end/?param=value'
-    /// this parameter will remove '//' from the begining of new URL
-    public static var shouldRemoveSlashesBeforeEmptyScheme: Bool = false
-
     public struct CacheSettings {
         public let cache: URLCache
         public let storagePolicy: URLCache.StoragePolicy
-        public let queue: DelayedQueue
 
         public init(cache: URLCache,
-                    storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
-                    queue: DelayedQueue = Parameters.defaultResponseQueue) {
+                    storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly) {
             self.cache = cache
             self.storagePolicy = storagePolicy
-            self.queue = queue
         }
     }
 
@@ -33,15 +22,12 @@ public struct Parameters {
     public let timeoutInterval: TimeInterval
     public let cacheSettings: CacheSettings?
     public let requestPolicy: URLRequest.CachePolicy
-    public let queue: DelayedQueue
     public let plugins: [RequestStatePlugin]
     public let isLoggingEnabled: Bool
     public let progressHandler: ProgressHandler?
     public let session: Session
     public let encoder: JSONEncoder
     public let decoder: JSONDecoder
-    public let shouldAddSlashAfterEndpoint: Bool
-    public let shouldRemoveSlashesBeforeEmptyScheme: Bool
 
     /// used only on client side. best practice to use it to identify request in the Plugin's
     public let userInfo: UserInfo
@@ -54,15 +40,12 @@ public struct Parameters {
                 cacheSettings: CacheSettings? = nil,
                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
                 timeoutInterval: TimeInterval = 60,
-                queue: DelayedQueue = Self.defaultResponseQueue,
                 isLoggingEnabled: Bool = false,
                 progressHandler: ProgressHandler? = nil,
                 userInfo: UserInfo = .init(),
-                session: Session = Self.sharedSession,
+                session: Session = RequestSettings.sharedSession,
                 encoder: JSONEncoder = .init(),
-                decoder: JSONDecoder = .init(),
-                shouldAddSlashAfterEndpoint: Bool = Self.shouldAddSlashAfterEndpoint,
-                shouldRemoveSlashesBeforeEmptyScheme: Bool = Self.shouldRemoveSlashesBeforeEmptyScheme) {
+                decoder: JSONDecoder = .init()) {
         self.address = address
         self.header = header
         self.method = method
@@ -71,19 +54,16 @@ public struct Parameters {
         self.timeoutInterval = timeoutInterval
         self.cacheSettings = cacheSettings
         self.requestPolicy = requestPolicy
-        self.queue = queue
         self.isLoggingEnabled = isLoggingEnabled
         self.progressHandler = progressHandler
         self.userInfo = userInfo
         self.session = session
         self.encoder = encoder
         self.decoder = decoder
-        self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
-        self.shouldRemoveSlashesBeforeEmptyScheme = shouldRemoveSlashesBeforeEmptyScheme
     }
 
     public func urlRequestRepresentation() throws -> URLRequestRepresentation {
-        let url = try address.url(shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint)
+        let url = try address.url()
         var request = URLRequest(url: url,
                                  cachePolicy: requestPolicy,
                                  timeoutInterval: timeoutInterval)

@@ -1,175 +1,203 @@
 import Foundation
 
-public enum Address: Equatable {
-    public enum Scheme: Equatable {
-        case http
-        case https
-        case other(String)
-    }
+public struct Address: Equatable {
+    public let scheme: Scheme?
+    public let host: String
+    public let port: Int?
+    public let path: [String]
+    public let queryItems: QueryItems
+    public let fragment: String?
 
-    case url(URL)
-    case address(URLRepresentation)
+    /// URLComponents is require scheme and generates url like 'https://some.com/end?param=value'
+    /// this parameter will add '/' after domain or andpoint 'https://some.com/end/?param=value'
+    public let shouldAddSlashAfterEndpoint: Bool
+
+    /// URLComponents is require scheme and generates url like '//some.com/end/?param=value'
+    /// this parameter will remove '//' from the begining of new URL
+    /// - change this setting on your own risk. I always recommend using the "Address" with the correct "Scheme"
+    public let shouldRemoveSlashesForEmptyScheme: Bool
 
     public init(scheme: Scheme? = .https,
                 host: String,
                 port: Int? = nil,
                 path: [String] = [],
                 queryItems: QueryItems = [],
-                fragment: String? = nil) {
-        let representable = URLRepresentation(scheme: scheme,
-                                              host: host,
-                                              port: port,
-                                              path: path,
-                                              queryItems: queryItems,
-                                              fragment: fragment)
-        self = .address(representable)
+                fragment: String? = nil,
+                shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
+                shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) {
+        self.scheme = scheme
+        self.host = host
+        self.port = port
+        self.path = path
+        self.queryItems = queryItems
+        self.fragment = fragment
+        self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
+        self.shouldRemoveSlashesForEmptyScheme = shouldRemoveSlashesForEmptyScheme
     }
 
-    public static func address(scheme: Scheme? = .https,
-                               host: String,
-                               port: Int? = nil,
-                               endpoint: String,
-                               queryItems: QueryItems = [],
-                               fragment: String? = nil) -> Address {
-        let representable = URLRepresentation(scheme: scheme,
-                                              host: host,
-                                              port: port,
-                                              path: [endpoint].compactMap { $0 },
-                                              queryItems: queryItems,
-                                              fragment: fragment)
-        return .address(representable)
+    public init(url: URL,
+                shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
+                shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) throws {
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+
+        self.scheme = Scheme(components.scheme)
+        self.host = try components.host.unwrap(orThrow: RequestEncodingError.brokenHost)
+        self.port = components.port
+        self.path = components.path.components(separatedBy: "/")
+        self.fragment = components.fragment
+
+        let items: [QueryItems.Element] = (components.queryItems ?? []).map {
+            return .init(key: $0.name, value: $0.value)
+        }
+        self.queryItems = .init(items)
+
+        self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
+        self.shouldRemoveSlashesForEmptyScheme = shouldRemoveSlashesForEmptyScheme
     }
 
-    public static func address(scheme: Scheme? = .https,
-                               host: String,
-                               port: Int? = nil,
-                               path: [String] = [],
-                               queryItems: QueryItems = [],
-                               fragment: String? = nil) -> Address {
-        return .init(scheme: scheme,
-                     host: host,
-                     port: port,
-                     path: path,
-                     queryItems: queryItems,
-                     fragment: fragment)
+    public init(string: String,
+                shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
+                shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) throws {
+        let url = try URL(string: string).unwrap(orThrow: RequestEncodingError.brokenURL)
+        try self.init(url: url,
+                      shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
+                      shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
     }
+}
 
-    public func append(_ pathComponents: [String]) -> Self {
-        return self + pathComponents
-    }
-
-    public func append(_ pathComponent: String) -> Self {
-        return self + pathComponent
-    }
-
-    public func append(_ queryItems: QueryItems) -> Self {
-        return self + queryItems
-    }
-
-    public static func +(lhs: Self, rhs: QueryItems) -> Self {
-        let representation: URLRepresentation
-
-        switch lhs {
-        case .url(let url):
-            representation = .init(url: url)
-        case .address(let value):
-            representation = value
+private extension Scheme {
+    init?(_ string: String?) {
+        guard let string, !string.isEmpty else {
+            return nil
         }
 
-        return .address(representation + rhs)
-    }
-
-    public static func +(lhs: Self, rhs: String) -> Self {
-        let representation: URLRepresentation
-
-        switch lhs {
-        case .url(let url):
-            representation = .init(url: url)
-        case .address(let value):
-            representation = value
+        if string.hasPrefix("https") {
+            self = .https
+        } else if string.hasPrefix("http") {
+            self = .http
+        } else {
+            self = .other(string)
         }
-
-        return .address(representation + rhs)
-    }
-
-    public static func +(lhs: Self, rhs: [String]) -> Self {
-        let representation: URLRepresentation
-
-        switch lhs {
-        case .url(let url):
-            representation = .init(url: url)
-        case .address(let value):
-            representation = value
-        }
-
-        return .address(representation + rhs)
     }
 }
 
 public extension Address {
-    func url(shouldAddSlashAfterEndpoint: Bool = Parameters.shouldAddSlashAfterEndpoint,
-             shouldRemoveSlashesBeforeEmptyScheme: Bool = Parameters.shouldRemoveSlashesBeforeEmptyScheme) throws -> URL {
-        switch self {
-        case .url(let url):
-            return url
-        case .address(let url):
-            var components = URLComponents()
+    func url() throws -> URL {
+        var components = URLComponents()
 
-            switch url.scheme {
-            case .none:
-                components.scheme = nil
-            case .http:
-                components.scheme = "http"
-            case .https:
-                components.scheme = "https"
-            case .other(let string):
-                components.scheme = string
-            }
-
-            components.host = url.host
-            components.port = url.port
-
-            let path = url.path.flatMap { $0.components(separatedBy: "/") }.filter { !$0.isEmpty }
-            if !path.isEmpty {
-                components.path = "/" + path.joined(separator: "/")
-            }
-
-            if shouldAddSlashAfterEndpoint {
-                components.path += "/"
-            }
-
-            if !url.queryItems.isEmpty {
-                var result = components.queryItems ?? []
-                for item in url.queryItems {
-                    result.append(URLQueryItem(name: item.key, value: item.value))
-                }
-                components.queryItems = result
-            }
-
-            if let fragment = url.fragment {
-                components.fragment = fragment
-            }
-
-            let componentsUrl: URL?
-            let host: String?
-            if shouldRemoveSlashesBeforeEmptyScheme,
-               components.scheme == nil,
-               let componentsString = components.string,
-               componentsString.hasPrefix("//") {
-                let strUrl = String(componentsString.dropFirst(2))
-                componentsUrl = URL(string: strUrl)
-                host = url.host
-            } else {
-                componentsUrl = components.url
-                host = componentsUrl?.host
-            }
-
-            if let componentsUrl,
-               host == url.host {
-                return componentsUrl
-            }
-
-            throw RequestEncodingError.lackAdress
+        switch scheme {
+        case .none:
+            components.scheme = nil
+        case .http:
+            components.scheme = "http"
+        case .https:
+            components.scheme = "https"
+        case .other(let string):
+            components.scheme = string.isEmpty ? nil : string
         }
+
+        components.host = host
+        components.port = port
+
+        let path = path.flatMap { $0.components(separatedBy: "/") }.filter { !$0.isEmpty }
+        if !path.isEmpty {
+            components.path = "/" + path.joined(separator: "/")
+        }
+
+        if shouldAddSlashAfterEndpoint {
+            components.path += "/"
+        }
+
+        if !queryItems.isEmpty {
+            var result = components.queryItems ?? []
+            for item in queryItems {
+                result.append(URLQueryItem(name: item.key, value: item.value))
+            }
+            components.queryItems = result
+        }
+
+        if let fragment {
+            components.fragment = fragment
+        }
+
+        let componentsUrl: URL?
+        let newHost: String?
+        if shouldRemoveSlashesForEmptyScheme,
+           components.scheme == nil,
+           let componentsString = components.string,
+           componentsString.hasPrefix("//") {
+            let strUrl = String(componentsString.dropFirst(2))
+            componentsUrl = URL(string: strUrl)
+            newHost = host
+        } else {
+            componentsUrl = components.url
+            newHost = componentsUrl?.host
+        }
+
+        if let componentsUrl,
+           newHost == host {
+            return componentsUrl
+        }
+
+        throw RequestEncodingError.brokenAddress
+    }
+
+    /// add path component
+    ///
+    ///     a.append("pathComponent")
+    ///     https://some.com  ->  https://some.com/pathComponent
+    func append(_ pathComponent: String) -> Self {
+        return self + pathComponent
+    }
+
+    /// add path components `[pathComponent1,pathComponent2]`
+    ///
+    ///     a.append(["pathComponent1", "pathComponent2"])
+    ///
+    ///     https://some.com  ->  https://some.com/pathComponent1/pathComponent2
+    func append(_ pathComponents: [String]) -> Self {
+        return self + pathComponents
+    }
+
+    /// add query items
+    ///
+    ///     a.append(["item1": "1", "item2": 2])
+    ///
+    ///     https://some.com  ->  https://some.com?item1=1&item2=2
+    func append(_ queryItems: QueryItems) -> Self {
+        return self + queryItems
+    }
+
+    static func +(lhs: Self, rhs: QueryItems) -> Self {
+        return Self(scheme: lhs.scheme,
+                    host: lhs.host,
+                    port: lhs.port,
+                    path: lhs.path,
+                    queryItems: lhs.queryItems + rhs,
+                    fragment: lhs.fragment,
+                    shouldAddSlashAfterEndpoint: lhs.shouldAddSlashAfterEndpoint,
+                    shouldRemoveSlashesForEmptyScheme: lhs.shouldAddSlashAfterEndpoint)
+    }
+
+    static func +(lhs: Self, rhs: [String]) -> Self {
+        return Self(scheme: lhs.scheme,
+                    host: lhs.host,
+                    port: lhs.port,
+                    path: lhs.path + rhs,
+                    queryItems: lhs.queryItems,
+                    fragment: lhs.fragment,
+                    shouldAddSlashAfterEndpoint: lhs.shouldAddSlashAfterEndpoint,
+                    shouldRemoveSlashesForEmptyScheme: lhs.shouldAddSlashAfterEndpoint)
+    }
+
+    static func +(lhs: Self, rhs: String) -> Self {
+        return Self(scheme: lhs.scheme,
+                    host: lhs.host,
+                    port: lhs.port,
+                    path: lhs.path + [rhs],
+                    queryItems: lhs.queryItems,
+                    fragment: lhs.fragment,
+                    shouldAddSlashAfterEndpoint: lhs.shouldAddSlashAfterEndpoint,
+                    shouldRemoveSlashesForEmptyScheme: lhs.shouldAddSlashAfterEndpoint)
     }
 }

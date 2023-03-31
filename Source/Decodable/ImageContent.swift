@@ -10,7 +10,7 @@ struct ImageContent: CustomDecodable {
             if let image = PlatformImage(data: data)?.sdk {
                 self.result = .success(image)
             } else {
-                self.result = .failure(RequestDecodingError.brokenResponse)
+                self.result = .failure(RequestDecodingError.brokenImage)
             }
         } else {
             self.result = .success(nil)

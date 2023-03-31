@@ -7,13 +7,14 @@ import XCTest
 
 final class HTTPStubTest_Tests: XCTestCase {
     private let request: URLRequest = {
-        let parameter = Parameters.testMake(address: .testMake(scheme: .https,
-                                                               host: "api.example.com",
-                                                               path: ["signin", "v1.0"],
-                                                               queryItems: ["user": "foo"]),
+        let address: Address = .testMake(scheme: .https,
+                                         host: "api.example.com",
+                                         path: ["signin", "v1.0"],
+                                         queryItems: ["user": "foo"],
+                                         shouldAddSlashAfterEndpoint: true)
+        let parameter = Parameters.testMake(address: address,
                                             header: ["key": "value"],
-                                            method: .get,
-                                            shouldAddSlashAfterEndpoint: true)
+                                            method: .get)
         let repr = try! parameter.urlRequestRepresentation()
         return repr.sdk
     }()
@@ -37,6 +38,7 @@ final class HTTPStubTest_Tests: XCTestCase {
 
     func test_isAbsoluteURLString() {
         XCTAssertTrue(HTTPStubCondition.isAbsoluteURLString("https://api.example.com/signin/v1.0/?user=foo").test(request))
+        XCTAssertFalse(HTTPStubCondition.isAbsoluteURLString("https://other.example.com/").test(request))
     }
 
     func test_isMethod() {

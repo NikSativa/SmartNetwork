@@ -6,207 +6,134 @@ import XCTest
 @testable import NRequestTestHelpers
 
 final class AddressTests: XCTestCase {
-    func test_url_extension() {
-        var subject: Address
+    func test_extensions() {
         var actualURL: URL?
 
-        subject = .url(.testMake("//some.com")) + "endpoint"
-        actualURL = XCTAssertNoThrowError(try subject.url())
-        XCTAssertEqual(actualURL, .testMake("//some.com/endpoint"))
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(string: "//some.com") + "endpoint"
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("//some.com/endpoint"))
 
-        subject = .url(.testMake("my://some.com")) + "endpoint"
-        actualURL = XCTAssertNoThrowError(try subject.url())
-        XCTAssertEqual(actualURL, .testMake("my://some.com/endpoint"))
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(string: "my://some.com") + "endpoint"
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("my://some.com/endpoint"))
 
-        subject = .url(.testMake("http://some.com/asd")) + "endpoint"
-        actualURL = XCTAssertNoThrowError(try subject.url())
-        XCTAssertEqual(actualURL, .testMake("http://some.com/asd/endpoint"))
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(string: "http://some.com/asd") + "endpoint"
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd/endpoint"))
 
-        subject = .url(.testMake("https://some.com/asd")) + "endpoint"
-        actualURL = XCTAssertNoThrowError(try subject.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com/asd/endpoint"))
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(string: "http://some.com/asd") + ["endpoint1", "endpoint2"]
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd/endpoint1/endpoint2"))
 
-        subject = .address(host: "some.com").append("endpoint")
-        actualURL = XCTAssertNoThrowError(try subject.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint"))
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(string: "http://some.com/asd").append("endpoint")
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd/endpoint"))
 
-        subject = .address(host: "some.com").append(["param": "value"])
-        actualURL = XCTAssertNoThrowError(try subject.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com?param=value"))
-    }
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(string: "http://some.com/asd").append(["endpoint1", "endpoint2"])
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd/endpoint1/endpoint2"))
 
-    func test_url() {
-        var subject: Address
-        var actualURL: URL?
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(string: "http://some.com/asd").append(["param": "value"])
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd?param=value"))
 
-        subject = .url(.testMake("some.com"))
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: true))
-        XCTAssertEqual(actualURL, .testMake("some.com"))
 
-        subject = .url(.testMake("some.com"))
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false))
-        XCTAssertEqual(actualURL, .testMake("some.com"))
+        XCTAssertThrowsError(try Address(host: "").url(), RequestEncodingError.brokenAddress)
 
-        subject = .url(.testMake("https://some.com/asd"))
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: true))
-        XCTAssertEqual(actualURL, .testMake("https://some.com/asd"))
-
-        subject = .url(.testMake("https://some.com/asd"))
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false))
-        XCTAssertEqual(actualURL, .testMake("https://some.com/asd"))
-
-        subject = .url(.testMake("http://some.com"))
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: true))
-        XCTAssertEqual(actualURL, .testMake("http://some.com"))
-
-        subject = .url(.testMake("http://some.com"))
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false))
-        XCTAssertEqual(actualURL, .testMake("http://some.com"))
-
-        subject = .url(.testMake("https://some.com"))
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: true))
-        XCTAssertEqual(actualURL, .testMake("https://some.com"))
-
-        subject = .url(.testMake("https://some.com"))
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false))
-        XCTAssertEqual(actualURL, .testMake("https://some.com"))
-
-        subject = .url(.testMake("some.com/item=value/endpoint/?item=value"))
-        XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: true))
-
-        subject = .url(.testMake("some.com/item=value/endpoint/?item=value"))
-        XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false))
+        actualURL = XCTAssertNoThrowError {
+            let subject = Address(scheme: .other(""), host: "some.com", shouldRemoveSlashesForEmptyScheme: true)
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("some.com"))
     }
 
     func test_init() {
-        var subject: Address
-        var actualURL: URL?
+        XCTAssertAddress(expected: "https://some.com:11")
+        XCTAssertAddress(expected: "https://some.com:11/endpoint",
+                         path: ["endpoint"])
+        XCTAssertAddress(expected: "https://some.com:11/endpoint1/endpoint2",
+                         path: ["endpoint1", "endpoint2"])
+        XCTAssertAddress(expected: "https://some.com:11?key=value",
+                         queryItems: ["key": "value"])
+        XCTAssertAddress(expected: "https://some.com:11?key=value&key1=value1",
+                         queryItems: ["key": "value", "key1": "value1"])
+        XCTAssertAddress(expected: "https://some.com:11#page",
+                         fragment: "page")
+        XCTAssertAddress(expected: "https://some.com:11/",
+                         shouldAddSlashAfterEndpoint: true)
+        XCTAssertAddress(expected: "https://some.com:11",
+                         shouldAddSlashAfterEndpoint: false)
+        XCTAssertAddress(expected: "https://some.com:11",
+                         shouldRemoveSlashesForEmptyScheme: true)
+        XCTAssertAddress(expected: "https://some.com:11",
+                         shouldRemoveSlashesForEmptyScheme: false)
 
-        subject = .address(host: "some.com")
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: true))
-        XCTAssertEqual(actualURL, .testMake("https://some.com/"))
-
-        subject = .address(host: "some.com")
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false))
-        XCTAssertEqual(actualURL, .testMake("https://some.com"))
-
-        subject = .address(host: "some.com", endpoint: "endpoint")
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: true))
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint/"))
-
-        subject = .address(host: "some.com", endpoint: "endpoint")
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false))
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint"))
-
-        subject = .address(host: "some.com", endpoint: "/endpoint/")
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: true))
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint/"))
-
-        subject = .address(host: "some.com", endpoint: "/endpoint/")
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false))
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint"))
-
-        subject = .address(host: "some.com", endpoint: "endpoint", queryItems: ["item": "value"])
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: true))
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint/?item=value"))
-
-        subject = .address(host: "some.com", endpoint: "endpoint", queryItems: ["item": "value"])
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false))
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint?item=value"))
-
-        subject = .address(host: "some.com", endpoint: "/endpoint/", queryItems: ["item": "value"])
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: true))
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint/?item=value"))
-
-        subject = .address(host: "some.com", endpoint: "/endpoint/", queryItems: ["item": "value"])
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false))
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint?item=value"))
-
-        subject = .address(scheme: .other("my"), host: "some.com", endpoint: "/endpoint/", queryItems: ["item": "value"])
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false))
-        XCTAssertEqual(actualURL, .testMake("my://some.com/endpoint?item=value"))
-
-        subject = .address(scheme: .http, host: "some.com", endpoint: "/endpoint/", queryItems: ["item": "value"])
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false))
-        XCTAssertEqual(actualURL, .testMake("http://some.com/endpoint?item=value"))
-
-        subject = .address(scheme: .https, host: "some.com", endpoint: "/endpoint/", queryItems: ["item": "value"])
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false))
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint?item=value"))
-
-        subject = .address(scheme: nil, host: "some.com", endpoint: "/endpoint/", queryItems: ["item": "value"])
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false, shouldRemoveSlashesBeforeEmptyScheme: true))
-        XCTAssertEqual(actualURL, .testMake("some.com/endpoint?item=value"))
-
-        subject = .address(scheme: nil, host: "some.com", endpoint: "/endpoint/", queryItems: ["item": "value"], fragment: "fr")
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false, shouldRemoveSlashesBeforeEmptyScheme: true))
-        XCTAssertEqual(actualURL, .testMake("some.com/endpoint?item=value#fr"))
-
-        subject = .address(scheme: nil, host: "some.com", endpoint: "/endpoint/", queryItems: ["item": "value", "item": "value"], fragment: "fr")
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false, shouldRemoveSlashesBeforeEmptyScheme: true))
-        XCTAssertEqual(actualURL, .testMake("some.com/endpoint?item=value&item=value#fr"))
-
-        subject = .address(scheme: nil, host: "some.com", endpoint: "/endpoint/", queryItems: ["item": "value", "item": "value", "item": nil], fragment: "fr")
-        actualURL = XCTAssertNoThrowError(try subject.url(shouldAddSlashAfterEndpoint: false, shouldRemoveSlashesBeforeEmptyScheme: true))
-        XCTAssertEqual(actualURL, .testMake("some.com/endpoint?item=value&item=value&item#fr"))
-
-        subject = .address(host: "\"some.com")
-        XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: true), RequestEncodingError.lackAdress)
-
-        subject = .address(scheme: nil, host: "\"some.com")
-        XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: true), RequestEncodingError.lackAdress)
-
-        subject = .address(host: "\"some.com")
-        XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: false), RequestEncodingError.lackAdress)
-
-        subject = .address(host: "some.com/item=value", endpoint: "/endpoint/", queryItems: ["item": "value"])
-        XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: true), RequestEncodingError.lackAdress)
-
-        subject = .address(host: "some.com/item=value", endpoint: "/endpoint/", queryItems: ["item": "value"])
-        XCTAssertThrowsError(try subject.url(shouldAddSlashAfterEndpoint: false), RequestEncodingError.lackAdress)
-    }
-
-    func test_append() {
-        append(to: .address(host: "some.com", queryItems: ["param": "value"], fragment: "page"), name: "address")
-        append(to: .url(.testMake("https://some.com?param=value#page")), name: "url")
-    }
-
-    private func append(to subject: Address,
-                        name: String,
-                        file: StaticString = #filePath,
-                        line: UInt = #line) {
-        var actualURL = XCTAssertNoThrowError(try subject.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com?param=value#page"), name)
-
-        var subject1 = subject
-        subject1 = subject1 + "endpoint"
-        actualURL = XCTAssertNoThrowError(try subject1.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint?param=value#page"), name)
-
-        var subject2 = subject
-        subject2 = subject2.append("endpoint")
-        actualURL = XCTAssertNoThrowError(try subject2.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint?param=value#page"), name)
-
-        var subject3 = subject
-        subject3 = subject3.append(["endpoint", "endpoint"])
-        actualURL = XCTAssertNoThrowError(try subject3.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com/endpoint/endpoint?param=value#page"), name)
-
-        var subject4 = subject
-        subject4 = subject4 + ["param": "value"]
-        actualURL = XCTAssertNoThrowError(try subject4.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com?param=value&param=value#page"), name)
-
-        var subject5 = subject
-        subject5 = subject5.append(["param": "value"])
-        actualURL = XCTAssertNoThrowError(try subject5.url())
-        XCTAssertEqual(actualURL, .testMake("https://some.com?param=value&param=value#page"), name)
+        XCTAssertAddress(expected: "https://some.com:11/endpoint?key=value",
+                         path: ["endpoint"],
+                         queryItems: ["key": "value"])
+        XCTAssertAddress(expected: "https://some.com:11/endpoint?key=value&key1=value1",
+                         path: ["endpoint"],
+                         queryItems: ["key": "value", "key1": "value1"])
+        XCTAssertAddress(expected: "https://some.com:11/endpoint?key=value#page",
+                         path: ["endpoint"],
+                         queryItems: ["key": "value"],
+                         fragment: "page")
+        XCTAssertAddress(expected: "https://some.com:11/endpoint?key=value&key1=value1#page",
+                         path: ["endpoint"],
+                         queryItems: ["key": "value", "key1": "value1"],
+                         fragment: "page")
     }
 }
 
-private extension URL {
-    static func testMake(_ string: String = "http://www.some.com") -> URL {
-        return .spry.testMake(string)
+private func XCTAssertAddress(expected: String,
+                              path: [String] = [],
+                              queryItems: QueryItems = [],
+                              fragment: String? = nil,
+                              shouldAddSlashAfterEndpoint: Bool = false,
+                              shouldRemoveSlashesForEmptyScheme: Bool = false,
+                              file: StaticString = #filePath,
+                              line: UInt = #line) {
+    let mainUrl = XCTAssertNoThrowError(file: file, line: line) {
+        let subject = Address(scheme: .https,
+                              host: "some.com",
+                              port: 11,
+                              path: path,
+                              queryItems: queryItems,
+                              fragment: fragment,
+                              shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
+                              shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
+        return try subject.url()
     }
+    let expectedURL: URL = .spry.testMake(expected)
+    XCTAssertEqual(mainUrl, expectedURL, mainUrl?.absoluteString ?? expected, file: file, line: line)
+
+    let urlURL = XCTAssertNoThrowError(file: file, line: line) {
+        let subject = try Address(url: expectedURL,
+                                  shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
+                                  shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
+        return try subject.url()
+    }
+    XCTAssertEqual(urlURL, mainUrl, file: file, line: line)
+
+    let stringURL = XCTAssertNoThrowError(file: file, line: line) {
+        let subject = try Address(string: expected,
+                                  shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
+                                  shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
+        return try subject.url()
+    }
+    XCTAssertEqual(stringURL, mainUrl, file: file, line: line)
 }

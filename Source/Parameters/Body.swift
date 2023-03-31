@@ -61,10 +61,10 @@ extension Body {
             return
         }
 
-        Logger.log(text(),
-                   file: file,
-                   method: method,
-                   line: line)
+        RS.log(text(),
+               file: file,
+               method: method,
+               line: line)
     }
 
     func fill(_ tempRequest: inout URLRequest, isLoggingEnabled: Bool, encoder: @autoclosure () -> JSONEncoder) throws {

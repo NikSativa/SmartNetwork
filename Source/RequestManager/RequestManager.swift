@@ -28,7 +28,7 @@ public final class RequestManager {
         $state.mutate { state in
             state.isRunning = true
 
-            let scheduledRequests = state.queue
+            let scheduledRequests = state.tasksQueue
             for request in scheduledRequests {
                 request.value.request.start()
             }
@@ -102,13 +102,14 @@ public final class RequestManager {
             result.set(error)
         }
 
-        state.queue[info.key] = nil
+        state.tasksQueue[info.key] = nil
 
         let completion = info.completion
         completion(result)
     }
 
     private func createRequest(_ parameters: Parameters,
+                               inQueue completionQueue: DelayedQueue,
                                userInfo: UserInfo) throws -> Requestable {
         var urlRequest = try parameters.urlRequestRepresentation()
         for plugin in pluginProvider?.plugins() ?? [] {
@@ -117,7 +118,8 @@ public final class RequestManager {
         }
 
         let request = Request.create(with: parameters,
-                                     urlRequestable: urlRequest)
+                                     urlRequestable: urlRequest,
+                                     completionQueue: completionQueue)
         return request
     }
 }
@@ -142,13 +144,16 @@ extension RequestManager: RequestManagering {
     }
 
     public func request(with parameters: Parameters,
+                        inQueue completionQueue: DelayedQueue,
                         completion: @escaping ResponseClosure) -> RequestingTask {
         do {
-            let request = try createRequest(parameters, userInfo: parameters.userInfo)
+            let request = try createRequest(parameters,
+                                            inQueue: completionQueue,
+                                            userInfo: parameters.userInfo)
             let info: Info = .init(parameters: parameters,
                                    request: request,
                                    completion: completion)
-            state.queue[info.key] = info
+            state.tasksQueue[info.key] = info
 
             request.completion = { [weak self, unowned info] result in
                 self?.tryComplete(with: result, for: info)
@@ -199,6 +204,6 @@ private extension RequestManager {
 
     final class State {
         var isRunning: Bool = true
-        var queue: [Key: Info] = [:]
+        var tasksQueue: [Key: Info] = [:]
     }
 }

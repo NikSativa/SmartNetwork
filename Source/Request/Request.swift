@@ -14,6 +14,7 @@ public protocol Requestable: AnyObject {
 
 public final class Request {
     private let sessionAdaptor: SessionAdaptor
+    private let completionQueue: DelayedQueue
     private var isCanceled: Bool = false
 
     public let parameters: Parameters
@@ -31,17 +32,21 @@ public final class Request {
     }
 
     private init(with parameters: Parameters,
-                 urlRequestable: URLRequestRepresentation) {
+                 urlRequestable: URLRequestRepresentation,
+                 completionQueue: DelayedQueue) {
         self.parameters = parameters
         self.urlRequestable = urlRequestable
+        self.completionQueue = completionQueue
         self.sessionAdaptor = .init(session: parameters.session,
                                     progressHandler: parameters.progressHandler)
     }
 
     public static func create(with parameters: Parameters,
-                              urlRequestable: URLRequestRepresentation) -> Requestable {
+                              urlRequestable: URLRequestRepresentation,
+                              completionQueue: DelayedQueue) -> Requestable {
         return Self(with: parameters,
-                    urlRequestable: urlRequestable)
+                    urlRequestable: urlRequestable,
+                    completionQueue: completionQueue)
     }
 
     deinit {
@@ -72,12 +77,10 @@ public final class Request {
                                              error: stub.error)
             if let delay = stub.delayInSeconds {
                 Queue.background.asyncAfter(deadline: .now() + delay) { [self] in
-                    fire(data: responseData,
-                         queue: parameters.queue)
+                    fire(data: responseData)
                 }
             } else {
-                fire(data: responseData,
-                     queue: parameters.queue)
+                fire(data: responseData)
             }
             return
         }
@@ -103,8 +106,7 @@ public final class Request {
                                                  body: cached.data,
                                                  response: cached.response,
                                                  error: nil)
-                fire(data: responseData,
-                     queue: cacheSettings.queue)
+                fire(data: responseData)
                 return
             }
         }
@@ -129,8 +131,7 @@ public final class Request {
                                              response: response,
                                              error: error)
 
-            self.fire(data: responseData,
-                      queue: self.parameters.queue)
+            self.fire(data: responseData)
         }
     }
 
@@ -138,8 +139,7 @@ public final class Request {
         sessionAdaptor.stop()
     }
 
-    private func fire(data: RequestResult,
-                      queue: DelayedQueue) {
+    private func fire(data: RequestResult) {
         tolog(data.body, allHTTPHeaderFields: urlRequestable.allHTTPHeaderFields)
 
         for plugin in plugins {
@@ -149,15 +149,9 @@ public final class Request {
                               userInfo: userInfo)
         }
 
-        complete(in: queue,
-                 with: data)
-
         stopSessionRequest()
-    }
 
-    private func complete(in queue: DelayedQueue,
-                          with data: RequestResult) {
-        queue.fire {
+        completionQueue.fire {
             self.completion?(data)
         }
     }
@@ -246,7 +240,7 @@ private extension Request {
             return
         }
 
-        Logger.log([
+        RS.log([
             "\(self)",
             text()
         ].joined(separator: "\n"),
@@ -300,7 +294,7 @@ private extension Request {
             text = "response: empty body"
         }
 
-        Logger.log([
+        RS.log([
             "\(self)",
             "<with headers:",
             allHTTPHeaderFields().postmanFormat,
@@ -313,7 +307,7 @@ private extension Request {
     }
 
     func makeDescription() -> String {
-        let url = try? parameters.address.url(shouldAddSlashAfterEndpoint: parameters.shouldAddSlashAfterEndpoint)
+        let url = try? parameters.address.url()
         let text = url?.absoluteString ?? "broken url"
         return "<\(parameters.method.toString()) request: \(text)>"
     }

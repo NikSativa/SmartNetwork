@@ -44,8 +44,6 @@ final class BodyTests: XCTestCase {
     #endif
 
     func test_encodable() {
-        Logger.logger = { text, _, _, _ in print(text) }
-
         let info = TestInfo(id: 1)
         XCTAssertNoThrowError(try Body.encodable(info).fill(&request, isLoggingEnabled: true, encoder: .init()))
         XCTAssertEqual(request.httpBody?.info(), info)

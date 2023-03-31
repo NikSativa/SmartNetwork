@@ -1,4 +1,5 @@
 import Foundation
+import NQueue
 
 public protocol RequestManagering {
     typealias ResponseClosure = (RequestResult) -> Void
@@ -7,19 +8,30 @@ public protocol RequestManagering {
                                         to _: T.Type,
                                         with parameters: Parameters) -> Result<T.Object, Error>
     func request(with parameters: Parameters,
+                 inQueue completionQueue: DelayedQueue,
                  completion: @escaping ResponseClosure) -> RequestingTask
+}
+
+// MARK: - defult queue
+
+public extension RequestManagering {
+    func request(with parameters: Parameters,
+                 completion: @escaping ResponseClosure) -> RequestingTask {
+        request(with: parameters,
+                inQueue: RS.defaultResponseQueue,
+                completion: completion)
+    }
 }
 
 // MARK: - CustomDecodable
 
 public extension RequestManagering {
-    func requestCustomDecodable<T: CustomDecodable>(_ type: T.Type, with parameters: Parameters) async -> Result<T.Object, Error> {
+    func requestCustomDecodable<T: CustomDecodable>(_ type: T.Type,
+                                                    with parameters: Parameters) async -> Result<T.Object, Error> {
         return await withCheckedContinuation { completion in
-            let task = request(with: parameters) { [parameters] data in
+            let task = request(with: parameters, inQueue: .absent) { [parameters] data in
                 let result = Self.map(data: data, to: type, with: parameters)
-                parameters.queue.fire {
-                    completion.resume(returning: result)
-                }
+                completion.resume(returning: result)
             }
             task.start()
         }
@@ -27,10 +39,11 @@ public extension RequestManagering {
 
     func requestCustomDecodable<T: CustomDecodable>(_ type: T.Type,
                                                     with parameters: Parameters,
+                                                    inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
                                                     completion: @escaping (Result<T.Object, Error>) -> Void) -> RequestingTask {
-        let task = request(with: parameters) { [parameters] data in
+        let task = request(with: parameters, inQueue: .absent) { [parameters] data in
             let result = Self.map(data: data, to: type, with: parameters)
-            parameters.queue.fire {
+            completionQueue.fire {
                 completion(result)
             }
         }
@@ -45,10 +58,8 @@ public extension RequestManagering {
 
     func request(with parameters: Parameters) async -> RequestResult {
         return await withCheckedContinuation { completion in
-            let task = request(with: parameters) { [parameters] result in
-                parameters.queue.fire {
-                    completion.resume(returning: result)
-                }
+            let task = request(with: parameters, inQueue: .absent) { result in
+                completion.resume(returning: result)
             }
             task.start()
         }
@@ -107,9 +118,11 @@ public extension RequestManagering {
     // MARK: - Void
 
     func requestVoid(with parameters: Parameters,
+                     inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
                      completion: @escaping (Result<Void, Error>) -> Void) -> RequestingTask {
         return requestCustomDecodable(VoidContent.self,
                                       with: parameters,
+                                      inQueue: completionQueue,
                                       completion: completion)
     }
 
@@ -117,9 +130,11 @@ public extension RequestManagering {
 
     func requestDecodable<T: Decodable>(_ type: T.Type,
                                         with parameters: Parameters,
+                                        inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
                                         completion: @escaping (Result<T, Error>) -> Void) -> RequestingTask {
         return requestCustomDecodable(DecodableContent<T>.self,
-                                      with: parameters) { result in
+                                      with: parameters,
+                                      inQueue: completionQueue) { result in
             let new = result.recoverResponse()
             completion(new)
         }
@@ -127,63 +142,77 @@ public extension RequestManagering {
 
     func requestOptionalDecodable<T: Decodable>(_ type: T.Type,
                                                 with parameters: Parameters,
+                                                inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
                                                 completion: @escaping (Result<T?, Error>) -> Void) -> RequestingTask {
         return requestCustomDecodable(DecodableContent<T>.self,
                                       with: parameters,
+                                      inQueue: completionQueue,
                                       completion: completion)
     }
 
     // MARK: - Image
 
     func requestImage(with parameters: Parameters,
+                      inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
                       completion: @escaping (Result<Image, Error>) -> Void) -> RequestingTask {
         return requestCustomDecodable(ImageContent.self,
-                                      with: parameters) { result in
+                                      with: parameters,
+                                      inQueue: completionQueue) { result in
             let new = result.recoverResponse()
             completion(new)
         }
     }
 
     func requestOptionalImage(with parameters: Parameters,
+                              inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
                               completion: @escaping (Result<Image?, Error>) -> Void) -> RequestingTask {
         return requestCustomDecodable(ImageContent.self,
                                       with: parameters,
+                                      inQueue: completionQueue,
                                       completion: completion)
     }
 
     // MARK: - Data
 
     func requestData(with parameters: Parameters,
+                     inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
                      completion: @escaping (Result<Data, Error>) -> Void) -> RequestingTask {
         return requestCustomDecodable(DataContent.self,
-                                      with: parameters) { result in
+                                      with: parameters,
+                                      inQueue: completionQueue) { result in
             let new = result.recoverResponse()
             completion(new)
         }
     }
 
     func requestOptionalData(with parameters: Parameters,
+                             inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
                              completion: @escaping (Result<Data?, Error>) -> Void) -> RequestingTask {
         return requestCustomDecodable(DataContent.self,
                                       with: parameters,
+                                      inQueue: completionQueue,
                                       completion: completion)
     }
 
     // MARK: - Any/JSON
 
     func requestAny(with parameters: Parameters,
+                    inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
                     completion: @escaping (Result<Any, Error>) -> Void) -> RequestingTask {
         return requestCustomDecodable(JSONContent.self,
-                                      with: parameters) { result in
+                                      with: parameters,
+                                      inQueue: completionQueue) { result in
             let new = result.recoverResponse()
             completion(new)
         }
     }
 
     func requestOptionalAny(with parameters: Parameters,
+                            inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
                             completion: @escaping (Result<Any?, Error>) -> Void) -> RequestingTask {
         return requestCustomDecodable(JSONContent.self,
                                       with: parameters,
+                                      inQueue: completionQueue,
                                       completion: completion)
     }
 }

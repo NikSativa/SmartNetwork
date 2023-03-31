@@ -13,17 +13,6 @@ public struct StatusCode: Error, Hashable {
         self.code = kind.rawValue
         self.kind = kind
     }
-
-    private func makeDescription() -> String {
-        let name = (kind?.name).map {
-            return " (\($0))"
-        }
-        return "StatusCode \(code)" + (name ?? "")
-    }
-
-    public var localizedDescription: String {
-        return makeDescription()
-    }
 }
 
 public extension StatusCode {
@@ -33,6 +22,14 @@ public extension StatusCode {
 
     static var noContent: Self {
         return .init(.noContent)
+    }
+}
+
+// MARK: - RequestErrorDescription
+
+extension StatusCode: RequestErrorDescription {
+    public var subname: String {
+        return (kind?.name ?? "unknown") + "(\(code))"
     }
 }
 
@@ -167,21 +164,5 @@ public extension StatusCode.Kind {
     var name: String {
         let name: String? = String(reflecting: self).components(separatedBy: ".").last
         return name.unsafelyUnwrapped
-    }
-}
-
-// MARK: - StatusCode + CustomStringConvertible
-
-extension StatusCode: CustomStringConvertible {
-    public var description: String {
-        return makeDescription()
-    }
-}
-
-// MARK: - StatusCode + CustomDebugStringConvertible
-
-extension StatusCode: CustomDebugStringConvertible {
-    public var debugDescription: String {
-        return makeDescription()
     }
 }
