@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Address: Equatable {
+public struct Address: Hashable {
     public let scheme: Scheme?
     public let host: String
     public let port: Int?

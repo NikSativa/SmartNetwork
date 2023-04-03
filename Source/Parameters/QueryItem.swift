@@ -1,6 +1,6 @@
 import Foundation
 
-public struct QueryItem: Equatable {
+public struct QueryItem: Hashable {
     public let key: String
     public let value: String?
 

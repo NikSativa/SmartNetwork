@@ -5,7 +5,7 @@ public protocol RequestManagering {
     typealias ResponseClosure = (RequestResult) -> Void
 
     static func map<T: CustomDecodable>(data: RequestResult,
-                                        to _: T.Type,
+                                        to type: T.Type,
                                         with parameters: Parameters) -> Result<T.Object, Error>
     func request(address: Address,
                  with parameters: Parameters,

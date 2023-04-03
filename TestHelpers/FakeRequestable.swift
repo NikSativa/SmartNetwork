@@ -22,28 +22,28 @@ public final class FakeRequestable: Requestable, Spryable {
 
     public var urlRequestable: URLRequestRepresentation {
         get {
-            return stubbedValue()
+            return spryify()
         }
         set {
-            return recordCall(arguments: newValue)
+            return spryify(arguments: newValue)
         }
     }
 
     public var userInfo: UserInfo {
         get {
-            return stubbedValue()
+            return spryify()
         }
         set {
-            return recordCall(arguments: newValue)
+            return spryify(arguments: newValue)
         }
     }
 
     public var completion: CompletionCallback? {
         get {
-            return stubbedValue()
+            return spryify()
         }
         set {
-            return recordCall(arguments: newValue)
+            return spryify(arguments: newValue)
         }
     }
 

@@ -1,6 +1,6 @@
 import Foundation
 
-public enum Scheme: Equatable {
+public enum Scheme: Hashable {
     case http
     case https
     case other(String)

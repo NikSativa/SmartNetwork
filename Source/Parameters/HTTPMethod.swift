@@ -1,6 +1,6 @@
 import Foundation
 
-public enum HTTPMethod: Equatable {
+public enum HTTPMethod: Hashable {
     case get
     case head
     case post
