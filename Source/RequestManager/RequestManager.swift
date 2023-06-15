@@ -8,21 +8,57 @@ public final class RequestManager {
     private let stopTheLine: StopTheLine?
     private let maxAttemptNumber: Int
 
-    private init(pluginProvider: PluginProviding?,
-                 stopTheLine: StopTheLine?,
-                 maxAttemptNumber: Int) {
+    public init(withPluginProvider pluginProvider: PluginProviding? = nil,
+                stopTheLine: StopTheLine? = nil,
+                maxAttemptNumber: Int = 1) {
         self.pluginProvider = pluginProvider
         self.stopTheLine = stopTheLine
         self.maxAttemptNumber = max(maxAttemptNumber, 1)
     }
 
-    public static func create(withPluginProvider pluginProvider: PluginProviding? = nil,
-                              stopTheLine: StopTheLine? = nil,
-                              maxAttemptNumber: Int = 1) -> RequestManagering {
-        return Self(pluginProvider: pluginProvider,
-                    stopTheLine: stopTheLine,
-                    maxAttemptNumber: maxAttemptNumber)
+    // MARK: - ivars
+
+    public var pure: PureRequestManager {
+        return self
     }
+
+    public var decodable: DecodableRequestManager {
+        return self
+    }
+
+    public func custom<T: CustomDecodable>(_ type: T.Type) -> TypedRequestManager<T.Object> {
+        return TypedRequestManager(type, parent: self)
+    }
+
+    public private(set) lazy var void: TypedRequestManager<Void> = {
+        return custom(VoidContent.self)
+    }()
+
+    public private(set) lazy var data: TypedRequestManager<Data> = {
+        return custom(DataContent.self)
+    }()
+
+    public private(set) lazy var dataOptional: TypedRequestManager<Data?> = {
+        return custom(OptionalDataContent.self)
+    }()
+
+    public private(set) lazy var image: TypedRequestManager<Image> = {
+        return custom(ImageContent.self)
+    }()
+
+    public private(set) lazy var imageOptional: TypedRequestManager<Image?> = {
+        return custom(OptionalImageContent.self)
+    }()
+
+    public private(set) lazy var json: TypedRequestManager<Any> = {
+        return custom(JSONContent.self)
+    }()
+
+    public private(set) lazy var jsonOptional: TypedRequestManager<Any?> = {
+        return custom(OptionalJSONContent.self)
+    }()
+
+    // MARK: -
 
     private func unfreeze() {
         let scheduledRequests = $state.mutate { state in
@@ -38,7 +74,7 @@ public final class RequestManager {
     private func makeStopTheLineAction(stopTheLine: StopTheLine,
                                        info: Info,
                                        data: RequestResult) {
-        let newFactory = RequestManager(pluginProvider: pluginProvider,
+        let newFactory = RequestManager(withPluginProvider: pluginProvider,
                                         stopTheLine: nil,
                                         maxAttemptNumber: maxAttemptNumber)
         stopTheLine.action(with: newFactory,
@@ -133,15 +169,15 @@ public final class RequestManager {
     }
 }
 
-// MARK: - RequestManagering
+extension RequestManager: RequestManagering {}
 
-extension RequestManager: RequestManagering {
-    public static func map<T: CustomDecodable>(data: RequestResult,
-                                               to _: T.Type,
-                                               with parameters: Parameters) -> Result<T.Object, Error> {
-        let payload = T(with: data, decoder: parameters.decoder)
-        let result = payload.result
+// MARK: - PureRequestManager
 
+extension RequestManager: PureRequestManager {
+    public func map<T: CustomDecodable>(data: RequestResult,
+                                        to type: T.Type,
+                                        with parameters: Parameters) -> Result<T.Object, Error> {
+        let result = type.decode(with: data, decoder: parameters.decoder)
         switch result {
         case .success:
             data.set(nil)
@@ -155,7 +191,7 @@ extension RequestManager: RequestManagering {
     public func request(address: Address,
                         with parameters: Parameters,
                         inQueue completionQueue: DelayedQueue,
-                        completion: @escaping ResponseClosure) -> RequestingTask {
+                        completion: @escaping PureRequestManager.ResponseClosure) -> RequestingTask {
         do {
             let request = try createRequest(address: address,
                                             with: parameters,
@@ -188,6 +224,54 @@ extension RequestManager: RequestManagering {
     }
 }
 
+// MARK: - DecodableRequestManager
+
+extension RequestManager: DecodableRequestManager {
+    public func request<T: Decodable>(opt type: T.Type,
+                                      address: Address,
+                                      with parameters: Parameters,
+                                      inQueue completionQueue: DelayedQueue,
+                                      completion: @escaping (Result<T?, Error>) -> Void) -> RequestingTask {
+        return request(address: address,
+                       with: parameters,
+                       inQueue: completionQueue) { [self] data in
+            let result = map(data: data, to: OptionalDecodableContent<T>.self, with: parameters)
+            completionQueue.fire {
+                completion(result)
+            }
+        }
+    }
+
+    public func request<T: Decodable>(_ type: T.Type,
+                                      address: Address,
+                                      with parameters: Parameters,
+                                      inQueue completionQueue: NQueue.DelayedQueue,
+                                      completion: @escaping (Result<T, Error>) -> Void) -> RequestingTask {
+        return request(address: address,
+                       with: parameters,
+                       inQueue: completionQueue) { [self] data in
+            let result = map(data: data, to: DecodableContent<T>.self, with: parameters)
+            completionQueue.fire {
+                completion(result)
+            }
+        }
+    }
+}
+
+public extension RequestManager {
+    /// creates protocol wrapped interface instead of concrete realization
+    /// let manager: RequestManagering = RequestManager()
+    /// vs
+    /// let manager = RequestManager.create()
+    static func create(withPluginProvider pluginProvider: PluginProviding? = nil,
+                       stopTheLine: StopTheLine? = nil,
+                       maxAttemptNumber: Int = 1) -> RequestManagering {
+        return Self(withPluginProvider: pluginProvider,
+                    stopTheLine: stopTheLine,
+                    maxAttemptNumber: maxAttemptNumber)
+    }
+}
+
 // MARK: - private
 
 private extension RequestManager {
@@ -197,7 +281,7 @@ private extension RequestManager {
         let key: Key
         let parameters: Parameters
         let request: Requestable
-        let completion: RequestManager.ResponseClosure
+        let completion: PureRequestManager.ResponseClosure
         var attemptNumber: Int
 
         var userInfo: UserInfo {
@@ -206,7 +290,7 @@ private extension RequestManager {
 
         init(parameters: Parameters,
              request: Requestable,
-             completion: @escaping RequestManager.ResponseClosure) {
+             completion: @escaping PureRequestManager.ResponseClosure) {
             self.key = Key(request)
             self.parameters = parameters
             self.request = request

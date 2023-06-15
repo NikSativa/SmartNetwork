@@ -8,7 +8,7 @@ import XCTest
 @testable import NRequestTestHelpers
 
 final class RequestMultithreadTests: XCTestCase {
-    private let maxRequests = 200
+    private let maxRequests = 500
     private let timoutInSeconds: TimeInterval = 1
     private let stubbedTimeoutInSeconds: TimeInterval = 0.1
 
@@ -40,8 +40,8 @@ final class RequestMultithreadTests: XCTestCase {
 
     func test_threads_closure() {
         threads { [self] exp, comp in
-            subject.requestDecodable(TestInfo.self,
-                                     address: address1) { [exp] obj in
+            subject.decodable.request(TestInfo.self,
+                                      address: address1) { [exp] obj in
                 comp(try! obj.get())
                 exp.fulfill()
             }.deferredStart().store(in: &observers)
@@ -51,8 +51,8 @@ final class RequestMultithreadTests: XCTestCase {
     func test_threads_async() {
         threads { [self] exp, comp in
             Task {
-                let obj = await subject.requestDecodable(TestInfo.self,
-                                                         address: address1)
+                let obj = await subject.decodable.request(TestInfo.self,
+                                                          address: address1)
                 comp(try! obj.get())
                 exp.fulfill()
             }
@@ -62,15 +62,15 @@ final class RequestMultithreadTests: XCTestCase {
     func test_threads() {
         threads { [self] exp, comp in
             if Bool.random() {
-                subject.requestDecodable(TestInfo.self,
-                                         address: address1) { [exp] obj in
+                subject.decodable.request(TestInfo.self,
+                                          address: address1) { [exp] obj in
                     comp(try! obj.get())
                     exp.fulfill()
                 }.deferredStart().store(in: &observers)
             } else {
                 Task {
-                    let obj = await subject.requestDecodable(TestInfo.self,
-                                                             address: address1)
+                    let obj = await subject.decodable.request(TestInfo.self,
+                                                              address: address1)
                     comp(try! obj.get())
                     exp.fulfill()
                 }

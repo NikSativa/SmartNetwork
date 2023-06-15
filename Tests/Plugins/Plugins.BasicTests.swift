@@ -6,7 +6,7 @@ import XCTest
 @testable import NRequestTestHelpers
 
 final class PluginsBasicTests: XCTestCase {
-    func test_authToken() {
+    func test_authToken() throws {
         let subject = Plugins.Basic {
             return ("my_token_username", "my_token_password")
         }
@@ -22,5 +22,16 @@ final class PluginsBasicTests: XCTestCase {
             try subject.verify(data: .testMake(), userInfo: .init())
         }
         XCTAssertTrue(parameters.userInfo.isEmpty)
+
+        // should nothing happen
+        let data: RequestResult = .testMake(url: .spry.testMake(), statusCode: 222)
+        requestable.resetCallsAndStubs()
+
+        subject.willSend(parameters, request: requestable, userInfo: .testMake())
+        subject.didReceive(parameters, request: requestable, data: .testMake(), userInfo: .testMake())
+        try subject.verify(data: data, userInfo: .testMake())
+
+        XCTAssertEqual(data.url, .spry.testMake())
+        XCTAssertNil(data.urlError)
     }
 }

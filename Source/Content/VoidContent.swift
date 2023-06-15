@@ -1,26 +1,24 @@
 import Foundation
 
 struct VoidContent: CustomDecodable {
-    var result: Result<Void, Error>
-
-    init(with data: RequestResult, decoder: @autoclosure () -> JSONDecoder) {
+    static func decode(with data: RequestResult, decoder: @autoclosure () -> JSONDecoder) -> Result<Void, Error> {
         if let error = data.error {
-            if let error = data.error as? StatusCode, error.isSuccess {
-                self.result = .success(())
+            if let error = data.error as? StatusCode, error == .noContent {
+                return .success(())
             } else if let error = data.error as? RequestDecodingError {
                 switch error {
                 case .nilResponse:
-                    self.result = .success(())
+                    return .success(())
                 case .brokenImage,
                      .brokenResponse,
                      .other:
-                    self.result = .failure(error)
+                    return .failure(error)
                 }
             } else {
-                self.result = .failure(error)
+                return .failure(error)
             }
         } else {
-            self.result = .success(())
+            return .success(())
         }
     }
 }

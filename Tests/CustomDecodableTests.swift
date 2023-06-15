@@ -18,7 +18,15 @@ final class CustomDecodableTests: XCTestCase {
     }()
 
     func test_data() {
-        XCTAssertNil(try custom(DataContent.self).get())
+        XCTAssertNil(try custom(OptionalDataContent.self).get())
+        XCTAssertEqual(try custom(OptionalDataContent.self, body: bodyData).get(), bodyData)
+        XCTAssertThrowsError(try custom(OptionalDataContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
+        XCTAssertThrowsError(try custom(OptionalDataContent.self, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
+        XCTAssertThrowsError(try custom(OptionalDataContent.self, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
+
+        XCTAssertThrowsError(RequestDecodingError.nilResponse) {
+            try custom(DataContent.self).get()
+        }
         XCTAssertEqual(try custom(DataContent.self, body: bodyData).get(), bodyData)
         XCTAssertThrowsError(try custom(DataContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
         XCTAssertThrowsError(try custom(DataContent.self, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
@@ -26,7 +34,16 @@ final class CustomDecodableTests: XCTestCase {
     }
 
     func test_decodable() {
-        XCTAssertNil(try custom(DecodableContent<TestInfo>.self).get())
+        XCTAssertNil(try custom(OptionalDecodableContent<TestInfo>.self).get())
+        XCTAssertEqual(try custom(OptionalDecodableContent<TestInfo>.self, body: bodyData).get(), .init(id: 1))
+        XCTAssertThrowsError(try custom(OptionalDecodableContent<TestInfo>.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
+        XCTAssertThrowsError(try custom(OptionalDecodableContent<TestInfo>.self, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
+        XCTAssertThrowsError(try custom(OptionalDecodableContent<TestInfo>.self, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
+        XCTAssertThrowsError(try custom(OptionalDecodableContent<TestInfo>.self, body: bodyBrokenData).get()) { _ in }
+
+        XCTAssertThrowsError(RequestDecodingError.nilResponse) {
+            try custom(DecodableContent<TestInfo>.self).get()
+        }
         XCTAssertEqual(try custom(DecodableContent<TestInfo>.self, body: bodyData).get(), .init(id: 1))
         XCTAssertThrowsError(try custom(DecodableContent<TestInfo>.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
         XCTAssertThrowsError(try custom(DecodableContent<TestInfo>.self, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
@@ -35,8 +52,17 @@ final class CustomDecodableTests: XCTestCase {
     }
 
     func test_image() {
-        XCTAssertNil(try custom(ImageContent.self).get())
-        XCTAssertEqual(try custom(ImageContent.self, body: imageData).get()?.testData().unwrap(), imageData)
+        XCTAssertNil(try custom(OptionalImageContent.self).get())
+        XCTAssertEqual(try custom(OptionalImageContent.self, body: imageData).get()?.testData().unwrap(), imageData)
+        XCTAssertThrowsError(try custom(OptionalImageContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
+        XCTAssertThrowsError(try custom(OptionalImageContent.self, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
+        XCTAssertThrowsError(try custom(OptionalImageContent.self, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
+        XCTAssertThrowsError(try custom(OptionalImageContent.self, body: bodyBrokenData).get()) { _ in }
+
+        XCTAssertThrowsError(RequestDecodingError.nilResponse) {
+            try custom(ImageContent.self).get()
+        }
+        XCTAssertEqual(try custom(ImageContent.self, body: imageData).get().testData().unwrap(), imageData)
         XCTAssertThrowsError(try custom(ImageContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
         XCTAssertThrowsError(try custom(ImageContent.self, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
         XCTAssertThrowsError(try custom(ImageContent.self, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
@@ -44,7 +70,20 @@ final class CustomDecodableTests: XCTestCase {
     }
 
     func test_json() {
-        XCTAssertNil(try custom(JSONContent.self).get())
+        XCTAssertNil(try custom(OptionalJSONContent.self).get())
+        XCTAssertNil(try custom(OptionalJSONContent.self, body: nil).get())
+        XCTAssertEqual(try custom(OptionalJSONContent.self, body: bodyData).get() as! [String: Int], ["id": 1])
+        XCTAssertThrowsError(try custom(OptionalJSONContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
+        XCTAssertThrowsError(try custom(OptionalJSONContent.self, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
+        XCTAssertThrowsError(try custom(OptionalJSONContent.self, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
+        XCTAssertThrowsError(try custom(OptionalJSONContent.self, body: bodyBrokenData).get()) { _ in }
+
+        XCTAssertThrowsError(RequestDecodingError.nilResponse) {
+            try custom(JSONContent.self).get()
+        }
+        XCTAssertThrowsError(RequestDecodingError.nilResponse) {
+            try custom(JSONContent.self, body: nil).get()
+        }
         XCTAssertEqual(try custom(JSONContent.self, body: bodyData).get() as! [String: Int], ["id": 1])
         XCTAssertThrowsError(try custom(JSONContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
         XCTAssertThrowsError(try custom(JSONContent.self, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
@@ -55,20 +94,21 @@ final class CustomDecodableTests: XCTestCase {
     func test_void() {
         XCTAssertTrue(custom(VoidContent.self).isSuccess)
         XCTAssertTrue(custom(VoidContent.self, body: bodyData).isSuccess)
-        XCTAssertTrue(custom(VoidContent.self, error: StatusCode(.resetContent)).isSuccess)
+        XCTAssertTrue(custom(VoidContent.self, error: StatusCode(.noContent)).isSuccess)
         XCTAssertTrue(custom(VoidContent.self, error: RequestDecodingError.nilResponse).isSuccess)
 
+        XCTAssertFalse(custom(VoidContent.self, error: StatusCode(.multiStatus)).isSuccess)
         XCTAssertFalse(custom(VoidContent.self, error: StatusCode(.lenghtRequired)).isSuccess)
         XCTAssertFalse(custom(VoidContent.self, error: RequestDecodingError.brokenResponse).isSuccess)
     }
 
     private func custom<T: CustomDecodable>(_ type: T.Type, body: Data? = nil, error: Error? = nil) -> Result<T.Object, Error> {
-        let decodable = type.init(with: .testMake(url: .spry.testMake(),
-                                                  statusCode: 200,
-                                                  body: body,
-                                                  error: error),
-                                  decoder: .init())
-        return decodable.result
+        let result = type.decode(with: .testMake(url: .spry.testMake(),
+                                                 statusCode: 200,
+                                                 body: body,
+                                                 error: error),
+                                 decoder: .init())
+        return result
     }
 }
 
