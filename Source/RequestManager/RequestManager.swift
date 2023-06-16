@@ -175,8 +175,6 @@ extension RequestManager: RequestManagering {
             return RequestingTask(runAction: { [state] in
                 if state.isRunning {
                     request.start()
-                } else {
-                    print("")
                 }
             }, cancelAction: { [request] in
                 request.cancel()
