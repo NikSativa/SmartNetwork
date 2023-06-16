@@ -55,9 +55,9 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
     case .header(let operation):
         switch operation {
         case .add(let key):
-            request.stub(.addValue).with(value, key).andReturn()
+            request.stub(.addValue).with(value ?? Argument.nil, key).andReturn()
         case .set(let key):
-            request.stub(.setValue).with(value, key).andReturn()
+            request.stub(.setValue).with(value ?? Argument.nil, key).andReturn()
         }
     case .queryParam:
         request.stub(.url).andReturn(url)

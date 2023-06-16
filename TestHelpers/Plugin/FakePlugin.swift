@@ -21,6 +21,6 @@ public final class FakePlugin: Plugin, Spryable {
 
     public func verify(data: RequestResult,
                        userInfo: UserInfo) throws {
-        return spryify(arguments: data)
+        return spryify(arguments: data, userInfo)
     }
 }

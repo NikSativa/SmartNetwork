@@ -13,8 +13,8 @@ let package = Package(
         .library(name: "NRequestTestHelpers", targets: ["NRequestTestHelpers"])
     ],
     dependencies: [
-        .package(url: "https://github.com/NikSativa/NSpry.git", .upToNextMajor(from: "2.0.0")),
-        .package(url: "https://github.com/NikSativa/NQueue.git", .upToNextMajor(from: "1.2.0"))
+        .package(url: "https://github.com/NikSativa/NSpry.git", .upToNextMajor(from: "2.1.1")),
+        .package(url: "https://github.com/NikSativa/NQueue.git", .upToNextMajor(from: "1.2.2"))
     ],
     targets: [
         .target(name: "NRequest",

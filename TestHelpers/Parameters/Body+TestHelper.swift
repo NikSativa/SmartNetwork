@@ -6,22 +6,11 @@ import NSpry
 
 extension Body: Equatable, SpryEquatable {
     private static func compare(_ lhs: Any, _ rhs: Any) -> Bool {
-        if let lhs = lhs as? SpryEquatable, let rhs = rhs as? SpryEquatable {
-            return lhs._isEqual(to: rhs)
-        }
-
-        fatalError("some of your parameters are not conforms to 'SpryEquatable'")
+        return isAnyEqual(lhs, rhs)
     }
 
     private static func compare(_ lhs: any Encodable, _ rhs: any Encodable) -> Bool {
-        if let lhs = lhs as? SpryEquatable, let rhs = rhs as? SpryEquatable {
-            return lhs._isEqual(to: rhs)
-        }
-
-        let a = lhs.string()
-        let b = rhs.string()
-
-        return a != nil && a == b
+        return isAnyEqual(lhs, rhs)
     }
 
     public static func ==(lhs: Body, rhs: Body) -> Bool {

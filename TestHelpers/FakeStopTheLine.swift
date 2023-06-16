@@ -21,7 +21,7 @@ public final class FakeStopTheLine: StopTheLine, Spryable, SpryEquatable {
                        userInfo: UserInfo,
                        completion: @escaping (StopTheLineResult) -> Void) {
         self.completion = completion
-        return spryify(arguments: manager, parameters, response, userInfo)
+        return spryify(arguments: manager, parameters, response, userInfo, completion)
     }
 
     public func verify(response: RequestResult,
