@@ -9,7 +9,7 @@ public final class RequestingTask {
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var runAction: (() -> Void)?
 
-    internal init(runAction: @escaping () -> Void,
+    public init(runAction: @escaping () -> Void,
                   cancelAction: (() -> Void)? = nil) {
         self.runAction = runAction
         self.cancelAction = cancelAction
