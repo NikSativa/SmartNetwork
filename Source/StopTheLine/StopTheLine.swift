@@ -1,7 +1,7 @@
 import Foundation
 
 public protocol StopTheLine {
-    func action(with manager: some RequestManager,
+    func action(with manager: RequestManagering,
                 originalParameters parameters: Parameters,
                 response: RequestResult,
                 userInfo: UserInfo,
