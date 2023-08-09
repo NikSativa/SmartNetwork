@@ -58,6 +58,12 @@ final class AddressTests: XCTestCase {
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("some.com"))
+
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(string: "http://www.some.com/asd").append(["param": "value"])
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
     }
 
     func test_init() {

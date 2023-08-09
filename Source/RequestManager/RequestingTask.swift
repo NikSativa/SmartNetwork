@@ -10,7 +10,7 @@ public final class RequestingTask {
     private var runAction: (() -> Void)?
 
     public init(runAction: @escaping () -> Void,
-                  cancelAction: (() -> Void)? = nil) {
+                cancelAction: (() -> Void)? = nil) {
         self.runAction = runAction
         self.cancelAction = cancelAction
     }
@@ -33,6 +33,8 @@ public final class RequestingTask {
     }
 
     public func cancel() {
+        runAction = nil
+
         let cancelAction = cancelAction
         self.cancelAction = nil
         cancelAction?()

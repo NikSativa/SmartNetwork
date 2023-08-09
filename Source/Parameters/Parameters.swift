@@ -10,7 +10,7 @@ public struct Parameters {
     public let timeoutInterval: TimeInterval
     public let cacheSettings: CacheSettings?
     public let requestPolicy: URLRequest.CachePolicy
-    public let plugins: [RequestStatePlugin]
+    public let plugins: [Plugin]
     public let isLoggingEnabled: Bool
     public let progressHandler: ProgressHandler?
     public let session: Session
@@ -23,7 +23,7 @@ public struct Parameters {
     public init(header: HeaderFields = [:],
                 method: HTTPMethod = .get,
                 body: Body = .empty,
-                plugins: [RequestStatePlugin] = [],
+                plugins: [Plugin] = [],
                 cacheSettings: CacheSettings? = nil,
                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
                 timeoutInterval: TimeInterval = 60,

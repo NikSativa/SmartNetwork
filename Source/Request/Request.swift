@@ -28,7 +28,7 @@ public final class Request {
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     public var completion: CompletionCallback?
 
-    private var plugins: [RequestStatePlugin] {
+    private var plugins: [Plugin] {
         return parameters.plugins
     }
 
@@ -123,7 +123,7 @@ public final class Request {
                 return
             }
 
-            if let cacheSettings = self.parameters.cacheSettings, let response, let data, error == nil {
+            if let cacheSettings = parameters.cacheSettings, let response, let data, error == nil {
                 let cached = CachedURLResponse(response: response,
                                                data: data,
                                                userInfo: nil,
@@ -131,14 +131,14 @@ public final class Request {
                 cacheSettings.cache.storeCachedResponse(cached, for: sdkRequest)
             }
 
-            self.tologSelf(sdkRequest)
+            tologSelf(sdkRequest)
 
-            let responseData = RequestResult(request: self.urlRequestable,
+            let responseData = RequestResult(request: urlRequestable,
                                              body: data,
                                              response: response,
                                              error: error)
 
-            self.fire(data: responseData)
+            fire(data: responseData)
         }
     }
 

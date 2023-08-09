@@ -9,4 +9,13 @@ public protocol Plugin {
 
     func verify(data: RequestResult,
                 userInfo: UserInfo) throws
+
+    func willSend(_ parameters: Parameters,
+                  request: URLRequestRepresentation,
+                  userInfo: UserInfo)
+
+    func didReceive(_ parameters: Parameters,
+                    request: URLRequestRepresentation,
+                    data: RequestResult,
+                    userInfo: UserInfo)
 }

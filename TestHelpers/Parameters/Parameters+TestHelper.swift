@@ -8,7 +8,7 @@ extension Parameters: SpryEquatable {
     public static func testMake(header: HeaderFields = [:],
                                 method: HTTPMethod = .get,
                                 body: Body = .empty,
-                                plugins: [RequestStatePlugin] = [],
+                                plugins: [Plugin] = [],
                                 cacheSettings: CacheSettings? = nil,
                                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
                                 timeoutInterval: TimeInterval = 60,
@@ -48,9 +48,11 @@ extension Parameters: Equatable {
     }
 }
 
-private extension [RequestStatePlugin] {
+private extension [Plugin] {
     var hashingString: [String] {
-        let result = map { String(describing: type(of: $0)) }
+        let result = map {
+            return String(describing: type(of: $0))
+        }
         return result
     }
 }

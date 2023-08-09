@@ -1,6 +1,6 @@
 import Foundation
-import NSpry
 import NQueue
+import NSpry
 
 @testable import NRequest
 
@@ -29,7 +29,7 @@ public final class FakeRequestManagering: RequestManagering, Spryable {
                         inQueue completionQueue: DelayedQueue,
                         completion: @escaping ResponseClosure) -> RequestingTask {
         self.completion[address] = completion
-        self.lastCompletion = completion
+        lastCompletion = completion
         return spryify(arguments: address, parameters, completionQueue, completion)
     }
 }

@@ -78,10 +78,8 @@ final class RequestManagerTests: XCTestCase {
         let plugin: FakePlugin = .init()
         plugin.stub(.prepare).andReturn()
         plugin.stub(.verify).andReturn()
-
-        let requestPlugin: FakeRequestStatePlugin = .init()
-        requestPlugin.stub(.willSend).andReturn()
-        requestPlugin.stub(.didReceive).andReturn()
+        plugin.stub(.willSend).andReturn()
+        plugin.stub(.didReceive).andReturn()
 
         let pluginProvider = PluginProvider.create(plugins: [Plugins.StatusCode(), plugin])
         let subject = RequestManager.create(withPluginProvider: pluginProvider)
@@ -90,7 +88,7 @@ final class RequestManagerTests: XCTestCase {
         var expectation: XCTestExpectation = .init(description: "should receive response")
         subject.requestDecodable(TestInfo.self,
                                  address: Constant.address1,
-                                 with: .init(plugins: [requestPlugin],
+                                 with: .init(plugins: [plugin],
                                              cacheSettings: .testMake())) {
             response = try? $0.get()
             expectation.fulfill()
@@ -101,16 +99,16 @@ final class RequestManagerTests: XCTestCase {
         XCTAssertHaveReceived(plugin, .prepare, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(plugin, .verify, countSpecifier: .exactly(1))
 
-        XCTAssertHaveReceived(requestPlugin, .willSend, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(requestPlugin, .didReceive, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(plugin, .willSend, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(plugin, .didReceive, countSpecifier: .exactly(1))
 
         plugin.resetCalls()
-        requestPlugin.resetCalls()
+        plugin.resetCalls()
 
         expectation = .init(description: "should receive response")
         subject.requestDecodable(TestInfo.self,
                                  address: Constant.address2,
-                                 with: .init(plugins: [requestPlugin])) {
+                                 with: .init(plugins: [plugin])) {
             response = try? $0.get()
             expectation.fulfill()
         }.start().store(in: &observers)
@@ -120,8 +118,8 @@ final class RequestManagerTests: XCTestCase {
         XCTAssertHaveReceived(plugin, .prepare, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(plugin, .verify, countSpecifier: .exactly(1))
 
-        XCTAssertHaveReceived(requestPlugin, .willSend, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(requestPlugin, .didReceive, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(plugin, .willSend, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(plugin, .didReceive, countSpecifier: .exactly(1))
     }
 
     func test_lack_parameters() {
