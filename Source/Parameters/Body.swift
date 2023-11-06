@@ -56,22 +56,7 @@ public enum Body {
 }
 
 extension Body {
-    private func tolog(_ isLoggingEnabled: Bool,
-                       file: String = #file,
-                       method: String = #function,
-                       line: Int = #line,
-                       _ text: () -> String) {
-        guard isLoggingEnabled else {
-            return
-        }
-
-        RS.log(text(),
-               file: file,
-               method: method,
-               line: line)
-    }
-
-    func fill(_ tempRequest: inout URLRequest, isLoggingEnabled: Bool, encoder: @autoclosure () -> JSONEncoder) throws {
+    func fill(_ tempRequest: inout URLRequest, encoder: @autoclosure () -> JSONEncoder) throws {
         switch self {
         case .empty:
             break
@@ -106,11 +91,6 @@ extension Body {
             let data = try encoder.encode(object)
 
             tempRequest.httpBody = data
-            tolog(isLoggingEnabled) {
-                let text = String(data: data, encoding: .utf8)
-                let res = ["Encodable object:", text].compactMap { $0 }.joined(separator: "\n")
-                return res
-            }
 
             if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
                 tempRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -121,11 +101,6 @@ extension Body {
             }
         case .form(let form):
             let data = FormEncoder.createBody(form)
-            tolog(isLoggingEnabled) {
-                let data = FormEncoder.createBody(form, isLogging: true)
-                return "Form:\n" + String(describing: String(data: data, encoding: .utf8))
-            }
-
             tempRequest.httpBody = data
 
             if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
@@ -137,14 +112,6 @@ extension Body {
             }
         case .xform(let parameters):
             let data = XFormEncoder.encodeParameters(parameters: parameters)
-            tolog(isLoggingEnabled) {
-                let text = data.flatMap {
-                    return String(data: $0, encoding: .utf8)
-                }
-                let res = ["Body:", text].compactMap { $0 }.joined(separator: "\n")
-                return res
-            }
-
             tempRequest.httpBody = data
 
             if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {

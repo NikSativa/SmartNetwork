@@ -10,53 +10,48 @@ final class BodyTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        RS.logger = { text, _, _, _ in
-            // nothing, for code coverage only
-            XCTAssertNotNil(text())
-        }
         request = .spry.testMake(url: "some.com")
     }
 
     override func tearDown() {
         super.tearDown()
-        RS.logger = nil
         request = nil
     }
 
     func test_empty() {
-        XCTAssertNoThrowError(try Body.empty.fill(&request, isLoggingEnabled: true, encoder: .init()))
+        XCTAssertNoThrowError(try Body.empty.fill(&request, encoder: .init()))
         XCTAssertNil(request.httpBody)
     }
 
     func test_data() throws {
         let data = "str".data(using: .utf8).unsafelyUnwrapped
-        XCTAssertNoThrowError(try Body.data(data).fill(&request, isLoggingEnabled: true, encoder: .init()))
+        XCTAssertNoThrowError(try Body.data(data).fill(&request, encoder: .init()))
         XCTAssertEqual(request.httpBody, data)
     }
 
     func test_image_png() {
         let image = Image.spry.testImage
-        XCTAssertNoThrowError(try Body.image(.png(image)).fill(&request, isLoggingEnabled: true, encoder: .init()))
+        XCTAssertNoThrowError(try Body.image(.png(image)).fill(&request, encoder: .init()))
         XCTAssertEqual(request.httpBody, image.testData())
     }
 
     #if !os(macOS)
     func test_image_jpeg() {
         let image = Image.spry.testImage
-        XCTAssertNoThrowError(try Body.image(.jpeg(image, compressionQuality: 1)).fill(&request, isLoggingEnabled: true, encoder: .init()))
+        XCTAssertNoThrowError(try Body.image(.jpeg(image, compressionQuality: 1)).fill(&request, encoder: .init()))
         XCTAssertEqual(request.httpBody, image.jpegData(compressionQuality: 1))
     }
     #endif
 
     func test_encodable() {
         let info = TestInfo(id: 1)
-        XCTAssertNoThrowError(try Body.encodable(info).fill(&request, isLoggingEnabled: true, encoder: .init()))
+        XCTAssertNoThrowError(try Body.encodable(info).fill(&request, encoder: .init()))
         XCTAssertEqual(request.httpBody?.info(), info)
 
-        XCTAssertNoThrowError(try Body.encodable(info).fill(&request, isLoggingEnabled: false, encoder: .init()))
+        XCTAssertNoThrowError(try Body.encodable(info).fill(&request, encoder: .init()))
         XCTAssertEqual(request.httpBody?.info(), info)
 
-        XCTAssertThrowsError(try Body.encodable(BrokenTestInfo(id: 1)).fill(&request, isLoggingEnabled: false, encoder: .init()), RequestEncodingError.invalidJSON)
+        XCTAssertThrowsError(try Body.encodable(BrokenTestInfo(id: 1)).fill(&request, encoder: .init()), RequestEncodingError.invalidJSON)
     }
 
     func test_form() {
@@ -67,7 +62,7 @@ final class BodyTests: XCTestCase {
                              name: .file,
                              fileName: "fileName",
                              data: data)
-        XCTAssertNoThrowError(try Body.form(info).fill(&request, isLoggingEnabled: true, encoder: .init()))
+        XCTAssertNoThrowError(try Body.form(info).fill(&request, encoder: .init()))
         let text = request.httpBody.flatMap {
             return String(data: $0, encoding: .utf8)
         }
@@ -81,7 +76,7 @@ final class BodyTests: XCTestCase {
             "param1": 1,
             "param2": BrokenTestInfo(id: 2)
         ]
-        XCTAssertNoThrowError(try Body.xform(info).fill(&request, isLoggingEnabled: true, encoder: .init()))
+        XCTAssertNoThrowError(try Body.xform(info).fill(&request, encoder: .init()))
         let text = request.httpBody.flatMap {
             return String(data: $0, encoding: .utf8)
         }
@@ -91,7 +86,7 @@ final class BodyTests: XCTestCase {
 
     func test_xform_encodable() {
         let info = TestInfo2(id: 1, id2: 2, id3: 3)
-        XCTAssertNoThrowError(try Body.xform(info, encoder: .init()).fill(&request, isLoggingEnabled: true, encoder: .init()))
+        XCTAssertNoThrowError(try Body.xform(info, encoder: .init()).fill(&request, encoder: .init()))
 
         let text = request.httpBody.flatMap {
             return String(data: $0, encoding: .utf8)
@@ -99,9 +94,9 @@ final class BodyTests: XCTestCase {
         let expected = "id=1&id3=3&id2=2"
         XCTAssertEqual(text?.components(separatedBy: "&").sorted(), expected.components(separatedBy: "&").sorted())
 
-        XCTAssertThrowsError(try Body.xform(BrokenTestInfo(id: 1), encoder: .init()).fill(&request, isLoggingEnabled: false, encoder: .init()), RequestEncodingError.invalidJSON)
-        XCTAssertThrowsError(try Body.xform([1, 2], encoder: .init()).fill(&request, isLoggingEnabled: false, encoder: .init()), RequestEncodingError.invalidJSON)
-        XCTAssertNoThrowError(try Body.xform([11: "2"], encoder: .init()).fill(&request, isLoggingEnabled: true, encoder: .init()))
+        XCTAssertThrowsError(try Body.xform(BrokenTestInfo(id: 1), encoder: .init()).fill(&request, encoder: .init()), RequestEncodingError.invalidJSON)
+        XCTAssertThrowsError(try Body.xform([1, 2], encoder: .init()).fill(&request, encoder: .init()), RequestEncodingError.invalidJSON)
+        XCTAssertNoThrowError(try Body.xform([11: "2"], encoder: .init()).fill(&request, encoder: .init()))
     }
 }
 

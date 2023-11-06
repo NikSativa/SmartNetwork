@@ -20,6 +20,10 @@ private final class TestPlugin: Plugin {
         fatalError("not used in that test")
     }
 
+    func didFinish(withData data: RequestResult, userInfo: UserInfo) {
+        fatalError("not used in that test")
+    }
+
     func willSend(_ parameters: NRequest.Parameters, request: NRequest.URLRequestRepresentation, userInfo: NRequest.UserInfo) {
         fatalError("not used in that test")
     }

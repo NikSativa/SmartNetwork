@@ -11,7 +11,6 @@ public struct Parameters {
     public let cacheSettings: CacheSettings?
     public let requestPolicy: URLRequest.CachePolicy
     public internal(set) var plugins: [Plugin]
-    public let isLoggingEnabled: Bool
     public let progressHandler: ProgressHandler?
     public let session: Session
     public let encoder: JSONEncoder
@@ -40,7 +39,6 @@ public struct Parameters {
         self.timeoutInterval = timeoutInterval
         self.cacheSettings = cacheSettings
         self.requestPolicy = requestPolicy
-        self.isLoggingEnabled = isLoggingEnabled
         self.progressHandler = progressHandler
         self.userInfo = userInfo
         self.session = session
@@ -59,7 +57,7 @@ public struct Parameters {
             request.setValue(value, forHTTPHeaderField: key)
         }
 
-        try body.fill(&request, isLoggingEnabled: isLoggingEnabled, encoder: encoder)
+        try body.fill(&request, encoder: encoder)
 
         return request
     }

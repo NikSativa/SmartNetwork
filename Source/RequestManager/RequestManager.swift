@@ -134,9 +134,9 @@ public final class RequestManager {
 
     private func complete(with result: RequestResult,
                           for info: Info) {
+        let userInfo = info.userInfo
+        let plugins = info.parameters.plugins
         do {
-            let userInfo = info.userInfo
-            let plugins = info.parameters.plugins
             for plugin in plugins {
                 try plugin.verify(data: result, userInfo: userInfo)
             }
@@ -146,6 +146,10 @@ public final class RequestManager {
 
         $state.mutate {
             $0.tasksQueue[info.key] = nil
+        }
+
+        for plugin in plugins {
+            plugin.didFinish(withData: result, userInfo: userInfo)
         }
 
         let completion = info.completion
@@ -220,8 +224,11 @@ extension RequestManager: PureRequestManager {
                 $0.tasksQueue[info.key] = info
             }
 
-            request.completion = { [weak self, unowned info] result in
-                self?.tryComplete(with: result, for: info)
+            request.completion = { [weak self, weak info] result in
+                guard let self, let info else {
+                    return
+                }
+                tryComplete(with: result, for: info)
             }
 
             return RequestingTask(runAction: { [state] in

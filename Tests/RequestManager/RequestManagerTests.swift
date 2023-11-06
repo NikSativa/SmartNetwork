@@ -115,12 +115,14 @@ final class RequestManagerTests: XCTestCase {
         pluginForManager.stub(.verify).andReturn()
         pluginForManager.stub(.willSend).andReturn()
         pluginForManager.stub(.didReceive).andReturn()
+        pluginForManager.stub(.didFinish).andReturn()
 
         let pluginForParam: FakePlugin = .init(id: 2)
         pluginForParam.stub(.prepare).andReturn()
         pluginForParam.stub(.verify).andReturn()
         pluginForParam.stub(.willSend).andReturn()
         pluginForParam.stub(.didReceive).andReturn()
+        pluginForParam.stub(.didFinish).andReturn()
 
         let subject = RequestManager.create(withPlugins: [Plugins.StatusCode(), pluginForManager])
 
@@ -138,15 +140,15 @@ final class RequestManagerTests: XCTestCase {
         XCTAssertEqual(response, .init(id: 1))
         XCTAssertHaveReceived(pluginForManager, .prepare, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForManager, .verify, countSpecifier: .exactly(1))
-
         XCTAssertHaveReceived(pluginForManager, .willSend, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForManager, .didReceive, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .didFinish, countSpecifier: .exactly(1))
 
         XCTAssertHaveReceived(pluginForParam, .prepare, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForParam, .verify, countSpecifier: .exactly(1))
-
         XCTAssertHaveReceived(pluginForParam, .willSend, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForParam, .didReceive, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .didFinish, countSpecifier: .exactly(1))
 
         pluginForManager.resetCalls()
         pluginForParam.resetCalls()
@@ -163,15 +165,15 @@ final class RequestManagerTests: XCTestCase {
         XCTAssertEqual(response, .init(id: 2))
         XCTAssertHaveReceived(pluginForManager, .prepare, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForManager, .verify, countSpecifier: .exactly(1))
-
         XCTAssertHaveReceived(pluginForManager, .willSend, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForManager, .didReceive, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .didFinish, countSpecifier: .exactly(1))
 
         XCTAssertHaveReceived(pluginForParam, .prepare, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForParam, .verify, countSpecifier: .exactly(1))
-
         XCTAssertHaveReceived(pluginForParam, .willSend, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForParam, .didReceive, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .didFinish, countSpecifier: .exactly(1))
     }
 
     func test_lack_parameters() {

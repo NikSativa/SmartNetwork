@@ -7,19 +7,6 @@ import XCTest
 @testable import NRequestTestHelpers
 
 final class RequestableTests: XCTestCase {
-    override func setUp() {
-        super.setUp()
-        RS.logger = { text, _, _, _ in
-            // nothing, for code coverage only
-            XCTAssertNotNil(text())
-        }
-    }
-
-    override func tearDown() {
-        super.tearDown()
-        RS.logger = nil
-    }
-
     func test_regular_request() {
         var responses: [RequestResult] = []
         let task: FakeSessionTask = .init()

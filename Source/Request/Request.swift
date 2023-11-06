@@ -69,8 +69,6 @@ public final class Request {
         }
 
         let sdkRequest = urlRequestable.sdk
-        tologSelf(sdkRequest)
-
         if let stub = HTTPStubServer.shared.response(for: sdkRequest) {
             let response = HTTPURLResponse(url: sdkRequest.url.unsafelyUnwrapped,
                                            statusCode: stub.statusCode,
@@ -131,8 +129,6 @@ public final class Request {
                 cacheSettings.cache.storeCachedResponse(cached, for: sdkRequest)
             }
 
-            tologSelf(sdkRequest)
-
             let responseData = RequestResult(request: urlRequestable,
                                              body: data,
                                              response: response,
@@ -147,8 +143,6 @@ public final class Request {
     }
 
     private func fire(data: RequestResult) {
-        tolog(data.body, allHTTPHeaderFields: urlRequestable.allHTTPHeaderFields)
-
         for plugin in plugins {
             plugin.didReceive(parameters,
                               request: urlRequestable,
@@ -239,76 +233,6 @@ private final class SessionAdaptor {
 }
 
 private extension Request {
-    func tolog(file: String = #file,
-               method: String = #function,
-               line: Int = #line,
-               text: () -> String) {
-        guard parameters.isLoggingEnabled else {
-            return
-        }
-
-        RS.log([
-            "\(self)",
-            text()
-        ].joined(separator: "\n"),
-        file: file,
-        method: method,
-        line: line)
-    }
-
-    func tologSelf(_ modifiedRequest: @autoclosure () -> URLRequest,
-                   file: String = #file,
-                   method: String = #function,
-                   line: Int = #line) {
-        tolog(file: file,
-              method: method,
-              line: line) {
-            return [
-                "<with headers:",
-                modifiedRequest().allHTTPHeaderFields.postmanFormat,
-                ">"
-            ].joined(separator: "\n")
-        }
-    }
-
-    func tolog(_ data: @autoclosure () -> Data?,
-               allHTTPHeaderFields: @autoclosure () -> [String: String]?,
-               file: String = #file,
-               method: String = #function,
-               line: Int = #line) {
-        guard parameters.isLoggingEnabled else {
-            return
-        }
-
-        let text: String
-        if let body = data(), !body.isEmpty {
-            do {
-                let json = try JSONSerialization.jsonObject(with: body, options: [.allowFragments])
-                let prettyData = try JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys])
-                if let prettyStr = String(data: prettyData, encoding: .utf8) {
-                    text = prettyStr
-                } else {
-                    text = String(data: body, encoding: .utf8).unsafelyUnwrapped
-                }
-            } catch {
-                text = "serialization error: " + error.localizedDescription
-            }
-        } else {
-            text = "response: empty body"
-        }
-
-        RS.log([
-            "\(self)",
-            "<with headers:",
-            allHTTPHeaderFields().postmanFormat,
-            ">",
-            text
-        ].joined(separator: "\n"),
-        file: file,
-        method: method,
-        line: line)
-    }
-
     func makeDescription() -> String {
         let url = try? address.url()
         let text = url?.absoluteString ?? "broken url"

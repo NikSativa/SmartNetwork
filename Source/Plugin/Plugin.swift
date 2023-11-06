@@ -15,10 +15,15 @@ public protocol Plugin {
     func verify(data: RequestResult,
                 userInfo: UserInfo) throws
 
+    /// just before the completion call
+    func didFinish(withData data: RequestResult, userInfo: UserInfo)
+
+    /// super internal level which can be called multiple time based on your Manager's config ('maxAttemptNumber' or/and 'stopTheLine'
     func willSend(_ parameters: Parameters,
                   request: URLRequestRepresentation,
                   userInfo: UserInfo)
 
+    /// super internal level which can be called multiple time based on your Manager's config ('maxAttemptNumber' or/and 'stopTheLine'
     func didReceive(_ parameters: Parameters,
                     request: URLRequestRepresentation,
                     data: RequestResult,
