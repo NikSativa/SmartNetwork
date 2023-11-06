@@ -110,11 +110,11 @@ final class RequestManagerTests: XCTestCase {
     }
 
     func test_plugins() {
-        let pluginForProvider: FakePlugin = .init(id: 1)
-        pluginForProvider.stub(.prepare).andReturn()
-        pluginForProvider.stub(.verify).andReturn()
-        pluginForProvider.stub(.willSend).andReturn()
-        pluginForProvider.stub(.didReceive).andReturn()
+        let pluginForManager: FakePlugin = .init(id: 1)
+        pluginForManager.stub(.prepare).andReturn()
+        pluginForManager.stub(.verify).andReturn()
+        pluginForManager.stub(.willSend).andReturn()
+        pluginForManager.stub(.didReceive).andReturn()
 
         let pluginForParam: FakePlugin = .init(id: 2)
         pluginForParam.stub(.prepare).andReturn()
@@ -122,8 +122,7 @@ final class RequestManagerTests: XCTestCase {
         pluginForParam.stub(.willSend).andReturn()
         pluginForParam.stub(.didReceive).andReturn()
 
-        let pluginProvider = PluginProvider.create(plugins: [Plugins.StatusCode(), pluginForProvider])
-        let subject = RequestManager.create(withPluginProvider: pluginProvider)
+        let subject = RequestManager.create(withPlugins: [Plugins.StatusCode(), pluginForManager])
 
         var response: TestInfo?
         var expectation: XCTestExpectation = .init(description: "should receive response")
@@ -137,11 +136,11 @@ final class RequestManagerTests: XCTestCase {
 
         wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response, .init(id: 1))
-        XCTAssertHaveReceived(pluginForProvider, .prepare, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForProvider, .verify, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .prepare, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .verify, countSpecifier: .exactly(1))
 
-        XCTAssertHaveReceived(pluginForProvider, .willSend, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForProvider, .didReceive, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .willSend, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .didReceive, countSpecifier: .exactly(1))
 
         XCTAssertHaveReceived(pluginForParam, .prepare, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForParam, .verify, countSpecifier: .exactly(1))
@@ -149,7 +148,7 @@ final class RequestManagerTests: XCTestCase {
         XCTAssertHaveReceived(pluginForParam, .willSend, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForParam, .didReceive, countSpecifier: .exactly(1))
 
-        pluginForProvider.resetCalls()
+        pluginForManager.resetCalls()
         pluginForParam.resetCalls()
 
         expectation = .init(description: "should receive response")
@@ -162,11 +161,11 @@ final class RequestManagerTests: XCTestCase {
 
         wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response, .init(id: 2))
-        XCTAssertHaveReceived(pluginForProvider, .prepare, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForProvider, .verify, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .prepare, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .verify, countSpecifier: .exactly(1))
 
-        XCTAssertHaveReceived(pluginForProvider, .willSend, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForProvider, .didReceive, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .willSend, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .didReceive, countSpecifier: .exactly(1))
 
         XCTAssertHaveReceived(pluginForParam, .prepare, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForParam, .verify, countSpecifier: .exactly(1))
@@ -193,8 +192,7 @@ final class RequestManagerTests: XCTestCase {
     func test_stop_the_line_verify_passOver() {
         let stopTheLine: FakeStopTheLine = .init()
 
-        let pluginProvider = PluginProvider.create(plugins: [Plugins.StatusCode()])
-        let subject = RequestManager.create(withPluginProvider: pluginProvider,
+        let subject = RequestManager.create(withPlugins: [Plugins.StatusCode()],
                                             stopTheLine: stopTheLine,
                                             maxAttemptNumber: 1)
         var result: Result<TestInfo, Error>?
@@ -216,8 +214,7 @@ final class RequestManagerTests: XCTestCase {
     func test_stop_the_line_verify_retry() {
         let stopTheLine: FakeStopTheLine = .init()
 
-        let pluginProvider = PluginProvider.create(plugins: [Plugins.StatusCode()])
-        let subject = RequestManager.create(withPluginProvider: pluginProvider,
+        let subject = RequestManager.create(withPlugins: [Plugins.StatusCode()],
                                             stopTheLine: stopTheLine,
                                             maxAttemptNumber: 1)
         var result: Result<TestInfo, Error>?
@@ -251,8 +248,7 @@ final class RequestManagerTests: XCTestCase {
 
     private func stop_the_line(_ action: StopTheLineResult, newCode: StatusCode.Kind? = nil) {
         let stopTheLine: FakeStopTheLine = .init()
-        let pluginProvider = PluginProvider.create(plugins: [Plugins.StatusCode()])
-        let subject = RequestManager.create(withPluginProvider: pluginProvider,
+        let subject = RequestManager.create(withPlugins: [Plugins.StatusCode()],
                                             stopTheLine: stopTheLine,
                                             maxAttemptNumber: 1)
         var result: Result<TestInfo, Error>?

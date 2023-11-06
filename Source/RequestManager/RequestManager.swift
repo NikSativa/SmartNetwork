@@ -4,14 +4,14 @@ import NQueue
 public final class RequestManager {
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var state: State = .init()
-    private let pluginProvider: PluginProviding?
+    private let plugins: [Plugin]
     private let stopTheLine: StopTheLine?
     private let maxAttemptNumber: Int
 
-    public init(withPluginProvider pluginProvider: PluginProviding? = nil,
+    public init(withPlugins plugins: [Plugin] = [],
                 stopTheLine: StopTheLine? = nil,
                 maxAttemptNumber: Int = 1) {
-        self.pluginProvider = pluginProvider
+        self.plugins = plugins
         self.stopTheLine = stopTheLine
         self.maxAttemptNumber = max(maxAttemptNumber, 1)
     }
@@ -74,7 +74,7 @@ public final class RequestManager {
     private func makeStopTheLineAction(stopTheLine: StopTheLine,
                                        info: Info,
                                        data: RequestResult) {
-        let newFactory = RequestManager(withPluginProvider: pluginProvider,
+        let newFactory = RequestManager(withPlugins: plugins,
                                         stopTheLine: nil,
                                         maxAttemptNumber: maxAttemptNumber)
         stopTheLine.action(with: newFactory,
@@ -170,11 +170,12 @@ public final class RequestManager {
     }
 
     private func prepare(_ parameters: Parameters) -> Parameters {
-        var plugins = parameters.plugins
-        if let pluginProvider {
-            plugins += pluginProvider.plugins()
+        if plugins.isEmpty {
+            return parameters
         }
 
+        var plugins = parameters.plugins
+        plugins += self.plugins
         plugins = plugins.unified()
 
         var newParameters = parameters
@@ -278,10 +279,10 @@ public extension RequestManager {
     /// let manager: RequestManagering = RequestManager()
     /// vs
     /// let manager = RequestManager.create()
-    static func create(withPluginProvider pluginProvider: PluginProviding? = nil,
+    static func create(withPlugins plugins: [Plugin] = [],
                        stopTheLine: StopTheLine? = nil,
                        maxAttemptNumber: Int = 1) -> RequestManagering {
-        return Self(withPluginProvider: pluginProvider,
+        return Self(withPlugins: plugins,
                     stopTheLine: stopTheLine,
                     maxAttemptNumber: maxAttemptNumber)
     }
