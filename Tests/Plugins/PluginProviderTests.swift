@@ -7,10 +7,10 @@ import XCTest
 
 final class PluginProviderTests: XCTestCase {
     func test_providers() {
-        let p1 = FakePlugin()
-        let p2 = FakePlugin()
-        let p3 = FakePlugin()
-        let p4 = FakePlugin()
+        let p1 = FakePlugin(id: 1)
+        let p2 = FakePlugin(id: 2)
+        let p3 = FakePlugin(id: 3)
+        let p4 = FakePlugin(id: 4)
 
         var subject = PluginProvider.create()
         XCTAssertTrue(subject.plugins().isEmpty)

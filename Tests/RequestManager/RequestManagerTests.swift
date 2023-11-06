@@ -110,20 +110,26 @@ final class RequestManagerTests: XCTestCase {
     }
 
     func test_plugins() {
-        let plugin: FakePlugin = .init()
-        plugin.stub(.prepare).andReturn()
-        plugin.stub(.verify).andReturn()
-        plugin.stub(.willSend).andReturn()
-        plugin.stub(.didReceive).andReturn()
+        let pluginForProvider: FakePlugin = .init(id: 1)
+        pluginForProvider.stub(.prepare).andReturn()
+        pluginForProvider.stub(.verify).andReturn()
+        pluginForProvider.stub(.willSend).andReturn()
+        pluginForProvider.stub(.didReceive).andReturn()
 
-        let pluginProvider = PluginProvider.create(plugins: [Plugins.StatusCode(), plugin])
+        let pluginForParam: FakePlugin = .init(id: 2)
+        pluginForParam.stub(.prepare).andReturn()
+        pluginForParam.stub(.verify).andReturn()
+        pluginForParam.stub(.willSend).andReturn()
+        pluginForParam.stub(.didReceive).andReturn()
+
+        let pluginProvider = PluginProvider.create(plugins: [Plugins.StatusCode(), pluginForProvider])
         let subject = RequestManager.create(withPluginProvider: pluginProvider)
 
         var response: TestInfo?
         var expectation: XCTestExpectation = .init(description: "should receive response")
         subject.decodable.request(TestInfo.self,
                                   address: Constant.address1,
-                                  with: .init(plugins: [plugin],
+                                  with: .init(plugins: [pluginForParam],
                                               cacheSettings: .testMake())) {
             response = try? $0.get()
             expectation.fulfill()
@@ -131,30 +137,42 @@ final class RequestManagerTests: XCTestCase {
 
         wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response, .init(id: 1))
-        XCTAssertHaveReceived(plugin, .prepare, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(plugin, .verify, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForProvider, .prepare, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForProvider, .verify, countSpecifier: .exactly(1))
 
-        XCTAssertHaveReceived(plugin, .willSend, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(plugin, .didReceive, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForProvider, .willSend, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForProvider, .didReceive, countSpecifier: .exactly(1))
 
-        plugin.resetCalls()
-        plugin.resetCalls()
+        XCTAssertHaveReceived(pluginForParam, .prepare, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .verify, countSpecifier: .exactly(1))
+
+        XCTAssertHaveReceived(pluginForParam, .willSend, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .didReceive, countSpecifier: .exactly(1))
+
+        pluginForProvider.resetCalls()
+        pluginForParam.resetCalls()
 
         expectation = .init(description: "should receive response")
         subject.decodable.request(TestInfo.self,
                                   address: Constant.address2,
-                                  with: .init(plugins: [plugin])) {
+                                  with: .init(plugins: [pluginForParam])) {
             response = try? $0.get()
             expectation.fulfill()
         }.start().store(in: &observers)
 
         wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response, .init(id: 2))
-        XCTAssertHaveReceived(plugin, .prepare, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(plugin, .verify, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForProvider, .prepare, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForProvider, .verify, countSpecifier: .exactly(1))
 
-        XCTAssertHaveReceived(plugin, .willSend, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(plugin, .didReceive, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForProvider, .willSend, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForProvider, .didReceive, countSpecifier: .exactly(1))
+
+        XCTAssertHaveReceived(pluginForParam, .prepare, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .verify, countSpecifier: .exactly(1))
+
+        XCTAssertHaveReceived(pluginForParam, .willSend, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .didReceive, countSpecifier: .exactly(1))
     }
 
     func test_lack_parameters() {

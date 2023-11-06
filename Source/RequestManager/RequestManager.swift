@@ -136,7 +136,8 @@ public final class RequestManager {
                           for info: Info) {
         do {
             let userInfo = info.userInfo
-            for plugin in pluginProvider?.plugins() ?? [] {
+            let plugins = info.parameters.plugins
+            for plugin in plugins {
                 try plugin.verify(data: result, userInfo: userInfo)
             }
         } catch {
@@ -156,7 +157,7 @@ public final class RequestManager {
                                inQueue completionQueue: DelayedQueue,
                                userInfo: UserInfo) throws -> Requestable {
         var urlRequest = try parameters.urlRequest(for: address)
-        for plugin in pluginProvider?.plugins() ?? [] {
+        for plugin in parameters.plugins {
             plugin.prepare(parameters,
                            request: &urlRequest)
         }
@@ -166,6 +167,19 @@ public final class RequestManager {
                                      urlRequestable: urlRequest,
                                      completionQueue: completionQueue)
         return request
+    }
+
+    private func prepare(_ parameters: Parameters) -> Parameters {
+        var plugins = parameters.plugins
+        if let pluginProvider {
+            plugins += pluginProvider.plugins()
+        }
+
+        plugins = plugins.unified()
+
+        var newParameters = parameters
+        newParameters.plugins = plugins
+        return newParameters
     }
 }
 
@@ -192,6 +206,7 @@ extension RequestManager: PureRequestManager {
                         with parameters: Parameters,
                         inQueue completionQueue: DelayedQueue,
                         completion: @escaping PureRequestManager.ResponseClosure) -> RequestingTask {
+        let parameters = prepare(parameters)
         do {
             let request = try createRequest(address: address,
                                             with: parameters,

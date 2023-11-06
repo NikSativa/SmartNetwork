@@ -14,11 +14,15 @@ public extension Plugins {
     }
 
     final class TokenPlugin: Plugin {
+        public let id: AnyHashable
+
         private let tokenProvider: TokenProvider
         private let type: TokenType
 
-        public init(type: TokenType,
+        public init(id: AnyHashable,
+                    type: TokenType,
                     tokenProvider: @escaping TokenProvider) {
+            self.id = id
             self.tokenProvider = tokenProvider
             self.type = type
         }

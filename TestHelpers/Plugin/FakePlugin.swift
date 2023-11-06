@@ -14,7 +14,11 @@ public final class FakePlugin: Plugin, Spryable {
         case didReceive = "didReceive(_:request:data:userInfo:)"
     }
 
-    public init() {}
+    public let id: AnyHashable
+
+    public init(id: AnyHashable) {
+        self.id = id
+    }
 
     public func prepare(_ parameters: Parameters,
                         request: inout URLRequestRepresentation) {

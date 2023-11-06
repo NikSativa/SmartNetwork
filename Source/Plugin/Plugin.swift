@@ -4,6 +4,11 @@ import Foundation
 public enum Plugins {}
 
 public protocol Plugin {
+    /// a unique ID that guarantees that plugins are not duplicated
+    ///
+    /// - use helpers **makeHash()** or **makeHash(withAdditionalHash:...)**
+    var id: AnyHashable { get }
+
     func prepare(_ parameters: Parameters,
                  request: inout URLRequestRepresentation)
 
@@ -18,4 +23,33 @@ public protocol Plugin {
                     request: URLRequestRepresentation,
                     data: RequestResult,
                     userInfo: UserInfo)
+}
+
+public extension Plugin {
+    var id: AnyHashable {
+        return Self.makeHash()
+    }
+
+    static func makeHash() -> AnyHashable {
+        return String(reflecting: self)
+    }
+
+    static func makeHash(withAdditionalHash hash: some Hashable) -> AnyHashable {
+        let components: [AnyHashable] = [makeHash(), hash]
+        return components
+    }
+}
+
+internal extension [Plugin] {
+    func unified() -> [Element] {
+        var unique: [Element] = []
+        var s: Set<AnyHashable> = []
+        for element in self {
+            if s.insert(element.id).inserted {
+                unique.append(element)
+            }
+        }
+
+        return unique
+    }
 }
