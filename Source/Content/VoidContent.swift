@@ -7,7 +7,8 @@ struct VoidContent: CustomDecodable {
                 return .success(())
             } else if let error = data.error as? RequestDecodingError {
                 switch error {
-                case .nilResponse:
+                case .emptyResponse,
+                     .nilResponse:
                     return .success(())
                 case .brokenImage,
                      .brokenResponse,

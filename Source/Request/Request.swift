@@ -15,7 +15,6 @@ public protocol Requestable: AnyObject {
 public final class Request {
     private let sessionAdaptor: SessionAdaptor
     private let address: Address
-    private let completionQueue: DelayedQueue
     private var isCanceled: Bool = false
 
     public let parameters: Parameters
@@ -34,24 +33,20 @@ public final class Request {
 
     private init(address: Address,
                  with parameters: Parameters,
-                 urlRequestable: URLRequestRepresentation,
-                 completionQueue: DelayedQueue) {
+                 urlRequestable: URLRequestRepresentation) {
         self.address = address
         self.parameters = parameters
         self.urlRequestable = urlRequestable
-        self.completionQueue = completionQueue
         self.sessionAdaptor = .init(session: parameters.session,
                                     progressHandler: parameters.progressHandler)
     }
 
     public static func create(address: Address,
                               with parameters: Parameters,
-                              urlRequestable: URLRequestRepresentation,
-                              completionQueue: DelayedQueue) -> Requestable {
+                              urlRequestable: URLRequestRepresentation) -> Requestable {
         return Self(address: address,
                     with: parameters,
-                    urlRequestable: urlRequestable,
-                    completionQueue: completionQueue)
+                    urlRequestable: urlRequestable)
     }
 
     deinit {
@@ -151,10 +146,8 @@ public final class Request {
         }
 
         stopSessionRequest()
-
-        completionQueue.fire {
-            self.completion?(data)
-        }
+        let completion = completion
+        completion?(data)
     }
 }
 

@@ -5,6 +5,10 @@ struct OptionalJSONContent: CustomDecodable {
         if let error = data.error {
             return .failure(error)
         } else if let data = data.body {
+            if data.isEmpty {
+                return .failure(RequestDecodingError.emptyResponse)
+            }
+
             do {
                 return .success(try JSONSerialization.jsonObject(with: data))
             } catch {

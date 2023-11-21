@@ -2,7 +2,7 @@ import Foundation
 import NQueue
 
 public protocol PureRequestManager {
-    typealias ResponseClosure = (RequestResult) -> Void
+    typealias ResponseClosure = (_ result: RequestResult) -> Void
 
     func map<T: CustomDecodable>(data: RequestResult,
                                  to type: T.Type,

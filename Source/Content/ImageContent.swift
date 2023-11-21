@@ -5,6 +5,10 @@ struct OptionalImageContent: CustomDecodable {
         if let error = data.error {
             return .failure(error)
         } else if let data = data.body {
+            if data.isEmpty {
+                return .failure(RequestDecodingError.emptyResponse)
+            }
+
             if let image = PlatformImage(data: data)?.sdk {
                 return .success(image)
             } else {

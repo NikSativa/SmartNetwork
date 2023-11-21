@@ -5,6 +5,7 @@ public enum RequestDecodingError: Error {
     case brokenImage
     case brokenResponse
     case nilResponse
+    case emptyResponse
 }
 
 // MARK: - RequestErrorDescription
@@ -21,6 +22,8 @@ extension RequestDecodingError: RequestErrorDescription {
             return "brokenResponse"
         case .nilResponse:
             return "nilResponse"
+        case .emptyResponse:
+            return "emptyResponse"
         }
     }
 }

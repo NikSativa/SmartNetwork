@@ -21,8 +21,7 @@ final class RequestableTests: XCTestCase {
 
         let subject = Request.create(address: .testMake(),
                                      with: parameters,
-                                     urlRequestable: urlRequestable,
-                                     completionQueue: .sync(Queue.main))
+                                     urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }
@@ -122,8 +121,7 @@ final class RequestableTests: XCTestCase {
 
         var subject: Requestable! = Request.create(address: .testMake(),
                                                    with: parameters,
-                                                   urlRequestable: urlRequestable,
-                                                   completionQueue: .sync(Queue.main))
+                                                   urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }
@@ -176,8 +174,7 @@ final class RequestableTests: XCTestCase {
 
         let subject = Request.create(address: .testMake(),
                                      with: parameters,
-                                     urlRequestable: urlRequestable,
-                                     completionQueue: .sync(Queue.main))
+                                     urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }
@@ -239,8 +236,7 @@ final class RequestableTests: XCTestCase {
 
         let subject = Request.create(address: .testMake(host: "http://google.com"),
                                      with: parameters,
-                                     urlRequestable: urlRequestable,
-                                     completionQueue: .sync(Queue.main))
+                                     urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }

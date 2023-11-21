@@ -9,6 +9,7 @@ final class CustomDecodableTests: XCTestCase {
     private lazy var image: NSpry.Image = .spry.testImage
     private lazy var imageData: Data = image.testData()!
 
+    private lazy var emptyData: Data = .init()
     private lazy var bodyData: Data = {
         return try! JSONSerialization.data(withJSONObject: ["id": 1], options: [.sortedKeys, .prettyPrinted])
     }()
@@ -20,6 +21,7 @@ final class CustomDecodableTests: XCTestCase {
     func test_data() {
         XCTAssertNil(try custom(OptionalDataContent.self).get())
         XCTAssertEqual(try custom(OptionalDataContent.self, body: bodyData).get(), bodyData)
+        XCTAssertEqual(try custom(OptionalDataContent.self, body: emptyData).get(), emptyData)
         XCTAssertThrowsError(try custom(OptionalDataContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
         XCTAssertThrowsError(try custom(OptionalDataContent.self, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
         XCTAssertThrowsError(try custom(OptionalDataContent.self, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
@@ -28,6 +30,7 @@ final class CustomDecodableTests: XCTestCase {
             try custom(DataContent.self).get()
         }
         XCTAssertEqual(try custom(DataContent.self, body: bodyData).get(), bodyData)
+        XCTAssertEqual(try custom(DataContent.self, body: emptyData).get(), emptyData)
         XCTAssertThrowsError(try custom(DataContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
         XCTAssertThrowsError(try custom(DataContent.self, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
         XCTAssertThrowsError(try custom(DataContent.self, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
@@ -43,6 +46,9 @@ final class CustomDecodableTests: XCTestCase {
 
         XCTAssertThrowsError(RequestDecodingError.nilResponse) {
             try custom(DecodableContent<TestInfo>.self).get()
+        }
+        XCTAssertThrowsError(RequestDecodingError.emptyResponse) {
+            try custom(DecodableContent<TestInfo>.self, body: emptyData).get()
         }
         XCTAssertEqual(try custom(DecodableContent<TestInfo>.self, body: bodyData).get(), .init(id: 1))
         XCTAssertThrowsError(try custom(DecodableContent<TestInfo>.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
@@ -61,6 +67,9 @@ final class CustomDecodableTests: XCTestCase {
 
         XCTAssertThrowsError(RequestDecodingError.nilResponse) {
             try custom(ImageContent.self).get()
+        }
+        XCTAssertThrowsError(RequestDecodingError.emptyResponse) {
+            try custom(ImageContent.self, body: emptyData).get()
         }
         XCTAssertEqual(try custom(ImageContent.self, body: imageData).get().testData().unwrap(), imageData)
         XCTAssertThrowsError(try custom(ImageContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
@@ -81,8 +90,8 @@ final class CustomDecodableTests: XCTestCase {
         XCTAssertThrowsError(RequestDecodingError.nilResponse) {
             try custom(JSONContent.self).get()
         }
-        XCTAssertThrowsError(RequestDecodingError.nilResponse) {
-            try custom(JSONContent.self, body: nil).get()
+        XCTAssertThrowsError(RequestDecodingError.emptyResponse) {
+            try custom(JSONContent.self, body: emptyData).get()
         }
         XCTAssertEqual(try custom(JSONContent.self, body: bodyData).get() as! [String: Int], ["id": 1])
         XCTAssertThrowsError(try custom(JSONContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
@@ -94,6 +103,7 @@ final class CustomDecodableTests: XCTestCase {
     func test_void() {
         XCTAssertTrue(custom(VoidContent.self).isSuccess)
         XCTAssertTrue(custom(VoidContent.self, body: bodyData).isSuccess)
+        XCTAssertTrue(custom(VoidContent.self, body: emptyData).isSuccess)
         XCTAssertTrue(custom(VoidContent.self, error: StatusCode(.noContent)).isSuccess)
         XCTAssertTrue(custom(VoidContent.self, error: RequestDecodingError.nilResponse).isSuccess)
 

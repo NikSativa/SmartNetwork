@@ -6,7 +6,7 @@ public final class HTTPStubServer {
     /// Default queue for stubs
     public static var defaultResponseQueue: Queueable = Queue.main
 
-    static let shared: HTTPStubServer = .init()
+    public static let shared: HTTPStubServer = .init()
 
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var responses: [Info] = []

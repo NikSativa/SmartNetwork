@@ -148,17 +148,12 @@ public final class RequestManager {
             $0.tasksQueue[info.key] = nil
         }
 
-        for plugin in plugins {
-            plugin.didFinish(withData: result, userInfo: userInfo)
-        }
-
         let completion = info.completion
-        completion(result)
+        completion(result, userInfo, plugins)
     }
 
     private func createRequest(address: Address,
                                with parameters: Parameters,
-                               inQueue completionQueue: DelayedQueue,
                                userInfo: UserInfo) throws -> Requestable {
         var urlRequest = try parameters.urlRequest(for: address)
         for plugin in parameters.plugins {
@@ -168,8 +163,7 @@ public final class RequestManager {
 
         let request = Request.create(address: address,
                                      with: parameters,
-                                     urlRequestable: urlRequest,
-                                     completionQueue: completionQueue)
+                                     urlRequestable: urlRequest)
         return request
     }
 
@@ -215,11 +209,17 @@ extension RequestManager: PureRequestManager {
         do {
             let request = try createRequest(address: address,
                                             with: parameters,
-                                            inQueue: completionQueue,
                                             userInfo: parameters.userInfo)
             let info: Info = .init(parameters: parameters,
-                                   request: request,
-                                   completion: completion)
+                                   request: request) { result, userInfo, plugins in
+                for plugin in plugins {
+                    plugin.didFinish(withData: result, userInfo: userInfo)
+                }
+
+                completionQueue.fire {
+                    completion(result)
+                }
+            }
             $state.mutate {
                 $0.tasksQueue[info.key] = info
             }
@@ -299,12 +299,13 @@ public extension RequestManager {
 
 private extension RequestManager {
     typealias Key = ObjectIdentifier
+    typealias ResponseClosureWithInfo = (_ result: RequestResult, _ userInfo: UserInfo, _ plugins: [Plugin]) -> Void
 
     final class Info {
         let key: Key
         let parameters: Parameters
         let request: Requestable
-        let completion: PureRequestManager.ResponseClosure
+        let completion: ResponseClosureWithInfo
         var attemptNumber: Int
 
         var userInfo: UserInfo {
@@ -313,7 +314,7 @@ private extension RequestManager {
 
         init(parameters: Parameters,
              request: Requestable,
-             completion: @escaping PureRequestManager.ResponseClosure) {
+             completion: @escaping ResponseClosureWithInfo) {
             self.key = Key(request)
             self.parameters = parameters
             self.request = request

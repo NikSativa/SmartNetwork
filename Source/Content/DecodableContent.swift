@@ -5,6 +5,10 @@ struct OptionalDecodableContent<Response: Decodable>: CustomDecodable {
         if let error = data.error {
             return .failure(error)
         } else if let data = data.body {
+            if data.isEmpty {
+                return .failure(RequestDecodingError.emptyResponse)
+            }
+
             do {
                 let decoder = decoder()
                 return .success(try decoder.decode(Response.self, from: data))
