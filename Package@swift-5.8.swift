@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:5.8
 // swiftformat:disable all
 import PackageDescription
 
@@ -8,7 +8,6 @@ let package = Package(
         .iOS(.v13),
         .macOS(.v11),
         .macCatalyst(.v13),
-        .visionOS(.v1),
         .tvOS(.v13),
         .watchOS(.v6)
     ],

@@ -11,7 +11,7 @@ struct OptionalDecodableContent<Response: Decodable>: CustomDecodable {
 
             do {
                 let decoder = decoder()
-                return .success(try decoder.decode(Response.self, from: data))
+                return try .success(decoder.decode(Response.self, from: data))
             } catch {
                 return .failure(error)
             }

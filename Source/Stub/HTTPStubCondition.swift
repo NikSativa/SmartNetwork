@@ -63,7 +63,7 @@ public enum HTTPStubCondition {
     /// - Parameter regex: The Regular Expression we want the path to match
     ///
     /// - Note: URL paths are usually absolute and thus starts with a '/'
-    @available(macOS 13.0, iOS 16.0, *)
+    @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     public static func pathMatches(_ regex: Regex<some Any>) -> Self {
         return .custom { request in
             return request.path.map { path in
@@ -76,7 +76,7 @@ public enum HTTPStubCondition {
     /// RegEx matches the **absolute atring**
     ///
     /// - Parameter regex: The Regular Expression we want the absolute string to match
-    @available(macOS 13.0, iOS 16.0, *)
+    @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     public static func absoluteStringMatches(_ regex: Regex<some Any>) -> Self {
         return .custom { request in
             return request.absoluteString.map { path in

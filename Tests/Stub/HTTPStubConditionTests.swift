@@ -30,9 +30,11 @@ final class HTTPStubTest_Tests: XCTestCase {
 
     func test_isHost() {
         XCTAssertTrue(HTTPStubCondition.isHost("api.example.com").test(request))
+        #if (os(macOS) || os(iOS) || os(visionOS)) && (arch(x86_64) || arch(arm64))
         XCTAssertThrowsAssertion {
             HTTPStubCondition.isHost("/api.example.com").test(self.request)
         }
+        #endif
     }
 
     func test_isAbsoluteURLString() {
@@ -48,12 +50,14 @@ final class HTTPStubTest_Tests: XCTestCase {
     func test_isScheme() {
         XCTAssertTrue(HTTPStubCondition.isScheme("https").test(request))
         XCTAssertFalse(HTTPStubCondition.isScheme("http").test(request))
+        #if (os(macOS) || os(iOS) || os(visionOS)) && (arch(x86_64) || arch(arm64))
         XCTAssertThrowsAssertion {
             HTTPStubCondition.isScheme("https://").test(self.request)
         }
         XCTAssertThrowsAssertion {
             HTTPStubCondition.isScheme("https/").test(self.request)
         }
+        #endif
     }
 
     func test_pathStartsWith() {
@@ -81,27 +85,27 @@ final class HTTPStubTest_Tests: XCTestCase {
 
     func test_pathNSMatches() throws {
         let regexStr = "/(.*)/v1.0"
-        XCTAssertTrue(HTTPStubCondition.pathNSMatches(try .init(pattern: regexStr, options: [.caseInsensitive])).test(request))
-        XCTAssertFalse(HTTPStubCondition.pathNSMatches(try .init(pattern: regexStr.replacingOccurrences(of: "v1", with: "v2"), options: [.caseInsensitive])).test(request))
+        XCTAssertTrue(try HTTPStubCondition.pathNSMatches(.init(pattern: regexStr, options: [.caseInsensitive])).test(request))
+        XCTAssertFalse(try HTTPStubCondition.pathNSMatches(.init(pattern: regexStr.replacingOccurrences(of: "v1", with: "v2"), options: [.caseInsensitive])).test(request))
     }
 
-    @available(macOS 13.0, iOS 16.0, *)
+    @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func test_pathMatches() throws {
         let regexStr = "/(.*)/v1.0"
-        XCTAssertTrue(HTTPStubCondition.pathMatches(try .init(regexStr)).test(request))
-        XCTAssertFalse(HTTPStubCondition.pathMatches(try .init(regexStr.replacingOccurrences(of: "v1", with: "v2"))).test(request))
+        XCTAssertTrue(try HTTPStubCondition.pathMatches(.init(regexStr)).test(request))
+        XCTAssertFalse(try HTTPStubCondition.pathMatches(.init(regexStr.replacingOccurrences(of: "v1", with: "v2"))).test(request))
     }
 
     func test_absoluteStringNSMatches() throws {
         let regexStr = "(.*)example.com/(.*)/v1.0/(.*)"
-        XCTAssertTrue(HTTPStubCondition.absoluteStringNSMatches(try .init(pattern: regexStr, options: [.caseInsensitive])).test(request))
-        XCTAssertFalse(HTTPStubCondition.absoluteStringNSMatches(try .init(pattern: regexStr.replacingOccurrences(of: "v1", with: "v2"), options: [.caseInsensitive])).test(request))
+        XCTAssertTrue(try HTTPStubCondition.absoluteStringNSMatches(.init(pattern: regexStr, options: [.caseInsensitive])).test(request))
+        XCTAssertFalse(try HTTPStubCondition.absoluteStringNSMatches(.init(pattern: regexStr.replacingOccurrences(of: "v1", with: "v2"), options: [.caseInsensitive])).test(request))
     }
 
-    @available(macOS 13.0, iOS 16.0, *)
+    @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func test_absoluteStringMatches() throws {
         let regexStr = "(.*)example.com/(.*)/v1.0/(.*)"
-        XCTAssertTrue(HTTPStubCondition.absoluteStringMatches(try .init(regexStr)).test(request))
-        XCTAssertFalse(HTTPStubCondition.absoluteStringMatches(try .init(regexStr.replacingOccurrences(of: "v1", with: "v2"))).test(request))
+        XCTAssertTrue(try HTTPStubCondition.absoluteStringMatches(.init(regexStr)).test(request))
+        XCTAssertFalse(try HTTPStubCondition.absoluteStringMatches(.init(regexStr.replacingOccurrences(of: "v1", with: "v2"))).test(request))
     }
 }

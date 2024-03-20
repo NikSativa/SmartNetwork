@@ -1,6 +1,6 @@
 import Foundation
 
-#if os(iOS) || os(tvOS) || os(watchOS)
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
 import UIKit
 
 public typealias Image = UIImage
@@ -12,18 +12,29 @@ public typealias Image = NSImage
 #error("unsupported os")
 #endif
 
+#if os(iOS) || os(tvOS)
 private enum Screen {
-    #if os(iOS) || os(tvOS)
     static var scale: CGFloat {
         return UIScreen.main.scale
     }
+}
 
-    #elseif os(watchOS)
+#elseif os(watchOS)
+import WatchKit
+
+private enum Screen {
     static var scale: CGFloat {
         return WKInterfaceDevice.current().screenScale
     }
-    #endif
 }
+
+#elseif os(visionOS)
+public enum Screen {
+    /// visionOS doesn't have a screen scale, so we'll just use 2x for Tests.
+    /// override it on your own risk.
+    public static var scale: CGFloat?
+}
+#endif
 
 internal struct PlatformImage {
     let sdk: Image
@@ -43,6 +54,26 @@ internal struct PlatformImage {
 
     func pngData() -> Data? {
         return sdk.png
+    }
+
+    #elseif os(visionOS)
+    init?(data: Data) {
+        if let scale = Screen.scale,
+           let image = UIImage(data: data, scale: scale) {
+            self.init(image)
+        } else if let image = UIImage(data: data) {
+            self.init(image)
+        } else {
+            return nil
+        }
+    }
+
+    func pngData() -> Data? {
+        return sdk.pngData()
+    }
+
+    func jpegData(compressionQuality: CGFloat) -> Data? {
+        return sdk.jpegData(compressionQuality: CGFloat(compressionQuality))
     }
 
     #elseif os(iOS) || os(tvOS) || os(watchOS)

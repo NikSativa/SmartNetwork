@@ -20,9 +20,11 @@ final class RequestingTaskTests: XCTestCase {
 
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
             subject?.start()
+            #if (os(macOS) || os(iOS) || os(visionOS)) && (arch(x86_64) || arch(arm64))
             XCTAssertThrowsAssertion {
                 subject?.start()
             }
+            #endif
 
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
                 subject?.cancel()

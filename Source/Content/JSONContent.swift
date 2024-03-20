@@ -10,7 +10,7 @@ struct OptionalJSONContent: CustomDecodable {
             }
 
             do {
-                return .success(try JSONSerialization.jsonObject(with: data))
+                return try .success(JSONSerialization.jsonObject(with: data))
             } catch {
                 return .failure(error)
             }

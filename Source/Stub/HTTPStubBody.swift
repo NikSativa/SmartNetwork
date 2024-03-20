@@ -23,7 +23,7 @@ extension HTTPStubBody {
             let data = try? Data(contentsOf: path)
             return data
         case .filePath(let path):
-            if Self.iOSVerificationEnabled, #available(macOS 13.0, iOS 16.0, *) {
+            if Self.iOSVerificationEnabled, #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
                 let path = URL(filePath: path)
                 let data = try? Data(contentsOf: path)
                 return data

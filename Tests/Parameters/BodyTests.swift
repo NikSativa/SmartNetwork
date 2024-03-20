@@ -29,11 +29,13 @@ final class BodyTests: XCTestCase {
         XCTAssertEqual(request.httpBody, data)
     }
 
+    #if !os(visionOS)
     func test_image_png() {
         let image = Image.spry.testImage
         XCTAssertNoThrowError(try Body.image(.png(image)).fill(&request, encoder: .init()))
         XCTAssertEqual(request.httpBody, image.testData())
     }
+    #endif
 
     #if !os(macOS)
     func test_image_jpeg() {

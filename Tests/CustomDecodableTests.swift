@@ -58,6 +58,10 @@ final class CustomDecodableTests: XCTestCase {
     }
 
     func test_image() {
+        #if os(visionOS)
+        Screen.scale = 2
+        #endif
+
         XCTAssertNil(try custom(OptionalImageContent.self).get())
         XCTAssertEqual(try custom(OptionalImageContent.self, body: imageData).get()?.testData().unwrap(), imageData)
         XCTAssertThrowsError(try custom(OptionalImageContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))

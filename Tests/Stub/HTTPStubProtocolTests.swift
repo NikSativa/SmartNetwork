@@ -34,7 +34,7 @@ final class HTTPStubProtocolTests: XCTestCase {
         HTTPStubServer.shared.add(condition: .isHost(Constant.host),
                                   body: .encodable(TestInfo(id: 1))).store(in: &observers)
 
-        let data = try await session.data(from: try Constant.address.url())
+        let data = try await session.data(from: Constant.address.url())
         let info = data.0.info()
         XCTAssertEqual(info, .init(id: 1))
         XCTAssertNotNil(data.1)
@@ -46,7 +46,7 @@ final class HTTPStubProtocolTests: XCTestCase {
                                   delayInSeconds: Constant.stubbedTimeoutInSeconds).store(in: &observers)
 
         do {
-            let _ = try await session.data(from: try Constant.address.url())
+            let _ = try await session.data(from: Constant.address.url())
         } catch {
             let errorDomain = String(reflecting: RequestError.self)
             XCTAssertEqual((error as NSError).domain, errorDomain, error.localizedDescription)
@@ -58,14 +58,14 @@ final class HTTPStubProtocolTests: XCTestCase {
         HTTPStubServer.shared.add(condition: .isHost(Constant.host),
                                   body: .empty).store(in: &observers)
 
-        let data = try await session.data(from: try Constant.address.url())
+        let data = try await session.data(from: Constant.address.url())
         XCTAssertEqual(Data(), data.0)
         XCTAssertNotNil(data.1)
     }
 
     func test_no_stub() async throws {
         do {
-            let _ = try await session.data(from: try Constant.address.url())
+            let _ = try await session.data(from: Constant.address.url())
         } catch {
             XCTAssertEqualAny(error, RequestError.generic, error.localizedDescription)
         }

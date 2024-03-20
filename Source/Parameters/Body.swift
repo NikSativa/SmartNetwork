@@ -3,8 +3,11 @@ import Foundation
 
 public enum Body {
     public enum ImageFormat: Equatable {
+        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
         case png(Image)
-        #if !os(macOS)
+        #endif
+
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         case jpeg(Image, compressionQuality: CGFloat)
         #endif
     }
@@ -69,9 +72,12 @@ extension Body {
         case .image(let image):
             let data: Data
             switch image {
+            #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
             case .png(let image):
                 data = try PlatformImage(image).pngData().unwrap(orThrow: RequestEncodingError.cantEncodeImage)
-            #if !os(macOS)
+            #endif
+
+            #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
             case .jpeg(let image, let quality):
                 data = try PlatformImage(image).jpegData(compressionQuality: quality).unwrap(orThrow: RequestEncodingError.cantEncodeImage)
             #endif
