@@ -27,12 +27,15 @@ extension Body: Equatable, SpryEquatable {
             return a == b
         case (.xform(let a), .xform(let b)):
             return compare(a, b)
+        case (.json(let a, let o1), .json(let b, let o2)):
+            return compare(a, b) && o1 == o2
 
         case (.data, _),
              (.empty, _),
              (.encodable, _),
              (.form, _),
              (.image, _),
+             (.json, _),
              (.xform, _):
             return false
         }

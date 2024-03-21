@@ -21,6 +21,10 @@ final class BodyTests: XCTestCase {
     func test_empty() {
         XCTAssertNoThrowError(try Body.empty.fill(&request, encoder: .init()))
         XCTAssertNil(request.httpBody)
+
+        let body: Body = nil
+        XCTAssertNoThrowError(try body.fill(&request, encoder: .init()))
+        XCTAssertNil(request.httpBody)
     }
 
     func test_data() throws {
@@ -50,10 +54,26 @@ final class BodyTests: XCTestCase {
         XCTAssertNoThrowError(try Body.encodable(info).fill(&request, encoder: .init()))
         XCTAssertEqual(request.httpBody?.info(), info)
 
-        XCTAssertNoThrowError(try Body.encodable(info).fill(&request, encoder: .init()))
+        XCTAssertThrowsError(try Body.encodable(BrokenTestInfo(id: 1)).fill(&request, encoder: .init()), RequestEncodingError.invalidJSON)
+    }
+
+    func test_json() {
+        let info = TestInfo(id: 1)
+        XCTAssertNoThrowError(try Body.json(["id": 1], options: [.sortedKeys]).fill(&request, encoder: .init()))
         XCTAssertEqual(request.httpBody?.info(), info)
 
-        XCTAssertThrowsError(try Body.encodable(BrokenTestInfo(id: 1)).fill(&request, encoder: .init()), RequestEncodingError.invalidJSON)
+        XCTAssertNoThrowError(try Body.json([], options: []).fill(&request, encoder: .init()))
+        XCTAssertNotNil(request.httpBody)
+        XCTAssertNil(request.httpBody?.info())
+
+        XCTAssertNoThrowError(try Body.json([:], options: []).fill(&request, encoder: .init()))
+        XCTAssertNotNil(request.httpBody)
+        XCTAssertNil(request.httpBody?.info())
+
+        XCTAssertThrowsError(try Body.json(1, options: []).fill(&request, encoder: .init()), RequestEncodingError.invalidJSON)
+        XCTAssertThrowsError(try Body.json("info", options: []).fill(&request, encoder: .init()), RequestEncodingError.invalidJSON)
+        XCTAssertThrowsError(try Body.json(info, options: []).fill(&request, encoder: .init()), RequestEncodingError.invalidJSON)
+        XCTAssertThrowsError(try Body.json(["id": info], options: []).fill(&request, encoder: .init()), RequestEncodingError.invalidJSON)
     }
 
     func test_form() {

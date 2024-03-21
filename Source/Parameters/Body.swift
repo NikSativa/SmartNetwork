@@ -1,7 +1,7 @@
 import CoreGraphics
 import Foundation
 
-public enum Body {
+public enum Body: ExpressibleByNilLiteral {
     public enum ImageFormat: Equatable {
         #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
         case png(Image)
@@ -50,11 +50,20 @@ public enum Body {
     case data(Data)
     case image(ImageFormat)
     case encodable(any Encodable)
-    case form(Form) // form-data
-    case xform([String: Any]) // x-www-form-urlencoded
+    /// form-data
+    case form(Form)
+    /// x-www-form-urlencoded
+    case xform([String: Any])
+    /// JSONSerialization
+    case json(Any, options: JSONSerialization.WritingOptions)
 
     public init(_ encodable: some Encodable) {
         self = .encodable(encodable)
+    }
+
+    /// ExpressibleByNilLiteral
+    public init(nilLiteral: ()) {
+        self = .empty
     }
 }
 
@@ -95,6 +104,22 @@ extension Body {
         case .encodable(let object):
             let encoder = encoder()
             let data = try encoder.encode(object)
+
+            tempRequest.httpBody = data
+
+            if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
+                tempRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            }
+
+            if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
+                tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
+            }
+        case .json(let json, let options):
+            // sometimes it crashes the app on 'try JSONSerialization...' without that check
+            guard JSONSerialization.isValidJSONObject(json) else {
+                throw RequestEncodingError.invalidJSON
+            }
+            let data = try JSONSerialization.data(withJSONObject: json, options: options)
 
             tempRequest.httpBody = data
 
