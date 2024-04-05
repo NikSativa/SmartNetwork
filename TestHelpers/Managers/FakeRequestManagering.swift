@@ -1,8 +1,7 @@
 import Foundation
 import NQueue
+import NRequest
 import NSpry
-
-@testable import NRequest
 
 public final class FakeRequestManagering: RequestManagering, Spryable {
     public enum ClassFunction: String, StringRepresentable {
@@ -24,43 +23,43 @@ public final class FakeRequestManagering: RequestManagering, Spryable {
 
     public init() {}
 
-    public var pure: NRequest.PureRequestManager {
+    public var pure: PureRequestManager {
         return spryify()
     }
 
-    public var decodable: NRequest.DecodableRequestManager {
+    public var decodable: DecodableRequestManager {
         return spryify()
     }
 
-    public var void: NRequest.TypedRequestManager<Void> {
+    public var void: TypedRequestManager<Void> {
         return spryify()
     }
 
-    public var data: NRequest.TypedRequestManager<Data> {
+    public var data: TypedRequestManager<Data> {
         return spryify()
     }
 
-    public var image: NRequest.TypedRequestManager<NRequest.Image> {
+    public var image: TypedRequestManager<Image> {
         return spryify()
     }
 
-    public var json: NRequest.TypedRequestManager<Any> {
+    public var json: TypedRequestManager<Any> {
         return spryify()
     }
 
-    public var dataOptional: NRequest.TypedRequestManager<Data?> {
+    public var dataOptional: TypedRequestManager<Data?> {
         return spryify()
     }
 
-    public var imageOptional: NRequest.TypedRequestManager<NRequest.Image?> {
+    public var imageOptional: TypedRequestManager<Image?> {
         return spryify()
     }
 
-    public var jsonOptional: NRequest.TypedRequestManager<Any?> {
+    public var jsonOptional: TypedRequestManager<Any?> {
         return spryify()
     }
 
-    public func custom<T: NRequest.CustomDecodable>(_ type: T.Type) -> NRequest.TypedRequestManager<T.Object> {
+    public func custom<T: CustomDecodable>(_ type: T.Type) -> TypedRequestManager<T.Object> {
         return spryify(arguments: type)
     }
 }

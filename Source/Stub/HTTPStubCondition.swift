@@ -2,6 +2,11 @@ import Foundation
 
 /// Matcher for testing an *URLRequest's*
 public enum HTTPStubCondition {
+    /// **Addres** of URL
+    ///
+    /// - Parameter address: The 'Address' to match
+    case isAddress(Address)
+
     /// **Path** of URL
     ///
     /// - Parameter path: The path to match, e.g. the path is **/signin** in *https://api.example.com/signin*.
@@ -92,6 +97,11 @@ public enum HTTPStubCondition {
     func test(_ request: URLRequest) -> Bool {
         let result: Bool?
         switch self {
+        case .isAddress(let address):
+            let original = request.url.flatMap {
+                return try? Address(url: $0)
+            }
+            result = original == address
         case .isPath(let string):
             result = request.url?.path == string
         case .isHost(let string):

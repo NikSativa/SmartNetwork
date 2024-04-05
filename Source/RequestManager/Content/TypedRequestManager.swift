@@ -1,13 +1,13 @@
 import Foundation
 import NQueue
 
-public struct TypedRequestManager<Response> {
+open class TypedRequestManager<Response> {
     private let requestTask: (_ address: Address,
                               _ parameters: Parameters,
                               _ completionQueue: NQueue.DelayedQueue,
                               _ completion: @escaping (Result<Response, Error>) -> Void) -> RequestingTask
 
-    init<Content: CustomDecodable>(_ type: Content.Type, parent: PureRequestManager)
+    public required init<Content: CustomDecodable>(_ type: Content.Type, parent: PureRequestManager)
         where Response == Content.Object {
         self.requestTask = { [parent] address, parameters, completionQueue, completion in
             return parent.request(address: address,
@@ -21,18 +21,18 @@ public struct TypedRequestManager<Response> {
         }
     }
 
-    public func request(address: Address,
-                        with parameters: Parameters = .init(),
-                        inQueue completionQueue: NQueue.DelayedQueue = RequestSettings.defaultResponseQueue,
-                        completion: @escaping (Result<Response, Error>) -> Void) -> RequestingTask {
+    open func request(address: Address,
+                      with parameters: Parameters = .init(),
+                      inQueue completionQueue: NQueue.DelayedQueue = RequestSettings.defaultResponseQueue,
+                      completion: @escaping (Result<Response, Error>) -> Void) -> RequestingTask {
         return requestTask(address,
                            parameters,
                            completionQueue,
                            completion)
     }
 
-    public func request(address: Address,
-                        with parameters: Parameters) async -> Result<Response, Error> {
+    open func request(address: Address,
+                      with parameters: Parameters) async -> Result<Response, Error> {
         return await withCheckedContinuation { [self] completion in
             let task = request(address: address,
                                with: parameters,
@@ -43,8 +43,8 @@ public struct TypedRequestManager<Response> {
         }
     }
 
-    public func request(address: Address,
-                        with parameters: Parameters) async throws -> Response {
+    open func requestWithThrowing(address: Address,
+                                  with parameters: Parameters) async throws -> Response {
         return try await withCheckedThrowingContinuation { [self] completion in
             let task = request(address: address,
                                with: parameters,

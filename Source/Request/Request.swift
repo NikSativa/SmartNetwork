@@ -73,9 +73,9 @@ public final class Request {
                                              body: stub.body.data,
                                              response: response,
                                              error: stub.error)
-            if let delay = stub.delayInSeconds {
-                HTTPStubServer.defaultResponseQueue.asyncAfter(deadline: .now() + delay) { [self] in
-                    fire(data: responseData)
+            if let delay = stub.delayInSeconds, delay > 0 {
+                HTTPStubServer.defaultResponseQueue.asyncAfter(deadline: .now() + delay) { [weak self] in
+                    self?.fire(data: responseData)
                 }
             } else {
                 HTTPStubServer.defaultResponseQueue.sync {
