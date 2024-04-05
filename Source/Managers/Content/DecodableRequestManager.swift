@@ -33,7 +33,7 @@ public protocol DecodableRequestManager {
 }
 
 public extension DecodableRequestManager {
-    func request<T: Decodable>(_ type: T.Type,
+    func request<T: Decodable>(_ type: T.Type = T.self,
                                address: Address,
                                with parameters: Parameters = .init(),
                                inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
@@ -45,7 +45,7 @@ public extension DecodableRequestManager {
                        completion: completion)
     }
 
-    func request<T: Decodable>(opt type: T.Type,
+    func request<T: Decodable>(opt type: T.Type = T.self,
                                address: Address,
                                with parameters: Parameters = .init(),
                                inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
@@ -59,61 +59,69 @@ public extension DecodableRequestManager {
 
     // MARK: - async
 
-    func request<T: Decodable>(_ type: T.Type,
+    func request<T: Decodable>(_ type: T.Type = T.self,
                                address: Address,
                                with parameters: Parameters = .init()) async -> Result<T, Error> {
         return await withCheckedContinuation { [self] completion in
-            let task = request(type,
-                               address: address,
-                               with: parameters,
-                               inQueue: .absent) { data in
-                completion.resume(returning: data)
+            AsyncTaskHolder { holder in
+                request(type,
+                        address: address,
+                        with: parameters,
+                        inQueue: .absent) { data in
+                    holder.task = nil
+                    completion.resume(returning: data)
+                }
             }
-            task.start()
         }
     }
 
-    func request<T: Decodable>(opt type: T.Type,
+    func request<T: Decodable>(opt type: T.Type = T.self,
                                address: Address,
                                with parameters: Parameters = .init()) async -> Result<T?, Error> {
         return await withCheckedContinuation { [self] completion in
-            let task = request(opt: type,
-                               address: address,
-                               with: parameters,
-                               inQueue: .absent) { data in
-                completion.resume(returning: data)
+            AsyncTaskHolder { holder in
+                request(opt: type,
+                        address: address,
+                        with: parameters,
+                        inQueue: .absent) { data in
+                    holder.task = nil
+                    completion.resume(returning: data)
+                }
             }
-            task.start()
         }
     }
 
     // MARK: - async throws
 
-    func requestWithThrowing<T: Decodable>(_ type: T.Type,
+    func requestWithThrowing<T: Decodable>(_ type: T.Type = T.self,
                                            address: Address,
-                                           with parameters: Parameters) async throws -> T {
+                                           with parameters: Parameters = .init()) async throws -> T {
         return try await withCheckedThrowingContinuation { [self] completion in
-            let task = request(type,
-                               address: address,
-                               with: parameters,
-                               inQueue: .absent) { data in
-                completion.resume(with: data)
+            AsyncTaskHolder { holder in
+                request(type,
+                        address: address,
+                        with: parameters,
+                        inQueue: .absent) { data in
+                    holder.task = nil
+                    completion.resume(with: data)
+                }
             }
-            task.start()
         }
     }
 
-    func requestWithThrowing<T: Decodable>(opt type: T.Type,
+    func requestWithThrowing<T: Decodable>(opt type: T.Type = T.self,
                                            address: Address,
-                                           with parameters: Parameters) async throws -> T? {
+                                           with parameters: Parameters = .init()) async throws -> T? {
         return try await withCheckedThrowingContinuation { [self] completion in
-            let task = request(opt: type,
-                               address: address,
-                               with: parameters,
-                               inQueue: .absent) { data in
-                completion.resume(with: data)
+            AsyncTaskHolder { holder in
+                request(opt: type,
+                        address: address,
+                        with: parameters,
+                        inQueue: .absent) { [holder] data in
+                    holder.task = nil
+                    completion.resume(with: data)
+                }
             }
-            task.start()
         }
     }
 }

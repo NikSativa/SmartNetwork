@@ -79,7 +79,7 @@ public extension Plugins {
             let responseText: String
             do {
                 let json = try JSONSerialization.jsonObject(with: body, options: [.allowFragments])
-                let prettyData = try JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys])
+                let prettyData = try JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
                 if let prettyStr = String(data: prettyData, encoding: .utf8) {
                     responseText = prettyStr
                 } else {

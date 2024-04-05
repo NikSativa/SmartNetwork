@@ -4,8 +4,8 @@ import NRequest
 import XCTest
 
 final class DecodableRequestManagerTests: XCTestCase {
-    private let stubbedTimeoutInSeconds: TimeInterval = 1
-    private let timeoutInSeconds: TimeInterval = 3
+    private let stubbedTimeoutInSeconds: TimeInterval = 0.1
+    private let timeoutInSeconds: TimeInterval = 1
     private var observers: [AnyCancellable] = []
     private let address: Address = .testMake(string: "http://example1.com/signin")
     private let subjset = RequestManager.create().decodable

@@ -26,7 +26,6 @@ public struct Parameters {
                 cacheSettings: CacheSettings? = nil,
                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
                 timeoutInterval: TimeInterval = 60,
-                isLoggingEnabled: Bool = false,
                 progressHandler: ProgressHandler? = nil,
                 userInfo: UserInfo = .init(),
                 session: Session = RequestSettings.sharedSession,

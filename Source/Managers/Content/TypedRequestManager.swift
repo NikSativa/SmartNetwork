@@ -5,11 +5,12 @@ open class TypedRequestManager<Response> {
     private let requestTask: (_ address: Address,
                               _ parameters: Parameters,
                               _ completionQueue: NQueue.DelayedQueue,
+                              _ seflRetain: Bool,
                               _ completion: @escaping (Result<Response, Error>) -> Void) -> RequestingTask
 
     public required init<Content: CustomDecodable>(_ type: Content.Type, parent: PureRequestManager)
         where Response == Content.Object {
-        self.requestTask = { [parent] address, parameters, completionQueue, completion in
+        self.requestTask = { [parent] address, parameters, completionQueue, _, completion in
             return parent.request(address: address,
                                   with: parameters,
                                   inQueue: completionQueue) { [parent] data in
@@ -28,30 +29,37 @@ open class TypedRequestManager<Response> {
         return requestTask(address,
                            parameters,
                            completionQueue,
+                           false,
                            completion)
     }
 
     open func request(address: Address,
-                      with parameters: Parameters) async -> Result<Response, Error> {
+                      with parameters: Parameters = .init()) async -> Result<Response, Error> {
         return await withCheckedContinuation { [self] completion in
-            let task = request(address: address,
-                               with: parameters,
-                               inQueue: .absent) { data in
-                completion.resume(returning: data)
+            AsyncTaskHolder { holder in
+                requestTask(address,
+                            parameters,
+                            .absent,
+                            false) { data in
+                    holder.task = nil
+                    completion.resume(returning: data)
+                }
             }
-            task.start()
         }
     }
 
     open func requestWithThrowing(address: Address,
-                                  with parameters: Parameters) async throws -> Response {
+                                  with parameters: Parameters = .init()) async throws -> Response {
         return try await withCheckedThrowingContinuation { [self] completion in
-            let task = request(address: address,
-                               with: parameters,
-                               inQueue: .absent) { data in
-                completion.resume(with: data)
+            AsyncTaskHolder { holder in
+                requestTask(address,
+                            parameters,
+                            .absent,
+                            false) { data in
+                    holder.task = nil
+                    completion.resume(with: data)
+                }
             }
-            task.start()
         }
     }
 }

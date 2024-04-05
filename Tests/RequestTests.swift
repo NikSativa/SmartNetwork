@@ -11,8 +11,7 @@ final class RequestableTests: XCTestCase {
         var responses: [RequestResult] = []
         let task: FakeSessionTask = .init()
         let session: FakeSession = .init()
-        let parameters: Parameters = .testMake(isLoggingEnabled: true, // code coverage
-                                               session: session)
+        let parameters: Parameters = .testMake(session: session)
 
         let sdkRequest = URLRequest.spry.testMake(url: "google.com")
         let urlRequestable: FakeURLRequestRepresentation = .init()
@@ -111,8 +110,7 @@ final class RequestableTests: XCTestCase {
         var responses: [RequestResult] = []
         let task: FakeSessionTask = .init()
         let session: FakeSession = .init()
-        let parameters: Parameters = .testMake(isLoggingEnabled: true, // code coverage
-                                               session: session)
+        let parameters: Parameters = .testMake(session: session)
 
         let sdkRequest = URLRequest.spry.testMake(url: "google.com")
         let urlRequestable: FakeURLRequestRepresentation = .init()
@@ -164,7 +162,6 @@ final class RequestableTests: XCTestCase {
 
         let parameters: Parameters = .testMake(cacheSettings: cacheSettings,
                                                requestPolicy: .reloadIgnoringLocalAndRemoteCacheData,
-                                               isLoggingEnabled: true, // code coverage
                                                session: session)
 
         let sdkRequest = URLRequest.spry.testMake(url: "google.com")
@@ -225,7 +222,6 @@ final class RequestableTests: XCTestCase {
 
         let parameters: Parameters = .testMake(cacheSettings: cacheSettings,
                                                requestPolicy: .returnCacheDataElseLoad,
-                                               isLoggingEnabled: false, // code coverage
                                                progressHandler: { _ in },
                                                session: session)
 
