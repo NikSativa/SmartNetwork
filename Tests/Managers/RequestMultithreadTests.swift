@@ -1,11 +1,11 @@
 import Combine
 import Foundation
-import NQueue
-import NSpry
+import SpryKit
+import Threading
 import XCTest
 
-@testable import NRequest
-@testable import NRequestTestHelpers
+@testable import SmartNetwork
+@testable import SmartNetworkTestHelpers
 
 final class RequestMultithreadTests: XCTestCase {
     private let maxRequests = 500

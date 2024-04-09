@@ -1,6 +1,6 @@
 import Combine
 import Foundation
-import NQueue
+import Threading
 
 public final class HTTPStubServer {
     /// Default queue for stubs

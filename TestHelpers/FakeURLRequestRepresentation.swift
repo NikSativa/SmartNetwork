@@ -1,7 +1,7 @@
 import Foundation
-import NSpry
+import SpryKit
 
-@testable import NRequest
+@testable import SmartNetwork
 
 public final class FakeURLRequestRepresentation: URLRequestRepresentation, Spryable {
     public enum ClassFunction: String, StringRepresentable {

@@ -1,10 +1,10 @@
 import Combine
 import Foundation
-import NSpry
+import SpryKit
 import XCTest
 
-@testable import NRequest
-@testable import NRequestTestHelpers
+@testable import SmartNetwork
+@testable import SmartNetworkTestHelpers
 
 final class HTTPStubProtocolTests: XCTestCase {
     private enum Constant {

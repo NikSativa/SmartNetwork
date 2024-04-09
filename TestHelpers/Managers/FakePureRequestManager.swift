@@ -1,7 +1,7 @@
+import SmartNetwork
 import Foundation
-import NQueue
-import NRequest
-import NSpry
+import SpryKit
+import Threading
 
 public final class FakePureRequestManager: PureRequestManager, Spryable {
     public enum ClassFunction: String, StringRepresentable {
@@ -15,7 +15,7 @@ public final class FakePureRequestManager: PureRequestManager, Spryable {
 
     public init() {}
 
-    public func map<T>(data: NRequest.RequestResult, to type: T.Type, with parameters: NRequest.Parameters) -> Result<T.Object, any Error> where T: NRequest.CustomDecodable {
+    public func map<T>(data: SmartNetwork.RequestResult, to type: T.Type, with parameters: SmartNetwork.Parameters) -> Result<T.Object, any Error> where T: SmartNetwork.CustomDecodable {
         return spryify()
     }
 

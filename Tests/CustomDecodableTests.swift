@@ -1,12 +1,12 @@
 import Foundation
-import NSpry
+import SpryKit
 import XCTest
 
-@testable import NRequest
-@testable import NRequestTestHelpers
+@testable import SmartNetwork
+@testable import SmartNetworkTestHelpers
 
 final class CustomDecodableTests: XCTestCase {
-    private lazy var image: NSpry.Image = .spry.testImage
+    private lazy var image: SpryKit.Image = .spry.testImage
     private lazy var imageData: Data = image.testData()!
 
     private lazy var emptyData: Data = .init()

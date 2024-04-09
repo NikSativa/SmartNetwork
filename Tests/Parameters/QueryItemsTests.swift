@@ -1,8 +1,8 @@
 import Foundation
 import XCTest
 
-@testable import NRequest
-@testable import NRequestTestHelpers
+@testable import SmartNetwork
+@testable import SmartNetworkTestHelpers
 
 final class QueryItemsTests: XCTestCase {
     func test_item() {

@@ -1,6 +1,6 @@
 import Foundation
-import NSpry
+import SpryKit
 
-@testable import NRequest
+@testable import SmartNetwork
 
 extension StopTheLineAction: SpryEquatable {}

@@ -1,5 +1,5 @@
 import Foundation
-import NQueue
+import Threading
 
 public final class RequestManager {
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
@@ -268,7 +268,7 @@ extension RequestManager: DecodableRequestManager {
     public func request<T: Decodable>(_ type: T.Type,
                                       address: Address,
                                       with parameters: Parameters,
-                                      inQueue completionQueue: NQueue.DelayedQueue,
+                                      inQueue completionQueue: Threading.DelayedQueue,
                                       completion: @escaping (Result<T, Error>) -> Void) -> RequestingTask {
         return request(address: address,
                        with: parameters,

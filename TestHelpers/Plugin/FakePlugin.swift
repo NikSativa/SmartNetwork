@@ -1,6 +1,6 @@
+import SmartNetwork
 import Foundation
-import NRequest
-import NSpry
+import SpryKit
 
 public final class FakePlugin: Plugin, Spryable {
     public enum ClassFunction: String, StringRepresentable {

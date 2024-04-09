@@ -1,5 +1,5 @@
 import Foundation
-import NQueue
+import Threading
 
 public protocol PureRequestManager {
     typealias ResponseClosure = (_ result: RequestResult) -> Void

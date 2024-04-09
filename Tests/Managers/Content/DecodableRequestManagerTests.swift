@@ -1,6 +1,6 @@
 import Combine
+import SmartNetwork
 import Foundation
-import NRequest
 import XCTest
 
 final class DecodableRequestManagerTests: XCTestCase {

@@ -1,5 +1,5 @@
+import SmartNetwork
 import Foundation
-import NRequest
 
 struct TestInfo: Codable, Equatable {
     let id: Int

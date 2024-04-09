@@ -1,5 +1,5 @@
+import SmartNetwork
 import Foundation
-import NRequest
-import NSpry
+import SpryKit
 
 extension HTTPMethod: SpryEquatable {}

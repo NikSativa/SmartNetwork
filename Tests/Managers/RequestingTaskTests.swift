@@ -1,10 +1,10 @@
 import Combine
 import Foundation
-import NSpry
+import SpryKit
 import XCTest
 
-@testable import NRequest
-@testable import NRequestTestHelpers
+@testable import SmartNetwork
+@testable import SmartNetworkTestHelpers
 
 final class RequestingTaskTests: XCTestCase {
     func test_cancel_task_once() {

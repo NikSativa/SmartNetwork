@@ -1,5 +1,5 @@
 import Foundation
-import NQueue
+import Threading
 
 public typealias HeaderFields = [String: String]
 

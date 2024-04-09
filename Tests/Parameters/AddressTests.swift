@@ -1,9 +1,9 @@
 import Foundation
-import NSpry
+import SpryKit
 import XCTest
 
-@testable import NRequest
-@testable import NRequestTestHelpers
+@testable import SmartNetwork
+@testable import SmartNetworkTestHelpers
 
 final class AddressTests: XCTestCase {
     func test_extensions() {

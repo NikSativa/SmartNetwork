@@ -1,5 +1,5 @@
 import Foundation
-import NQueue
+import Threading
 
 /// shortname only for internal usage
 internal typealias RS = RequestSettings

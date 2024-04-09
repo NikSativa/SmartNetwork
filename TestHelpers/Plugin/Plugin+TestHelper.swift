@@ -1,6 +1,6 @@
+import SmartNetwork
 import Foundation
-import NRequest
-import NSpry
+import SpryKit
 
 extension Plugin {
     func prepare(_ parameters: Parameters,

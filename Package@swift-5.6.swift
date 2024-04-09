@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "NRequest",
+    name: "SmartNetwork",
     platforms: [
         .iOS(.v13),
         .macOS(.v11),
@@ -12,40 +12,40 @@ let package = Package(
         .watchOS(.v6)
     ],
     products: [
-        .library(name: "NRequest", targets: ["NRequest"]),
-        .library(name: "NRequestTestHelpers", targets: ["NRequestTestHelpers"])
+        .library(name: "SmartNetwork", targets: ["SmartNetwork"]),
+        .library(name: "SmartNetworkTestHelpers", targets: ["SmartNetworkTestHelpers"])
     ],
     dependencies: [
-        .package(url: "https://github.com/NikSativa/NSpry.git", .upToNextMajor(from: "2.1.4")),
-        .package(url: "https://github.com/NikSativa/NQueue.git", .upToNextMajor(from: "1.2.4"))
+        .package(url: "https://github.com/NikSativa/SpryKit.git", .upToNextMajor(from: "2.1.4")),
+        .package(url: "https://github.com/NikSativa/Threading.git", .upToNextMajor(from: "1.2.4"))
     ],
     targets: [
-        .target(name: "NRequest",
+        .target(name: "SmartNetwork",
                 dependencies: [
-                    "NQueue",
+                    "Threading",
                 ],
                 path: "Source",
                 resources: [
                     .copy("../PrivacyInfo.xcprivacy")
                 ]),
-        .target(name: "NRequestTestHelpers",
+        .target(name: "SmartNetworkTestHelpers",
                 dependencies: [
-                    "NRequest",
-                    "NQueue",
-                    .product(name: "NQueueTestHelpers", package: "NQueue"),
-                    "NSpry"
+                    "SmartNetwork",
+                    "Threading",
+                    .product(name: "ThreadingTestHelpers", package: "Threading"),
+                    "SpryKit"
                 ],
                 path: "TestHelpers",
                 resources: [
                     .copy("../PrivacyInfo.xcprivacy")
                 ]),
-        .testTarget(name: "NRequestTests",
+        .testTarget(name: "SmartNetworkTests",
                     dependencies: [
-                        "NRequest",
-                        "NRequestTestHelpers",
-                        "NQueue",
-                        .product(name: "NQueueTestHelpers", package: "NQueue"),
-                        "NSpry"
+                        "SmartNetwork",
+                        "SmartNetworkTestHelpers",
+                        "Threading",
+                        .product(name: "ThreadingTestHelpers", package: "Threading"),
+                        "SpryKit"
                     ],
                     path: "Tests",
                     resources: [

@@ -1,8 +1,8 @@
 import Foundation
-import NQueue
-import NSpry
+import SpryKit
+import Threading
 
-@testable import NRequest
+@testable import SmartNetwork
 
 public final class FakeSession: Session, Spryable {
     public enum ClassFunction: String, StringRepresentable {

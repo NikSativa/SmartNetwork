@@ -1,5 +1,5 @@
 import Foundation
-import NQueue
+import Threading
 
 public final class HTTPStubProtocol: URLProtocol {
     override public class func canInit(with request: URLRequest) -> Bool {

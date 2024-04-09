@@ -1,7 +1,7 @@
+import SmartNetwork
 import Foundation
-import NQueue
-import NRequest
-import NSpry
+import SpryKit
+import Threading
 
 public final class FakeTypedRequestManager<Response>: TypedRequestManager<Response>, Spryable {
     public enum ClassFunction: String, StringRepresentable {

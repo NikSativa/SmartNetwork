@@ -1,8 +1,8 @@
 import Foundation
 import XCTest
 
-@testable import NRequest
-@testable import NRequestTestHelpers
+@testable import SmartNetwork
+@testable import SmartNetworkTestHelpers
 
 final class HTTPMethodTests: XCTestCase {
     func test_string() {

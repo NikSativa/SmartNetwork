@@ -1,5 +1,5 @@
 import Foundation
-import NQueue
+import Threading
 
 public protocol DecodableRequestManager {
     func request<T: Decodable>(_ type: T.Type,

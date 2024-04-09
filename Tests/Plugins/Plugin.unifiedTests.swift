@@ -2,7 +2,7 @@ import Combine
 import Foundation
 import XCTest
 
-@testable import NRequest
+@testable import SmartNetwork
 
 private final class TestPlugin: Plugin {
     private let input: Int
@@ -12,11 +12,11 @@ private final class TestPlugin: Plugin {
         self.input = input
     }
 
-    func prepare(_ parameters: NRequest.Parameters, request: inout NRequest.URLRequestRepresentation) {
+    func prepare(_ parameters: SmartNetwork.Parameters, request: inout SmartNetwork.URLRequestRepresentation) {
         fatalError("not used in that test")
     }
 
-    func verify(data: NRequest.RequestResult, userInfo: NRequest.UserInfo) throws {
+    func verify(data: SmartNetwork.RequestResult, userInfo: SmartNetwork.UserInfo) throws {
         fatalError("not used in that test")
     }
 
@@ -24,11 +24,11 @@ private final class TestPlugin: Plugin {
         fatalError("not used in that test")
     }
 
-    func willSend(_ parameters: NRequest.Parameters, request: NRequest.URLRequestRepresentation, userInfo: NRequest.UserInfo) {
+    func willSend(_ parameters: SmartNetwork.Parameters, request: SmartNetwork.URLRequestRepresentation, userInfo: SmartNetwork.UserInfo) {
         fatalError("not used in that test")
     }
 
-    func didReceive(_ parameters: NRequest.Parameters, request: NRequest.URLRequestRepresentation, data: NRequest.RequestResult, userInfo: NRequest.UserInfo) {
+    func didReceive(_ parameters: SmartNetwork.Parameters, request: SmartNetwork.URLRequestRepresentation, data: SmartNetwork.RequestResult, userInfo: SmartNetwork.UserInfo) {
         fatalError("not used in that test")
     }
 }

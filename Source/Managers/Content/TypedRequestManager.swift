@@ -1,10 +1,10 @@
 import Foundation
-import NQueue
+import Threading
 
 open class TypedRequestManager<Response> {
     private let requestTask: (_ address: Address,
                               _ parameters: Parameters,
-                              _ completionQueue: NQueue.DelayedQueue,
+                              _ completionQueue: Threading.DelayedQueue,
                               _ seflRetain: Bool,
                               _ completion: @escaping (Result<Response, Error>) -> Void) -> RequestingTask
 
@@ -24,7 +24,7 @@ open class TypedRequestManager<Response> {
 
     open func request(address: Address,
                       with parameters: Parameters = .init(),
-                      inQueue completionQueue: NQueue.DelayedQueue = RequestSettings.defaultResponseQueue,
+                      inQueue completionQueue: Threading.DelayedQueue = RequestSettings.defaultResponseQueue,
                       completion: @escaping (Result<Response, Error>) -> Void) -> RequestingTask {
         return requestTask(address,
                            parameters,

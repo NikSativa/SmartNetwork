@@ -1,6 +1,6 @@
 import Combine
 import Foundation
-import NQueue
+import Threading
 
 public final class RequestingTask {
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)

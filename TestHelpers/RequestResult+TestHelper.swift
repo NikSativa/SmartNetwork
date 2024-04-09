@@ -1,7 +1,7 @@
 import Foundation
-import NSpry
+import SpryKit
 
-@testable import NRequest
+@testable import SmartNetwork
 
 extension RequestResult: Equatable, SpryEquatable {
     public static func testMake(url: URL = .spry.testMake(),

@@ -1,6 +1,6 @@
+import SmartNetwork
 import Foundation
-import NRequest
-import NSpry
+import SpryKit
 
 // MARK: - CacheSettings + SpryEquatable
 
