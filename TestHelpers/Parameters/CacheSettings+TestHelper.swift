@@ -1,5 +1,5 @@
-import SmartNetwork
 import Foundation
+import SmartNetwork
 import SpryKit
 
 // MARK: - CacheSettings + SpryEquatable
