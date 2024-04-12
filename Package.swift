@@ -17,8 +17,8 @@ let package = Package(
         .library(name: "SmartNetworkTestHelpers", targets: ["SmartNetworkTestHelpers"])
     ],
     dependencies: [
-        .package(url: "https://github.com/NikSativa/SpryKit.git", .upToNextMajor(from: "2.2.2")),
-        .package(url: "https://github.com/NikSativa/Threading.git", .upToNextMajor(from: "1.3.4"))
+        .package(url: "https://github.com/NikSativa/SpryKit.git", .upToNextMajor(from: "2.2.3")),
+        .package(url: "https://github.com/NikSativa/Threading.git", .upToNextMajor(from: "1.3.5"))
     ],
     targets: [
         .target(name: "SmartNetwork",

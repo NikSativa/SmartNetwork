@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/NikSativa/SpryKit.git",
       "state" : {
-        "revision" : "e0dd3952fd17e3646c260e21fc3fd656f5b636e0",
-        "version" : "2.2.2"
+        "revision" : "f14ae68bccd324f20cd74d65413cb9c93a5ba4dd",
+        "version" : "2.2.3"
       }
     },
     {
@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/NikSativa/Threading.git",
       "state" : {
-        "revision" : "1f95fde1280d4cd763ce027c210c3b6b5c18d7ec",
-        "version" : "1.3.3"
+        "revision" : "13eb2e16067dd685a92436f9dbe2f322c88f8c24",
+        "version" : "1.3.5"
       }
     }
   ],

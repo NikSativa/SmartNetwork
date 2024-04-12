@@ -1,6 +1,10 @@
-## Light weight wrapper around URLSession. 
+# SmartNetwork
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FNikSativa%2FSmartNetwork%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/NikSativa/SmartNetwork)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FNikSativa%2FSmartNetwork%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/NikSativa/SmartNetwork)
 
-### The main features are: 
+Light weight wrapper around URLSession. 
+
+## The main features are: 
 - strong typed responses
 > await manager.decodable.request(**TestInfo.self**, address: address)
 - predefined API for basic types: *Void, Data, Image, Any(JSON)*
