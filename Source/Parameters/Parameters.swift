@@ -5,7 +5,7 @@ public typealias HeaderFields = [String: String]
 
 public struct Parameters {
     public let header: HeaderFields
-    public let method: HTTPMethod
+    public let method: HTTPMethod?
     public let body: Body
     public let timeoutInterval: TimeInterval
     public let cacheSettings: CacheSettings?
@@ -20,7 +20,7 @@ public struct Parameters {
     public let userInfo: UserInfo
 
     public init(header: HeaderFields = [:],
-                method: HTTPMethod = .get,
+                method: HTTPMethod? = .get,
                 body: Body = .empty,
                 plugins: [Plugin] = [],
                 cacheSettings: CacheSettings? = nil,
@@ -50,7 +50,7 @@ public struct Parameters {
         var request = URLRequest(url: url,
                                  cachePolicy: requestPolicy,
                                  timeoutInterval: timeoutInterval)
-        request.httpMethod = method.toString()
+        request.httpMethod = method?.toString()
 
         for (key, value) in header {
             request.setValue(value, forHTTPHeaderField: key)

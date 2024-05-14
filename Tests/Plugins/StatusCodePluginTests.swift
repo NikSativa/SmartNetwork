@@ -12,8 +12,8 @@ final class StatusCodePluginTests: XCTestCase {
         XCTAssertNoThrowError(try subject.verify(data: .testMake(), userInfo: .init()))
         XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: 200), userInfo: .init()))
 
-        XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: 0), userInfo: .init()))
-        XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: -1), userInfo: .init()))
+        XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 0), userInfo: .init()))
+        XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: -1), userInfo: .init()))
 
         for code in StatusCode.Kind.allCases {
             XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: code.rawValue), userInfo: .init()), StatusCode(code), "\(code)")
@@ -36,11 +36,11 @@ final class StatusCodePluginTests: XCTestCase {
         XCTAssertNoThrowError(try subject.verify(data: .testMake(), userInfo: .init()))
         XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: 200), userInfo: .init()))
 
-        XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: 0), userInfo: .init()))
-        XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: -1), userInfo: .init()))
+        XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 0), userInfo: .init()))
+        XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: -1), userInfo: .init()))
 
         for code in StatusCode.Kind.allCases {
-            if code.isSuccess {
+            if (200..<300).contains(code.rawValue) {
                 XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: code.rawValue), userInfo: .init()), "\(code)")
             } else {
                 XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: code.rawValue), userInfo: .init()), StatusCode(code), "\(code)")

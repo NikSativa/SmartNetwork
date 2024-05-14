@@ -1,6 +1,6 @@
 import Foundation
 
-public enum HTTPMethod: Hashable {
+public enum HTTPMethod: Hashable, ExpressibleByStringLiteral {
     case get
     case head
     case post
@@ -11,9 +11,13 @@ public enum HTTPMethod: Hashable {
     case trace
     case patch
     case other(String)
+
+    public init(stringLiteral value: String) {
+        self = .other(value)
+    }
 }
 
-extension HTTPMethod {
+internal extension HTTPMethod {
     func toString() -> String {
         switch self {
         case .get:

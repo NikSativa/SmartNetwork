@@ -1,6 +1,6 @@
 import Foundation
 
-public struct StatusCode: Error, Hashable {
+public struct StatusCode: Error, Hashable, ExpressibleByIntegerLiteral {
     public let code: Int
     public let kind: Kind?
 
@@ -13,13 +13,13 @@ public struct StatusCode: Error, Hashable {
         self.code = kind.rawValue
         self.kind = kind
     }
+
+    public init(integerLiteral value: Int) {
+        self.init(code: value)
+    }
 }
 
 public extension StatusCode {
-    var isSuccess: Bool {
-        return kind?.isSuccess == true
-    }
-
     static var noContent: Self {
         return .init(.noContent)
     }
@@ -103,64 +103,6 @@ public extension StatusCode {
 }
 
 public extension StatusCode.Kind {
-    var isSuccess: Bool {
-        switch self {
-        case .accepted,
-             .alreadyReported,
-             .created,
-             .imUsed,
-             .multiStatus,
-             .noContent,
-             .nonAuthoritativeInformation,
-             .partialContent,
-             .resetContent:
-            return true
-        case .badGateway,
-             .badRequest,
-             .conflict,
-             .expectationFailed,
-             .forbidden,
-             .found,
-             .gatewayTimeout,
-             .gone,
-             .headersTooLarge,
-             .httpVersionNotSupported,
-             .insufficiantStorage,
-             .lenghtRequired,
-             .loopDetected,
-             .methodNotAllowed,
-             .movedPermanently,
-             .multipleChoises,
-             .networkAuthenticationRequired,
-             .notAcceptable,
-             .notExtended,
-             .notFound,
-             .notImplemented,
-             .notModified,
-             .payloadTooLarge,
-             .permanentRedirect,
-             .preconditionFailed,
-             .preconditionRequired,
-             .proxyAuthenticationRequiered,
-             .rangeNotSatisfiable,
-             .seeOther,
-             .serverError,
-             .serviceUnavailable,
-             .teapot,
-             .temporaryRedirect,
-             .timeout,
-             .tooManyRequests,
-             .unauthorized,
-             .unavailableForLegalReasons,
-             .unprocessableEntity,
-             .unsupportedMediaType,
-             .upgradeRequired,
-             .uriTooLong,
-             .variantAlsoNegotiates:
-            return false
-        }
-    }
-
     var name: String {
         let name: String? = String(reflecting: self).components(separatedBy: ".").last
         return name.unsafelyUnwrapped

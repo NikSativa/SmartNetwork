@@ -24,7 +24,7 @@ public final class HTTPStubProtocol: URLProtocol {
 
             let response: URLResponse = request.url.flatMap { url in
                 return HTTPURLResponse(url: url,
-                                       statusCode: stub.statusCode,
+                                       statusCode: stub.statusCode.code,
                                        httpVersion: "HTTP/1.1",
                                        headerFields: stub.header)
             } ?? .init()

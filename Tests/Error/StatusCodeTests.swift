@@ -15,7 +15,6 @@ final class StatusCodeTests: XCTestCase {
         XCTAssertEqual(StatusCode(.accepted).kind, .accepted)
         XCTAssertEqual(StatusCode(.lenghtRequired).kind, .lenghtRequired)
         XCTAssertEqual(StatusCode(.lenghtRequired).code, 411)
-        XCTAssertTrue(StatusCode(.accepted).isSuccess)
     }
 
     func test_name() {

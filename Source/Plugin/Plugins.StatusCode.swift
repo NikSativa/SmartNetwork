@@ -4,21 +4,21 @@ public extension Plugins {
     final class StatusCode: Plugin {
         private let shouldIgnore200th: Bool
 
-        /// - Parameter shouldIgnoreSuccess: ignore status code in range 200..<300
+        /// - Parameter shouldIgnore200th: ignore status code in range 200..<300
         public init(shouldIgnore200th: Bool = true) {
             self.shouldIgnore200th = shouldIgnore200th
         }
 
         public func verify(data: RequestResult, userInfo: UserInfo) throws {
-            guard data.statusCodeInt != 200, let error = data.statusCode else {
+            if shouldIgnore200th,
+               let statusCodeInt = data.statusCodeInt,
+               (200..<300).contains(statusCodeInt) {
+                return
+            } else if data.statusCodeInt == 200 {
                 return
             }
 
-            guard let kind = error.kind else {
-                return
-            }
-
-            if shouldIgnore200th, kind.isSuccess {
+            guard let error = data.statusCode else {
                 return
             }
 

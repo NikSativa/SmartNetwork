@@ -85,17 +85,7 @@ public extension Address {
     func url() throws -> URL {
         var components = URLComponents()
 
-        switch scheme {
-        case .none:
-            components.scheme = nil
-        case .http:
-            components.scheme = "http"
-        case .https:
-            components.scheme = "https"
-        case .other(let string):
-            components.scheme = string.isEmpty ? nil : string
-        }
-
+        components.scheme = scheme?.toString()
         components.host = host
         components.port = port
 

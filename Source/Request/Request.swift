@@ -66,7 +66,7 @@ public final class Request {
         let sdkRequest = urlRequestable.sdk
         if let stub = HTTPStubServer.shared.response(for: sdkRequest) {
             let response = HTTPURLResponse(url: sdkRequest.url.unsafelyUnwrapped,
-                                           statusCode: stub.statusCode,
+                                           statusCode: stub.statusCode.code,
                                            httpVersion: nil,
                                            headerFields: stub.header)
             let responseData = RequestResult(request: urlRequestable,
@@ -229,7 +229,8 @@ private extension Request {
     func makeDescription() -> String {
         let url = try? address.url()
         let text = url?.absoluteString ?? "broken url"
-        return "<\(parameters.method.toString()) request: \(text)>"
+        let method: String = (parameters.method?.toString()).map { $0 + " " } ?? ""
+        return "<\(method)request: \(text)>"
     }
 }
 

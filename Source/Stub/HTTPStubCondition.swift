@@ -91,10 +91,10 @@ public enum HTTPStubCondition {
         }
     }
 
-    public typealias TestClosure = (_ request: URLRequest) -> Bool?
+    public typealias TestClosure = (_ request: URLRequestRepresentation) -> Bool?
     case custom(TestClosure)
 
-    func test(_ request: URLRequest) -> Bool {
+    func test(_ request: URLRequestRepresentation) -> Bool {
         let result: Bool?
         switch self {
         case .isAddress(let address):
@@ -139,12 +139,16 @@ public enum HTTPStubCondition {
     }
 }
 
-private extension URLRequest {
+private extension URLRequestRepresentation {
     var absoluteString: String? {
         return url?.absoluteString
     }
 
     var path: String? {
         return url?.path
+    }
+
+    var httpMethod: String? {
+        return sdk.httpMethod
     }
 }
