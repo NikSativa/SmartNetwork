@@ -20,12 +20,44 @@ final class HTTPStubTest_Tests: XCTestCase {
 
     func test_isPath() {
         XCTAssertTrue(HTTPStubCondition.isPath("/signin/v1.0").test(request))
+        XCTAssertTrue(HTTPStubCondition.isPath("signin/v1.0").test(request))
+        XCTAssertTrue(HTTPStubCondition.isPath("/signin/v1.0/").test(request))
 
-        XCTAssertFalse(HTTPStubCondition.isPath("signin/v1.0").test(request))
         XCTAssertFalse(HTTPStubCondition.isPath("signin").test(request))
         XCTAssertFalse(HTTPStubCondition.isPath("signin/").test(request))
         XCTAssertFalse(HTTPStubCondition.isPath("/signin/").test(request))
-        XCTAssertFalse(HTTPStubCondition.isPath("/signin/v1.0/").test(request))
+    }
+
+    func test_pathContains_keepingOrder() {
+        XCTAssertTrue(HTTPStubCondition.pathContains("/signin/v1.0").test(request))
+        XCTAssertTrue(HTTPStubCondition.pathContains("signin/v1.0").test(request))
+        XCTAssertTrue(HTTPStubCondition.pathContains("/signin/v1.0/").test(request))
+        XCTAssertTrue(HTTPStubCondition.pathContains("signin").test(request))
+        XCTAssertTrue(HTTPStubCondition.pathContains("signin/").test(request))
+        XCTAssertTrue(HTTPStubCondition.pathContains("/signin/").test(request))
+
+        XCTAssertFalse(HTTPStubCondition.pathContains("/v1.0/signin/").test(request)) // << -- This is the key difference
+
+        XCTAssertFalse(HTTPStubCondition.pathContains("signin/2.0").test(request))
+        XCTAssertFalse(HTTPStubCondition.pathContains("2.0/signin/").test(request))
+        XCTAssertFalse(HTTPStubCondition.pathContains("/signin2.0/").test(request))
+    }
+
+    func test_pathContains_not_keepingOrder() {
+        XCTAssertTrue(HTTPStubCondition.pathContains("/signin/v1.0", keepingOrder: false).test(request))
+        XCTAssertTrue(HTTPStubCondition.pathContains("signin/v1.0", keepingOrder: false).test(request))
+        XCTAssertTrue(HTTPStubCondition.pathContains("/signin/v1.0/", keepingOrder: false).test(request))
+        XCTAssertTrue(HTTPStubCondition.pathContains("signin", keepingOrder: false).test(request))
+        XCTAssertTrue(HTTPStubCondition.pathContains("signin/", keepingOrder: false).test(request))
+        XCTAssertTrue(HTTPStubCondition.pathContains("/signin/", keepingOrder: false).test(request))
+
+        XCTAssertTrue(HTTPStubCondition.pathContains("/v1.0/signin/", keepingOrder: false).test(request)) // << -- This is the key difference
+
+        XCTAssertFalse(HTTPStubCondition.pathContains("signin/2.0", keepingOrder: false).test(request))
+        XCTAssertFalse(HTTPStubCondition.pathContains("2.0/signin/", keepingOrder: false).test(request))
+        XCTAssertFalse(HTTPStubCondition.pathContains("/signin2.0/", keepingOrder: false).test(request))
+        XCTAssertFalse(HTTPStubCondition.pathContains("2.0/signin/", keepingOrder: false).test(request))
+        XCTAssertFalse(HTTPStubCondition.pathContains("/signin2.0/", keepingOrder: false).test(request))
     }
 
     func test_isHost() {
@@ -62,25 +94,27 @@ final class HTTPStubTest_Tests: XCTestCase {
 
     func test_pathStartsWith() {
         XCTAssertTrue(HTTPStubCondition.pathStartsWith("/signin/v1.0").test(request))
-        XCTAssertTrue(HTTPStubCondition.pathStartsWith("/signin/v1.").test(request))
-        XCTAssertTrue(HTTPStubCondition.pathStartsWith("/signin/v1").test(request))
-        XCTAssertTrue(HTTPStubCondition.pathStartsWith("/signin/v").test(request))
         XCTAssertTrue(HTTPStubCondition.pathStartsWith("/signin/").test(request))
         XCTAssertTrue(HTTPStubCondition.pathStartsWith("/signin").test(request))
-        XCTAssertTrue(HTTPStubCondition.pathStartsWith("/sign").test(request))
+
+        XCTAssertFalse(HTTPStubCondition.pathStartsWith("/signin/v1.").test(request))
+        XCTAssertFalse(HTTPStubCondition.pathStartsWith("/signin/v1").test(request))
+        XCTAssertFalse(HTTPStubCondition.pathStartsWith("/signin/v").test(request))
+        XCTAssertFalse(HTTPStubCondition.pathStartsWith("/sign").test(request))
     }
 
     func test_pathEndsWith() {
         XCTAssertTrue(HTTPStubCondition.pathEndsWith("/signin/v1.0").test(request))
         XCTAssertTrue(HTTPStubCondition.pathEndsWith("signin/v1.0").test(request))
-        XCTAssertTrue(HTTPStubCondition.pathEndsWith("ignin/v1.0").test(request))
-        XCTAssertTrue(HTTPStubCondition.pathEndsWith("gnin/v1.0").test(request))
-        XCTAssertTrue(HTTPStubCondition.pathEndsWith("nin/v1.0").test(request))
-        XCTAssertTrue(HTTPStubCondition.pathEndsWith("n/v1.0").test(request))
         XCTAssertTrue(HTTPStubCondition.pathEndsWith("/v1.0").test(request))
         XCTAssertTrue(HTTPStubCondition.pathEndsWith("v1.0").test(request))
-        XCTAssertTrue(HTTPStubCondition.pathEndsWith("1.0").test(request))
-        XCTAssertTrue(HTTPStubCondition.pathEndsWith(".0").test(request))
+
+        XCTAssertFalse(HTTPStubCondition.pathEndsWith("ignin/v1.0").test(request))
+        XCTAssertFalse(HTTPStubCondition.pathEndsWith("gnin/v1.0").test(request))
+        XCTAssertFalse(HTTPStubCondition.pathEndsWith("nin/v1.0").test(request))
+        XCTAssertFalse(HTTPStubCondition.pathEndsWith("n/v1.0").test(request))
+        XCTAssertFalse(HTTPStubCondition.pathEndsWith("1.0").test(request))
+        XCTAssertFalse(HTTPStubCondition.pathEndsWith(".0").test(request))
     }
 
     func test_pathNSMatches() throws {
