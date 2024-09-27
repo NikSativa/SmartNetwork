@@ -1,6 +1,18 @@
 import Foundation
 import Threading
 
+#if swift(>=6.0)
+public protocol Requestable: AnyObject, Sendable {
+    typealias CompletionCallback = (RequestResult) -> Void
+
+    var completion: CompletionCallback? { get set }
+    var urlRequestable: URLRequestRepresentation { get }
+    var parameters: Parameters { get }
+
+    func start()
+    func cancel()
+}
+#else
 public protocol Requestable: AnyObject {
     typealias CompletionCallback = (RequestResult) -> Void
 
@@ -11,6 +23,7 @@ public protocol Requestable: AnyObject {
     func start()
     func cancel()
 }
+#endif
 
 public final class Request {
     private let sessionAdaptor: SessionAdaptor
@@ -195,7 +208,7 @@ private final class SessionAdaptor {
         self.progressHandler = progressHandler
     }
 
-    func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) {
+    func dataTask(with request: URLRequest, completionHandler: @escaping CompletionHandler) {
         stop()
 
         let newTask = session.task(with: request) { [weak self] data, response, error in
@@ -242,3 +255,14 @@ private extension [String: String]? {
         .joined(separator: "\n")
     }
 }
+
+#if swift(>=6.0)
+extension Request: @unchecked Sendable {}
+extension SessionAdaptor: @unchecked Sendable {
+    typealias CompletionHandler = @Sendable (Data?, URLResponse?, Error?) -> Void
+}
+#else
+extension SessionAdaptor {
+    typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
+}
+#endif

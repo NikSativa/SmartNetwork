@@ -24,27 +24,27 @@ final class PureRequestManagerTests: XCTestCase {
     }
 
     func test_api_any() {
-        var actual: RequestResult?
+        let actual: SendableResult<RequestResult> = .init()
         let exp = expectation(description: #function)
         subjset.request(address: address) { obj in
-            actual = obj
+            actual.value = obj
             exp.fulfill()
         }.deferredStart().store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
-        XCTAssertEqual(info, actual?.body?.info())
+        XCTAssertEqual(info, actual.value?.body?.info())
     }
 
     func test_api_main() {
-        var actual: RequestResult?
+        let actual: SendableResult<RequestResult> = .init()
         let exp = expectation(description: #function)
         subjset.request(address: address,
                         with: .testMake(),
                         inQueue: .absent) { obj in
-            actual = obj
+            actual.value = obj
             exp.fulfill()
         }.deferredStart().store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
-        XCTAssertEqual(info, actual?.body?.info())
+        XCTAssertEqual(info, actual.value?.body?.info())
     }
 
     func test_api_async() async {

@@ -32,3 +32,7 @@ public struct HTTPStubResponse {
         self.delayInSeconds = delayInSeconds
     }
 }
+
+#if swift(>=6.0)
+extension HTTPStubResponse: Sendable {}
+#endif

@@ -4,7 +4,7 @@ import Foundation
 
 extension URLSession: Session {
     public func task(with request: URLRequest,
-                     completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> SessionTask {
+                     completionHandler: @escaping CompletionHandler) -> SessionTask {
         return dataTask(with: request, completionHandler: completionHandler)
     }
 }

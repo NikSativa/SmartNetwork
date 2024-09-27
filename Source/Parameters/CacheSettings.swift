@@ -1,10 +1,18 @@
 import Foundation
 
+#if swift(>=6.0)
+public protocol RequestCache: AnyObject, Sendable {
+    func cachedResponse(for request: URLRequest) -> CachedURLResponse?
+    func storeCachedResponse(_ cachedResponse: CachedURLResponse, for request: URLRequest)
+    func removeCachedResponse(for request: URLRequest)
+}
+#else
 public protocol RequestCache: AnyObject {
     func cachedResponse(for request: URLRequest) -> CachedURLResponse?
     func storeCachedResponse(_ cachedResponse: CachedURLResponse, for request: URLRequest)
     func removeCachedResponse(for request: URLRequest)
 }
+#endif
 
 extension URLCache: RequestCache {}
 
@@ -18,3 +26,7 @@ public struct CacheSettings {
         self.storagePolicy = storagePolicy
     }
 }
+
+#if swift(>=6.0)
+extension CacheSettings: Sendable {}
+#endif

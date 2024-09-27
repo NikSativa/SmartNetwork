@@ -32,7 +32,7 @@ public final class HTTPStubProtocol: URLProtocol {
             client.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
 
             let delayInSeconds = stub.delayInSeconds ?? 0
-            Queue.background.asyncAfter(deadline: .now() + delayInSeconds) { [client] in
+            Queue.background.asyncAfter(deadline: .now() + delayInSeconds) { [self, client] in
                 if let error = stub.error {
                     client.urlProtocol(self, didFailWithError: error)
                 } else if let data = stub.body.data {
@@ -49,3 +49,7 @@ public final class HTTPStubProtocol: URLProtocol {
 
     override public func stopLoading() {}
 }
+
+#if swift(>=6.0)
+extension HTTPStubProtocol: @unchecked Sendable {}
+#endif

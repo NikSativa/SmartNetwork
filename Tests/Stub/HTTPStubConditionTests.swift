@@ -3,7 +3,6 @@ import SpryKit
 import XCTest
 
 @testable import SmartNetwork
-@testable import SmartNetworkTestHelpers
 
 final class HTTPStubTest_Tests: XCTestCase {
     private let request: URLRequest = {
@@ -62,7 +61,7 @@ final class HTTPStubTest_Tests: XCTestCase {
 
     func test_isHost() {
         XCTAssertTrue(HTTPStubCondition.isHost("api.example.com").test(request))
-        #if (os(macOS) || os(iOS) || os(visionOS)) && (arch(x86_64) || arch(arm64))
+        #if (os(macOS) || os(iOS) || supportsVisionOS) && (arch(x86_64) || arch(arm64))
         XCTAssertThrowsAssertion {
             HTTPStubCondition.isHost("/api.example.com").test(self.request)
         }
@@ -82,7 +81,7 @@ final class HTTPStubTest_Tests: XCTestCase {
     func test_isScheme() {
         XCTAssertTrue(HTTPStubCondition.isScheme("https").test(request))
         XCTAssertFalse(HTTPStubCondition.isScheme("http").test(request))
-        #if (os(macOS) || os(iOS) || os(visionOS)) && (arch(x86_64) || arch(arm64))
+        #if (os(macOS) || os(iOS) || supportsVisionOS) && (arch(x86_64) || arch(arm64))
         XCTAssertThrowsAssertion {
             HTTPStubCondition.isScheme("https://").test(self.request)
         }

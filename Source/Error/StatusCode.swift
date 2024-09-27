@@ -108,3 +108,8 @@ public extension StatusCode.Kind {
         return name.unsafelyUnwrapped
     }
 }
+
+#if swift(>=6.0)
+extension StatusCode: Sendable {}
+extension StatusCode.Kind: Sendable {}
+#endif

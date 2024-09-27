@@ -2,7 +2,6 @@ import Foundation
 import XCTest
 
 @testable import SmartNetwork
-@testable import SmartNetworkTestHelpers
 
 final class URLSessionTests: XCTestCase {
     func test_init() {

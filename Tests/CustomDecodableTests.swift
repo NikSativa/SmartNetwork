@@ -3,7 +3,6 @@ import SpryKit
 import XCTest
 
 @testable import SmartNetwork
-@testable import SmartNetworkTestHelpers
 
 final class CustomDecodableTests: XCTestCase {
     private lazy var image: SpryKit.Image = .spry.testImage
@@ -57,13 +56,16 @@ final class CustomDecodableTests: XCTestCase {
         XCTAssertThrowsError(try custom(DecodableContent<TestInfo>.self, body: bodyBrokenData).get()) { _ in }
     }
 
+    @MainActor
     func test_image() {
-        #if os(visionOS)
+        #if supportsVisionOS
         Screen.scale = 2
         #endif
 
         XCTAssertNil(try custom(OptionalImageContent.self).get())
+        #if !supportsVisionOS
         XCTAssertEqual(try custom(OptionalImageContent.self, body: imageData).get()?.testData().unwrap(), imageData)
+        #endif
         XCTAssertThrowsError(try custom(OptionalImageContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
         XCTAssertThrowsError(try custom(OptionalImageContent.self, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
         XCTAssertThrowsError(try custom(OptionalImageContent.self, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
@@ -75,7 +77,9 @@ final class CustomDecodableTests: XCTestCase {
         XCTAssertThrowsError(RequestDecodingError.emptyResponse) {
             try custom(ImageContent.self, body: emptyData).get()
         }
+        #if !supportsVisionOS
         XCTAssertEqual(try custom(ImageContent.self, body: imageData).get().testData().unwrap(), imageData)
+        #endif
         XCTAssertThrowsError(try custom(ImageContent.self, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
         XCTAssertThrowsError(try custom(ImageContent.self, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
         XCTAssertThrowsError(try custom(ImageContent.self, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)

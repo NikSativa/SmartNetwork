@@ -4,7 +4,6 @@ import SpryKit
 import XCTest
 
 @testable import SmartNetwork
-@testable import SmartNetworkTestHelpers
 
 final class HTTPStubProtocolTests: XCTestCase {
     private enum Constant {

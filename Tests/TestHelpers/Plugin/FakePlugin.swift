@@ -48,3 +48,7 @@ public final class FakePlugin: Plugin, Spryable {
         return spryify(arguments: parameters, request, data, userInfo)
     }
 }
+
+#if swift(>=6.0)
+extension FakePlugin: @unchecked Sendable {}
+#endif

@@ -24,43 +24,43 @@ final class DecodableRequestManagerTests: XCTestCase {
     }
 
     func test_api_any() {
-        var actual: TestInfo?
+        let actual: SendableResult<TestInfo> = .init()
         let exp = expectation(description: #function)
         subjset.request(TestInfo.self,
                         address: address) { obj in
-            actual = try? obj.get()
+            actual.value = try? obj.get()
             exp.fulfill()
         }.deferredStart().store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
-        XCTAssertEqual(info, actual)
+        XCTAssertEqual(info, actual.value)
     }
 
     func test_api_main() {
-        var actual: TestInfo?
+        let actual: SendableResult<TestInfo> = .init()
         let exp = expectation(description: #function)
         subjset.request(TestInfo.self,
                         address: address,
                         with: .testMake(),
                         inQueue: .absent) { obj in
-            actual = try? obj.get()
+            actual.value = try? obj.get()
             exp.fulfill()
         }.deferredStart().store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
-        XCTAssertEqual(info, actual)
+        XCTAssertEqual(info, actual.value)
     }
 
     func test_api_main_opt() {
-        var actual: TestInfo?
+        let actual: SendableResult<TestInfo> = .init()
         let exp = expectation(description: #function)
         subjset.request(opt: TestInfo.self,
                         address: address,
                         with: .testMake(),
                         inQueue: .absent) { obj in
-            actual = try? obj.get()
+            actual.value = try? obj.get()
             exp.fulfill()
         }.deferredStart().store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
-        XCTAssertEqual(info, actual)
+        XCTAssertEqual(info, actual.value)
     }
 
     func test_api_async() async {

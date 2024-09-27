@@ -1,6 +1,6 @@
 import Foundation
 
-public enum HTTPMethod: Hashable, ExpressibleByStringLiteral {
+public enum HTTPMethod: Hashable {
     case get
     case head
     case post
@@ -11,7 +11,15 @@ public enum HTTPMethod: Hashable, ExpressibleByStringLiteral {
     case trace
     case patch
     case other(String)
+}
 
+#if swift(>=6.0)
+extension HTTPMethod: Sendable {}
+#endif
+
+// MARK: - ExpressibleByStringLiteral
+
+extension HTTPMethod: ExpressibleByStringLiteral {
     public init(stringLiteral value: String) {
         self = .other(value)
     }

@@ -61,3 +61,7 @@ public struct Parameters {
         return request
     }
 }
+
+#if swift(>=6.0)
+extension Parameters: Sendable {}
+#endif

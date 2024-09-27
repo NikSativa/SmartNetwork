@@ -1,7 +1,11 @@
 import Foundation
 
 public extension Plugins {
+    #if swift(>=6.0)
+    typealias TokenProvider = @Sendable () -> String?
+    #else
     typealias TokenProvider = () -> String?
+    #endif
 
     enum TokenType {
         public enum Operation {
@@ -68,3 +72,9 @@ public extension Plugins {
         public func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo) {}
     }
 }
+
+#if swift(>=6.0)
+extension Plugins.TokenType: Sendable {}
+extension Plugins.TokenType.Operation: Sendable {}
+extension Plugins.TokenPlugin: @unchecked Sendable {}
+#endif

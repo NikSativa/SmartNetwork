@@ -1,7 +1,11 @@
 import Foundation
 
 public extension Plugins {
+    #if swift(>=6.0)
+    typealias BasicTokenProvider = @Sendable () -> (username: String, password: String)?
+    #else
     typealias BasicTokenProvider = () -> (username: String, password: String)?
+    #endif
 
     static func Basic(with tokenProvider: @escaping BasicTokenProvider) -> Plugin {
         return TokenPlugin(id: "Basic",

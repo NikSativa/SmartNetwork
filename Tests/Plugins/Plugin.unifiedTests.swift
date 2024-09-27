@@ -63,3 +63,7 @@ final class PluginUnifiedTests: XCTestCase {
         XCTAssertEqual(noDuplicatesProcessors.count, 3)
     }
 }
+
+#if swift(>=6.0)
+extension TestPlugin: @unchecked Sendable {}
+#endif

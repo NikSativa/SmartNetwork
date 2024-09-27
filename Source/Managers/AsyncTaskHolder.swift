@@ -10,3 +10,7 @@ internal final class AsyncTaskHolder {
         task.start()
     }
 }
+
+#if swift(>=6.0)
+extension AsyncTaskHolder: @unchecked Sendable {}
+#endif

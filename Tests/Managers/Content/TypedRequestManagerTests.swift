@@ -24,27 +24,27 @@ final class TypedRequestManagerTests: XCTestCase {
     }
 
     func test_api_any() {
-        var actual: Data?
+        let actual: SendableResult<Data> = .init()
         let exp = expectation(description: #function)
         subjset.request(address: address) { obj in
-            actual = try? obj.get()
+            actual.value = try? obj.get()
             exp.fulfill()
         }.deferredStart().store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
-        XCTAssertEqual(info, actual?.info())
+        XCTAssertEqual(info, actual.value?.info())
     }
 
     func test_api_main() {
-        var actual: Data?
+        let actual: SendableResult<Data> = .init()
         let exp = expectation(description: #function)
         subjset.request(address: address,
                         with: .testMake(),
                         inQueue: .absent) { obj in
-            actual = try? obj.get()
+            actual.value = try? obj.get()
             exp.fulfill()
         }.deferredStart().store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
-        XCTAssertEqual(info, actual?.info())
+        XCTAssertEqual(info, actual.value?.info())
     }
 
     func test_api_async() async {

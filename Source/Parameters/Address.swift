@@ -191,3 +191,7 @@ public extension Address {
                     shouldRemoveSlashesForEmptyScheme: lhs.shouldAddSlashAfterEndpoint)
     }
 }
+
+#if swift(>=6.0)
+extension Address: Sendable {}
+#endif

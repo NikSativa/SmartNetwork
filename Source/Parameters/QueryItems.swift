@@ -24,8 +24,20 @@ public extension QueryItems {
 
 // MARK: - ExpressibleByDictionaryLiteral
 
+#if hasFeature(RetroactiveAttribute) && swift(>=5.9)
+extension QueryItems: @retroactive ExpressibleByDictionaryLiteral {
+    public init(dictionaryLiteral elements: (String, String?)...) {
+        self = elements.map(Element.init(key:value:))
+    }
+}
+#else
 extension QueryItems: ExpressibleByDictionaryLiteral {
     public init(dictionaryLiteral elements: (String, String?)...) {
         self = elements.map(Element.init(key:value:))
     }
 }
+#endif
+
+#if swift(>=6.0)
+extension QueryItems: Sendable {}
+#endif

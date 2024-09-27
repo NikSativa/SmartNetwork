@@ -3,15 +3,14 @@ import SpryKit
 import XCTest
 
 @testable import SmartNetwork
-@testable import SmartNetworkTestHelpers
 
 final class StatusCodePluginTests: XCTestCase {
     func test_shouldNotIgnoreSuccess() {
         let subject = Plugins.StatusCode(shouldIgnore200th: false)
 
         XCTAssertNoThrowError(try subject.verify(data: .testMake(), userInfo: .init()))
-        XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: 200), userInfo: .init()))
 
+        XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 200), userInfo: .init()))
         XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 0), userInfo: .init()))
         XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: -1), userInfo: .init()))
 
