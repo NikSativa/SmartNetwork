@@ -3,7 +3,6 @@ import SpryKit
 import XCTest
 
 @testable import SmartNetwork
-@testable import SmartNetworkTestHelpers
 
 final class PluginsBearerTests: XCTestCase {
     func test_authToken() {

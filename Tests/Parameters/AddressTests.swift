@@ -3,7 +3,6 @@ import SpryKit
 import XCTest
 
 @testable import SmartNetwork
-@testable import SmartNetworkTestHelpers
 
 final class AddressTests: XCTestCase {
     func test_extensions() {

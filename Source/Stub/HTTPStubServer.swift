@@ -11,15 +11,23 @@ public enum HTTPStubStrategy {
     case blockWithResponse(HTTPStubResponse)
 
     /// Custom strategy. Return `nil` to pass request through to the network
-    case custom((URLRequestRepresentation) -> HTTPStubResponse?)
+    case custom(CustomStrategy)
 }
 
 public final class HTTPStubServer {
+    #if swift(>=6.0)
+    /// Default queue for stubs
+    public nonisolated(unsafe) static var defaultResponseQueue: Queueable = Queue.main
+
+    /// Strategy for requests without stubs
+    public nonisolated(unsafe) static var strategy: HTTPStubStrategy = .transparent
+    #else
     /// Default queue for stubs
     public static var defaultResponseQueue: Queueable = Queue.main
 
     /// Strategy for requests without stubs
     public static var strategy: HTTPStubStrategy = .transparent
+    #endif
 
     public static let shared: HTTPStubServer = .init()
 
@@ -115,3 +123,15 @@ private extension HTTPStubServer {
         let response: HTTPStubResponse
     }
 }
+
+#if swift(>=6.0)
+extension HTTPStubServer: @unchecked Sendable {}
+extension HTTPStubServer.Info: Sendable {}
+extension HTTPStubStrategy: Sendable {
+    public typealias CustomStrategy = @Sendable (URLRequestRepresentation) -> HTTPStubResponse?
+}
+#else
+public extension HTTPStubStrategy {
+    typealias CustomStrategy = (URLRequestRepresentation) -> HTTPStubResponse?
+}
+#endif

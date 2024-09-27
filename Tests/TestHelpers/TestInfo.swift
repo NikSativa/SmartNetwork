@@ -24,3 +24,8 @@ struct BrokenTestInfo: Codable, Equatable {
         throw RequestEncodingError.invalidJSON
     }
 }
+
+#if swift(>=6.0)
+extension TestInfo: Sendable {}
+extension BrokenTestInfo: Sendable {}
+#endif

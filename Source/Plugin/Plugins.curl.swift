@@ -2,7 +2,12 @@ import Foundation
 
 public extension Plugins {
     final class Curl: Plugin {
+        #if swift(>=6.0)
+        public typealias Logging = @Sendable (_ component: Component, _ text: () -> String?) -> Void
+        #else
         public typealias Logging = (_ component: Component, _ text: () -> String?) -> Void
+        #endif
+
         public enum Component {
             case curl
             case error

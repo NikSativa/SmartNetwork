@@ -21,3 +21,7 @@ public final class FakeSession: Session, Spryable {
         return spryify(arguments: request, completionHandler)
     }
 }
+
+#if swift(>=6.0)
+extension FakeSession: @unchecked Sendable {}
+#endif

@@ -7,7 +7,7 @@ public enum Body: ExpressibleByNilLiteral {
         case png(Image)
         #endif
 
-        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || supportsVisionOS
         case jpeg(Image, compressionQuality: CGFloat)
         #endif
     }
@@ -86,7 +86,7 @@ extension Body {
                 data = try PlatformImage(image).pngData().unwrap(orThrow: RequestEncodingError.cantEncodeImage)
             #endif
 
-            #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+            #if os(iOS) || os(tvOS) || os(watchOS) || supportsVisionOS
             case .jpeg(let image, let quality):
                 data = try PlatformImage(image).jpegData(compressionQuality: quality).unwrap(orThrow: RequestEncodingError.cantEncodeImage)
             #endif
@@ -234,3 +234,11 @@ private enum XFormEncoder {
             .joined(separator: "&").data(using: String.Encoding.utf8)
     }
 }
+
+#if swift(>=6.0)
+extension Body: @unchecked Sendable {}
+extension Body.ImageFormat: @unchecked Sendable {}
+extension Body.Form: Sendable {}
+extension Body.Form.Name: Sendable {}
+extension Body.Form.MimeType: Sendable {}
+#endif

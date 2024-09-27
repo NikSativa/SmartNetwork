@@ -15,8 +15,14 @@ public final class RequestingTask {
         self.cancelAction = cancelAction
     }
 
+    deinit {
+        cancelAction?()
+    }
+}
+
+public extension RequestingTask {
     @discardableResult
-    public func start() -> Self {
+    func start() -> Self {
         precondition(runAction != nil, "should be called only once")
         let runAction = runAction
         self.runAction = nil
@@ -25,22 +31,18 @@ public final class RequestingTask {
     }
 
     @discardableResult
-    public func deferredStart(in queue: Queueable = Queue.main) -> Self {
-        queue.async {
-            self.start()
+    func deferredStart(in queue: Queueable = Queue.main) -> Self {
+        queue.async { [self] in
+            start()
         }
         return self
     }
 
-    public func cancel() {
+    func cancel() {
         runAction = nil
 
         let cancelAction = cancelAction
         self.cancelAction = nil
-        cancelAction?()
-    }
-
-    deinit {
         cancelAction?()
     }
 }
@@ -54,3 +56,7 @@ extension RequestingTask: Cancellable {
         return AnyCancellable(cancel)
     }
 }
+
+#if swift(>=6.0)
+extension RequestingTask: @unchecked Sendable {}
+#endif

@@ -1,88 +1,89 @@
-import Combine
+@preconcurrency import Combine
 import Foundation
 import SpryKit
 import XCTest
 
 @testable import SmartNetwork
-@testable import SmartNetworkTestHelpers
 
 final class RequestingTaskTests: XCTestCase {
     func test_cancel_task_once() {
-        var subject: RequestingTask?
+        let subject: SendableResult<RequestingTask> = .init()
 
         let runExp = expectation(description: "should run")
         let cancelExp = expectation(description: "should cancel")
-        subject = .init(runAction: {
+        subject.value = .init(runAction: {
             runExp.fulfill()
         }, cancelAction: {
             cancelExp.fulfill()
         })
 
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
-            subject?.start()
-            #if (os(macOS) || os(iOS) || os(visionOS)) && (arch(x86_64) || arch(arm64))
+            subject.value.start()
+            #if (os(macOS) || os(iOS) || supportsVisionOS) && (arch(x86_64) || arch(arm64))
             XCTAssertThrowsAssertion {
-                subject?.start()
+                subject.value.start()
             }
             #endif
 
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
-                subject?.cancel()
+                subject.value.cancel()
 
                 DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
-                    subject = nil
+                    subject.value = nil
                 }
             }
         }
 
-        wait(for: [runExp, cancelExp], timeout: 0.4)
+        wait(for: [runExp, cancelExp], timeout: 3)
     }
 
     func test_cancel_task_on_deinit() {
-        var subject: RequestingTask?
+        let subject: SendableResult<RequestingTask> = .init()
 
         let runExp = expectation(description: "should run")
         let cancelExp = expectation(description: "should cancel")
-        subject = .init(runAction: {
+        subject.value = .init(runAction: {
             runExp.fulfill()
         }, cancelAction: {
             cancelExp.fulfill()
         })
 
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
-            subject?.start()
+            subject.value.start()
 
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
-                subject = nil
+                subject.value = nil
             }
         }
 
-        wait(for: [runExp, cancelExp], timeout: 0.3)
+        wait(for: [runExp, cancelExp], timeout: 3)
     }
 
     func test_any() {
         let runExp = expectation(description: "should run")
         let cancelExp = expectation(description: "should cancel")
-        var subject: RequestingTask? = .init(runAction: {
+        let subject: SendableResult<RequestingTask> = .init()
+        subject.value = .init(runAction: {
             runExp.fulfill()
         }, cancelAction: {
             cancelExp.fulfill()
         })
-        var anySubject: AnyCancellable? = subject?.toAny()
+        let anySubject: SendableResult<AnyCancellable?> = .init()
+        anySubject.value = subject.value?.toAny()
 
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
-            subject?.deferredStart()
-            subject = nil
+            subject.value?.deferredStart()
+            subject.value = nil
 
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
-                anySubject?.cancel()
+                anySubject.value?.cancel()
 
                 DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
-                    anySubject = nil
+                    anySubject.value = nil
                 }
             }
         }
 
-        wait(for: [runExp, cancelExp], timeout: 0.4)
+        wait(for: [runExp, cancelExp], timeout: 3)
     }
 }

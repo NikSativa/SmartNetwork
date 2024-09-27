@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.0
 // swiftformat:disable all
 import PackageDescription
 
@@ -13,12 +13,11 @@ let package = Package(
         .watchOS(.v6)
     ],
     products: [
-        .library(name: "SmartNetwork", targets: ["SmartNetwork"]),
-        .library(name: "SmartNetworkTestHelpers", targets: ["SmartNetworkTestHelpers"])
+        .library(name: "SmartNetwork", targets: ["SmartNetwork"])
     ],
     dependencies: [
-        .package(url: "https://github.com/NikSativa/SpryKit.git", .upToNextMajor(from: "2.2.3")),
-        .package(url: "https://github.com/NikSativa/Threading.git", .upToNextMajor(from: "1.3.5"))
+        .package(url: "https://github.com/NikSativa/SpryKit.git", .upToNextMajor(from: "3.0.0")),
+        .package(url: "https://github.com/NikSativa/Threading.git", .upToNextMajor(from: "2.0.0"))
     ],
     targets: [
         .target(name: "SmartNetwork",
@@ -27,30 +26,23 @@ let package = Package(
                 ],
                 path: "Source",
                 resources: [
-                    .copy("../PrivacyInfo.xcprivacy")
-                ]),
-        .target(name: "SmartNetworkTestHelpers",
-                dependencies: [
-                    "SmartNetwork",
-                    "Threading",
-                    .product(name: "ThreadingTestHelpers", package: "Threading"),
-                    "SpryKit"
+                    .process("PrivacyInfo.xcprivacy")
                 ],
-                path: "TestHelpers",
-                resources: [
-                    .copy("../PrivacyInfo.xcprivacy")
+                swiftSettings: [
+                    .define("supportsVisionOS", .when(platforms: [.visionOS])),
                 ]),
         .testTarget(name: "SmartNetworkTests",
                     dependencies: [
                         "SmartNetwork",
-                        "SmartNetworkTestHelpers",
                         "Threading",
-                        .product(name: "ThreadingTestHelpers", package: "Threading"),
                         "SpryKit"
                     ],
                     path: "Tests",
                     resources: [
                         .copy("JSON/HTTPStubBody.json")
+                    ],
+                    swiftSettings: [
+                        .define("supportsVisionOS", .when(platforms: [.visionOS])),
                     ])
     ]
 )

@@ -249,12 +249,14 @@ extension RequestManager: PureRequestManager {
 
 // MARK: - DecodableRequestManager
 
+#if swift(>=6.0)
 extension RequestManager: DecodableRequestManager {
-    public func request<T: Decodable>(opt type: T.Type,
-                                      address: Address,
-                                      with parameters: Parameters,
-                                      inQueue completionQueue: DelayedQueue,
-                                      completion: @escaping (Result<T?, Error>) -> Void) -> RequestingTask {
+    public func request<T>(opt type: T.Type,
+                           address: Address,
+                           with parameters: Parameters,
+                           inQueue completionQueue: DelayedQueue,
+                           completion: @escaping @Sendable (Result<T?, Error>) -> Void) -> RequestingTask
+    where T: Decodable & Sendable {
         return request(address: address,
                        with: parameters,
                        inQueue: completionQueue) { [self] data in
@@ -265,11 +267,12 @@ extension RequestManager: DecodableRequestManager {
         }
     }
 
-    public func request<T: Decodable>(_ type: T.Type,
-                                      address: Address,
-                                      with parameters: Parameters,
-                                      inQueue completionQueue: Threading.DelayedQueue,
-                                      completion: @escaping (Result<T, Error>) -> Void) -> RequestingTask {
+    public func request<T>(_ type: T.Type,
+                           address: Address,
+                           with parameters: Parameters,
+                           inQueue completionQueue: Threading.DelayedQueue,
+                           completion: @escaping @Sendable (Result<T, Error>) -> Void) -> RequestingTask
+    where T: Decodable & Sendable {
         return request(address: address,
                        with: parameters,
                        inQueue: completionQueue) { [self] data in
@@ -280,6 +283,41 @@ extension RequestManager: DecodableRequestManager {
         }
     }
 }
+#else
+extension RequestManager: DecodableRequestManager {
+    public func request<T>(opt type: T.Type,
+                           address: Address,
+                           with parameters: Parameters,
+                           inQueue completionQueue: DelayedQueue,
+                           completion: @escaping (Result<T?, Error>) -> Void) -> RequestingTask
+    where T: Decodable {
+        return request(address: address,
+                       with: parameters,
+                       inQueue: completionQueue) { [self] data in
+            let result = map(data: data, to: OptionalDecodableContent<T>.self, with: parameters)
+            completionQueue.fire {
+                completion(result)
+            }
+        }
+    }
+
+    public func request<T>(_ type: T.Type,
+                           address: Address,
+                           with parameters: Parameters,
+                           inQueue completionQueue: Threading.DelayedQueue,
+                           completion: @escaping (Result<T, Error>) -> Void) -> RequestingTask
+    where T: Decodable {
+        return request(address: address,
+                       with: parameters,
+                       inQueue: completionQueue) { [self] data in
+            let result = map(data: data, to: DecodableContent<T>.self, with: parameters)
+            completionQueue.fire {
+                completion(result)
+            }
+        }
+    }
+}
+#endif
 
 public extension RequestManager {
     /// creates protocol wrapped interface instead of concrete realization
@@ -299,14 +337,22 @@ public extension RequestManager {
 
 private extension RequestManager {
     typealias Key = ObjectIdentifier
+    #if swift(>=6.0)
+    typealias ResponseClosureWithInfo = @Sendable (_ result: RequestResult, _ userInfo: UserInfo, _ plugins: [Plugin]) -> Void
+    #else
     typealias ResponseClosureWithInfo = (_ result: RequestResult, _ userInfo: UserInfo, _ plugins: [Plugin]) -> Void
+    #endif
 
     final class Info {
         let key: Key
         let parameters: Parameters
         let request: Requestable
         let completion: ResponseClosureWithInfo
+        #if swift(>=6.0)
+        nonisolated(unsafe) var attemptNumber: Int
+        #else
         var attemptNumber: Int
+        #endif
 
         var userInfo: UserInfo {
             return parameters.userInfo
@@ -328,3 +374,9 @@ private extension RequestManager {
         var tasksQueue: [Key: Info] = [:]
     }
 }
+
+#if swift(>=6.0)
+extension RequestManager: @unchecked Sendable {}
+extension RequestManager.Info: Sendable {}
+extension RequestManager.State: @unchecked Sendable {}
+#endif

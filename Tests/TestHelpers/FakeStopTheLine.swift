@@ -14,12 +14,12 @@ public final class FakeStopTheLine: StopTheLine, Spryable, SpryEquatable {
         case verify = "verify(response:for:userInfo:)"
     }
 
-    var completion: ((StopTheLineResult) -> Void)?
+    var completion: StopTheLineCompletion?
     public func action(with manager: RequestManagering,
                        originalParameters parameters: Parameters,
                        response: RequestResult,
                        userInfo: UserInfo,
-                       completion: @escaping (StopTheLineResult) -> Void) {
+                       completion: @escaping StopTheLineCompletion) {
         self.completion = completion
         return spryify(arguments: manager, parameters, response, userInfo, completion)
     }
@@ -30,3 +30,7 @@ public final class FakeStopTheLine: StopTheLine, Spryable, SpryEquatable {
         return spryify(arguments: response, parameters, userInfo)
     }
 }
+
+#if swift(>=6.0)
+extension FakeStopTheLine: @unchecked Sendable {}
+#endif

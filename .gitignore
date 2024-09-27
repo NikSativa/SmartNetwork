@@ -9,6 +9,7 @@ Pods/*
 Carthage/*
 Packages/*
 .swiftpm/*
+Package.resolved
 
 ## Bundler
 .bundle/

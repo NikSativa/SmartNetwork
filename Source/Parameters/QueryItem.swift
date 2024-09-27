@@ -31,3 +31,7 @@ extension QueryItem: CustomDebugStringConvertible {
         return myDescription
     }
 }
+
+#if swift(>=6.0)
+extension QueryItem: Sendable {}
+#endif

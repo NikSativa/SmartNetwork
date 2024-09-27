@@ -33,3 +33,7 @@ extension UserInfo: ExpressibleByDictionaryLiteral {
         self.init(.init(uniqueKeysWithValues: elements))
     }
 }
+
+#if swift(>=6.0)
+extension UserInfo: @unchecked Sendable {}
+#endif

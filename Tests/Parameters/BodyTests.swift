@@ -3,7 +3,6 @@ import SpryKit
 import XCTest
 
 @testable import SmartNetwork
-@testable import SmartNetworkTestHelpers
 
 final class BodyTests: XCTestCase {
     var request: URLRequest!
@@ -33,7 +32,7 @@ final class BodyTests: XCTestCase {
         XCTAssertEqual(request.httpBody, data)
     }
 
-    #if !os(visionOS)
+    #if !supportsVisionOS
     func test_image_png() {
         let image = Image.spry.testImage
         XCTAssertNoThrowError(try Body.image(.png(image)).fill(&request, encoder: .init()))

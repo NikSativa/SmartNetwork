@@ -1,6 +1,23 @@
 import Foundation
 import Threading
 
+#if swift(>=6.0)
+public protocol PureRequestManager: Sendable {
+    typealias ResponseClosure = @Sendable (_ result: RequestResult) -> Void
+
+    func map<T: CustomDecodable>(data: RequestResult,
+                                 to type: T.Type,
+                                 with parameters: Parameters) -> Result<T.Object, Error>
+
+    func request(address: Address,
+                 with parameters: Parameters,
+                 inQueue completionQueue: DelayedQueue,
+                 completion: @escaping ResponseClosure) -> RequestingTask
+
+    func request(address: Address,
+                 with parameters: Parameters) async -> RequestResult
+}
+#else
 public protocol PureRequestManager {
     typealias ResponseClosure = (_ result: RequestResult) -> Void
 
@@ -16,6 +33,7 @@ public protocol PureRequestManager {
     func request(address: Address,
                  with parameters: Parameters) async -> RequestResult
 }
+#endif
 
 public extension PureRequestManager {
     func request(address: Address,

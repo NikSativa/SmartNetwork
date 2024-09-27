@@ -1,4 +1,5 @@
 import Foundation
+import Threading
 
 /// Matcher for testing an *URLRequest's*
 public enum HTTPStubCondition {
@@ -94,12 +95,13 @@ public enum HTTPStubCondition {
     /// - Note: URL paths are usually absolute and thus starts with a '/'
     @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     public static func pathMatches(_ regex: Regex<some Any>) -> Self {
+        let regex = UnSendable(regex)
         return .custom { request in
             guard let path = request.url?.path else {
                 return false
             }
 
-            let match = path.firstMatch(of: regex)
+            let match = path.firstMatch(of: regex.value)
             return match != nil
         }
     }
@@ -109,15 +111,15 @@ public enum HTTPStubCondition {
     /// - Parameter regex: The Regular Expression we want the absolute string to match
     @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     public static func absoluteStringMatches(_ regex: Regex<some Any>) -> Self {
+        let regex = UnSendable(regex)
         return .custom { request in
             return request.absoluteString.map { path in
-                let match = path.firstMatch(of: regex)
+                let match = path.firstMatch(of: regex.value)
                 return match != nil
             } ?? false
         }
     }
 
-    public typealias TestClosure = (_ request: URLRequestRepresentation) -> Bool
     case custom(TestClosure)
 
     func test(_ request: URLRequestRepresentation) -> Bool {
@@ -210,3 +212,13 @@ private extension String {
         return components(separatedBy: "/").filter { !$0.isEmpty }
     }
 }
+
+#if swift(>=6.0)
+extension HTTPStubCondition: @unchecked Sendable {
+    public typealias TestClosure = @Sendable (_ request: URLRequestRepresentation) -> Bool
+}
+#else
+public extension HTTPStubCondition {
+    typealias TestClosure = (_ request: URLRequestRepresentation) -> Bool
+}
+#endif

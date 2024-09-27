@@ -31,3 +31,7 @@ public final class RequestResult {
         self.error = error
     }
 }
+
+#if swift(>=6.0)
+extension RequestResult: @unchecked Sendable {}
+#endif

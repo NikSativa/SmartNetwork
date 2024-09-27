@@ -3,7 +3,6 @@ import SpryKit
 import XCTest
 
 @testable import SmartNetwork
-@testable import SmartNetworkTestHelpers
 
 final class OptionalTests: XCTestCase {
     func test_unwrap() {

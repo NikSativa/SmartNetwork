@@ -2,19 +2,35 @@ import Foundation
 
 public extension Plugins {
     final class StatusCode: Plugin {
-        private let shouldIgnore200th: Bool
+        #if swift(>=6.0)
+        public typealias StatusCodeChecker = @Sendable (_ statusCode: Int?) -> Bool
+        #else
+        public typealias StatusCodeChecker = (_ statusCode: Int?) -> Bool
+        #endif
 
-        /// - Parameter shouldIgnore200th: ignore status code in range 200..<300
-        public init(shouldIgnore200th: Bool = true) {
-            self.shouldIgnore200th = shouldIgnore200th
+        private let isIgnoring: StatusCodeChecker
+
+        public init(isIgnoring: @escaping StatusCodeChecker) {
+            self.isIgnoring = isIgnoring
+        }
+
+        /// - Parameter shouldIgnore200th: ignore status code in range `200..<300` and/or ignore `Nil`
+        public init(shouldIgnore200th: Bool = true, shuoldIgnoreNil: Bool = true) {
+            self.isIgnoring = { statusCode in
+                if let statusCode,
+                   shouldIgnore200th,
+                   (200..<300).contains(statusCode) {
+                    return true
+                } else if shuoldIgnoreNil,
+                          statusCode == nil {
+                    return true
+                }
+                return false
+            }
         }
 
         public func verify(data: RequestResult, userInfo: UserInfo) throws {
-            if shouldIgnore200th,
-               let statusCodeInt = data.statusCodeInt,
-               (200..<300).contains(statusCodeInt) {
-                return
-            } else if data.statusCodeInt == 200 {
+            if isIgnoring(data.statusCodeInt) {
                 return
             }
 

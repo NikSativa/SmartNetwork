@@ -10,3 +10,7 @@ public enum StopTheLineResult {
     /// ignore current response and retry request
     case retry
 }
+
+#if swift(>=6.0)
+extension StopTheLineResult: Sendable {}
+#endif
