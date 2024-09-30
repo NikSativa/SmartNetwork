@@ -94,6 +94,10 @@ internal struct PlatformImage {
         return sdk.pngData()
     }
 
+    func jpegData(compressionQuality: CGFloat) -> Data? {
+        return sdk.jpegData(compressionQuality: CGFloat(compressionQuality))
+    }
+
     #elseif os(iOS) || os(tvOS) || os(watchOS)
     init?(data: Data) {
         let scale = Queue.isolatedMain.sync { Screen.scale }
@@ -107,6 +111,10 @@ internal struct PlatformImage {
 
     func pngData() -> Data? {
         return sdk.pngData()
+    }
+
+    func jpegData(compressionQuality: CGFloat) -> Data? {
+        return sdk.jpegData(compressionQuality: CGFloat(compressionQuality))
     }
     #else
     #error("unsupported os")
