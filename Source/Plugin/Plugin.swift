@@ -29,6 +29,12 @@ public protocol Plugin: Sendable {
                     request: URLRequestRepresentation,
                     data: RequestResult,
                     userInfo: UserInfo)
+
+    /// just a notification that the request was somehow cancelled. can be called at any time and multiple times. for debug purposes or your own logic
+    /// - Note: has an empty default implementation
+    func wasCancelled(_ parameters: Parameters,
+                      request: URLRequestRepresentation,
+                      userInfo: UserInfo)
 }
 #else
 public protocol Plugin {
@@ -56,6 +62,12 @@ public protocol Plugin {
                     request: URLRequestRepresentation,
                     data: RequestResult,
                     userInfo: UserInfo)
+
+    /// just a notification that the request was somehow cancelled. can be called at any time and multiple times. for debug purposes or your own logic
+    /// - Note: has an empty default implementation
+    func wasCancelled(_ parameters: Parameters,
+                      request: URLRequestRepresentation,
+                      userInfo: UserInfo)
 }
 #endif
 
@@ -71,6 +83,12 @@ public extension Plugin {
     static func makeHash(withAdditionalHash hash: some Hashable) -> AnyHashable {
         let components: [AnyHashable] = [makeHash(), hash]
         return components
+    }
+
+    func wasCancelled(_ parameters: Parameters,
+                      request: URLRequestRepresentation,
+                      userInfo: UserInfo) {
+        // nothing to do
     }
 }
 

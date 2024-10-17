@@ -1,4 +1,5 @@
 import Foundation
+import Threading
 
 #if swift(>=6.0)
 public protocol RequestCache: AnyObject, Sendable {
@@ -18,11 +19,14 @@ extension URLCache: RequestCache {}
 
 public struct CacheSettings {
     public let cache: RequestCache
+    public let responseQueue: DelayedQueue
     public let storagePolicy: URLCache.StoragePolicy
 
     public init(cache: RequestCache,
+                responseQueue: DelayedQueue = .absent,
                 storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly) {
         self.cache = cache
+        self.responseQueue = responseQueue
         self.storagePolicy = storagePolicy
     }
 }

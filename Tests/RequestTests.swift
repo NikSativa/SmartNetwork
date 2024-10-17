@@ -17,9 +17,9 @@ final class RequestableTests: XCTestCase {
         urlRequestable.stub(.sdk).andReturn(sdkRequest)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
 
-        let subject = Request.create(address: .testMake(),
-                                     with: parameters,
-                                     urlRequestable: urlRequestable)
+        let subject: Requestable = Request(address: .testMake(),
+                                           with: parameters,
+                                           urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }
@@ -37,7 +37,7 @@ final class RequestableTests: XCTestCase {
         task.stub(.resume).andReturn()
         session.stub(.task).andReturn(task)
 
-        subject.start()
+        subject.restart()
         XCTAssertHaveReceived(task, .resume)
         XCTAssertHaveReceived(session, .task)
 
@@ -62,7 +62,7 @@ final class RequestableTests: XCTestCase {
         session.stub(.task).andReturn(task)
 
         // start again
-        subject.start()
+        subject.restart()
 
         XCTAssertHaveReceived(task, .resume, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(session, .task)
@@ -116,9 +116,9 @@ final class RequestableTests: XCTestCase {
         urlRequestable.stub(.sdk).andReturn(sdkRequest)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
 
-        var subject: Requestable! = Request.create(address: .testMake(),
-                                                   with: parameters,
-                                                   urlRequestable: urlRequestable)
+        var subject: Requestable! = Request(address: .testMake(),
+                                            with: parameters,
+                                            urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }
@@ -137,7 +137,7 @@ final class RequestableTests: XCTestCase {
         task.stub(.resume).andReturn()
         session.stub(.task).andReturn(task)
 
-        subject.start()
+        subject.restart()
         XCTAssertHaveReceived(task, .resume)
         XCTAssertHaveReceived(session, .task)
 
@@ -168,9 +168,9 @@ final class RequestableTests: XCTestCase {
         urlRequestable.stub(.sdk).andReturn(sdkRequest)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
 
-        let subject = Request.create(address: .testMake(),
-                                     with: parameters,
-                                     urlRequestable: urlRequestable)
+        let subject: Requestable = Request(address: .testMake(),
+                                           with: parameters,
+                                           urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }
@@ -190,7 +190,7 @@ final class RequestableTests: XCTestCase {
         session.stub(.task).andReturn(task)
         cache.stub(.removeCachedResponse).andReturn()
 
-        subject.start()
+        subject.restart()
         XCTAssertHaveReceived(task, .resume)
         XCTAssertHaveReceived(session, .task)
         XCTAssertHaveReceived(cache, .removeCachedResponse)
@@ -217,7 +217,7 @@ final class RequestableTests: XCTestCase {
         let session: FakeSession = .init()
 
         let cache: FakeRequestCache = .init()
-        let cacheSettings: CacheSettings = .testMake(cache: cache)
+        let cacheSettings: CacheSettings = .testMake(cache: cache, responseQueue: .absent)
 
         let parameters: Parameters = .testMake(cacheSettings: cacheSettings,
                                                requestPolicy: .returnCacheDataElseLoad,
@@ -229,9 +229,9 @@ final class RequestableTests: XCTestCase {
         urlRequestable.stub(.sdk).andReturn(sdkRequest)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
 
-        let subject = Request.create(address: .testMake(host: "http://google.com"),
-                                     with: parameters,
-                                     urlRequestable: urlRequestable)
+        let subject: Requestable = Request(address: .testMake(host: "http://google.com"),
+                                           with: parameters,
+                                           urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }
@@ -253,7 +253,7 @@ final class RequestableTests: XCTestCase {
         task.stub(.isRunning).andReturn(false)
         cache.stub(.cachedResponse).andReturn(nil)
 
-        subject.start()
+        subject.restart()
         XCTAssertHaveReceived(cache, .cachedResponse)
 
         let strData = "data".data(using: .utf8).unsafelyUnwrapped
