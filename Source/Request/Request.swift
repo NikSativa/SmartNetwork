@@ -10,6 +10,7 @@ public protocol Requestable: AnyObject, Sendable {
     var parameters: Parameters { get }
 
     func start()
+    func restart()
     func cancel()
 }
 #else
@@ -21,6 +22,7 @@ public protocol Requestable: AnyObject {
     var parameters: Parameters { get }
 
     func start()
+    func restart()
     func cancel()
 }
 #endif
@@ -40,13 +42,16 @@ public final class Request {
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     public var completion: CompletionCallback?
 
+    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+    public var serviceCompletion: (() -> Void)?
+
     private var plugins: [Plugin] {
         return parameters.plugins
     }
 
-    private init(address: Address,
-                 with parameters: Parameters,
-                 urlRequestable: URLRequestRepresentation) {
+    public init(address: Address,
+                with parameters: Parameters,
+                urlRequestable: URLRequestRepresentation) {
         self.address = address
         self.parameters = parameters
         self.urlRequestable = urlRequestable
@@ -54,21 +59,16 @@ public final class Request {
                                     progressHandler: parameters.progressHandler)
     }
 
-    public static func create(address: Address,
-                              with parameters: Parameters,
-                              urlRequestable: URLRequestRepresentation) -> Requestable {
-        return Self(address: address,
-                    with: parameters,
-                    urlRequestable: urlRequestable)
-    }
-
     deinit {
         sessionAdaptor.stop()
     }
 
     private func startRealRequest() {
-        cancel()
-        isCanceled = false
+        stopSessionRequest()
+
+        guard tryFireCancellation() else {
+            return
+        }
 
         for plugin in plugins {
             plugin.willSend(parameters,
@@ -78,21 +78,31 @@ public final class Request {
 
         let sdkRequest = urlRequestable.sdk
         if let stub = HTTPStubServer.shared.response(for: sdkRequest) {
-            let response = HTTPURLResponse(url: sdkRequest.url.unsafelyUnwrapped,
-                                           statusCode: stub.statusCode.code,
-                                           httpVersion: nil,
-                                           headerFields: stub.header)
+            let response = sdkRequest.url.flatMap {
+                return HTTPURLResponse(url: $0,
+                                       statusCode: stub.statusCode.code,
+                                       httpVersion: nil,
+                                       headerFields: stub.header)
+            }
             let responseData = RequestResult(request: urlRequestable,
                                              body: stub.body.data,
                                              response: response,
                                              error: stub.error)
             if let delay = stub.delayInSeconds, delay > 0 {
                 HTTPStubServer.defaultResponseQueue.asyncAfter(deadline: .now() + delay) { [weak self] in
-                    self?.fire(data: responseData)
+                    guard let self, tryFireCancellation() else {
+                        return
+                    }
+
+                    fireCompletionAndNotifyPlugins(data: responseData)
                 }
             } else {
-                HTTPStubServer.defaultResponseQueue.sync {
-                    fire(data: responseData)
+                HTTPStubServer.defaultResponseQueue.sync { [weak self] in
+                    guard let self, tryFireCancellation() else {
+                        return
+                    }
+
+                    fireCompletionAndNotifyPlugins(data: responseData)
                 }
             }
             return
@@ -119,13 +129,15 @@ public final class Request {
                                                  body: cached.data,
                                                  response: cached.response,
                                                  error: nil)
-                fire(data: responseData)
+                cacheSettings.responseQueue.fire { [self] in
+                    fireCompletionAndNotifyPlugins(data: responseData)
+                }
                 return
             }
         }
 
         sessionAdaptor.dataTask(with: sdkRequest) { [weak self] data, response, error in
-            guard let self, !self.isCanceled else {
+            guard let self, tryFireCancellation() else {
                 return
             }
 
@@ -142,7 +154,7 @@ public final class Request {
                                              response: response,
                                              error: error)
 
-            fire(data: responseData)
+            fireCompletionAndNotifyPlugins(data: responseData)
         }
     }
 
@@ -150,7 +162,7 @@ public final class Request {
         sessionAdaptor.stop()
     }
 
-    private func fire(data: RequestResult) {
+    private func fireCompletionAndNotifyPlugins(data: RequestResult) {
         for plugin in plugins {
             plugin.didReceive(parameters,
                               request: urlRequestable,
@@ -158,9 +170,21 @@ public final class Request {
                               userInfo: userInfo)
         }
 
+        fireCompletion(data: data)
+    }
+
+    private func fireCompletion(data: RequestResult) {
         stopSessionRequest()
         let completion = completion
         completion?(data)
+    }
+
+    private func tryFireCancellation() -> Bool {
+        if isCanceled {
+            serviceCompletion?()
+            return false
+        }
+        return true
     }
 }
 
@@ -171,9 +195,20 @@ extension Request: Requestable {
         startRealRequest()
     }
 
+    public func restart() {
+        isCanceled = false
+        startRealRequest()
+    }
+
     public func cancel() {
         isCanceled = true
         stopSessionRequest()
+
+        for plugin in plugins {
+            plugin.wasCancelled(parameters,
+                                request: urlRequestable,
+                                userInfo: userInfo)
+        }
     }
 }
 

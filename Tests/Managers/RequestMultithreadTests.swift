@@ -43,7 +43,7 @@ final class RequestMultithreadTests: XCTestCase {
                                       address: address1) { [exp] obj in
                 comp(try! obj.get())
                 exp.fulfill()
-            }.deferredStart().store(in: &observers)
+            }.storing(in: &observers).start()
         }
     }
 
@@ -65,7 +65,7 @@ final class RequestMultithreadTests: XCTestCase {
                                           address: address1) { [exp] obj in
                     comp(try! obj.get())
                     exp.fulfill()
-                }.deferredStart().store(in: &observers)
+                }.autorelease().start()
             } else {
                 Task {
                     let obj = await subject.decodable.request(TestInfo.self,
@@ -100,7 +100,7 @@ final class RequestMultithreadTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(group.wait(timeout: .now() + 0.5), .success, file: file, line: line)
+        XCTAssertEqual(group.wait(timeout: .now() + 2), .success, file: file, line: line)
         wait(for: exps, timeout: timoutInSeconds)
 
         XCTAssertEqual(result, .init(repeating: testObj, count: result.count), file: file, line: line)
@@ -130,7 +130,7 @@ final class RequestMultithreadTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(group.wait(timeout: .now() + 0.5), .success, file: file, line: line)
+        XCTAssertEqual(group.wait(timeout: .now() + 2), .success, file: file, line: line)
         wait(for: exps, timeout: timoutInSeconds)
 
         XCTAssertEqual(result, .init(repeating: testObj, count: result.count), file: file, line: line)

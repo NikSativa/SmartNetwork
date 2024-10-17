@@ -72,7 +72,7 @@ final class RequestManagerTests: XCTestCase {
                                   with: .init()) {
             response.value = try? $0.get()
             expectation1.fulfill()
-        }.start().store(in: &observers)
+        }.storing(in: &observers).start()
 
         wait(for: [expectation1], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response.value, .init(id: 1))
@@ -86,7 +86,7 @@ final class RequestManagerTests: XCTestCase {
             response.value = try? $0.get()
             expectation2.fulfill()
             expectationReverted.fulfill()
-        }.start().store(in: &observers)
+        }.storing(in: &observers).start()
 
         wait(for: [expectationReverted], timeout: Constant.stubbedTimeoutInSeconds - 0.01)
         wait(for: [expectation2], timeout: Constant.timeoutInSeconds - Constant.stubbedTimeoutInSeconds + 0.01)
@@ -101,10 +101,44 @@ final class RequestManagerTests: XCTestCase {
             response.value = try? $0.get()
             expectation3.fulfill()
             expectationReverted2.fulfill()
-        }.start().store(in: &observers)
+        }.storing(in: &observers).start()
 
         wait(for: [expectationReverted2], timeout: Constant.stubbedTimeoutInSeconds - 0.01)
         wait(for: [expectation3], timeout: Constant.timeoutInSeconds - Constant.stubbedTimeoutInSeconds + 0.01)
+        XCTAssertNil(response.value)
+
+        // autoreleased
+        let expectation4 = expectation(description: "should receive response")
+        let expectationReverted3 = expectation(description: "should not receive response")
+        expectationReverted3.isInverted = true
+        subject.decodable.request(opt: TestInfo.self,
+                                  address: Constant.address2,
+                                  with: .testMake()) {
+            response.value = try? $0.get()
+            expectation4.fulfill()
+            expectationReverted3.fulfill()
+        }.autorelease().start()
+
+        wait(for: [expectationReverted3], timeout: Constant.stubbedTimeoutInSeconds - 0.01)
+        wait(for: [expectation4], timeout: Constant.timeoutInSeconds - Constant.stubbedTimeoutInSeconds + 0.01)
+        XCTAssertEqual(response.value, .init(id: 2))
+
+        // released -> error
+        let expectationReverted4 = expectation(description: "should not receive response")
+        expectationReverted4.isInverted = true
+        response.value = nil
+        subject.decodable.request(opt: TestInfo.self,
+                                  address: Constant.address2,
+                                  with: .testMake()) {
+            response.value = try? $0.get()
+            expectationReverted4.fulfill()
+        }
+        // ---> not retained task will released and automaticaly stop the attached request
+        // .autorelease()
+        // .storing(in: &observers)
+        .start()
+
+        wait(for: [expectationReverted4], timeout: Constant.stubbedTimeoutInSeconds - 0.01)
         XCTAssertNil(response.value)
     }
 
@@ -133,7 +167,7 @@ final class RequestManagerTests: XCTestCase {
                                               cacheSettings: .testMake())) {
             response.value = try? $0.get()
             expectation1.fulfill()
-        }.start().store(in: &observers)
+        }.autorelease().start()
 
         wait(for: [expectation1], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response.value, .init(id: 1))
@@ -158,7 +192,7 @@ final class RequestManagerTests: XCTestCase {
                                   with: .init(plugins: [pluginForParam])) {
             response.value = try? $0.get()
             expectation2.fulfill()
-        }.start().store(in: &observers)
+        }.storing(in: &observers).start()
 
         wait(for: [expectation2], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response.value, .init(id: 2))
@@ -184,7 +218,7 @@ final class RequestManagerTests: XCTestCase {
                                   with: .init(body: .encodable(BrokenTestInfo(id: 1)))) {
             result.value = $0
             expectation.fulfill()
-        }.start().store(in: &observers)
+        }.storing(in: &observers).start()
 
         wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertThrowsError(try result.value?.get(), RequestEncodingError.invalidJSON)
@@ -206,7 +240,7 @@ final class RequestManagerTests: XCTestCase {
                                   with: .init(body: .init(TestInfo(id: 1)))) {
             result.value = $0
             expectation.fulfill()
-        }.start().store(in: &observers)
+        }.storing(in: &observers).start()
 
         wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertThrowsError(try result.value?.get(), StatusCode(.badRequest))
@@ -228,7 +262,7 @@ final class RequestManagerTests: XCTestCase {
                                   with: .init(body: .init(TestInfo(id: 1)))) {
             result.value = $0
             expectation2.fulfill()
-        }.start().store(in: &observers)
+        }.storing(in: &observers).start()
 
         wait(for: [expectation2], timeout: Constant.timeoutInSeconds)
         XCTAssertThrowsError(try result.value?.get(), StatusCode(.badRequest))
@@ -273,7 +307,7 @@ final class RequestManagerTests: XCTestCase {
                                   with: .init(body: .init(TestInfo(id: 1)))) {
             result.value = $0
             expectation3.fulfill()
-        }.start().store(in: &observers)
+        }.storing(in: &observers).start()
 
         let expectation7: XCTestExpectation = .init(description: "should not receive response")
         expectation7.isInverted = true
@@ -285,7 +319,7 @@ final class RequestManagerTests: XCTestCase {
                                   address: Constant.address1,
                                   with: .init(body: .empty)) { _ in
             expectation4.fulfill()
-        }.start().store(in: &observers)
+        }.autorelease().start()
 
         // returns response immediately, but in queue while stop the line activated
         let expectation8: XCTestExpectation = .init(description: "should not receive response")

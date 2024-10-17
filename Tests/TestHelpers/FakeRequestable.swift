@@ -15,6 +15,7 @@ public final class FakeRequestable: Requestable, Spryable {
         case userInfo
         case restartIfNeeded = "restartIfNeeded()"
         case start = "start()"
+        case restart = "restart()"
         case cancel = "cancel()"
     }
 
@@ -60,6 +61,10 @@ public final class FakeRequestable: Requestable, Spryable {
     }
 
     public func start() {
+        return spryify()
+    }
+
+    public func restart() {
         return spryify()
     }
 }

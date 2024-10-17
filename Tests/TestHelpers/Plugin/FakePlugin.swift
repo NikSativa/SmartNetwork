@@ -13,6 +13,7 @@ public final class FakePlugin: Plugin, Spryable {
         case didFinish = "didFinish(withData:userInfo:)"
         case willSend = "willSend(_:request:userInfo:)"
         case didReceive = "didReceive(_:request:data:userInfo:)"
+        case wasCancelled = "wasCancelled(_:request:userInfo:)"
     }
 
     public let id: AnyHashable
@@ -46,6 +47,10 @@ public final class FakePlugin: Plugin, Spryable {
                            data: RequestResult,
                            userInfo: UserInfo) {
         return spryify(arguments: parameters, request, data, userInfo)
+    }
+
+    public func wasCancelled(_ parameters: Parameters, request: any URLRequestRepresentation, userInfo: UserInfo) {
+        return spryify(arguments: parameters, request, userInfo, fallbackValue: ())
     }
 }
 

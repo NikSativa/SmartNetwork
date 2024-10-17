@@ -67,7 +67,7 @@ public final class RequestManager {
         }
 
         for request in scheduledRequests {
-            request.value.request.start()
+            request.value.request.restart()
         }
     }
 
@@ -116,7 +116,7 @@ public final class RequestManager {
         case .retry:
             if info.attemptNumber < maxAttemptNumber {
                 info.attemptNumber += 1
-                info.request.start()
+                info.request.restart()
                 return false
             }
             return true
@@ -132,6 +132,12 @@ public final class RequestManager {
         complete(with: result, for: info)
     }
 
+    private func removeRequestIfNeeded(for info: Info) {
+        $state.mutate {
+            $0.tasksQueue[info.key] = nil
+        }
+    }
+
     private func complete(with result: RequestResult,
                           for info: Info) {
         let userInfo = info.userInfo
@@ -144,9 +150,7 @@ public final class RequestManager {
             result.set(error)
         }
 
-        $state.mutate {
-            $0.tasksQueue[info.key] = nil
-        }
+        removeRequestIfNeeded(for: info)
 
         let completion = info.completion
         completion(result, userInfo, plugins)
@@ -154,16 +158,16 @@ public final class RequestManager {
 
     private func createRequest(address: Address,
                                with parameters: Parameters,
-                               userInfo: UserInfo) throws -> Requestable {
+                               userInfo: UserInfo) throws -> Request {
         var urlRequest = try parameters.urlRequest(for: address)
         for plugin in parameters.plugins {
             plugin.prepare(parameters,
                            request: &urlRequest)
         }
 
-        let request = Request.create(address: address,
-                                     with: parameters,
-                                     urlRequestable: urlRequest)
+        let request = Request(address: address,
+                              with: parameters,
+                              urlRequestable: urlRequest)
         return request
     }
 
@@ -220,8 +224,16 @@ extension RequestManager: PureRequestManager {
                     completion(result)
                 }
             }
+
             $state.mutate {
                 $0.tasksQueue[info.key] = info
+            }
+
+            request.serviceCompletion = { [weak self, weak info] in
+                guard let self, let info else {
+                    return
+                }
+                removeRequestIfNeeded(for: info)
             }
 
             request.completion = { [weak self, weak info] result in

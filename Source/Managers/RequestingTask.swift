@@ -9,25 +9,34 @@ public final class RequestingTask {
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var runAction: (() -> Void)?
 
+    private var shouldCancelOnDeinit: Bool = true
+
     public init(runAction: @escaping () -> Void,
                 cancelAction: (() -> Void)? = nil) {
         self.runAction = runAction
         self.cancelAction = cancelAction
     }
 
+    /// Self-Retain to avoid saving the request every time you don't want to create a variable for it
+    @discardableResult
+    public func autorelease() -> Self {
+        shouldCancelOnDeinit = false
+        return self
+    }
+
     deinit {
-        cancelAction?()
+        if shouldCancelOnDeinit {
+            cancelAction?()
+        }
     }
 }
 
 public extension RequestingTask {
-    @discardableResult
-    func start() -> Self {
+    func start() {
         precondition(runAction != nil, "should be called only once")
         let runAction = runAction
         self.runAction = nil
         runAction?()
-        return self
     }
 
     @discardableResult
@@ -54,6 +63,19 @@ extension RequestingTask: Cancellable {
     /// e.g. manager.request(with: parameters).deferredStart().store(in: &bag)
     public func toAny() -> AnyCancellable {
         return AnyCancellable(cancel)
+    }
+
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    public func storing<C>(in collection: inout C) -> Self
+    where C: RangeReplaceableCollection, C.Element == AnyCancellable {
+        store(in: &collection)
+        return self
+    }
+
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    public func storing(in set: inout Set<AnyCancellable>) -> Self {
+        store(in: &set)
+        return self
     }
 }
 
