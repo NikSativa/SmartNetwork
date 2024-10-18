@@ -17,32 +17,32 @@ public final class HTTPStubProtocol: URLProtocol {
             return
         }
 
-        do {
-            guard let stub = HTTPStubServer.shared.response(for: request) else {
-                throw RequestError.generic
-            }
-
-            let response: URLResponse = request.url.flatMap { url in
-                return HTTPURLResponse(url: url,
-                                       statusCode: stub.statusCode.code,
-                                       httpVersion: "HTTP/1.1",
-                                       headerFields: stub.header)
-            } ?? .init()
-
-            client.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-
-            let delayInSeconds = stub.delayInSeconds ?? 0
-            Queue.background.asyncAfter(deadline: .now() + delayInSeconds) { [self, client] in
-                if let error = stub.error {
-                    client.urlProtocol(self, didFailWithError: error)
-                } else if let data = stub.body.data {
-                    client.urlProtocol(self, didLoad: data)
-                }
-
+        guard let stub = HTTPStubServer.shared.response(for: request) else {
+            Queue.background.async { [request] in
+                let error = NSError(domain: "<HTTPStub> no stub for \(request.url?.absoluteString ?? "<broken url>")", code: -1)
+                client.urlProtocol(self, didFailWithError: error)
                 client.urlProtocolDidFinishLoading(self)
             }
-        } catch {
-            client.urlProtocol(self, didFailWithError: error)
+            return
+        }
+
+        let response: URLResponse = request.url.flatMap { url in
+            return HTTPURLResponse(url: url,
+                                   statusCode: stub.statusCode.code,
+                                   httpVersion: "HTTP/1.1",
+                                   headerFields: stub.header)
+        } ?? .init()
+
+        client.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+
+        let delayInSeconds = stub.delayInSeconds ?? 0
+        Queue.background.asyncAfter(deadline: .now() + delayInSeconds) { [self, client] in
+            if let error = stub.error {
+                client.urlProtocol(self, didFailWithError: error)
+            } else if let data = stub.body.data {
+                client.urlProtocol(self, didLoad: data)
+            }
+
             client.urlProtocolDidFinishLoading(self)
         }
     }

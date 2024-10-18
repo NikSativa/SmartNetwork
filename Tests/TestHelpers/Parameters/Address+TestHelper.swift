@@ -4,14 +4,14 @@ import SpryKit
 
 // MARK: - Address + SpryEquatable
 
-extension Address: SpryEquatable {
-    public static func testMake(scheme: Scheme? = .https,
-                                host: String = "google.com",
-                                path: [String] = [],
-                                queryItems: QueryItems = [],
-                                fragment: String? = nil,
-                                shouldAddSlashAfterEndpoint: Bool = false,
-                                shouldRemoveSlashesForEmptyScheme: Bool = false) -> Self {
+public extension Address {
+    static func testMake(scheme: Scheme? = .https,
+                         host: String = "google.com",
+                         path: [String] = [],
+                         queryItems: QueryItems = [],
+                         fragment: String? = nil,
+                         shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
+                         shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) -> Self {
         return .init(scheme: scheme,
                      host: host,
                      path: path,
@@ -21,13 +21,13 @@ extension Address: SpryEquatable {
                      shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
     }
 
-    public static func testMake(scheme: Scheme? = .https,
-                                host: String = "google.com",
-                                endpoint: String,
-                                queryItems: QueryItems = [],
-                                fragment: String? = nil,
-                                shouldAddSlashAfterEndpoint: Bool = false,
-                                shouldRemoveSlashesForEmptyScheme: Bool = false) -> Self {
+    static func testMake(scheme: Scheme? = .https,
+                         host: String = "google.com",
+                         endpoint: String,
+                         queryItems: QueryItems = [],
+                         fragment: String? = nil,
+                         shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
+                         shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) -> Self {
         return .init(scheme: scheme,
                      host: host,
                      path: [endpoint],
@@ -37,11 +37,11 @@ extension Address: SpryEquatable {
                      shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
     }
 
-    public static func testMake(url: URL) -> Self {
-        return try! .init(url: url)
+    static func testMake(url: URL) -> Self {
+        return .init(url)
     }
 
-    public static func testMake(string url: String) -> Self {
-        return try! .init(string: url)
+    static func testMake(string url: String) -> Self {
+        return .init(url)
     }
 }

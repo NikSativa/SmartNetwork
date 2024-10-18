@@ -1,6 +1,9 @@
 import Foundation
 
 #if swift(>=6.0)
+/// A protocol defining behavior for stopping the line in `RequestManager` based on responses.
+///
+/// - Note: Implement this protocol to define actions for stopping or continuing the execution flow based on request results.
 public protocol StopTheLine: Sendable {
     typealias StopTheLineCompletion = @Sendable (StopTheLineResult) -> Void
 
@@ -15,6 +18,9 @@ public protocol StopTheLine: Sendable {
                 userInfo: UserInfo) -> StopTheLineAction
 }
 #else
+/// A protocol defining behavior for stopping the line in `RequestManager` based on responses.
+///
+/// - Note: Implement this protocol to define actions for stopping or continuing the execution flow based on request results.
 public protocol StopTheLine {
     typealias StopTheLineCompletion = (StopTheLineResult) -> Void
 

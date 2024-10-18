@@ -75,15 +75,13 @@ public extension DecodableRequestManager {
                     with parameters: Parameters = .init()) async -> Result<T, Error>
     where T: Decodable & Sendable {
         return await withCheckedContinuation { [self] completion in
-            AsyncTaskHolder { holder in
-                request(type,
-                        address: address,
-                        with: parameters,
-                        inQueue: .absent) { data in
-                    holder.task = nil
-                    completion.resume(returning: data)
-                }
+            request(type,
+                    address: address,
+                    with: parameters,
+                    inQueue: .absent) { data in
+                completion.resume(returning: data)
             }
+            .autorelease().deferredStart()
         }
     }
 
@@ -92,15 +90,13 @@ public extension DecodableRequestManager {
                     with parameters: Parameters = .init()) async -> Result<T?, Error>
     where T: Decodable & Sendable {
         return await withCheckedContinuation { [self] completion in
-            AsyncTaskHolder { holder in
-                request(opt: type,
-                        address: address,
-                        with: parameters,
-                        inQueue: .absent) { data in
-                    holder.task = nil
-                    completion.resume(returning: data)
-                }
+            request(opt: type,
+                    address: address,
+                    with: parameters,
+                    inQueue: .absent) { data in
+                completion.resume(returning: data)
             }
+            .autorelease().deferredStart()
         }
     }
 
@@ -111,15 +107,13 @@ public extension DecodableRequestManager {
                                 with parameters: Parameters = .init()) async throws -> T
     where T: Decodable & Sendable {
         return try await withCheckedThrowingContinuation { [self] completion in
-            AsyncTaskHolder { holder in
-                request(type,
-                        address: address,
-                        with: parameters,
-                        inQueue: .absent) { data in
-                    holder.task = nil
-                    completion.resume(with: data)
-                }
+            request(type,
+                    address: address,
+                    with: parameters,
+                    inQueue: .absent) { data in
+                completion.resume(with: data)
             }
+            .autorelease().deferredStart()
         }
     }
 
@@ -128,15 +122,13 @@ public extension DecodableRequestManager {
                                 with parameters: Parameters = .init()) async throws -> T?
     where T: Decodable & Sendable {
         return try await withCheckedThrowingContinuation { [self] completion in
-            AsyncTaskHolder { holder in
-                request(opt: type,
-                        address: address,
-                        with: parameters,
-                        inQueue: .absent) { [holder] data in
-                    holder.task = nil
-                    completion.resume(with: data)
-                }
+            request(opt: type,
+                    address: address,
+                    with: parameters,
+                    inQueue: .absent) { data in
+                completion.resume(with: data)
             }
+            .autorelease().deferredStart()
         }
     }
 }
@@ -214,15 +206,13 @@ public extension DecodableRequestManager {
                     with parameters: Parameters = .init()) async -> Result<T, Error>
     where T: Decodable {
         return await withCheckedContinuation { [self] completion in
-            AsyncTaskHolder { holder in
-                request(type,
-                        address: address,
-                        with: parameters,
-                        inQueue: .absent) { data in
-                    holder.task = nil
-                    completion.resume(returning: data)
-                }
+            request(type,
+                    address: address,
+                    with: parameters,
+                    inQueue: .absent) { data in
+                completion.resume(returning: data)
             }
+            .autorelease().deferredStart()
         }
     }
 
@@ -231,15 +221,13 @@ public extension DecodableRequestManager {
                     with parameters: Parameters = .init()) async -> Result<T?, Error>
     where T: Decodable {
         return await withCheckedContinuation { [self] completion in
-            AsyncTaskHolder { holder in
-                request(opt: type,
-                        address: address,
-                        with: parameters,
-                        inQueue: .absent) { data in
-                    holder.task = nil
-                    completion.resume(returning: data)
-                }
+            request(opt: type,
+                    address: address,
+                    with: parameters,
+                    inQueue: .absent) { data in
+                completion.resume(returning: data)
             }
+            .autorelease().deferredStart()
         }
     }
 
@@ -250,15 +238,13 @@ public extension DecodableRequestManager {
                                 with parameters: Parameters = .init()) async throws -> T
     where T: Decodable {
         return try await withCheckedThrowingContinuation { [self] completion in
-            AsyncTaskHolder { holder in
-                request(type,
-                        address: address,
-                        with: parameters,
-                        inQueue: .absent) { data in
-                    holder.task = nil
-                    completion.resume(with: data)
-                }
+            request(type,
+                    address: address,
+                    with: parameters,
+                    inQueue: .absent) { data in
+                completion.resume(with: data)
             }
+            .autorelease().deferredStart()
         }
     }
 
@@ -267,15 +253,13 @@ public extension DecodableRequestManager {
                                 with parameters: Parameters = .init()) async throws -> T?
     where T: Decodable {
         return try await withCheckedThrowingContinuation { [self] completion in
-            AsyncTaskHolder { holder in
-                request(opt: type,
-                        address: address,
-                        with: parameters,
-                        inQueue: .absent) { [holder] data in
-                    holder.task = nil
-                    completion.resume(with: data)
-                }
+            request(opt: type,
+                    address: address,
+                    with: parameters,
+                    inQueue: .absent) { data in
+                completion.resume(with: data)
             }
+            .autorelease().deferredStart()
         }
     }
 }

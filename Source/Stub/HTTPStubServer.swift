@@ -14,6 +14,9 @@ public enum HTTPStubStrategy {
     case custom(CustomStrategy)
 }
 
+/// HTTPStubServer serves as a component responsible for managing stubs and handling network requests for stub responses.
+/// Provides methods like add to add a new stub with specific conditions, response details, status code, headers, body, error, and delay.
+/// Overall, HTTPStubServer plays a crucial role in managing stubs and facilitating the testing of network request handling in the system.
 public final class HTTPStubServer {
     #if swift(>=6.0)
     /// Default queue for stubs

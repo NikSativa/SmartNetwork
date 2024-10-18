@@ -39,15 +39,13 @@ open class TypedRequestManager<Response>: @unchecked Sendable {
                       with parameters: Parameters = .init()) async -> Result<Response, Error>
     where Response: Sendable {
         return await withCheckedContinuation { [self] completion in
-            AsyncTaskHolder { holder in
-                requestTask(address,
-                            parameters,
-                            .absent,
-                            false) { data in
-                    holder.task = nil
-                    completion.resume(returning: data)
-                }
+            requestTask(address,
+                        parameters,
+                        .absent,
+                        false) { data in
+                completion.resume(returning: data)
             }
+            .autorelease().deferredStart()
         }
     }
 
@@ -55,15 +53,13 @@ open class TypedRequestManager<Response>: @unchecked Sendable {
                                   with parameters: Parameters = .init()) async throws -> Response
     where Response: Sendable {
         return try await withCheckedThrowingContinuation { [self] completion in
-            AsyncTaskHolder { holder in
-                requestTask(address,
-                            parameters,
-                            .absent,
-                            false) { data in
-                    holder.task = nil
-                    completion.resume(with: data)
-                }
+            requestTask(address,
+                        parameters,
+                        .absent,
+                        false) { data in
+                completion.resume(with: data)
             }
+            .autorelease().deferredStart()
         }
     }
 }
@@ -103,30 +99,26 @@ open class TypedRequestManager<Response> {
     open func request(address: Address,
                       with parameters: Parameters = .init()) async -> Result<Response, Error> {
         return await withCheckedContinuation { [self] completion in
-            AsyncTaskHolder { holder in
-                requestTask(address,
-                            parameters,
-                            .absent,
-                            false) { data in
-                    holder.task = nil
-                    completion.resume(returning: data)
-                }
+            requestTask(address,
+                        parameters,
+                        .absent,
+                        false) { data in
+                completion.resume(returning: data)
             }
+            .autorelease().deferredStart()
         }
     }
 
     open func requestWithThrowing(address: Address,
                                   with parameters: Parameters = .init()) async throws -> Response {
         return try await withCheckedThrowingContinuation { [self] completion in
-            AsyncTaskHolder { holder in
-                requestTask(address,
-                            parameters,
-                            .absent,
-                            false) { data in
-                    holder.task = nil
-                    completion.resume(with: data)
-                }
+            requestTask(address,
+                        parameters,
+                        .absent,
+                        false) { data in
+                completion.resume(with: data)
             }
+            .autorelease().deferredStart()
         }
     }
 }

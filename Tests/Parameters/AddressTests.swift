@@ -9,43 +9,43 @@ final class AddressTests: XCTestCase {
         var actualURL: URL?
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(string: "//some.com") + "endpoint"
+            let subject = try Address("//some.com") + "endpoint"
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("//some.com/endpoint"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(string: "my://some.com") + "endpoint"
+            let subject = try Address("my://some.com") + "endpoint"
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("my://some.com/endpoint"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(string: "http://some.com/asd") + "endpoint"
+            let subject = try Address("http://some.com/asd") + "endpoint"
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd/endpoint"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(string: "http://some.com/asd") + ["endpoint1", "endpoint2"]
+            let subject = try Address("http://some.com/asd") + ["endpoint1", "endpoint2"]
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd/endpoint1/endpoint2"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(string: "http://some.com/asd").append("endpoint")
+            let subject = try Address("http://some.com/asd").append("endpoint")
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd/endpoint"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(string: "http://some.com/asd").append(["endpoint1", "endpoint2"])
+            let subject = try Address("http://some.com/asd").append(["endpoint1", "endpoint2"])
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd/endpoint1/endpoint2"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(string: "http://some.com/asd").append(["param": "value"])
+            let subject = try Address("http://some.com/asd").append(["param": "value"])
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd?param=value"))
@@ -65,7 +65,7 @@ final class AddressTests: XCTestCase {
         XCTAssertEqual(actualURL, .spry.testMake("some.com"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(string: "http://www.some.com/asd").append(["param": "value"])
+            let subject = try Address("http://www.some.com/asd").append(["param": "value"])
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
@@ -132,17 +132,17 @@ private func XCTAssertAddress(expected: String,
     XCTAssertEqual(mainUrl, expectedURL, mainUrl?.absoluteString ?? expected, file: file, line: line)
 
     let urlURL = XCTAssertNoThrowError(file: file, line: line) {
-        let subject = try Address(url: expectedURL,
-                                  shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
-                                  shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
+        let subject = Address(expectedURL,
+                              shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
+                              shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
         return try subject.url()
     }
     XCTAssertEqual(urlURL, mainUrl, file: file, line: line)
 
     let stringURL = XCTAssertNoThrowError(file: file, line: line) {
-        let subject = try Address(string: expected,
-                                  shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
-                                  shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
+        let subject = Address(expected,
+                              shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
+                              shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
         return try subject.url()
     }
     XCTAssertEqual(stringURL, mainUrl, file: file, line: line)

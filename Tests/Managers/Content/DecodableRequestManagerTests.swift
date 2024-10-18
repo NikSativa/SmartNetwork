@@ -15,7 +15,8 @@ final class DecodableRequestManagerTests: XCTestCase {
         super.setUp()
         HTTPStubServer.shared.add(condition: .isAddress(address),
                                   body: .encodable(info),
-                                  delayInSeconds: stubbedTimeoutInSeconds).store(in: &observers)
+                                  delayInSeconds: stubbedTimeoutInSeconds)
+            .store(in: &observers)
     }
 
     override func tearDown() {

@@ -1,5 +1,7 @@
 import Foundation
 
+/// The StatusCode struct is designed to represent different status codes and their corresponding kinds,
+/// providing flexibility in error handling and status code representations within the system.
 public struct StatusCode: Error, Hashable, ExpressibleByIntegerLiteral {
     public let code: Int
     public let kind: Kind?
@@ -36,6 +38,8 @@ extension StatusCode: RequestErrorDescription {
 // MARK: - StatusCode.Kind
 
 public extension StatusCode {
+    /// This enum is designed to categorize status codes into different kinds,
+    /// facilitating error handling and status code interpretation within the system.
     enum Kind: Int, Hashable, CaseIterable {
         // MARK: - Successful responses
 
