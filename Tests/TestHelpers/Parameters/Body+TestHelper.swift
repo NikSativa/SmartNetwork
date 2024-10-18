@@ -2,9 +2,9 @@ import Foundation
 import SmartNetwork
 import SpryKit
 
-// MARK: - Body + Equatable, SpryEquatable
+// MARK: - Body + Equatable
 
-extension Body: Equatable, SpryEquatable {
+extension Body: Equatable {
     private static func compare(_ lhs: Any, _ rhs: Any) -> Bool {
         return isAnyEqual(lhs, rhs)
     }
@@ -41,11 +41,6 @@ extension Body: Equatable, SpryEquatable {
         }
     }
 }
-
-extension Body.ImageFormat: SpryEquatable {}
-
-extension Body.Form: SpryEquatable {}
-extension Body.Form.MimeType: SpryEquatable {}
 
 private extension Encodable {
     func string() -> String? {

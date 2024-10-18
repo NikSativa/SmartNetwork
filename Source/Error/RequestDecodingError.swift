@@ -1,10 +1,16 @@
 import Foundation
 
+/// The enum also provides a RequestErrorDescription extension to handle and provide descriptions for each case within the RequestError system.
 public enum RequestDecodingError: Error {
+    /// Wraps another DecodingError within it.
     case other(DecodingError)
+    /// Indicates errors related to decoding an image.
     case brokenImage
+    /// Indicates errors related to a broken
     case brokenResponse
+    /// Indicates errors related to a nil response
     case nilResponse
+    /// Indicates errors related to an empty response
     case emptyResponse
 }
 

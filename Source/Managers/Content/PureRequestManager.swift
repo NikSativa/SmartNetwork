@@ -49,14 +49,12 @@ public extension PureRequestManager {
     func request(address: Address,
                  with parameters: Parameters = .init()) async -> RequestResult {
         return await withCheckedContinuation { [self] completion in
-            AsyncTaskHolder { holder in
-                request(address: address,
-                        with: parameters,
-                        inQueue: .absent) { data in
-                    holder.task = nil
-                    completion.resume(returning: data)
-                }
+            request(address: address,
+                    with: parameters,
+                    inQueue: .absent) { data in
+                completion.resume(returning: data)
             }
+            .autorelease().deferredStart()
         }
     }
 }

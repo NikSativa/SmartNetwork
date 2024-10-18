@@ -50,13 +50,22 @@ final class RequestErrorTests: XCTestCase {
         let expected9 = RequestError.decoding(.other(actual9))
         XCTAssertEqualError(actual9.requestError, expected9)
         XCTAssertEqualError(RequestError(actual9), expected9)
+
+        let actual10 = RequestError.statusCode(.noContent)
+        let expected10 = actual10
+        XCTAssertEqualError(actual10.requestError, expected10)
+        XCTAssertEqualError(RequestError(actual10), expected10)
     }
 
     func test_subname() {
         XCTAssertEqual(RequestError.generic.subname, "generic")
-        XCTAssertEqual(RequestError.other(NSError(domain: "descr", code: 111)).subname, "other(Error Domain=descr Code=111 \"(null)\")")
-        XCTAssertEqual(RequestError.other(RequestError.generic).subname, "other(generic)")
+        XCTAssertEqual(StatusCode(.forbidden).subname, "forbidden(403)")
+        XCTAssertEqual(RequestEncodingError.brokenAddress.subname, "brokenAddress")
+        XCTAssertEqual(RequestDecodingError.brokenResponse.subname, "brokenResponse")
         XCTAssertEqual(RequestError.connection(.init(.badURL)).subname, "connection(URLError -1000)")
+
+        XCTAssertEqual(RequestError.other(NSError(domain: "descr", code: 111)).subname, "other(Error Domain=descr Code=111 \"(null)\")")
+        XCTAssertEqual(RequestError.other(StatusCode(.forbidden)).subname, "other(forbidden(403))")
         XCTAssertEqual(RequestError.encoding(.brokenURL).subname, "encoding(.brokenURL)")
         XCTAssertEqual(RequestError.decoding(.nilResponse).subname, "decoding(.nilResponse)")
         XCTAssertEqual(RequestError.statusCode(.noContent).subname, "statusCode(.noContent(204))")

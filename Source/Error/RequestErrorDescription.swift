@@ -1,5 +1,6 @@
 import Foundation
 
+/// A protocol defining a structure's capability to provide a subname for error descriptions.
 public protocol RequestErrorDescription: Error, CustomDebugStringConvertible, CustomStringConvertible {
     var subname: String { get }
 }

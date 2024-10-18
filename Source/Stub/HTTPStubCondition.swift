@@ -126,9 +126,18 @@ public enum HTTPStubCondition {
         switch self {
         case .isAddress(let address):
             let original = request.url.flatMap {
-                return try? Address(url: $0)
+                return Address($0)
             }
-            return original == address
+
+            guard let lhs = try? original?.url() else {
+                return false
+            }
+
+            guard let rhs = try? address.url() else {
+                return false
+            }
+
+            return lhs == rhs
         case .isPath(let string):
             return request.path == string
         case .pathStartsWith(let string):

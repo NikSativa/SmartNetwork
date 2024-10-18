@@ -1,5 +1,6 @@
 import Foundation
 
+/// URL scheme
 public enum Scheme: Hashable {
     case http
     case https

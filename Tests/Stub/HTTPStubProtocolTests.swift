@@ -66,7 +66,7 @@ final class HTTPStubProtocolTests: XCTestCase {
         do {
             let _ = try await session.data(from: Constant.address.url())
         } catch {
-            XCTAssertEqualAny(error, RequestError.generic, error.localizedDescription)
+            XCTAssertEqualAny(error, RequestError.statusCode(.noContent), error.localizedDescription)
         }
     }
 }

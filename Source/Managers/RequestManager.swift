@@ -1,6 +1,15 @@
 import Foundation
 import Threading
 
+/// The RequestManager class in Swift serves as a crucial component within the system,
+/// managing various aspects related to requests efficiently.
+/// It encompasses functionalities such as handling request states, maintaining task queues,
+/// and managing request attempts. Additionally, the class incorporates plugins,
+/// mechanisms for stopping request processing,
+/// and parameters for controlling the maximum number of request attempts.
+/// The RequestManager class plays a pivotal role in orchestrating and
+/// executing request-related tasks within the system,
+/// ensuring streamlined and organized request management.
 public final class RequestManager {
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var state: State = .init()

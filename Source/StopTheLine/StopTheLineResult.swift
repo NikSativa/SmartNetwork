@@ -1,5 +1,6 @@
 import Foundation
 
+/// An enumeration of actions that can be taken when a stop-the-line is finished.
 public enum StopTheLineResult {
     /// pass over new response
     case passOver(RequestResult)
