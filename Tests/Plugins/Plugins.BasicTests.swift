@@ -6,8 +6,8 @@ import XCTest
 
 final class PluginsBasicTests: XCTestCase {
     func test_authToken() throws {
-        let subject = Plugins.Basic {
-            return ("my_token_username", "my_token_password")
+        let subject = Plugins.AuthBasic {
+            return .init(username: "my_token_username", password: "my_token_password")
         }
 
         let parameters: Parameters = .testMake()

@@ -143,27 +143,29 @@ final class RequestManagerTests: XCTestCase {
     }
 
     func test_plugins() {
-        let pluginForManager: FakePlugin = .init(id: 1)
+        let pluginStatusCode = Plugins.StatusCode()
+
+        let pluginForManager: FakePlugin = .init(id: 1, priority: 500)
         pluginForManager.stub(.prepare).andReturn()
         pluginForManager.stub(.verify).andReturn()
         pluginForManager.stub(.willSend).andReturn()
         pluginForManager.stub(.didReceive).andReturn()
         pluginForManager.stub(.didFinish).andReturn()
 
-        let pluginForParam: FakePlugin = .init(id: 2)
+        let pluginForParam: FakePlugin = .init(id: 2, priority: 0)
         pluginForParam.stub(.prepare).andReturn()
         pluginForParam.stub(.verify).andReturn()
         pluginForParam.stub(.willSend).andReturn()
         pluginForParam.stub(.didReceive).andReturn()
         pluginForParam.stub(.didFinish).andReturn()
 
-        let subject = RequestManager.create(withPlugins: [Plugins.StatusCode(), pluginForManager])
+        let subject = RequestManager.create(withPlugins: [pluginStatusCode, pluginStatusCode, pluginForManager, pluginStatusCode])
 
         let response: SendableResult<TestInfo> = .init()
         let expectation1 = expectation(description: "should receive response")
         subject.decodable.request(TestInfo.self,
                                   address: Constant.address1,
-                                  with: .init(plugins: [pluginForParam],
+                                  with: .init(plugins: [pluginForParam, pluginStatusCode, pluginForParam, pluginStatusCode],
                                               cacheSettings: .testMake())) {
             response.value = try? $0.get()
             expectation1.fulfill()
@@ -196,13 +198,22 @@ final class RequestManagerTests: XCTestCase {
 
         wait(for: [expectation2], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response.value, .init(id: 2))
-        XCTAssertHaveReceived(pluginForManager, .prepare, countSpecifier: .exactly(1))
+
+        let pluginValidator = Argument.validator { parameters in
+            guard let parameters = parameters as? Parameters else {
+                return false
+            }
+            let expected: [Plugin] = [pluginForManager, pluginStatusCode, pluginForParam]
+            return parameters.plugins.map(\.id) == expected.map(\.id)
+        }
+
+        XCTAssertHaveReceived(pluginForManager, .prepare, with: pluginValidator, Argument.anything, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForManager, .verify, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForManager, .willSend, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForManager, .didReceive, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForManager, .didFinish, countSpecifier: .exactly(1))
 
-        XCTAssertHaveReceived(pluginForParam, .prepare, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .prepare, with: pluginValidator, Argument.anything, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForParam, .verify, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForParam, .willSend, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForParam, .didReceive, countSpecifier: .exactly(1))

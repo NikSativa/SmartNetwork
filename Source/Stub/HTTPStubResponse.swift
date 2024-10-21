@@ -1,12 +1,18 @@
 import Foundation
 
+/// A struct representing the response of a stubbed HTTP request.
 public struct HTTPStubResponse {
+    /// The status code of the response.
     public let statusCode: StatusCode
+    /// The header fields of the response.
     public let header: HeaderFields
+    /// The body of the response.
     public let body: HTTPStubBody
+    /// The error that occurred during the request, if any.
     public let error: Error?
     public let delayInSeconds: TimeInterval?
 
+    /// Initializes an HTTPStubResponse object with the provided parameters.
     public init(statusCode: StatusCode = 200,
                 header: HeaderFields = [:],
                 body: HTTPStubBody = .empty,
@@ -19,6 +25,7 @@ public struct HTTPStubResponse {
         self.delayInSeconds = delayInSeconds
     }
 
+    /// Initializes an HTTPStubResponse object with the provided parameters.
     public init(statusCode: StatusCode.Kind,
                 header: HeaderFields = [:],
                 body: HTTPStubBody = .empty,

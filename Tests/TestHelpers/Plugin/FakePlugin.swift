@@ -17,9 +17,11 @@ public final class FakePlugin: Plugin, Spryable {
     }
 
     public let id: AnyHashable
+    public let priority: PluginPriority
 
-    public init(id: AnyHashable) {
+    public init(id: AnyHashable, priority: PluginPriority) {
         self.id = id
+        self.priority = priority
     }
 
     public func prepare(_ parameters: Parameters,
