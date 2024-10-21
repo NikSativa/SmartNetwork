@@ -181,16 +181,21 @@ public final class RequestManager {
     }
 
     private func prepare(_ parameters: Parameters) -> Parameters {
+        let newPlugins: [Plugin]
         if plugins.isEmpty {
-            return parameters
+            newPlugins = parameters.plugins
+        } else {
+            var plugins = parameters.plugins
+            plugins += self.plugins
+            newPlugins = plugins
         }
 
-        var plugins = parameters.plugins
-        plugins += self.plugins
-        plugins = plugins.unified()
-
         var newParameters = parameters
-        newParameters.plugins = plugins
+        newParameters.plugins = newPlugins
+            .unified()
+            .sorted { a, b in
+                return a.priority > b.priority
+            }
         return newParameters
     }
 }

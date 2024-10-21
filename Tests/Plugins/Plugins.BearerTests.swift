@@ -6,7 +6,7 @@ import XCTest
 
 final class PluginsBearerTests: XCTestCase {
     func test_authToken() {
-        let subject = Plugins.Bearer {
+        let subject = Plugins.AuthBearer {
             return "my_token_string"
         }
 

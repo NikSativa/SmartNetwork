@@ -62,7 +62,7 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
         request.stub(.url).andReturn(url)
     }
 
-    let subject: Plugins.TokenPlugin = .init(id: "test.token", type: type) {
+    let subject: Plugins.TokenPlugin = .init(id: "test.token", priority: 0, type: type) {
         return value
     }
 

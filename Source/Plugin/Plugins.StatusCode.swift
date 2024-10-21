@@ -1,27 +1,41 @@
 import Foundation
 
 public extension Plugins {
+    /// A plugin that checks the status code of the response.
     final class StatusCode: Plugin {
         #if swift(>=6.0)
+        /// The status code checker.
         public typealias StatusCodeChecker = @Sendable (_ statusCode: Int?) -> Bool
         #else
+        /// The status code checker.
         public typealias StatusCodeChecker = (_ statusCode: Int?) -> Bool
         #endif
 
+        public let priority: PluginPriority
         private let isIgnoring: StatusCodeChecker
 
-        public init(isIgnoring: @escaping StatusCodeChecker) {
+        /// A plugin that checks the status code of the response.
+        ///
+        /// - Parameter isIgnoring: a closure that returns `true` if the status code should be ignored.
+        public init(priority: PluginPriority = .statusCode,
+                    isIgnoring: @escaping StatusCodeChecker) {
+            self.priority = priority
             self.isIgnoring = isIgnoring
         }
 
+        /// A plugin that checks the status code of the response.
+        ///
         /// - Parameter shouldIgnore200th: ignore status code in range `200..<300` and/or ignore `Nil`
-        public init(shouldIgnore200th: Bool = true, shuoldIgnoreNil: Bool = true) {
+        public init(priority: PluginPriority = .statusCode,
+                    shouldIgnore200th: Bool = true,
+                    shouldIgnoreNil: Bool = true) {
+            self.priority = priority
             self.isIgnoring = { statusCode in
                 if let statusCode,
                    shouldIgnore200th,
                    (200..<300).contains(statusCode) {
                     return true
-                } else if shuoldIgnoreNil,
+                } else if shouldIgnoreNil,
                           statusCode == nil {
                     return true
                 }

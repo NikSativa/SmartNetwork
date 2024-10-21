@@ -18,7 +18,7 @@ import Threading
 /// // Using autorelease to prevent cancellation on deinitialization and start action on the next MainQueue cycle
 /// RequestingTask(runAction: {
 ///    print("Another task is running")
-/// }).autorelease().deferredStart(in: Queue.main)
+/// }).autorelease().deferredStart() // or deferredStart(in: Queue.background)
 /// ```
 public final class RequestingTask {
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)

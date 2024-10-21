@@ -1,6 +1,7 @@
 import Foundation
 import Threading
 
+/// A protocol for stubbing HTTP responses.
 public final class HTTPStubProtocol: URLProtocol {
     override public class func canInit(with request: URLRequest) -> Bool {
         let response = HTTPStubServer.shared.response(for: request)

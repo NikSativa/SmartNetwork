@@ -7,9 +7,11 @@ import XCTest
 private final class TestPlugin: Plugin {
     private let input: Int
     lazy var id: AnyHashable = TestPlugin.makeHash(withAdditionalHash: input)
+    let priority: PluginPriority
 
     init(input: Int) {
         self.input = input
+        self.priority = .init(rawValue: input)
     }
 
     func prepare(_ parameters: SmartNetwork.Parameters, request: inout SmartNetwork.URLRequestRepresentation) {

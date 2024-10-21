@@ -1,22 +1,29 @@
 import Foundation
 
 public extension Plugins {
+    /// A plugin that logs the request in the `curl` format.
     final class Curl: Plugin {
         #if swift(>=6.0)
+        /// The logging function.
         public typealias Logging = @Sendable (_ component: Component, _ text: () -> String?) -> Void
         #else
+        /// The logging function.
         public typealias Logging = (_ component: Component, _ text: () -> String?) -> Void
         #endif
 
+        /// The `curl` component of the log.
         public enum Component {
             case curl
             case error
             case body
         }
 
+        public let priority: PluginPriority
         private let logger: Logging
 
-        public init(logger: @escaping Logging) {
+        public init(priority: PluginPriority = .curl,
+                    logger: @escaping Logging) {
+            self.priority = priority
             self.logger = logger
         }
 

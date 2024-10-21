@@ -1,11 +1,18 @@
 import Foundation
 
+/// Body for stubbing a request with a HTTPStupServer.
 public enum HTTPStubBody {
+    /// Empty body.
     case empty
+    /// File body in specified bundle.
     case file(name: String, bundle: Bundle)
+    /// File body in specified path.
     case filePath(path: String)
+    /// Data body.
     case data(Data)
+    /// Encodable body.
     case encodable(any Encodable)
+    /// Encodable body with specified JSONEncoder.
     case encodableWithEncoder(any Encodable, JSONEncoder)
 
     #if swift(>=6.0)
