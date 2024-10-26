@@ -117,7 +117,7 @@ final class RequestManagerTests: XCTestCase {
             response.value = try? $0.get()
             expectation4.fulfill()
             expectationReverted3.fulfill()
-        }.autorelease().deferredStart()
+        }.detached().deferredStart()
 
         wait(for: [expectationReverted3], timeout: Constant.stubbedTimeoutInSeconds - 0.01)
         wait(for: [expectation4], timeout: Constant.timeoutInSeconds - Constant.stubbedTimeoutInSeconds + 0.01)
@@ -134,7 +134,7 @@ final class RequestManagerTests: XCTestCase {
             expectationReverted4.fulfill()
         }
         // ---> not retained task will released and automaticaly stop the attached request
-        // .autorelease()
+        // .detached()
         // .storing(in: &observers)
         .start()
 
@@ -169,7 +169,7 @@ final class RequestManagerTests: XCTestCase {
                                               cacheSettings: .testMake())) {
             response.value = try? $0.get()
             expectation1.fulfill()
-        }.autorelease().deferredStart()
+        }.detached().deferredStart()
 
         wait(for: [expectation1], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response.value, .init(id: 1))
@@ -330,7 +330,7 @@ final class RequestManagerTests: XCTestCase {
                                   address: Constant.address1,
                                   with: .init(body: .empty)) { _ in
             expectation4.fulfill()
-        }.autorelease().deferredStart()
+        }.detached().deferredStart()
 
         // returns response immediately, but in queue while stop the line activated
         let expectation8: XCTestExpectation = .init(description: "should not receive response")

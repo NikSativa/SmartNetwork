@@ -208,7 +208,7 @@ extension RequestManager: PureRequestManager {
     public func map<T: CustomDecodable>(data: RequestResult,
                                         to type: T.Type,
                                         with parameters: Parameters) -> Result<T.Object, Error> {
-        let result = type.decode(with: data, decoder: parameters.decoder)
+        let result = type.decode(with: data, decoder: parameters.decoder ?? .init())
         switch result {
         case .success:
             data.set(nil)
@@ -257,7 +257,7 @@ extension RequestManager: PureRequestManager {
                 tryComplete(with: result, for: info)
             }
 
-            return RequestingTask(runAction: { [state] in
+            return SmartTask(runAction: { [state] in
                 if state.isRunning {
                     request.start()
                 }
@@ -265,7 +265,7 @@ extension RequestManager: PureRequestManager {
                 request.cancel()
             })
         } catch {
-            return RequestingTask(runAction: {
+            return SmartTask(runAction: {
                 let result = RequestResult(request: nil, body: nil, response: nil, error: error)
                 completion(result)
             })
@@ -372,7 +372,7 @@ private extension RequestManager {
     final class Info {
         let key: Key
         let parameters: Parameters
-        let request: Requestable
+        let request: Request
         let completion: ResponseClosureWithInfo
         #if swift(>=6.0)
         nonisolated(unsafe) var attemptNumber: Int
@@ -385,7 +385,7 @@ private extension RequestManager {
         }
 
         init(parameters: Parameters,
-             request: Requestable,
+             request: Request,
              completion: @escaping ResponseClosureWithInfo) {
             self.key = Key(request)
             self.parameters = parameters

@@ -1,6 +1,7 @@
 import CoreGraphics
 import Foundation
 
+/// Type representing request body. It can be empty, data, image, encodable, form, xform, or json.
 public enum Body: ExpressibleByNilLiteral {
     public enum ImageFormat: Equatable {
         #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
@@ -68,7 +69,7 @@ public enum Body: ExpressibleByNilLiteral {
 }
 
 extension Body {
-    func fill(_ tempRequest: inout URLRequest, encoder: @autoclosure () -> JSONEncoder) throws {
+    func fill(_ tempRequest: inout URLRequest, encoder: @autoclosure () -> JSONEncoder?) throws {
         switch self {
         case .empty:
             break
@@ -102,7 +103,7 @@ extension Body {
                 tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
             }
         case .encodable(let object):
-            let encoder = encoder()
+            let encoder = encoder() ?? .init()
             let data = try encoder.encode(object)
 
             tempRequest.httpBody = data

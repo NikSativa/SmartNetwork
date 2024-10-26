@@ -17,15 +17,15 @@ final class RequestableTests: XCTestCase {
         urlRequestable.stub(.sdk).andReturn(sdkRequest)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
 
-        let subject: Requestable = Request(address: .testMake(),
-                                           with: parameters,
-                                           urlRequestable: urlRequestable)
+        let subject = Request(address: .testMake(),
+                              with: parameters,
+                              urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }
         XCTAssertEqual(subject.parameters, parameters)
-        XCTAssertEqual((subject as! Request).description, "<GET request: https://google.com>")
-        XCTAssertEqual((subject as! Request).debugDescription, "<GET request: https://google.com>")
+        XCTAssertEqual(subject.description, "<GET request: https://google.com>")
+        XCTAssertEqual(subject.debugDescription, "<GET request: https://google.com>")
 
         // idle request -> nothing happen
         XCTAssertNoThrow(subject.cancel())
@@ -116,16 +116,16 @@ final class RequestableTests: XCTestCase {
         urlRequestable.stub(.sdk).andReturn(sdkRequest)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
 
-        var subject: Requestable! = Request(address: .testMake(),
-                                            with: parameters,
-                                            urlRequestable: urlRequestable)
+        var subject: Request! = Request(address: .testMake(),
+                                        with: parameters,
+                                        urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }
 
-        XCTAssertEqual(subject.parameters, parameters)
-        XCTAssertEqual((subject as! Request).description, "<GET request: https://google.com>")
-        XCTAssertEqual((subject as! Request).debugDescription, "<GET request: https://google.com>")
+        XCTAssertEqual(subject!.parameters, parameters)
+        XCTAssertEqual(subject!.description, "<GET request: https://google.com>")
+        XCTAssertEqual(subject!.debugDescription, "<GET request: https://google.com>")
 
         // idle request -> nothing happen
         XCTAssertNoThrow(subject.cancel())
@@ -168,16 +168,16 @@ final class RequestableTests: XCTestCase {
         urlRequestable.stub(.sdk).andReturn(sdkRequest)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
 
-        let subject: Requestable = Request(address: .testMake(),
-                                           with: parameters,
-                                           urlRequestable: urlRequestable)
+        let subject = Request(address: .testMake(),
+                              with: parameters,
+                              urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }
 
         XCTAssertEqual(subject.parameters, parameters)
-        XCTAssertEqual((subject as! Request).description, "<GET request: https://google.com>")
-        XCTAssertEqual((subject as! Request).debugDescription, "<GET request: https://google.com>")
+        XCTAssertEqual(subject.description, "<GET request: https://google.com>")
+        XCTAssertEqual(subject.debugDescription, "<GET request: https://google.com>")
 
         // idle request -> nothing happen
         XCTAssertNoThrow(subject.cancel())
@@ -229,16 +229,16 @@ final class RequestableTests: XCTestCase {
         urlRequestable.stub(.sdk).andReturn(sdkRequest)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
 
-        let subject: Requestable = Request(address: .testMake(host: "http://google.com"),
-                                           with: parameters,
-                                           urlRequestable: urlRequestable)
+        let subject = Request(address: .testMake(host: "http://google.com"),
+                              with: parameters,
+                              urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }
 
         XCTAssertEqual(subject.parameters, parameters)
-        XCTAssertEqual((subject as! Request).description, "<GET request: broken url>")
-        XCTAssertEqual((subject as! Request).debugDescription, "<GET request: broken url>")
+        XCTAssertEqual(subject.description, "<GET request: broken url>")
+        XCTAssertEqual(subject.debugDescription, "<GET request: broken url>")
 
         // idle request -> nothing happen
         XCTAssertNoThrow(subject.cancel())

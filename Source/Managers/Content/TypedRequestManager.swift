@@ -45,7 +45,7 @@ open class TypedRequestManager<Response>: @unchecked Sendable {
                         false) { data in
                 completion.resume(returning: data)
             }
-            .autorelease().deferredStart()
+            .detached().deferredStart()
         }
     }
 
@@ -59,7 +59,7 @@ open class TypedRequestManager<Response>: @unchecked Sendable {
                         false) { data in
                 completion.resume(with: data)
             }
-            .autorelease().deferredStart()
+            .detached().deferredStart()
         }
     }
 }
@@ -105,7 +105,7 @@ open class TypedRequestManager<Response> {
                         false) { data in
                 completion.resume(returning: data)
             }
-            .autorelease().deferredStart()
+            .detached().deferredStart()
         }
     }
 
@@ -118,7 +118,7 @@ open class TypedRequestManager<Response> {
                         false) { data in
                 completion.resume(with: data)
             }
-            .autorelease().deferredStart()
+            .detached().deferredStart()
         }
     }
 }

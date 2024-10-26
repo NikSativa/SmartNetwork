@@ -81,7 +81,7 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(returning: data)
             }
-            .autorelease().deferredStart()
+            .detached().deferredStart()
         }
     }
 
@@ -96,7 +96,7 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(returning: data)
             }
-            .autorelease().deferredStart()
+            .detached().deferredStart()
         }
     }
 
@@ -113,7 +113,7 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(with: data)
             }
-            .autorelease().deferredStart()
+            .detached().deferredStart()
         }
     }
 
@@ -128,7 +128,7 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(with: data)
             }
-            .autorelease().deferredStart()
+            .detached().deferredStart()
         }
     }
 }
@@ -212,7 +212,7 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(returning: data)
             }
-            .autorelease().deferredStart()
+            .detached().deferredStart()
         }
     }
 
@@ -227,7 +227,7 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(returning: data)
             }
-            .autorelease().deferredStart()
+            .detached().deferredStart()
         }
     }
 
@@ -244,7 +244,7 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(with: data)
             }
-            .autorelease().deferredStart()
+            .detached().deferredStart()
         }
     }
 
@@ -259,7 +259,7 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(with: data)
             }
-            .autorelease().deferredStart()
+            .detached().deferredStart()
         }
     }
 }

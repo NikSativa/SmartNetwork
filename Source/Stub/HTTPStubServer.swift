@@ -90,7 +90,7 @@ public final class HTTPStubServer {
 public extension HTTPStubServer {
     func add(condition: HTTPStubCondition,
              statusCode: StatusCode = 200,
-             header: HeaderFields = [:],
+             header: HeaderFields = [],
              body: HTTPStubBody = .empty,
              error: Error? = nil,
              delayInSeconds: TimeInterval? = nil) -> AnyCancellable {
@@ -104,7 +104,7 @@ public extension HTTPStubServer {
 
     func add(condition: HTTPStubCondition,
              statusCode: StatusCode.Kind,
-             header: HeaderFields = [:],
+             header: [String: String],
              body: HTTPStubBody = .empty,
              error: Error? = nil,
              delayInSeconds: TimeInterval? = nil) -> AnyCancellable {

@@ -98,19 +98,25 @@ public extension Plugin {
 
     /// Creates a unique ID for the plugin
     static func makeHash() -> AnyHashable {
-        return String(reflecting: self)
+        return makeHashStr()
     }
 
     /// Creates a unique ID for the plugin with additional hash value.
     static func makeHash(withAdditionalHash hash: some Hashable) -> AnyHashable {
-        let components: [AnyHashable] = [makeHash(), hash]
-        return components
+        if let hash = hash as? String {
+            return [makeHashStr(), hash].joined(separator: ".")
+        }
+        return [makeHash(), hash]
     }
 
     func wasCancelled(_ parameters: Parameters,
                       request: URLRequestRepresentation,
                       userInfo: UserInfo) {
         // nothing to do
+    }
+
+    private static func makeHashStr() -> String {
+        return String(reflecting: self)
     }
 }
 

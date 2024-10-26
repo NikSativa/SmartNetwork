@@ -19,12 +19,14 @@ final class PluginPriorityTests: XCTestCase {
             Plugins.AuthBearer(with: {
                 return "AuthBearer"
             }),
-            Plugins.StatusCode()
+            Plugins.StatusCode(),
+            Plugins.JSONHeaders()
         ].unified().sorted { a, b in
             return a.priority > b.priority
         }
 
         let expected: [Plugin] = [
+            Plugins.JSONHeaders(),
             Plugins.AuthBasic(with: {
                 return .init(username: "AuthBasic", password: "AuthBasic")
             }),
@@ -37,6 +39,46 @@ final class PluginPriorityTests: XCTestCase {
 
         XCTAssertEqual(actual.map(\.id), expected.map(\.id))
     }
+
+    #if canImport(os)
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+    func test_common_plugins_with_curlOS() {
+        let actual: [Plugin] = [
+            Plugins.AuthBearer(with: {
+                return "AuthBearer"
+            }),
+            Plugins.Curl(logger: { _, _ in }),
+            Plugins.StatusCode(),
+            Plugins.AuthBasic(with: {
+                return .init(username: "AuthBasic", password: "AuthBasic")
+            }),
+            Plugins.StatusCode(),
+            Plugins.AuthBearer(with: {
+                return "AuthBearer"
+            }),
+            Plugins.StatusCode(),
+            Plugins.CurlOS(),
+            Plugins.JSONHeaders()
+        ].unified().sorted { a, b in
+            return a.priority > b.priority
+        }
+
+        let expected: [Plugin] = [
+            Plugins.JSONHeaders(),
+            Plugins.AuthBasic(with: {
+                return .init(username: "AuthBasic", password: "AuthBasic")
+            }),
+            Plugins.AuthBearer(with: {
+                return "AuthBearer"
+            }),
+            Plugins.Curl(logger: { _, _ in }),
+            Plugins.CurlOS(),
+            Plugins.StatusCode()
+        ]
+
+        XCTAssertEqual(actual.map(\.id), expected.map(\.id))
+    }
+    #endif
 
     func test_custom_plugins() {
         let actual: [Plugin] = [

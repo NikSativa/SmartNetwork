@@ -1,6 +1,7 @@
 import Foundation
 
 /// A class representing the result of a network request.
+/// It contains the original URLRequest, the body data of the response, the URLResponse, and any error that occurred.
 public final class RequestResult {
     /// The original URLRequest made for the request.
     public let request: URLRequestRepresentation?

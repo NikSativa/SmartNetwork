@@ -1,62 +1,40 @@
 import Foundation
 import Threading
 
-#if swift(>=6.0)
-public protocol Requestable: AnyObject, Sendable {
+internal final class Request {
     typealias CompletionCallback = (RequestResult) -> Void
 
-    var completion: CompletionCallback? { get set }
-    var urlRequestable: URLRequestRepresentation { get }
-    var parameters: Parameters { get }
+    private lazy var sessionAdaptor: SessionAdaptor = {
+        let session = parameters.session ?? RequestSettings.sharedSession
+        return .init(session: session, progressHandler: parameters.progressHandler)
+    }()
 
-    func start()
-    func restart()
-    func cancel()
-}
-#else
-public protocol Requestable: AnyObject {
-    typealias CompletionCallback = (RequestResult) -> Void
-
-    var completion: CompletionCallback? { get set }
-    var urlRequestable: URLRequestRepresentation { get }
-    var parameters: Parameters { get }
-
-    func start()
-    func restart()
-    func cancel()
-}
-#endif
-
-public final class Request {
-    private let sessionAdaptor: SessionAdaptor
     private let address: Address
     private var isCanceled: Bool = false
 
-    public let parameters: Parameters
-    public var userInfo: UserInfo {
+    let parameters: Parameters
+    var userInfo: UserInfo {
         return parameters.userInfo
     }
 
-    public let urlRequestable: URLRequestRepresentation
+    let urlRequestable: URLRequestRepresentation
 
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
-    public var completion: CompletionCallback?
+    var completion: CompletionCallback?
 
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
-    public var serviceCompletion: (() -> Void)?
+    var serviceCompletion: (() -> Void)?
 
     private var plugins: [Plugin] {
         return parameters.plugins
     }
 
-    public init(address: Address,
-                with parameters: Parameters,
-                urlRequestable: URLRequestRepresentation) {
+    init(address: Address,
+         with parameters: Parameters,
+         urlRequestable: URLRequestRepresentation) {
         self.address = address
         self.parameters = parameters
         self.urlRequestable = urlRequestable
-        self.sessionAdaptor = .init(session: parameters.session,
-                                    progressHandler: parameters.progressHandler)
     }
 
     deinit {
@@ -78,11 +56,11 @@ public final class Request {
 
         let sdkRequest = urlRequestable.sdk
         if let stub = HTTPStubServer.shared.response(for: sdkRequest) {
-            let response = sdkRequest.url.flatMap {
+            let response: HTTPURLResponse? = sdkRequest.url.flatMap {
                 return HTTPURLResponse(url: $0,
                                        statusCode: stub.statusCode.code,
                                        httpVersion: nil,
-                                       headerFields: stub.header)
+                                       headerFields: stub.header.mapToResponse())
             }
             let responseData = RequestResult(request: urlRequestable,
                                              body: stub.body.data,
@@ -188,19 +166,17 @@ public final class Request {
     }
 }
 
-// MARK: - Requestable
-
-extension Request: Requestable {
-    public func start() {
+extension Request {
+    func start() {
         startRealRequest()
     }
 
-    public func restart() {
+    func restart() {
         isCanceled = false
         startRealRequest()
     }
 
-    public func cancel() {
+    func cancel() {
         isCanceled = true
         stopSessionRequest()
 
@@ -215,7 +191,7 @@ extension Request: Requestable {
 // MARK: - CustomDebugStringConvertible
 
 extension Request: CustomDebugStringConvertible {
-    public var debugDescription: String {
+    var debugDescription: String {
         return makeDescription()
     }
 }
@@ -223,7 +199,7 @@ extension Request: CustomDebugStringConvertible {
 // MARK: - CustomStringConvertible
 
 extension Request: CustomStringConvertible {
-    public var description: String {
+    var description: String {
         return makeDescription()
     }
 }
@@ -231,13 +207,13 @@ extension Request: CustomStringConvertible {
 // MARK: - private
 
 private final class SessionAdaptor {
-    private let session: Session
+    private let session: SmartURLSession
     private let progressHandler: ProgressHandler?
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var task: SessionTask?
     private var observer: Any?
 
-    required init(session: Session,
+    required init(session: SmartURLSession,
                   progressHandler: ProgressHandler?) {
         self.session = session
         self.progressHandler = progressHandler

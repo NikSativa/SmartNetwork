@@ -1,7 +1,7 @@
 import Foundation
 
 public extension Plugins {
-    /// A plugin that checks the status code of the response.
+    /// A plugin that checks the http status code of the response.
     final class StatusCode: Plugin {
         #if swift(>=6.0)
         /// The status code checker.

@@ -5,13 +5,13 @@ import XCTest
 
 @testable import SmartNetwork
 
-final class RequestingTaskTests: XCTestCase {
+final class SmartTaskTests: XCTestCase {
     func test_cancel_task_once() {
         let subject: SendableResult<RequestingTask> = .init()
 
         let runExp = expectation(description: "should run")
         let cancelExp = expectation(description: "should cancel")
-        subject.value = .init(runAction: {
+        subject.value = SmartTask(runAction: {
             runExp.fulfill()
         }, cancelAction: {
             cancelExp.fulfill()
@@ -42,7 +42,7 @@ final class RequestingTaskTests: XCTestCase {
 
         let runExp = expectation(description: "should run")
         let cancelExp = expectation(description: "should cancel")
-        subject.value = .init(runAction: {
+        subject.value = SmartTask(runAction: {
             runExp.fulfill()
         }, cancelAction: {
             cancelExp.fulfill()
@@ -63,7 +63,7 @@ final class RequestingTaskTests: XCTestCase {
         let runExp = expectation(description: "should run")
         let cancelExp = expectation(description: "should cancel")
         let subject: SendableResult<RequestingTask> = .init()
-        subject.value = .init(runAction: {
+        subject.value = SmartTask(runAction: {
             runExp.fulfill()
         }, cancelAction: {
             cancelExp.fulfill()

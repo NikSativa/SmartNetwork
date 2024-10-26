@@ -24,6 +24,20 @@ public struct AddressDetails: Hashable {
         self.queryItems = queryItems
         self.fragment = fragment
     }
+
+    public init(scheme: Scheme? = .https,
+                host: String,
+                port: Int? = nil,
+                path: [String] = [],
+                queryItems: [String: String?] = [:],
+                fragment: String? = nil) {
+        self.scheme = scheme
+        self.host = host
+        self.port = port
+        self.path = path
+        self.queryItems = .init(queryItems)
+        self.fragment = fragment
+    }
 }
 
 public extension AddressDetails {

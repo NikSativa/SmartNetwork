@@ -11,7 +11,7 @@ final class HTTPStubTest_Tests: XCTestCase {
                                          path: ["signin", "v1.0"],
                                          queryItems: ["user": "foo"],
                                          shouldAddSlashAfterEndpoint: true)
-        let parameter = Parameters.testMake(header: ["key": "value"],
+        let parameter = Parameters.testMake(header: .init(["key": "value"]),
                                             method: .get)
         let repr = try! parameter.urlRequest(for: address)
         return repr.sdk

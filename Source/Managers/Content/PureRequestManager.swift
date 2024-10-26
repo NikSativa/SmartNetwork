@@ -54,7 +54,7 @@ public extension PureRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(returning: data)
             }
-            .autorelease().deferredStart()
+            .detached().deferredStart()
         }
     }
 }

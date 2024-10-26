@@ -4,7 +4,7 @@ import Threading
 
 @testable import SmartNetwork
 
-public final class FakeSession: Session, Spryable {
+public final class FakeSession: SmartURLSession, Spryable {
     public enum ClassFunction: String, StringRepresentable {
         case empty
     }

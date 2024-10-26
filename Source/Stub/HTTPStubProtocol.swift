@@ -31,7 +31,7 @@ public final class HTTPStubProtocol: URLProtocol {
             return HTTPURLResponse(url: url,
                                    statusCode: stub.statusCode.code,
                                    httpVersion: "HTTP/1.1",
-                                   headerFields: stub.header)
+                                   headerFields: stub.header.mapToResponse())
         } ?? .init()
 
         client.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)

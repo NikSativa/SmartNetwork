@@ -1,8 +1,8 @@
 import Foundation
 
-// MARK: - URLSession + Session
+// MARK: - URLSession + SmartURLSession
 
-extension URLSession: Session {
+extension URLSession: SmartURLSession {
     public func task(with request: URLRequest,
                      completionHandler: @escaping CompletionHandler) -> SessionTask {
         return dataTask(with: request, completionHandler: completionHandler)

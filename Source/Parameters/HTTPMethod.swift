@@ -1,5 +1,6 @@
 import Foundation
 
+/// HTTP method types. It is used in `Parameters` to specify the HTTP method.
 public enum HTTPMethod: Hashable {
     case get
     case head

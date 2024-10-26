@@ -5,7 +5,7 @@ import SpryKit
 // MARK: - Parameters + SpryEquatable
 
 extension Parameters: SpryEquatable {
-    public static func testMake(header: HeaderFields = [:],
+    public static func testMake(header: HeaderFields = [],
                                 method: HTTPMethod = .get,
                                 body: Body = .empty,
                                 plugins: [Plugin] = [],
@@ -14,7 +14,7 @@ extension Parameters: SpryEquatable {
                                 timeoutInterval: TimeInterval = 60,
                                 progressHandler: ProgressHandler? = nil,
                                 userInfo: UserInfo = .init(),
-                                session: Session = FakeSession(),
+                                session: SmartURLSession = FakeSession(),
                                 encoder: JSONEncoder = .init(),
                                 decoder: JSONDecoder = .init()) -> Self {
         return .init(header: header,

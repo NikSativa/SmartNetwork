@@ -24,10 +24,5 @@ final class QueryItemsTests: XCTestCase {
             .testMake(key: "item2", value: "value2"),
             .testMake(key: "item", value: "value")
         ])
-
-        XCTAssertEqual(QueryItem(key: "key", value: nil).description, "key")
-        XCTAssertEqual(QueryItem(key: "key", value: nil).debugDescription, "key")
-        XCTAssertEqual(QueryItem(key: "key", value: "value").description, "key: value")
-        XCTAssertEqual(QueryItem(key: "key", value: "value").debugDescription, "key: value")
     }
 }

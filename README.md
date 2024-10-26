@@ -6,18 +6,27 @@
 Light weight wrapper around URLSession. 
 
 ## The main features are: 
-- strong typed responses
-> await manager.decodable.request(**TestInfo.self**, address: address)
+- strong typed responses based on Decodable protocol
+  - async/await
+  > await manager.decodable.request(**TestInfo.self**, address: address)
+  - closure strategies
+  > let req = manager.decodable.request(**TestInfo.self**, address: address) { result in ... }
+
 - predefined API for basic types: *Void, Data, Image, Any(JSON)*
 - *async/await* and *closure* strategies in one interface
 - use `CustomDecodable` to define your own decoding strategy or type
-- **Plugin** is like Android interceptors. Handle every *request-response* in runtime!
+- **Plugin** is like Android interceptors. Handle every *request-response* in runtime! Make your own magic with validation, logging, auth, etc...
   + *Plugins.StatusCode* to handle http status codes or use *StatusCode* directly for easy mapping to human readable enumeration
-  + *Plugins.Basic* or *Plugins.Bearer* for easy auth strategy
-  + *Plugins.TokenPlugin* to update every request 
+  + *Plugins.Basic* or *Plugins.Bearer* for easy use auth strategy
+  + *Plugins.TokenPlugin* to update every request headers or query parameters
+  + *Plugins.Curl* to print every request in curl format
+  + *Plugins.JSONHeaders* to add json specific headers to every request
+- **PluginPriority** to define order of plugins in chain of execution 
 - **StopTheLine** mechanic to handle any case when you need to stop whole network and wait while you make something: *update auth token, handle Captcha etc..*
 - **HTTPStubServer** mocks your own network in runtime. Make your magic while your server are not ready!
-- macOS/iOS supports
+- **SmartTask** for managing the lifecycle of network requests. Cancel the task deinitiation request or handle the detached task manually - everything is under control!
+- Easily complements [SmartImage](https://github.com/NikSativa/SmartImages) for image loading.
+
 
 ### New structure of network request organization based on that new interface:
 ```
@@ -45,7 +54,6 @@ public protocol RequestManagering {
     func custom<T: CustomDecodable>(_ type: T.Type) -> TypedRequestManager<T.Object>
 }
 ```
-
 
 ### New usage of API with short autocompletion:
 ```

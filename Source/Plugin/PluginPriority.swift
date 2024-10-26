@@ -4,6 +4,7 @@ import Foundation
 ///
 /// The higher the value, the faster the plugin will executed. The lower the value, the later the plugin will be executed.
 /// The default priority of the plugins is as follows:
+///   - `jsonHeaders`
 ///   - `authBasic`
 ///   - `authBearer`
 ///   - `curl`
@@ -25,6 +26,8 @@ public struct PluginPriority: Comparable, Hashable, RawRepresentable {
     public static let curl: Self = .init(rawValue: 200)
     /// The priority of the `Plugins.StatusCode` plugin.
     public static let statusCode: Self = .init(rawValue: 100)
+    /// The priority of the `Plugins.JSONHeaders` plugin.
+    public static let jsonHeaders: Self = .init(rawValue: .max)
 
     public static func <(lhs: Self, rhs: Self) -> Bool {
         return lhs.rawValue < rhs.rawValue

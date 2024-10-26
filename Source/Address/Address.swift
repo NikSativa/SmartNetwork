@@ -96,6 +96,26 @@ public extension Address {
                                      fragment: fragment)
         self.source = .details(details)
     }
+
+    init(scheme: Scheme? = .https,
+         host: String,
+         port: Int? = nil,
+         path: [String] = [],
+         queryItems: [String: String?],
+         fragment: String? = nil,
+         shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
+         shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) {
+        self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
+        self.shouldRemoveSlashesForEmptyScheme = shouldRemoveSlashesForEmptyScheme
+
+        let details = AddressDetails(scheme: scheme,
+                                     host: host,
+                                     port: port,
+                                     path: path,
+                                     queryItems: .init(queryItems),
+                                     fragment: fragment)
+        self.source = .details(details)
+    }
 }
 
 // MARK: - ExpressibleByStringLiteral

@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - Plugins.Curl
+
 public extension Plugins {
     /// A plugin that logs the request in the `curl` format.
     final class Curl: Plugin {
@@ -18,11 +20,19 @@ public extension Plugins {
             case body
         }
 
+        #if swift(>=6.0)
+        public nonisolated(unsafe) let id: AnyHashable
+        #else
+        public let id: AnyHashable
+        #endif
+
         public let priority: PluginPriority
         private let logger: Logging
 
-        public init(priority: PluginPriority = .curl,
+        public init(id: AnyHashable? = nil,
+                    priority: PluginPriority = .curl,
                     logger: @escaping Logging) {
+            self.id = id ?? Self.makeHash()
             self.priority = priority
             self.logger = logger
         }
@@ -59,7 +69,7 @@ public extension Plugins {
             var components = ["curl -v"]
             components.append("-X \(method)")
 
-            let headers: HeaderFields = request.allHTTPHeaderFields ?? [:]
+            let headers: HeaderFields = .init(request.allHTTPHeaderFields ?? [:])
             for header in headers {
                 let escapedValue = header.value.replacingOccurrences(of: "\"", with: "\\\"")
                 components.append("-H \"\(header.key): \(escapedValue)\"")
@@ -109,3 +119,52 @@ public extension Plugins {
         }
     }
 }
+
+#if canImport(os)
+import os
+
+public extension PluginPriority {
+    /// The priority of the `Plugins.curlOS` plugin.
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+    static let curlOS: Self = curl - 1
+}
+
+public extension Plugins {
+    /// A plugin that logs the request in the `curl` format.
+    /// - Parameters:
+    ///  - priority: The priority of the plugin.
+    ///  - shouldPrintBody: A flag that indicates whether the response body should be printed to the console or to the logger. The default value is `false`.
+    ///
+    /// - Note: Sometimes the response body can be very large, so it is better to print it to the console for debugging purposes.
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+    static func CurlOS(priority: PluginPriority = .curlOS,
+                       logger: Logger? = nil,
+                       shouldPrintBody: Bool = false) -> Plugins.Curl {
+        let logger = logger ?? Logger(subsystem: Bundle.main.bundleIdentifier ?? "SmartNetwork.curlOS", category: "Network")
+        return Plugins.Curl(id: Plugins.Curl.makeHash(withAdditionalHash: "OS"),
+                            priority: priority) { component, text in
+            let text: String? = text()
+            switch component {
+            case .curl:
+                let new = text?.replacingOccurrences(of: "-H \"Accept-Encoding: br;q=1.0, gzip;q=0.9, deflate;q=0.8\"", with: "")
+                if let new {
+                    logger.log(level: .info, "\(new)")
+                } else {
+                    logger.log(level: .error, "< can't create curl >")
+                }
+            case .error:
+                if let text {
+                    logger.log(level: .error, "error: \(text)")
+                }
+            case .body:
+                let text = text ?? "< body is nil >"
+                if shouldPrintBody {
+                    print(text)
+                } else {
+                    logger.log(level: .info, "\(text)")
+                }
+            }
+        }
+    }
+}
+#endif
