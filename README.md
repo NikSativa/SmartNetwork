@@ -29,7 +29,8 @@ Light weight wrapper around URLSession.
 
 
 ### New structure of network request organization based on that new interface:
-```
+
+```swift
 public protocol RequestManagering {
     // MARK: -
 
@@ -56,7 +57,8 @@ public protocol RequestManagering {
 ```
 
 ### New usage of API with short autocompletion:
-```
+
+```swift
 Task {
     let manager = RequestManager.create()
     let result = await manager.decodable.request(TestInfo.self, address: address)
@@ -65,6 +67,45 @@ Task {
         // do something with response
     case .failure(let error):
         // do something with error
+    }
+}
+```
+
+## Custom request manager
+
+Customize your own network with your own custom decodable type:
+
+```swift
+/// Custom decodable protocol for decoding data from response with specified keyPath
+protocol KeyPathDecodable<Response> {
+    associatedtype Response: Decodable
+    static var keyPath: [String] { get }
+}
+
+extension RequestManagering {
+    func keyPathed<T: KeyPathDecodable>(_ type: T.Type = T.self) -> TypedRequestManager<T.Response?> {
+        return custom(KeyPathDecodableContent<T>.self)
+    }
+}
+
+private struct KeyPathDecodableContent<T: KeyPathDecodable>: CustomDecodable {
+    static func decode(with data: RequestResult, decoder: @autoclosure () -> JSONDecoder) -> Result<T.Response?, Error> {
+        if let error = data.error {
+            return .failure(error)
+        } else if let data = data.body {
+            if data.isEmpty {
+                return .failure(RequestDecodingError.emptyResponse)
+            }
+
+            do {
+                let obj = try data.decode(T.Response.self, keyPath: T.keyPath, decoder: decoder())
+                return .success(obj)
+            } catch {
+                return .failure(error)
+            }
+        } else {
+            return .success(nil)
+        }
     }
 }
 ```
