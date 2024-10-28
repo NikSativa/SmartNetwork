@@ -9,8 +9,8 @@ final class HTTPStubProtocolTests: XCTestCase {
     private enum Constant {
         static let stubbedTimeoutInSeconds: TimeInterval = 0.2
 
-        static let host = "example1.com"
-        static let address: Address = .testMake(string: "http://example1.com/signin")
+        static let host = "example1_lkjghasdkjlahgsdfkasjhdgf_akshdkajhsda_aksdkajshdkajshd.com"
+        static let address: Address = .testMake(string: "http://\(host)/signin")
     }
 
     private lazy var session: URLSession = {
@@ -21,6 +21,14 @@ final class HTTPStubProtocolTests: XCTestCase {
         let session = URLSession(configuration: config)
         return session
     }()
+
+    private var request: URLRequest {
+        get throws {
+            var request = try URLRequest(url: Constant.address.url())
+            request.timeoutInterval = 3
+            return request
+        }
+    }
 
     private var observers: [AnyCancellable] = []
 
@@ -33,19 +41,20 @@ final class HTTPStubProtocolTests: XCTestCase {
         HTTPStubServer.shared.add(condition: .isHost(Constant.host),
                                   body: .encodable(TestInfo(id: 1))).store(in: &observers)
 
-        let data = try await session.data(from: Constant.address.url())
-        let info = data.0.info()
+        let result = try await session.data(for: request)
+        let info = result.0.info()
         XCTAssertEqual(info, .init(id: 1))
-        XCTAssertNotNil(data.1)
+        XCTAssertNotNil(result.1)
     }
 
-    func test_stub_error() async throws {
+    func test_stub_error() async {
         HTTPStubServer.shared.add(condition: .isHost(Constant.host),
                                   error: RequestError.encoding(.brokenAddress),
                                   delayInSeconds: Constant.stubbedTimeoutInSeconds).store(in: &observers)
 
         do {
-            let _ = try await session.data(from: Constant.address.url())
+            let _ = try await session.data(for: request)
+            XCTFail("Should throw an error")
         } catch {
             let errorDomain = String(reflecting: RequestError.self)
             XCTAssertEqual((error as NSError).domain, errorDomain, error.localizedDescription)
@@ -57,16 +66,18 @@ final class HTTPStubProtocolTests: XCTestCase {
         HTTPStubServer.shared.add(condition: .isHost(Constant.host),
                                   body: .empty).store(in: &observers)
 
-        let data = try await session.data(from: Constant.address.url())
-        XCTAssertEqual(Data(), data.0)
-        XCTAssertNotNil(data.1)
+        let result = try await session.data(for: request)
+        XCTAssertEqual(Data(), result.0)
+        XCTAssertNotNil(result.1)
     }
 
-    func test_no_stub() async throws {
+    func test_no_stub() async {
         do {
-            let _ = try await session.data(from: Constant.address.url())
+            let _ = try await session.data(for: request)
+            XCTFail("Should throw an error")
         } catch {
-            XCTAssertEqualAny(error, RequestError.statusCode(.noContent), error.localizedDescription)
+            XCTAssertEqual((error as NSError).domain, "NSURLErrorDomain", error.localizedDescription)
+//            XCTAssertEqual((error as NSError).code, -1003, error.localizedDescription) or -1001, -1002
         }
     }
 }

@@ -65,7 +65,7 @@ final class RequestMultithreadTests: XCTestCase {
                                           address: address1) { [exp] obj in
                     comp(try! obj.get())
                     exp.fulfill()
-                }.detached().deferredStart()
+                }.detach().deferredStart()
             } else {
                 Task {
                     let obj = await subject.decodable.request(TestInfo.self,

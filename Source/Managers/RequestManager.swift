@@ -27,42 +27,52 @@ public final class RequestManager {
 
     // MARK: - ivars
 
+    /// A request manager that returns a ``RequestResult`` type.
     public var pure: PureRequestManager {
         return self
     }
 
+    /// A request manager that returns a ``Decodable`` type.
     public var decodable: DecodableRequestManager {
         return self
     }
 
+    /// A request manager that returns a ``CustomDecodable`` type.
     public func custom<T: CustomDecodable>(_ type: T.Type) -> TypedRequestManager<T.Object> {
         return TypedRequestManager(type, parent: self)
     }
 
+    /// A request manager that returns a ``Void`` type.
     public private(set) lazy var void: TypedRequestManager<Void> = {
         return custom(VoidContent.self)
     }()
 
+    /// A request manager that returns a ``Data`` type.
     public private(set) lazy var data: TypedRequestManager<Data> = {
         return custom(DataContent.self)
     }()
 
+    /// A request manager that returns a ``Data?`` type.
     public private(set) lazy var dataOptional: TypedRequestManager<Data?> = {
         return custom(OptionalDataContent.self)
     }()
 
+    /// A request manager that returns a ``Image`` type.
     public private(set) lazy var image: TypedRequestManager<Image> = {
         return custom(ImageContent.self)
     }()
 
+    /// A request manager that returns a ``Image?`` type.
     public private(set) lazy var imageOptional: TypedRequestManager<Image?> = {
         return custom(OptionalImageContent.self)
     }()
 
+    /// A request manager that returns a `Any(JSON)` type.
     public private(set) lazy var json: TypedRequestManager<Any> = {
         return custom(JSONContent.self)
     }()
 
+    /// A request manager that returns a `Any?(JSON)` type.
     public private(set) lazy var jsonOptional: TypedRequestManager<Any?> = {
         return custom(OptionalJSONContent.self)
     }()
@@ -222,7 +232,7 @@ extension RequestManager: PureRequestManager {
     public func request(address: Address,
                         with parameters: Parameters,
                         inQueue completionQueue: DelayedQueue,
-                        completion: @escaping PureRequestManager.ResponseClosure) -> RequestingTask {
+                        completion: @escaping PureRequestManager.ResponseClosure) -> SmartTasking {
         let parameters = prepare(parameters)
         do {
             let request = try createRequest(address: address,
@@ -281,7 +291,7 @@ extension RequestManager: DecodableRequestManager {
                            address: Address,
                            with parameters: Parameters,
                            inQueue completionQueue: DelayedQueue,
-                           completion: @escaping @Sendable (Result<T?, Error>) -> Void) -> RequestingTask
+                           completion: @escaping @Sendable (Result<T?, Error>) -> Void) -> SmartTasking
     where T: Decodable & Sendable {
         return request(address: address,
                        with: parameters,
@@ -297,7 +307,7 @@ extension RequestManager: DecodableRequestManager {
                            address: Address,
                            with parameters: Parameters,
                            inQueue completionQueue: Threading.DelayedQueue,
-                           completion: @escaping @Sendable (Result<T, Error>) -> Void) -> RequestingTask
+                           completion: @escaping @Sendable (Result<T, Error>) -> Void) -> SmartTasking
     where T: Decodable & Sendable {
         return request(address: address,
                        with: parameters,
@@ -315,7 +325,7 @@ extension RequestManager: DecodableRequestManager {
                            address: Address,
                            with parameters: Parameters,
                            inQueue completionQueue: DelayedQueue,
-                           completion: @escaping (Result<T?, Error>) -> Void) -> RequestingTask
+                           completion: @escaping (Result<T?, Error>) -> Void) -> SmartTasking
     where T: Decodable {
         return request(address: address,
                        with: parameters,
@@ -331,7 +341,7 @@ extension RequestManager: DecodableRequestManager {
                            address: Address,
                            with parameters: Parameters,
                            inQueue completionQueue: Threading.DelayedQueue,
-                           completion: @escaping (Result<T, Error>) -> Void) -> RequestingTask
+                           completion: @escaping (Result<T, Error>) -> Void) -> SmartTasking
     where T: Decodable {
         return request(address: address,
                        with: parameters,

@@ -1,19 +1,17 @@
 import Foundation
 import Threading
 
-/// shortname only for internal usage
-internal typealias RS = RequestSettings
-
 #if swift(>=6.0)
 /// Global settings for every request
 /// - can override in Parameters for individual tasks
 public enum RequestSettings: Sendable {
+    /// Shared session for all requests which you can override for individual requests in ``Parameters``. Default is `URLSession.shared`
     public nonisolated(unsafe) static var sharedSession: SmartURLSession = URLSession.shared
 
     /// Default queue for responses
     public nonisolated(unsafe) static var defaultResponseQueue: DelayedQueue = .async(Queue.main)
 
-    /// Default queue for `requestingTask.defferedStart()` command - always async
+    /// Default queue for `SmartTasking.defferedStart()` command - always async
     public nonisolated(unsafe) static var defferedStartQueue: Queueable = Queue.main
 
     /// URLComponents is require scheme and generates url like 'https://some.com/end?param=value'
@@ -32,12 +30,13 @@ public enum RequestSettings: Sendable {
 /// Global settings for every request
 /// - can override in Parameters for individual tasks
 public enum RequestSettings {
+    /// Shared session for all requests which you can override for individual requests in ``Parameters``. Default is `URLSession.shared`
     public static var sharedSession: SmartURLSession = URLSession.shared
 
     /// Default queue for responses
     public static var defaultResponseQueue: DelayedQueue = .async(Queue.main)
 
-    /// Default queue for `requestingTask.defferedStart()` command - always async
+    /// Default queue for `SmartTasking.defferedStart()` command - always async
     public static var defferedStartQueue: Queueable = Queue.main
 
     /// URLComponents is require scheme and generates url like 'https://some.com/end?param=value'

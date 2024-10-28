@@ -2,17 +2,23 @@
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FNikSativa%2FSmartNetwork%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/NikSativa/SmartNetwork)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FNikSativa%2FSmartNetwork%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/NikSativa/SmartNetwork)
 [![CI](https://github.com/NikSativa/SmartNetwork/actions/workflows/swift_macos.yml/badge.svg)](https://github.com/NikSativa/SmartNetwork/actions/workflows/swift_macos.yml)
+[![License](https://img.shields.io/github/license/Iterable/swift-sdk)](https://opensource.org/licenses/MIT)
 
-Light weight wrapper around URLSession. 
+Light weight wrapper around URLSession for easy network requests with strong typed responses based on Decodable protocol or your own custom decoding strategy.  
 
 ## The main features are: 
 - strong typed responses based on Decodable protocol
   - async/await
-  > await manager.decodable.request(**TestInfo.self**, address: address)
+  ```swift
+  let result = await manager.decodable.request(TestInfo.self, address: address)
+  ```
+  
   - closure strategies
-  > let req = manager.decodable.request(**TestInfo.self**, address: address) { result in ... }
+  ```swift
+  manager.decodable.request(TestInfo.self, address: address) { result in ... }.start()
+  ```
 
-- predefined API for basic types: *Void, Data, Image, Any(JSON)*
+- predefined API for basic types: *Void, Data, any Decodable, Image, Any(JSON)*
 - *async/await* and *closure* strategies in one interface
 - use `CustomDecodable` to define your own decoding strategy or type
 - **Plugin** is like Android interceptors. Handle every *request-response* in runtime! Make your own magic with validation, logging, auth, etc...

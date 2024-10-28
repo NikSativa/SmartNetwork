@@ -2,12 +2,13 @@ import Foundation
 import Threading
 
 #if swift(>=6.0)
+/// A class that manages requests and responses for a specific type.
 open class TypedRequestManager<Response>: @unchecked Sendable {
     private let requestTask: (_ address: Address,
                               _ parameters: Parameters,
                               _ completionQueue: Threading.DelayedQueue,
                               _ seflRetain: Bool,
-                              _ completion: @escaping @Sendable (Result<Response, Error>) -> Void) -> RequestingTask
+                              _ completion: @escaping @Sendable (Result<Response, Error>) -> Void) -> SmartTasking
 
     public required init<Content: CustomDecodable>(_ type: Content.Type, parent: PureRequestManager)
         where Response == Content.Object {
@@ -27,7 +28,7 @@ open class TypedRequestManager<Response>: @unchecked Sendable {
     open func request(address: Address,
                       with parameters: Parameters = .init(),
                       inQueue completionQueue: Threading.DelayedQueue = RequestSettings.defaultResponseQueue,
-                      completion: @escaping @Sendable (Result<Response, Error>) -> Void) -> RequestingTask {
+                      completion: @escaping @Sendable (Result<Response, Error>) -> Void) -> SmartTasking {
         return requestTask(address,
                            parameters,
                            completionQueue,
@@ -45,7 +46,7 @@ open class TypedRequestManager<Response>: @unchecked Sendable {
                         false) { data in
                 completion.resume(returning: data)
             }
-            .detached().deferredStart()
+            .detach().deferredStart()
         }
     }
 
@@ -59,17 +60,18 @@ open class TypedRequestManager<Response>: @unchecked Sendable {
                         false) { data in
                 completion.resume(with: data)
             }
-            .detached().deferredStart()
+            .detach().deferredStart()
         }
     }
 }
 #else
+/// A class that manages requests and responses for a specific type.
 open class TypedRequestManager<Response> {
     private let requestTask: (_ address: Address,
                               _ parameters: Parameters,
                               _ completionQueue: Threading.DelayedQueue,
                               _ seflRetain: Bool,
-                              _ completion: @escaping (Result<Response, Error>) -> Void) -> RequestingTask
+                              _ completion: @escaping (Result<Response, Error>) -> Void) -> SmartTasking
 
     public required init<Content: CustomDecodable>(_ type: Content.Type, parent: PureRequestManager)
         where Response == Content.Object {
@@ -88,7 +90,7 @@ open class TypedRequestManager<Response> {
     open func request(address: Address,
                       with parameters: Parameters = .init(),
                       inQueue completionQueue: Threading.DelayedQueue = RequestSettings.defaultResponseQueue,
-                      completion: @escaping (Result<Response, Error>) -> Void) -> RequestingTask {
+                      completion: @escaping (Result<Response, Error>) -> Void) -> SmartTasking {
         return requestTask(address,
                            parameters,
                            completionQueue,
@@ -105,7 +107,7 @@ open class TypedRequestManager<Response> {
                         false) { data in
                 completion.resume(returning: data)
             }
-            .detached().deferredStart()
+            .detach().deferredStart()
         }
     }
 
@@ -118,7 +120,7 @@ open class TypedRequestManager<Response> {
                         false) { data in
                 completion.resume(with: data)
             }
-            .detached().deferredStart()
+            .detach().deferredStart()
         }
     }
 }

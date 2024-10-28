@@ -2,27 +2,33 @@ import Foundation
 import Threading
 
 #if swift(>=6.0)
+/// A class that manages requests and responses for a ``Decodable`` type.
 public protocol DecodableRequestManager: Sendable {
+    /// Sends a request to the specified address with the given parameters.
     func request<T>(_ type: T.Type,
                     address: Address,
                     with parameters: Parameters,
                     inQueue completionQueue: DelayedQueue,
-                    completion: @escaping @Sendable (Result<T, Error>) -> Void) -> RequestingTask
+                    completion: @escaping @Sendable (Result<T, Error>) -> Void) -> SmartTasking
         where T: Decodable & Sendable
+
+    // Sends a request to the specified address with the given parameters.
     func request<T>(opt type: T.Type,
                     address: Address,
                     with parameters: Parameters,
                     inQueue completionQueue: DelayedQueue,
-                    completion: @escaping @Sendable (Result<T?, Error>) -> Void) -> RequestingTask
+                    completion: @escaping @Sendable (Result<T?, Error>) -> Void) -> SmartTasking
         where T: Decodable & Sendable
 
     // MARK: - async
 
+    // Sends a request to the specified address with the given parameters.
     func request<T>(_ type: T.Type,
                     address: Address,
                     with parameters: Parameters) async -> Result<T, Error>
         where T: Decodable & Sendable
 
+    // Sends a request to the specified address with the given parameters.
     func request<T>(opt type: T.Type,
                     address: Address,
                     with parameters: Parameters) async -> Result<T?, Error>
@@ -30,11 +36,13 @@ public protocol DecodableRequestManager: Sendable {
 
     // MARK: - async throws
 
+    // Sends a request to the specified address with the given parameters.
     func requestWithThrowing<T>(_ type: T.Type,
                                 address: Address,
                                 with parameters: Parameters) async throws -> T
         where T: Decodable & Sendable
 
+    // Sends a request to the specified address with the given parameters.
     func requestWithThrowing<T>(opt type: T.Type,
                                 address: Address,
                                 with parameters: Parameters) async throws -> T?
@@ -42,11 +50,12 @@ public protocol DecodableRequestManager: Sendable {
 }
 
 public extension DecodableRequestManager {
+    /// Sends a request to the specified address with the given parameters.
     func request<T>(_ type: T.Type = T.self,
                     address: Address,
                     with parameters: Parameters = .init(),
                     inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
-                    completion: @escaping @Sendable (Result<T, Error>) -> Void) -> RequestingTask
+                    completion: @escaping @Sendable (Result<T, Error>) -> Void) -> SmartTasking
     where T: Decodable & Sendable {
         return request(type,
                        address: address,
@@ -55,11 +64,12 @@ public extension DecodableRequestManager {
                        completion: completion)
     }
 
+    /// Sends a request to the specified address with the given parameters.
     func request<T>(opt type: T.Type = T.self,
                     address: Address,
                     with parameters: Parameters = .init(),
                     inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
-                    completion: @escaping @Sendable (Result<T?, Error>) -> Void) -> RequestingTask
+                    completion: @escaping @Sendable (Result<T?, Error>) -> Void) -> SmartTasking
     where T: Decodable & Sendable {
         return request(opt: type,
                        address: address,
@@ -70,6 +80,7 @@ public extension DecodableRequestManager {
 
     // MARK: - async
 
+    /// Sends a request to the specified address with the given parameters.
     func request<T>(_ type: T.Type = T.self,
                     address: Address,
                     with parameters: Parameters = .init()) async -> Result<T, Error>
@@ -81,10 +92,11 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(returning: data)
             }
-            .detached().deferredStart()
+            .detach().deferredStart()
         }
     }
 
+    /// Sends a request to the specified address with the given parameters.
     func request<T>(opt type: T.Type = T.self,
                     address: Address,
                     with parameters: Parameters = .init()) async -> Result<T?, Error>
@@ -96,12 +108,13 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(returning: data)
             }
-            .detached().deferredStart()
+            .detach().deferredStart()
         }
     }
 
     // MARK: - async throws
 
+    /// Sends a request to the specified address with the given parameters.
     func requestWithThrowing<T>(_ type: T.Type = T.self,
                                 address: Address,
                                 with parameters: Parameters = .init()) async throws -> T
@@ -113,10 +126,11 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(with: data)
             }
-            .detached().deferredStart()
+            .detach().deferredStart()
         }
     }
 
+    /// Sends a request to the specified address with the given parameters.
     func requestWithThrowing<T>(opt type: T.Type = T.self,
                                 address: Address,
                                 with parameters: Parameters = .init()) async throws -> T?
@@ -128,32 +142,38 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(with: data)
             }
-            .detached().deferredStart()
+            .detach().deferredStart()
         }
     }
 }
 #else
+/// A class that manages requests and responses for a ``Decodable`` type.
 public protocol DecodableRequestManager {
+    /// Sends a request to the specified address with the given parameters.
     func request<T>(_ type: T.Type,
                     address: Address,
                     with parameters: Parameters,
                     inQueue completionQueue: DelayedQueue,
-                    completion: @escaping (Result<T, Error>) -> Void) -> RequestingTask
+                    completion: @escaping (Result<T, Error>) -> Void) -> SmartTasking
         where T: Decodable
+
+    // Sends a request to the specified address with the given parameters.
     func request<T>(opt type: T.Type,
                     address: Address,
                     with parameters: Parameters,
                     inQueue completionQueue: DelayedQueue,
-                    completion: @escaping (Result<T?, Error>) -> Void) -> RequestingTask
+                    completion: @escaping (Result<T?, Error>) -> Void) -> SmartTasking
         where T: Decodable
 
     // MARK: - async
 
+    // Sends a request to the specified address with the given parameters.
     func request<T>(_ type: T.Type,
                     address: Address,
                     with parameters: Parameters) async -> Result<T, Error>
         where T: Decodable
 
+    // Sends a request to the specified address with the given parameters.
     func request<T>(opt type: T.Type,
                     address: Address,
                     with parameters: Parameters) async -> Result<T?, Error>
@@ -161,11 +181,13 @@ public protocol DecodableRequestManager {
 
     // MARK: - async throws
 
+    // Sends a request to the specified address with the given parameters.
     func requestWithThrowing<T>(_ type: T.Type,
                                 address: Address,
                                 with parameters: Parameters) async throws -> T
         where T: Decodable
 
+    // Sends a request to the specified address with the given parameters.
     func requestWithThrowing<T>(opt type: T.Type,
                                 address: Address,
                                 with parameters: Parameters) async throws -> T?
@@ -173,11 +195,12 @@ public protocol DecodableRequestManager {
 }
 
 public extension DecodableRequestManager {
+    /// Sends a request to the specified address with the given parameters.
     func request<T>(_ type: T.Type = T.self,
                     address: Address,
                     with parameters: Parameters = .init(),
                     inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
-                    completion: @escaping (Result<T, Error>) -> Void) -> RequestingTask
+                    completion: @escaping (Result<T, Error>) -> Void) -> SmartTasking
     where T: Decodable {
         return request(type,
                        address: address,
@@ -186,11 +209,12 @@ public extension DecodableRequestManager {
                        completion: completion)
     }
 
+    /// Sends a request to the specified address with the given parameters.
     func request<T>(opt type: T.Type = T.self,
                     address: Address,
                     with parameters: Parameters = .init(),
                     inQueue completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
-                    completion: @escaping (Result<T?, Error>) -> Void) -> RequestingTask
+                    completion: @escaping (Result<T?, Error>) -> Void) -> SmartTasking
     where T: Decodable {
         return request(opt: type,
                        address: address,
@@ -201,6 +225,7 @@ public extension DecodableRequestManager {
 
     // MARK: - async
 
+    /// Sends a request to the specified address with the given parameters.
     func request<T>(_ type: T.Type = T.self,
                     address: Address,
                     with parameters: Parameters = .init()) async -> Result<T, Error>
@@ -212,10 +237,11 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(returning: data)
             }
-            .detached().deferredStart()
+            .detach().deferredStart()
         }
     }
 
+    /// Sends a request to the specified address with the given parameters.
     func request<T>(opt type: T.Type = T.self,
                     address: Address,
                     with parameters: Parameters = .init()) async -> Result<T?, Error>
@@ -227,12 +253,13 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(returning: data)
             }
-            .detached().deferredStart()
+            .detach().deferredStart()
         }
     }
 
     // MARK: - async throws
 
+    /// Sends a request to the specified address with the given parameters.
     func requestWithThrowing<T>(_ type: T.Type = T.self,
                                 address: Address,
                                 with parameters: Parameters = .init()) async throws -> T
@@ -244,10 +271,11 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(with: data)
             }
-            .detached().deferredStart()
+            .detach().deferredStart()
         }
     }
 
+    /// Sends a request to the specified address with the given parameters.
     func requestWithThrowing<T>(opt type: T.Type = T.self,
                                 address: Address,
                                 with parameters: Parameters = .init()) async throws -> T?
@@ -259,7 +287,7 @@ public extension DecodableRequestManager {
                     inQueue: .absent) { data in
                 completion.resume(with: data)
             }
-            .detached().deferredStart()
+            .detach().deferredStart()
         }
     }
 }

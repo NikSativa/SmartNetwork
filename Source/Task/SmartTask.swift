@@ -2,14 +2,15 @@ import Combine
 import Foundation
 import Threading
 
-/// `SmartTask` is a Swift protocol designed to manage tasks related to requests efficiently.
+/// ``SmartTask`` is a Swift protocol designed to manage tasks related to requests efficiently.
 /// It encapsulates the execution and cancellation actions associated with a request,
 /// providing a convenient way to handle these operations within the context of request management.
 ///
-/// - Important: `SmartTask` is designed to be attached to the request, which means request will be canceled when the task is deallocated.
+/// - Important: ``SmartTask`` is designed to be attached to the request, which means request will be canceled when the task is deallocated.
+/// - Note: Don't forget that ``AnyCancellable`` is cancelling the task on deinitialization.
 ///
 /// ```swift
-/// // Creating a RequestingTask instance with a run action
+/// // Creating a SmartTasking instance with a run action
 /// let task = SmartTask(runAction: {
 ///    print("Task is running")
 /// }, cancelAction: {
@@ -21,7 +22,7 @@ import Threading
 /// SmartTask(runAction: {
 ///    print("Another task is running")
 /// })
-/// .detached() // detach the task from the request
+/// .detach() // detach the task from the request
 /// .deferredStart() // or `start()`
 /// ```
 public final class SmartTask {
@@ -31,6 +32,7 @@ public final class SmartTask {
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var runAction: (() -> Void)?
 
+    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var shouldCancelOnDeinit: Bool = true
 
     /// Initializes a SmartTask instance with the provided run and cancel actions.
@@ -51,23 +53,23 @@ public final class SmartTask {
     }
 }
 
-// MARK: - RequestingTask
+// MARK: - SmartTasking
 
-extension SmartTask: RequestingTask {
+extension SmartTask: SmartTasking {
     @discardableResult
-    public func detached() -> DetachedTask {
+    public func detach() -> DetachedTask {
         shouldCancelOnDeinit = false
         return self
     }
-}
 
-// MARK: - DetachedTask
-
-extension SmartTask: DetachedTask {
     public func start() {
-        precondition(runAction != nil, "should be called only once")
-        let runAction = runAction
-        self.runAction = nil
+        assert(runAction != nil, "should be called only once")
+
+        let runAction = $runAction.mutate { runAction in
+            let action = runAction
+            runAction = nil
+            return action
+        }
         runAction?()
     }
 
@@ -90,8 +92,11 @@ extension SmartTask: DetachedTask {
     public func cancel() {
         runAction = nil
 
-        let cancelAction = cancelAction
-        self.cancelAction = nil
+        let cancelAction = $cancelAction.mutate { cancelAction in
+            let action = cancelAction
+            cancelAction = nil
+            return action
+        }
         cancelAction?()
     }
 }

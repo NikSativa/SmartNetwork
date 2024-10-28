@@ -19,7 +19,7 @@ public extension Optional {
     /// Unwraps the optional value or throws a default decoding error.
     ///
     /// - Returns: The unwrapped value of the optional.
-    /// - Throws: `RequestDecodingError.brokenResponse` if the optional value is nil.
+    /// - Throws: ``RequestDecodingError``.brokenResponse if the optional value is nil.
     func unwrap() throws -> Wrapped {
         try unwrap(orThrow: RequestDecodingError.brokenResponse)
     }

@@ -72,9 +72,9 @@ public struct Parameters {
 
     /// Generates a URLRequest representation of the Parameters for a given address.
     /// - Parameters:
-    ///   - address: The `Address` to generate the `URL` for the request.
-    /// - Returns: A representation of the `URLRequest` based on the Parameters.
-    /// - Throws: An error if URL creation or request building fails.
+    ///   - address: The ``Address`` to generate the ``URL`` for the request.
+    /// - Returns: A representation of the ``URLRequest`` based on the Parameters.
+    /// - Throws: An error if ``URL`` creation or request building fails.
     public func urlRequest(for address: Address) throws -> URLRequestRepresentation {
         let url = try address.url()
         var request = URLRequest(url: url,

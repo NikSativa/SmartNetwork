@@ -4,10 +4,12 @@ import Threading
 #if os(iOS) || os(tvOS) || os(watchOS) || supportsVisionOS
 import UIKit
 
+/// A typealias representing an image.
 public typealias Image = UIImage
 #elseif os(macOS)
 import Cocoa
 
+/// A typealias representing an image.
 public typealias Image = NSImage
 #else
 #error("unsupported os")

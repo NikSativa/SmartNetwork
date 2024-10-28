@@ -9,7 +9,7 @@ public protocol CustomDecodable {
     ///
     /// - Parameters:
     ///   - data: The data to be decoded.
-    ///   - decoder: *(if needed)* An autoclosure providing a JSONDecoder instance for decoding that was specified in `Parameters`.
+    ///   - decoder: *(if needed)* An autoclosure providing a ``JSONDecoder`` instance for decoding that was specified in ``Parameters``.
     ///
     /// - Returns: A Result object containing the decoded object or an error.
     static func decode(with data: RequestResult, decoder: @autoclosure () -> JSONDecoder) -> Result<Object, Error>
