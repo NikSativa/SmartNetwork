@@ -3,33 +3,38 @@ import Threading
 
 /// This struct represents the parameters required for a network request.
 public struct Parameters {
+    /// The header fields for the request.
     public let header: HeaderFields
+    /// The HTTP method for the request.
     public let method: HTTPMethod?
-    public let body: Body
+    /// The body of the request.
+    public let body: Body?
+    /// The timeout interval for the request. Default is 30 seconds. Change it using `RequestSettings.timeoutInterval`.
     public let timeoutInterval: TimeInterval
+    /// The cache settings for the request.
     public let cacheSettings: CacheSettings?
+    /// The cache policy for the request. Default is `.useProtocolCachePolicy`.
     public let requestPolicy: URLRequest.CachePolicy
+    /// The plugins for the request.
     public internal(set) var plugins: [Plugin]
+    /// The progress handler for the request
     public let progressHandler: ProgressHandler?
+    /// The session for the request
     public let session: SmartURLSession?
-    public let encoder: JSONEncoder?
-    public let decoder: JSONDecoder?
 
     /// used only on client side. best practice to use it to identify request in the Plugin's
     public let userInfo: UserInfo
 
     public init(header: HeaderFields = [],
                 method: HTTPMethod? = .get,
-                body: Body = .empty,
+                body: Body? = nil,
                 plugins: [Plugin] = [],
                 cacheSettings: CacheSettings? = nil,
                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
                 timeoutInterval: TimeInterval = RequestSettings.timeoutInterval,
                 progressHandler: ProgressHandler? = nil,
                 userInfo: UserInfo = .init(),
-                session: SmartURLSession? = nil,
-                encoder: JSONEncoder? = nil,
-                decoder: JSONDecoder? = nil) {
+                session: SmartURLSession? = nil) {
         self.header = header
         self.method = method
         self.body = body
@@ -40,22 +45,18 @@ public struct Parameters {
         self.progressHandler = progressHandler
         self.userInfo = userInfo
         self.session = session
-        self.encoder = encoder
-        self.decoder = decoder
     }
 
     public init(header: [String: String],
                 method: HTTPMethod? = .get,
-                body: Body = .empty,
+                body: Body? = nil,
                 plugins: [Plugin] = [],
                 cacheSettings: CacheSettings? = nil,
                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
                 timeoutInterval: TimeInterval = RequestSettings.timeoutInterval,
                 progressHandler: ProgressHandler? = nil,
                 userInfo: UserInfo = .init(),
-                session: SmartURLSession? = nil,
-                encoder: JSONEncoder? = nil,
-                decoder: JSONDecoder? = nil) {
+                session: SmartURLSession? = nil) {
         self.header = .init(header)
         self.method = method
         self.body = body
@@ -66,8 +67,6 @@ public struct Parameters {
         self.progressHandler = progressHandler
         self.userInfo = userInfo
         self.session = session
-        self.encoder = encoder
-        self.decoder = decoder
     }
 
     /// Generates a URLRequest representation of the Parameters for a given address.
@@ -86,7 +85,7 @@ public struct Parameters {
             request.addValue(item.value, forHTTPHeaderField: item.key)
         }
 
-        try body.fill(&request, encoder: encoder)
+        try body.fill(&request)
 
         return request
     }

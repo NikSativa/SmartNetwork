@@ -16,6 +16,9 @@ public enum RequestEncodingError: Error {
     case cantEncodeImage
     /// Indicates errors related to invalid JSON.
     case invalidJSON
+
+    /// Indicates errors related to encoding a body part.
+    case bodyPartInvalid
 }
 
 // MARK: - RequestErrorDescription
@@ -38,6 +41,8 @@ extension RequestEncodingError: RequestErrorDescription {
             return "cantEncodeImage"
         case .invalidJSON:
             return "invalidJSON"
+        case .bodyPartInvalid:
+            return "bodyPartInvalid"
         }
     }
 }

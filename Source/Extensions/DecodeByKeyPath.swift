@@ -1,10 +1,12 @@
 import Foundation
 
 public extension Data {
+    /// Decode data with keyPath and return a Decodable object of the given type.
     func decode<T: Decodable>(_ type: T.Type, keyPath: String, decoder: JSONDecoder? = nil) throws -> T {
         return try decode(type, keyPath: [keyPath], decoder: decoder)
     }
 
+    /// Decode data with keyPath and return a Decodable object of the given type. If keyPath is empty, it will decode the data directly.
     func decode<T: Decodable>(_ type: T.Type, keyPath: [String], decoder: JSONDecoder? = nil) throws -> T {
         let decoder = decoder ?? JSONDecoder()
         if keyPath.isEmpty {

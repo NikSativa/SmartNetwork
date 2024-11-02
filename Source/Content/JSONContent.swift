@@ -1,7 +1,7 @@
 import Foundation
 
-struct OptionalJSONContent: CustomDecodable {
-    static func decode(with data: RequestResult, decoder: @autoclosure () -> JSONDecoder) -> Result<Any?, Error> {
+struct JSONContent: Deserializable {
+    func decode(with data: RequestResult, parameters: Parameters) -> Result<Any, Error> {
         if let error = data.error {
             return .failure(error)
         } else if let data = data.body {
@@ -15,13 +15,7 @@ struct OptionalJSONContent: CustomDecodable {
                 return .failure(error)
             }
         } else {
-            return .success(nil)
+            return .failure(RequestDecodingError.nilResponse)
         }
-    }
-}
-
-struct JSONContent: CustomDecodable {
-    static func decode(with data: RequestResult, decoder: @autoclosure () -> JSONDecoder) -> Result<Any, Error> {
-        return OptionalJSONContent.decode(with: data, decoder: decoder()).recoverResponse()
     }
 }

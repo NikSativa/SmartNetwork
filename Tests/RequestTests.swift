@@ -12,20 +12,20 @@ final class RequestableTests: XCTestCase {
         let session: FakeSession = .init()
         let parameters: Parameters = .testMake(session: session)
 
-        let sdkRequest = URLRequest.spry.testMake(url: "google.com")
+        let sdkRequest = URLRequest.spry.testMake(url: "apple.com")
         let urlRequestable: FakeURLRequestRepresentation = .init()
         urlRequestable.stub(.sdk).andReturn(sdkRequest)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
 
         let subject = Request(address: .testMake(),
-                              with: parameters,
+                              parameters: parameters,
                               urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }
         XCTAssertEqual(subject.parameters, parameters)
-        XCTAssertEqual(subject.description, "<GET request: https://google.com>")
-        XCTAssertEqual(subject.debugDescription, "<GET request: https://google.com>")
+        XCTAssertEqual(subject.description, "<GET request: https://www.apple.com>")
+        XCTAssertEqual(subject.debugDescription, "<GET request: https://www.apple.com>")
 
         // idle request -> nothing happen
         XCTAssertNoThrow(subject.cancel())
@@ -80,28 +80,28 @@ final class RequestableTests: XCTestCase {
 
         // impossible behavior, but expected that response can be received more then once
         // test logger
-        let strData = "data".data(using: .utf8)
+        let strData: Data = "data".data(using: .utf8)!
         session.completionHandler?(strData, nil, nil)
         XCTAssertEqual(responses, [
             .testMake(request: sdkRequest),
-            .testMake(request: sdkRequest, body: strData)
+            .testMake(request: sdkRequest, body: .data(strData))
         ])
 
-        let jsonData = "{ \"data\": 111 }".data(using: .utf8)
+        let jsonData: Data = "{ \"data\": 111 }".data(using: .utf8)!
         session.completionHandler?(jsonData, nil, nil)
         XCTAssertEqual(responses, [
             .testMake(request: sdkRequest),
-            .testMake(request: sdkRequest, body: strData),
-            .testMake(request: sdkRequest, body: jsonData)
+            .testMake(request: sdkRequest, body: .data(strData)),
+            .testMake(request: sdkRequest, body: .data(jsonData))
         ])
 
         let emptyData = Data()
         session.completionHandler?(emptyData, nil, nil)
         XCTAssertEqual(responses, [
             .testMake(request: sdkRequest),
-            .testMake(request: sdkRequest, body: strData),
-            .testMake(request: sdkRequest, body: jsonData),
-            .testMake(request: sdkRequest, body: emptyData)
+            .testMake(request: sdkRequest, body: .data(strData)),
+            .testMake(request: sdkRequest, body: .data(jsonData)),
+            .testMake(request: sdkRequest, body: .data(emptyData))
         ])
     }
 
@@ -111,21 +111,25 @@ final class RequestableTests: XCTestCase {
         let session: FakeSession = .init()
         let parameters: Parameters = .testMake(session: session)
 
-        let sdkRequest = URLRequest.spry.testMake(url: "google.com")
+        let sdkRequest = URLRequest.spry.testMake(url: "apple.com")
         let urlRequestable: FakeURLRequestRepresentation = .init()
         urlRequestable.stub(.sdk).andReturn(sdkRequest)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
 
         var subject: Request! = Request(address: .testMake(),
-                                        with: parameters,
+                                        parameters: parameters,
                                         urlRequestable: urlRequestable)
+
+        XCTAssertEqual(subject.description, "<GET request: https://www.apple.com>")
+        XCTAssertEqual(subject.debugDescription, "Optional(<GET request: https://www.apple.com>)")
+
         subject.completion = { data in
             responses.append(data)
         }
 
         XCTAssertEqual(subject!.parameters, parameters)
-        XCTAssertEqual(subject!.description, "<GET request: https://google.com>")
-        XCTAssertEqual(subject!.debugDescription, "<GET request: https://google.com>")
+        XCTAssertEqual(subject!.description, "<GET request: https://www.apple.com>")
+        XCTAssertEqual(subject!.debugDescription, "<GET request: https://www.apple.com>")
 
         // idle request -> nothing happen
         XCTAssertNoThrow(subject.cancel())
@@ -163,21 +167,21 @@ final class RequestableTests: XCTestCase {
                                                requestPolicy: .reloadIgnoringLocalAndRemoteCacheData,
                                                session: session)
 
-        let sdkRequest = URLRequest.spry.testMake(url: "google.com")
+        let sdkRequest = URLRequest.spry.testMake(url: "apple.com")
         let urlRequestable: FakeURLRequestRepresentation = .init()
         urlRequestable.stub(.sdk).andReturn(sdkRequest)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
 
         let subject = Request(address: .testMake(),
-                              with: parameters,
+                              parameters: parameters,
                               urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
         }
 
         XCTAssertEqual(subject.parameters, parameters)
-        XCTAssertEqual(subject.description, "<GET request: https://google.com>")
-        XCTAssertEqual(subject.debugDescription, "<GET request: https://google.com>")
+        XCTAssertEqual(subject.description, "<GET request: https://www.apple.com>")
+        XCTAssertEqual(subject.debugDescription, "<GET request: https://www.apple.com>")
 
         // idle request -> nothing happen
         XCTAssertNoThrow(subject.cancel())
@@ -224,13 +228,13 @@ final class RequestableTests: XCTestCase {
                                                progressHandler: { _ in },
                                                session: session)
 
-        let sdkRequest = URLRequest.spry.testMake(url: "google.com")
+        let sdkRequest = URLRequest.spry.testMake(url: "apple.com")
         let urlRequestable: FakeURLRequestRepresentation = .init()
         urlRequestable.stub(.sdk).andReturn(sdkRequest)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
 
-        let subject = Request(address: .testMake(host: "http://google.com"),
-                              with: parameters,
+        let subject = Request(address: .testMake(host: "http://apple.com"),
+                              parameters: parameters,
                               urlRequestable: urlRequestable)
         subject.completion = { data in
             responses.append(data)
@@ -256,7 +260,7 @@ final class RequestableTests: XCTestCase {
         subject.restart()
         XCTAssertHaveReceived(cache, .cachedResponse)
 
-        let strData = "data".data(using: .utf8).unsafelyUnwrapped
+        let strData: Data = "data".data(using: .utf8).unsafelyUnwrapped
         let urlResponse = HTTPURLResponse(url: sdkRequest.url.unsafelyUnwrapped,
                                           mimeType: "application/x-binary",
                                           expectedContentLength: -1,
@@ -267,7 +271,7 @@ final class RequestableTests: XCTestCase {
         XCTAssertHaveReceived(cache, .storeCachedResponse)
 
         XCTAssertEqual(responses, [
-            .testMake(request: sdkRequest, body: strData, response: urlResponse)
+            .testMake(request: sdkRequest, body: .data(strData), response: urlResponse)
         ])
 
         let cachedResponse = CachedURLResponse(response: urlResponse, data: strData)
@@ -275,8 +279,25 @@ final class RequestableTests: XCTestCase {
         subject.start()
 
         XCTAssertEqual(responses, [
-            .testMake(request: sdkRequest, body: strData, response: urlResponse),
-            .testMake(request: sdkRequest, body: strData, response: urlResponse)
+            .testMake(request: sdkRequest, body: .data(strData), response: urlResponse),
+            .testMake(request: sdkRequest, body: .data(strData), response: urlResponse)
         ])
+    }
+
+    func test_description() {
+        let urlRequestable: FakeURLRequestRepresentation = .init()
+        var subject: Request! = Request(address: .testMake(),
+                                        parameters: .testMake(method: .get),
+                                        urlRequestable: urlRequestable)
+
+        XCTAssertEqual(subject.description, "<GET request: https://www.apple.com>")
+        XCTAssertEqual(subject.debugDescription, "Optional(<GET request: https://www.apple.com>)")
+
+        subject = Request(address: .testMake(),
+                          parameters: .testMake(header: ["some": "a"], method: nil),
+                          urlRequestable: urlRequestable)
+
+        XCTAssertEqual(subject!.description, "<`No method` request: https://www.apple.com headers: [some: a]>")
+        XCTAssertEqual(subject!.debugDescription, "<`No method` request: https://www.apple.com headers: [some: a]>")
     }
 }

@@ -6,7 +6,7 @@ import SpryKit
 
 public extension Address {
     static func testMake(scheme: Scheme? = .https,
-                         host: String = "google.com",
+                         host: String = "www.apple.com",
                          path: [String] = [],
                          queryItems: QueryItems = [],
                          fragment: String? = nil,
@@ -22,7 +22,7 @@ public extension Address {
     }
 
     static func testMake(scheme: Scheme? = .https,
-                         host: String = "google.com",
+                         host: String = "www.apple.com",
                          endpoint: String,
                          queryItems: QueryItems = [],
                          fragment: String? = nil,

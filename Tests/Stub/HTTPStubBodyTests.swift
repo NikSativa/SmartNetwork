@@ -35,14 +35,14 @@ final class HTTPStubBodyTests: XCTestCase {
 
     func test_encodable() {
         let info = TestInfo(id: 1)
-        let body: HTTPStubBody = .encodable(info)
+        let body: HTTPStubBody = .encode(info)
         XCTAssertNotNil(body.data)
         XCTAssertEqual(body.data?.info(), info)
     }
 
     func test_encodableWithEncoder() {
         let info = TestInfo(id: 1)
-        let body: HTTPStubBody = .encodableWithEncoder(info, .init())
+        let body: HTTPStubBody = .encode(info, with: .init())
         XCTAssertNotNil(body.data)
         XCTAssertEqual(body.data?.info(), info)
     }

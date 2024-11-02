@@ -10,5 +10,6 @@ final class RequestDecodingErrorTests: XCTestCase {
         XCTAssertEqual(RequestDecodingError.brokenImage.subname, "brokenImage")
         XCTAssertEqual(RequestDecodingError.brokenResponse.subname, "brokenResponse")
         XCTAssertEqual(RequestDecodingError.nilResponse.subname, "nilResponse")
+        XCTAssertEqual(RequestDecodingError.emptyResponse.subname, "emptyResponse")
     }
 }

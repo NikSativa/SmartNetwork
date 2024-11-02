@@ -2,7 +2,7 @@ import Foundation
 
 /// RequestError is an essential component for handling and
 /// categorizing errors that may arise during network requests within the system.
-public enum RequestError: Error {
+public indirect enum RequestError: Error {
     /// A generic error not specified further.
     /// Only for your purposes. StartNetwork does't throw this error.
     case generic
@@ -20,6 +20,8 @@ public enum RequestError: Error {
     /// Initializer that can convert a general Swift.Error to a specific RequestError case based on its type
     public init(_ error: Swift.Error) {
         switch error {
+        case RequestError.other(let newError):
+            self = .init(newError)
         case let error as Self:
             self = error
         case let error as URLError:

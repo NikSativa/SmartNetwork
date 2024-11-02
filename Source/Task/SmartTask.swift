@@ -61,7 +61,11 @@ extension SmartTask: SmartTasking {
         shouldCancelOnDeinit = false
         return self
     }
+}
 
+// MARK: - DetachedTask
+
+extension SmartTask: DetachedTask {
     public func start() {
         assert(runAction != nil, "should be called only once")
 
@@ -88,7 +92,11 @@ extension SmartTask: SmartTasking {
         }
         return self
     }
+}
 
+// MARK: - Cancellable
+
+extension SmartTask: Cancellable {
     public func cancel() {
         runAction = nil
 

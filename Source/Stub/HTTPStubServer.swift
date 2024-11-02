@@ -103,7 +103,7 @@ public extension HTTPStubServer {
     }
 
     func add(condition: HTTPStubCondition,
-             statusCode: StatusCode.Kind,
+             statusCode: StatusCode = 200,
              header: [String: String],
              body: HTTPStubBody = .empty,
              error: Error? = nil,

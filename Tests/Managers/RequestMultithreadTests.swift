@@ -21,13 +21,13 @@ final class RequestMultithreadTests: XCTestCase {
     @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
     private var result: [TestInfo?] = []
 
-    private let subject = RequestManager.create()
+    private let subject = SmartRequestManager.create()
     private var observers: [AnyCancellable] = []
 
     override func setUp() {
         super.setUp()
         HTTPStubServer.shared.add(condition: .isHost(host1),
-                                  body: .encodable(TestInfo(id: 1)),
+                                  body: .encode(TestInfo(id: 1)),
                                   delayInSeconds: stubbedTimeoutInSeconds).store(in: &observers)
     }
 
@@ -39,8 +39,7 @@ final class RequestMultithreadTests: XCTestCase {
 
     func test_threads_closure() {
         threads { [self] exp, comp in
-            subject.decodable.request(TestInfo.self,
-                                      address: address1) { [exp] obj in
+            subject.request(address: address1).decode(TestInfo.self).complete { [exp] obj in
                 comp(try! obj.get())
                 exp.fulfill()
             }.storing(in: &observers).start()
@@ -50,8 +49,7 @@ final class RequestMultithreadTests: XCTestCase {
     func test_threads_async() {
         threads { [self] exp, comp in
             Task {
-                let obj = await subject.decodable.request(TestInfo.self,
-                                                          address: address1)
+                let obj = await subject.request(address: address1).decode(TestInfo.self).async()
                 comp(try! obj.get())
                 exp.fulfill()
             }
@@ -61,15 +59,13 @@ final class RequestMultithreadTests: XCTestCase {
     func test_threads() {
         threads { [self] exp, comp in
             if Bool.random() {
-                subject.decodable.request(TestInfo.self,
-                                          address: address1) { [exp] obj in
+                subject.request(address: address1).decode(TestInfo.self).complete { [exp] obj in
                     comp(try! obj.get())
                     exp.fulfill()
                 }.detach().deferredStart()
             } else {
                 Task {
-                    let obj = await subject.decodable.request(TestInfo.self,
-                                                              address: address1)
+                    let obj = await subject.request(address: address1).decode(TestInfo.self).async()
                     comp(try! obj.get())
                     exp.fulfill()
                 }

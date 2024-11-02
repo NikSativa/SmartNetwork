@@ -39,8 +39,8 @@ private enum Constant {
     static let value = "my_token_string"
     static let key = "my_token_key"
 
-    static let url = URL.spry.testMake("https://www.google.com")
-    static let urlWithQuery = URL.spry.testMake("https://www.google.com?my_token_key=broken_token_string")
+    static let url = URL.spry.testMake("https://www.apple.com")
+    static let urlWithQuery = URL.spry.testMake("https://www.apple.com?my_token_key=broken_token_string")
 }
 
 @inline(__always)

@@ -3,7 +3,7 @@ import Foundation
 public extension Plugins {
     #if swift(>=6.0)
     /// The token provider.
-    typealias TokenProvider = @Sendable () -> String?
+    typealias TokenProvider = () -> String?
     #else
     /// The token provider.
     typealias TokenProvider = () -> String?

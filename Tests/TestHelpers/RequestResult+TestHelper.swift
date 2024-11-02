@@ -3,15 +3,22 @@ import SpryKit
 
 @testable import SmartNetwork
 
+// MARK: - RequestResult + Equatable, SpryEquatable
+
 extension RequestResult: Equatable, SpryEquatable {
     public static func testMake(url: URL = .spry.testMake(),
                                 statusCode: Int,
                                 httpVersion: String? = nil,
                                 headerFields: [String: String]? = nil,
-                                body: Data? = nil,
+                                body: Body? = nil,
                                 error: Error? = nil) -> Self {
-        return .init(request: URLRequest(url: url),
-                     body: body,
+        var request = URLRequest(url: url)
+        for field in headerFields ?? [:] {
+            request.addValue(field.value, forHTTPHeaderField: field.key)
+        }
+        request.httpBody = body.data
+        return .init(request: request,
+                     body: body.data,
                      response: HTTPURLResponse(url: url,
                                                statusCode: statusCode,
                                                httpVersion: httpVersion,
@@ -20,11 +27,11 @@ extension RequestResult: Equatable, SpryEquatable {
     }
 
     public static func testMake(request: URLRequestRepresentation? = nil,
-                                body: Data? = nil,
+                                body: Body? = nil,
                                 response: URLResponse? = nil,
                                 error: Error? = nil) -> Self {
         return .init(request: request,
-                     body: body,
+                     body: body.data,
                      response: response,
                      error: error)
     }

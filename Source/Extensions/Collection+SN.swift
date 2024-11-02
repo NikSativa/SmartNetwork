@@ -16,12 +16,14 @@ public extension Collection {
 }
 
 internal extension Collection {
+    /// Returns `nil` if the collection is empty.
     var nilIfEmpty: Self? {
         return isEmpty ? nil : self
     }
 }
 
 internal extension Optional where Wrapped: Collection {
+    /// Returns `nil` if the collection is empty.
     var nilIfEmpty: Self {
         switch self {
         case .none:

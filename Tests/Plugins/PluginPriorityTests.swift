@@ -126,10 +126,15 @@ final class PluginPriorityTests: XCTestCase {
         XCTAssertEqual(PluginPriority.authBasic + PluginPriority.statusCode, .init(rawValue: 500))
         XCTAssertEqual(PluginPriority.authBasic + 3, .init(rawValue: 403))
         XCTAssertEqual(PluginPriority.authBasic + 30, .init(rawValue: 430))
+        XCTAssertEqual(PluginPriority.authBasic + (3 as Int), .init(rawValue: 403))
+        XCTAssertEqual(PluginPriority.authBasic + (30 as Int), .init(rawValue: 430))
 
         XCTAssertEqual(PluginPriority.authBasic - PluginPriority.authBearer, .init(rawValue: 100))
         XCTAssertEqual(PluginPriority.authBasic - PluginPriority.statusCode, .init(rawValue: 300))
         XCTAssertEqual(PluginPriority.authBasic - 3, .init(rawValue: 397))
         XCTAssertEqual(PluginPriority.authBasic - 30, .init(rawValue: 370))
+
+        XCTAssertEqual(PluginPriority.authBasic - (3 as Int), .init(rawValue: 397))
+        XCTAssertEqual(PluginPriority.authBasic - (30 as Int), .init(rawValue: 370))
     }
 }

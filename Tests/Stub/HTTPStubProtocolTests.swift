@@ -39,7 +39,7 @@ final class HTTPStubProtocolTests: XCTestCase {
 
     func test_stub_data() async throws {
         HTTPStubServer.shared.add(condition: .isHost(Constant.host),
-                                  body: .encodable(TestInfo(id: 1))).store(in: &observers)
+                                  body: .encode(TestInfo(id: 1))).store(in: &observers)
 
         let result = try await session.data(for: request)
         let info = result.0.info()

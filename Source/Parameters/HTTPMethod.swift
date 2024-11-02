@@ -14,10 +14,6 @@ public enum HTTPMethod: Hashable {
     case other(String)
 }
 
-#if swift(>=6.0)
-extension HTTPMethod: Sendable {}
-#endif
-
 // MARK: - ExpressibleByStringLiteral
 
 extension HTTPMethod: ExpressibleByStringLiteral {
@@ -52,3 +48,7 @@ internal extension HTTPMethod {
         }
     }
 }
+
+#if swift(>=6.0)
+extension HTTPMethod: Sendable {}
+#endif

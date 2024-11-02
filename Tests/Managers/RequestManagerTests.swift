@@ -30,14 +30,15 @@ final class RequestManagerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         HTTPStubServer.shared.add(condition: .isHost(Constant.host1),
-                                  body: .encodable(TestInfo(id: 1)),
+                                  header: [.testMake(key: "some", value: "value1"), .testMake(key: "some", value: "value2")],
+                                  body: .encode(TestInfo(id: 1)),
                                   delayInSeconds: nil).store(in: &observers)
         HTTPStubServer.shared.add(condition: .isHost(Constant.host2),
-                                  body: .encodable(TestInfo(id: 2)),
+                                  body: .encode(TestInfo(id: 2)),
                                   delayInSeconds: Constant.stubbedTimeoutInSeconds).store(in: &observers)
         HTTPStubServer.shared.add(condition: .isHost(Constant.brokenHost),
                                   statusCode: 400,
-                                  body: .encodable(TestInfo(id: 2)),
+                                  body: .encode(TestInfo(id: 2)),
                                   delayInSeconds: Constant.stubbedTimeoutInSeconds).store(in: &observers)
         HTTPStubServer.shared.add(condition: .isHost(Constant.emptyHost),
                                   statusCode: 204,
@@ -51,28 +52,26 @@ final class RequestManagerTests: XCTestCase {
     }
 
     func test_variants() {
-        let subject = RequestManager.create()
-        XCTAssertNotNil(subject.pure)
+        let subject = SmartRequestManager.create()
         XCTAssertNotNil(subject.void)
         XCTAssertNotNil(subject.decodable)
         XCTAssertNotNil(subject.data)
+        XCTAssertNotNil(subject.dataOptional)
         XCTAssertNotNil(subject.image)
         XCTAssertNotNil(subject.imageOptional)
-        XCTAssertNotNil(subject.dataOptional)
         XCTAssertNotNil(subject.json)
         XCTAssertNotNil(subject.jsonOptional)
     }
 
     func test_stubbing() {
         let expectation1 = expectation(description: "should receive response")
-        let subject = RequestManager.create()
+        let subject = SmartRequestManager.create()
         let response: SendableResult<TestInfo> = .init()
-        subject.decodable.request(TestInfo.self,
-                                  address: Constant.address1,
-                                  with: .init()) {
-            response.value = try? $0.get()
-            expectation1.fulfill()
-        }.storing(in: &observers).start()
+        subject
+            .request(address: Constant.address1).decode(TestInfo.self).complete {
+                response.value = try? $0.get()
+                expectation1.fulfill()
+            }.storing(in: &observers).start()
 
         wait(for: [expectation1], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response.value, .init(id: 1))
@@ -80,9 +79,8 @@ final class RequestManagerTests: XCTestCase {
         let expectation2 = expectation(description: "should receive response")
         let expectationReverted = expectation(description: "should not receive response")
         expectationReverted.isInverted = true
-        subject.decodable.request(opt: TestInfo.self,
-                                  address: Constant.address2,
-                                  with: .testMake()) {
+        subject.request(address: Constant.address2,
+                        parameters: .testMake()).decode(TestInfo.self).complete {
             response.value = try? $0.get()
             expectation2.fulfill()
             expectationReverted.fulfill()
@@ -95,9 +93,8 @@ final class RequestManagerTests: XCTestCase {
         let expectation3 = expectation(description: "should receive response")
         let expectationReverted2 = expectation(description: "should not receive response")
         expectationReverted2.isInverted = true
-        subject.decodable.request(TestInfo.self,
-                                  address: Constant.emptyAddress,
-                                  with: .testMake()) {
+        subject.request(address: Constant.emptyAddress,
+                        parameters: .testMake()).decode(TestInfo.self).complete {
             response.value = try? $0.get()
             expectation3.fulfill()
             expectationReverted2.fulfill()
@@ -111,9 +108,8 @@ final class RequestManagerTests: XCTestCase {
         let expectation4 = expectation(description: "should receive response")
         let expectationReverted3 = expectation(description: "should not receive response")
         expectationReverted3.isInverted = true
-        subject.decodable.request(opt: TestInfo.self,
-                                  address: Constant.address2,
-                                  with: .testMake()) {
+        subject.request(address: Constant.address2,
+                        parameters: .testMake()).decode(TestInfo.self).complete {
             response.value = try? $0.get()
             expectation4.fulfill()
             expectationReverted3.fulfill()
@@ -127,9 +123,8 @@ final class RequestManagerTests: XCTestCase {
         let expectationReverted4 = expectation(description: "should not receive response")
         expectationReverted4.isInverted = true
         response.value = nil
-        subject.decodable.request(opt: TestInfo.self,
-                                  address: Constant.address2,
-                                  with: .testMake()) {
+        subject.request(address: Constant.address2,
+                        parameters: .testMake()).decode(TestInfo.self).complete {
             response.value = try? $0.get()
             expectationReverted4.fulfill()
         }
@@ -159,14 +154,13 @@ final class RequestManagerTests: XCTestCase {
         pluginForParam.stub(.didReceive).andReturn()
         pluginForParam.stub(.didFinish).andReturn()
 
-        let subject = RequestManager.create(withPlugins: [pluginStatusCode, pluginStatusCode, pluginForManager, pluginStatusCode])
+        let subject = SmartRequestManager.create(withPlugins: [pluginStatusCode, pluginStatusCode, pluginForManager, pluginStatusCode])
 
         let response: SendableResult<TestInfo> = .init()
         let expectation1 = expectation(description: "should receive response")
-        subject.decodable.request(TestInfo.self,
-                                  address: Constant.address1,
-                                  with: .init(plugins: [pluginForParam, pluginStatusCode, pluginForParam, pluginStatusCode],
-                                              cacheSettings: .testMake())) {
+        subject.request(address: Constant.address1,
+                        parameters: .init(plugins: [pluginForParam, pluginStatusCode, pluginForParam, pluginStatusCode],
+                                          cacheSettings: .testMake())).decode(TestInfo.self).complete {
             response.value = try? $0.get()
             expectation1.fulfill()
         }.detach().deferredStart()
@@ -189,9 +183,8 @@ final class RequestManagerTests: XCTestCase {
         pluginForParam.resetCalls()
 
         let expectation2 = expectation(description: "should receive response")
-        subject.decodable.request(TestInfo.self,
-                                  address: Constant.address2,
-                                  with: .init(plugins: [pluginForParam])) {
+        subject.request(address: Constant.address2,
+                        parameters: .init(plugins: [pluginForParam])).decode(TestInfo.self).complete {
             response.value = try? $0.get()
             expectation2.fulfill()
         }.storing(in: &observers).start()
@@ -222,11 +215,10 @@ final class RequestManagerTests: XCTestCase {
 
     func test_lack_parameters() {
         let expectation: XCTestExpectation = .init(description: "should receive response")
-        let subject = RequestManager.create()
+        let subject = SmartRequestManager.create()
         let result: SendableResult<Result<TestInfo, Error>> = .init()
-        subject.decodable.request(TestInfo.self,
-                                  address: Constant.address1,
-                                  with: .init(body: .encodable(BrokenTestInfo(id: 1)))) {
+        subject.request(address: Constant.address1,
+                        parameters: .init(body: .encode(BrokenTestInfo(id: 1)))).decode(TestInfo.self).complete {
             result.value = $0
             expectation.fulfill()
         }.storing(in: &observers).start()
@@ -238,17 +230,16 @@ final class RequestManagerTests: XCTestCase {
     func test_stop_the_line_verify_passOver() {
         let stopTheLine: FakeStopTheLine = .init()
 
-        let subject = RequestManager.create(withPlugins: [Plugins.StatusCode()],
-                                            stopTheLine: stopTheLine,
-                                            maxAttemptNumber: 1)
+        let subject = SmartRequestManager.create(withPlugins: [Plugins.StatusCode()],
+                                                 stopTheLine: stopTheLine,
+                                                 maxAttemptNumber: 1)
         let result: SendableResult<Result<TestInfo, Error>> = .init()
 
         // passOver
         let expectation: XCTestExpectation = .init(description: "should receive response")
         stopTheLine.stub(.verify).andReturn(StopTheLineAction.passOver)
-        subject.decodable.request(TestInfo.self,
-                                  address: Constant.brokenAddress,
-                                  with: .init(body: .init(TestInfo(id: 1)))) {
+        subject.request(address: Constant.brokenAddress,
+                        parameters: .init(body: .encode(TestInfo(id: 1)))).decode(TestInfo.self).complete {
             result.value = $0
             expectation.fulfill()
         }.storing(in: &observers).start()
@@ -260,17 +251,16 @@ final class RequestManagerTests: XCTestCase {
     func test_stop_the_line_verify_retry() {
         let stopTheLine: FakeStopTheLine = .init()
 
-        let subject = RequestManager.create(withPlugins: [Plugins.StatusCode()],
-                                            stopTheLine: stopTheLine,
-                                            maxAttemptNumber: 1)
+        let subject = SmartRequestManager.create(withPlugins: [Plugins.StatusCode()],
+                                                 stopTheLine: stopTheLine,
+                                                 maxAttemptNumber: 1)
         let result: SendableResult<Result<TestInfo, Error>> = .init()
 
         // retry (maxAttemptNumber: 1)
         let expectation2: XCTestExpectation = .init(description: "should receive response")
         stopTheLine.stubAgain(.verify).andReturn(StopTheLineAction.retry)
-        subject.decodable.request(TestInfo.self,
-                                  address: Constant.brokenAddress,
-                                  with: .init(body: .init(TestInfo(id: 1)))) {
+        subject.request(address: Constant.brokenAddress,
+                        parameters: .init(body: .encode(TestInfo(id: 1)))).decode(TestInfo.self).complete {
             result.value = $0
             expectation2.fulfill()
         }.storing(in: &observers).start()
@@ -294,9 +284,9 @@ final class RequestManagerTests: XCTestCase {
 
     private func stop_the_line(_ action: StopTheLineResult, newCode: StatusCode.Kind? = nil) {
         let stopTheLine: FakeStopTheLine = .init()
-        let subject = RequestManager.create(withPlugins: [Plugins.StatusCode()],
-                                            stopTheLine: stopTheLine,
-                                            maxAttemptNumber: 1)
+        let subject = SmartRequestManager.create(withPlugins: [Plugins.StatusCode()],
+                                                 stopTheLine: stopTheLine,
+                                                 maxAttemptNumber: 1)
         let result: SendableResult<Result<TestInfo, Error>> = .init()
 
         // stopTheLine
@@ -313,9 +303,8 @@ final class RequestManagerTests: XCTestCase {
         }
 
         let expectation3: XCTestExpectation = .init(description: "should receive response")
-        subject.decodable.request(TestInfo.self,
-                                  address: Constant.brokenAddress,
-                                  with: .init(body: .init(TestInfo(id: 1)))) {
+        subject.request(address: Constant.brokenAddress,
+                        parameters: .init(body: .encode(TestInfo(id: 1)))).decode(TestInfo.self).complete {
             result.value = $0
             expectation3.fulfill()
         }.storing(in: &observers).start()
@@ -326,9 +315,8 @@ final class RequestManagerTests: XCTestCase {
 
         // waiter
         let expectation4: XCTestExpectation = .init(description: "should receive response")
-        subject.decodable.request(TestInfo.self,
-                                  address: Constant.address1,
-                                  with: .init(body: .empty)) { _ in
+        subject.request(address: Constant.address1,
+                        parameters: .init(body: .empty)).decode(TestInfo.self).complete { _ in
             expectation4.fulfill()
         }.detach().deferredStart()
 

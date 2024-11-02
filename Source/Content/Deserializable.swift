@@ -1,7 +1,7 @@
 import Foundation
 
-/// A protocol for custom decoding of data objects.
-public protocol CustomDecodable {
+/// A protocol for deserialising of response data.
+public protocol Deserializable<Object> {
     /// An associated type `Object` to specify the decoded object type.
     associatedtype Object
 
@@ -12,5 +12,5 @@ public protocol CustomDecodable {
     ///   - decoder: *(if needed)* An autoclosure providing a ``JSONDecoder`` instance for decoding that was specified in ``Parameters``.
     ///
     /// - Returns: A Result object containing the decoded object or an error.
-    static func decode(with data: RequestResult, decoder: @autoclosure () -> JSONDecoder) -> Result<Object, Error>
+    func decode(with data: RequestResult, parameters: Parameters) -> Result<Object, Error>
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-/// namespace
+/// Namespace for plugins. You can create your own plugins and add them to this namespace.
 public enum Plugins {}
 
 #if swift(>=6.0)

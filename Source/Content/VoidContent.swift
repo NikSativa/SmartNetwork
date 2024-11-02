@@ -1,20 +1,10 @@
 import Foundation
 
-struct VoidContent: CustomDecodable {
-    static func decode(with data: RequestResult, decoder: @autoclosure () -> JSONDecoder) -> Result<Void, Error> {
+struct VoidContent: Deserializable {
+    func decode(with data: RequestResult, parameters: Parameters) -> Result<Void, Error> {
         if let error = data.error {
             if let error = data.error as? StatusCode, error == .noContent {
                 return .success(())
-            } else if let error = data.error as? RequestDecodingError {
-                switch error {
-                case .emptyResponse,
-                     .nilResponse:
-                    return .success(())
-                case .brokenImage,
-                     .brokenResponse,
-                     .other:
-                    return .failure(error)
-                }
             } else {
                 return .failure(error)
             }

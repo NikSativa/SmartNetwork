@@ -21,7 +21,7 @@ extension Body: Equatable {
             return a == b
         case (.image(let a), .image(let b)):
             return a == b
-        case (.encodable(let a), .encodable(let b)):
+        case (.encode(let a, _), .encode(let b, _)):
             return compare(a, b)
         case (.form(let a), .form(let b)):
             return a == b
@@ -32,7 +32,7 @@ extension Body: Equatable {
 
         case (.data, _),
              (.empty, _),
-             (.encodable, _),
+             (.encode, _),
              (.form, _),
              (.image, _),
              (.json, _),

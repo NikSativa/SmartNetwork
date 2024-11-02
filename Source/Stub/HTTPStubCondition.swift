@@ -224,7 +224,7 @@ private extension String {
 
 #if swift(>=6.0)
 extension HTTPStubCondition: @unchecked Sendable {
-    public typealias TestClosure = @Sendable (_ request: URLRequestRepresentation) -> Bool
+    public typealias TestClosure = (_ request: URLRequestRepresentation) -> Bool
 }
 #else
 public extension HTTPStubCondition {

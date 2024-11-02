@@ -1,7 +1,7 @@
 import Foundation
 
-struct OptionalImageContent: CustomDecodable {
-    static func decode(with data: RequestResult, decoder: @autoclosure () -> JSONDecoder) -> Result<Image?, Error> {
+struct ImageContent: Deserializable {
+    func decode(with data: RequestResult, parameters: Parameters) -> Result<Image, Error> {
         if let error = data.error {
             return .failure(error)
         } else if let data = data.body {
@@ -15,13 +15,7 @@ struct OptionalImageContent: CustomDecodable {
                 return .failure(RequestDecodingError.brokenImage)
             }
         } else {
-            return .success(nil)
+            return .failure(RequestDecodingError.nilResponse)
         }
-    }
-}
-
-struct ImageContent: CustomDecodable {
-    static func decode(with data: RequestResult, decoder: @autoclosure () -> JSONDecoder) -> Result<Image, Error> {
-        return OptionalImageContent.decode(with: data, decoder: decoder()).recoverResponse()
     }
 }

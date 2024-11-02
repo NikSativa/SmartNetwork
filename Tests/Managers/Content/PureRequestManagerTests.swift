@@ -8,14 +8,14 @@ final class PureRequestManagerTests: XCTestCase {
     private let timeoutInSeconds: TimeInterval = 1
     private var observers: [AnyCancellable] = []
     private let address: Address = .testMake(string: "http://example1.com/signin")
-    private let subjset = RequestManager.create().pure
+    private let subject: RequestManager = SmartRequestManager.create()
     private let info = TestInfo(id: 1)
 
     override func setUp() {
         super.setUp()
-        HTTPStubServer.shared.add(condition: .isAddress(address),
-                                  body: .encodable(info),
-                                  delayInSeconds: stubbedTimeoutInSeconds).store(in: &observers)
+
+        let response = HTTPStubResponse(statusCode: .accepted, header: HeaderFields(), body: .encodable(info), error: nil, delayInSeconds: stubbedTimeoutInSeconds)
+        HTTPStubServer.shared.add(condition: .isAddress(address), response: response).store(in: &observers)
     }
 
     override func tearDown() {
@@ -26,7 +26,7 @@ final class PureRequestManagerTests: XCTestCase {
     func test_api_any() {
         let actual: SendableResult<RequestResult> = .init()
         let exp = expectation(description: #function)
-        subjset.request(address: address) { obj in
+        subject.request(address: address).complete { obj in
             actual.value = obj
             exp.fulfill()
         }.deferredStart().store(in: &observers)
@@ -37,9 +37,9 @@ final class PureRequestManagerTests: XCTestCase {
     func test_api_main() {
         let actual: SendableResult<RequestResult> = .init()
         let exp = expectation(description: #function)
-        subjset.request(address: address,
-                        with: .testMake(),
-                        inQueue: .absent) { obj in
+        subject.request(address: address,
+                        parameters: .testMake(),
+                        completionQueue: .absent) { obj in
             actual.value = obj
             exp.fulfill()
         }.deferredStart().store(in: &observers)
@@ -48,8 +48,7 @@ final class PureRequestManagerTests: XCTestCase {
     }
 
     func test_api_async() async {
-        let result = await subjset.request(address: address,
-                                           with: .testMake())
+        let result = await subject.request(address: address, parameters: .testMake())
         XCTAssertEqual(info, result.body?.info())
     }
 }

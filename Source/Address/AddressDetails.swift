@@ -1,8 +1,8 @@
 import Foundation
 
-/// The AddressDetails struct in Swift represents a URL and contains specific components to define the address details.
-/// This struct is intended to encapsulate detailed information about a URL, such as scheme, host, port,
-/// path components, query items, and fragment for constructing and processing URLs effectively within the system.
+/// The ``AddressDetails`` struct in Swift represents a ``URL`` and contains specific components to define the address details.
+/// This struct is intended to encapsulate detailed information about a ``URL``, such as scheme, host, port,
+/// path components, query items, and fragment for constructing and processing ``URL``s effectively within the system.
 public struct AddressDetails: Hashable {
     public let scheme: Scheme?
     public let host: String
@@ -29,7 +29,7 @@ public struct AddressDetails: Hashable {
                 host: String,
                 port: Int? = nil,
                 path: [String] = [],
-                queryItems: [String: String?] = [:],
+                queryItems: [String: String?],
                 fragment: String? = nil) {
         self.scheme = scheme
         self.host = host
@@ -41,9 +41,7 @@ public struct AddressDetails: Hashable {
 }
 
 public extension AddressDetails {
-    init(url: URL) throws {
-        let components = try URLComponents(url: url, resolvingAgainstBaseURL: true).unwrap(orThrow: RequestEncodingError.brokenURL)
-
+    init(components: URLComponents) throws {
         self.scheme = components.scheme.sdk
         self.host = try components.host.unwrap(orThrow: RequestEncodingError.brokenHost)
         self.port = components.port
@@ -54,6 +52,11 @@ public extension AddressDetails {
             return .init(key: $0.name, value: $0.value)
         }
         self.queryItems = .init(items)
+    }
+
+    init(url: URL) throws {
+        let components = try URLComponents(url: url, resolvingAgainstBaseURL: true).unwrap(orThrow: RequestEncodingError.brokenURL)
+        try self.init(components: components)
     }
 
     init(string: String) throws {

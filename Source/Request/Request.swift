@@ -30,7 +30,7 @@ internal final class Request {
     }
 
     init(address: Address,
-         with parameters: Parameters,
+         parameters: Parameters,
          urlRequestable: URLRequestRepresentation) {
         self.address = address
         self.parameters = parameters
@@ -253,17 +253,8 @@ private extension Request {
     func makeDescription() -> String {
         let url = try? address.url()
         let text = url?.absoluteString ?? "broken url"
-        let method: String = (parameters.method?.toString()).map { $0 + " " } ?? ""
-        return "<\(method)request: \(text)>"
-    }
-}
-
-private extension [String: String]? {
-    var postmanFormat: String {
-        return (self ?? [:]).map {
-            return [$0, $1].joined(separator: ":")
-        }
-        .joined(separator: "\n")
+        let method: String = (parameters.method ?? .other("`No method`")).toString()
+        return "<\(method) request: \(text)" + (parameters.header.isEmpty ? "" : " headers: \(parameters.header)") + ">"
     }
 }
 

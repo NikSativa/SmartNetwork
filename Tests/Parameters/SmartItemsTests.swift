@@ -24,5 +24,15 @@ final class QueryItemsTests: XCTestCase {
             .testMake(key: "item2", value: "value2"),
             .testMake(key: "item", value: "value")
         ])
+        XCTAssertEqual(subject["item"]?.value, "value")
+
+        subject["item"] = .testMake(key: "item", value: "valueNew")
+        XCTAssertEqual(subject["item"]?.value, "valueNew")
+
+        subject["item"] = nil
+        XCTAssertEqual(subject["item"], nil)
+
+        subject.removeAll()
+        XCTAssertTrue(subject.isEmpty)
     }
 }

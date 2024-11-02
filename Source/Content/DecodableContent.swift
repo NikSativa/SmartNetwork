@@ -1,7 +1,10 @@
 import Foundation
 
-struct OptionalDecodableContent<Response: Decodable>: CustomDecodable {
-    static func decode(with data: RequestResult, decoder: @autoclosure () -> JSONDecoder) -> Result<Response?, Error> {
+struct DecodableContent<Response: Decodable>: Deserializable {
+    let decoder: JSONDecoding?
+    let keyPath: [String]
+
+    func decode(with data: RequestResult, parameters: Parameters) -> Result<Response, Error> {
         if let error = data.error {
             return .failure(error)
         } else if let data = data.body {
@@ -10,19 +13,19 @@ struct OptionalDecodableContent<Response: Decodable>: CustomDecodable {
             }
 
             do {
-                let decoder = decoder()
-                return try .success(decoder.decode(Response.self, from: data))
+                let decoder = decoder?() ?? .init()
+                let result: Response
+                if keyPath.isEmpty {
+                    result = try decoder.decode(Response.self, from: data)
+                } else {
+                    result = try data.decode(Response.self, keyPath: keyPath, decoder: decoder)
+                }
+                return .success(result)
             } catch {
                 return .failure(error)
             }
         } else {
-            return .success(nil)
+            return .failure(RequestDecodingError.nilResponse)
         }
-    }
-}
-
-struct DecodableContent<Response: Decodable>: CustomDecodable {
-    static func decode(with data: RequestResult, decoder: @autoclosure () -> JSONDecoder) -> Result<Response, Error> {
-        return OptionalDecodableContent<Response>.decode(with: data, decoder: decoder()).recoverResponse()
     }
 }

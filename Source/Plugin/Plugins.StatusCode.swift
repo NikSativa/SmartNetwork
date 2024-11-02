@@ -26,11 +26,10 @@ public extension Plugins {
         /// A plugin that checks the status code of the response.
         ///
         /// - Parameter shouldIgnore200th: ignore status code in range `200..<300` and/or ignore `Nil`
-        public init(priority: PluginPriority = .statusCode,
-                    shouldIgnore200th: Bool = true,
-                    shouldIgnoreNil: Bool = true) {
-            self.priority = priority
-            self.isIgnoring = { statusCode in
+        public convenience init(priority: PluginPriority = .statusCode,
+                                shouldIgnore200th: Bool = true,
+                                shouldIgnoreNil: Bool = true) {
+            self.init(priority: priority) { statusCode in
                 if let statusCode,
                    shouldIgnore200th,
                    (200..<300).contains(statusCode) {
@@ -48,11 +47,9 @@ public extension Plugins {
                 return
             }
 
-            guard let error = data.statusCode else {
-                return
+            if let error = data.statusCode {
+                throw error
             }
-
-            throw error
         }
 
         public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation) {}

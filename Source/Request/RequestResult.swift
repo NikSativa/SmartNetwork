@@ -39,10 +39,10 @@ public final class RequestResult {
     /// - body: The body data of the response.
     /// - response: The URLResponse received.
     /// - error: Any error that occurred during the request.
-    init(request: URLRequestRepresentation?,
-         body: Data?,
-         response: URLResponse?,
-         error: Error?) {
+    public init(request: URLRequestRepresentation?,
+                body: Data?,
+                response: URLResponse?,
+                error: Error?) {
         self.request = request
         self.body = body
         self.response = response
@@ -52,7 +52,7 @@ public final class RequestResult {
     /// Updates the error property of the RequestResult object.
     ///
     /// - Parameter error: The error object to set.
-    func set(_ error: Error?) {
+    internal func set(error: Error?) {
         self.error = error
     }
 }

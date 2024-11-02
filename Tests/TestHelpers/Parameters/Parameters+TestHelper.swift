@@ -6,17 +6,15 @@ import SpryKit
 
 extension Parameters: SpryEquatable {
     public static func testMake(header: HeaderFields = [],
-                                method: HTTPMethod = .get,
+                                method: HTTPMethod? = .get,
                                 body: Body = .empty,
                                 plugins: [Plugin] = [],
                                 cacheSettings: CacheSettings? = nil,
                                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
-                                timeoutInterval: TimeInterval = 60,
+                                timeoutInterval: TimeInterval = RequestSettings.timeoutInterval,
                                 progressHandler: ProgressHandler? = nil,
                                 userInfo: UserInfo = .init(),
-                                session: SmartURLSession = FakeSession(),
-                                encoder: JSONEncoder = .init(),
-                                decoder: JSONDecoder = .init()) -> Self {
+                                session: SmartURLSession? = nil) -> Self {
         return .init(header: header,
                      method: method,
                      body: body,
@@ -26,9 +24,29 @@ extension Parameters: SpryEquatable {
                      timeoutInterval: timeoutInterval,
                      progressHandler: progressHandler,
                      userInfo: userInfo,
-                     session: session,
-                     encoder: encoder,
-                     decoder: decoder)
+                     session: session)
+    }
+
+    public static func testMake(header: [String: String],
+                                method: HTTPMethod? = .get,
+                                body: Body = .empty,
+                                plugins: [Plugin] = [],
+                                cacheSettings: CacheSettings? = nil,
+                                requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
+                                timeoutInterval: TimeInterval = RequestSettings.timeoutInterval,
+                                progressHandler: ProgressHandler? = nil,
+                                userInfo: UserInfo = .init(),
+                                session: SmartURLSession? = nil) -> Self {
+        return .init(header: header,
+                     method: method,
+                     body: body,
+                     plugins: plugins,
+                     cacheSettings: cacheSettings,
+                     requestPolicy: requestPolicy,
+                     timeoutInterval: timeoutInterval,
+                     progressHandler: progressHandler,
+                     userInfo: userInfo,
+                     session: session)
     }
 }
 
@@ -42,15 +60,6 @@ extension Parameters: Equatable {
             && lhs.timeoutInterval == rhs.timeoutInterval
             && lhs.cacheSettings == rhs.cacheSettings
             && lhs.requestPolicy == rhs.requestPolicy
-            && lhs.plugins.hashingString == rhs.plugins.hashingString
-    }
-}
-
-private extension [Plugin] {
-    var hashingString: [String] {
-        let result = map {
-            return String(describing: type(of: $0))
-        }
-        return result
+            && lhs.plugins.map(\.id) == rhs.plugins.map(\.id)
     }
 }

@@ -29,6 +29,7 @@ final class PluginsBasicTests: XCTestCase {
         subject.willSend(parameters, request: requestable, userInfo: .testMake())
         subject.didReceive(parameters, request: requestable, data: .testMake(), userInfo: .testMake())
         try subject.verify(data: data, userInfo: .testMake())
+        subject.didFinish(withData: data, userInfo: .testMake())
 
         XCTAssertEqual(data.url, .spry.testMake())
         XCTAssertNil(data.urlError)

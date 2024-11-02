@@ -1,418 +1,103 @@
 import Foundation
 import Threading
 
-/// The RequestManager class in Swift serves as a crucial component within the system,
-/// managing various aspects related to requests efficiently.
-/// It encompasses functionalities such as handling request states, maintaining task queues,
-/// and managing request attempts. Additionally, the class incorporates plugins,
-/// mechanisms for stopping request processing,
-/// and parameters for controlling the maximum number of request attempts.
-/// The RequestManager class plays a pivotal role in orchestrating and
-/// executing request-related tasks within the system,
-/// ensuring streamlined and organized request management.
-public final class RequestManager {
-    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
-    private var state: State = .init()
-    private let plugins: [Plugin]
-    private let stopTheLine: StopTheLine?
-    private let maxAttemptNumber: Int
-
-    public init(withPlugins plugins: [Plugin] = [],
-                stopTheLine: StopTheLine? = nil,
-                maxAttemptNumber: Int = 1) {
-        self.plugins = plugins
-        self.stopTheLine = stopTheLine
-        self.maxAttemptNumber = max(maxAttemptNumber, 1)
-    }
-
-    // MARK: - ivars
-
-    /// A request manager that returns a ``RequestResult`` type.
-    public var pure: PureRequestManager {
-        return self
-    }
-
-    /// A request manager that returns a ``Decodable`` type.
-    public var decodable: DecodableRequestManager {
-        return self
-    }
-
-    /// A request manager that returns a ``CustomDecodable`` type.
-    public func custom<T: CustomDecodable>(_ type: T.Type) -> TypedRequestManager<T.Object> {
-        return TypedRequestManager(type, parent: self)
-    }
-
-    /// A request manager that returns a ``Void`` type.
-    public private(set) lazy var void: TypedRequestManager<Void> = {
-        return custom(VoidContent.self)
-    }()
-
-    /// A request manager that returns a ``Data`` type.
-    public private(set) lazy var data: TypedRequestManager<Data> = {
-        return custom(DataContent.self)
-    }()
-
-    /// A request manager that returns a ``Data?`` type.
-    public private(set) lazy var dataOptional: TypedRequestManager<Data?> = {
-        return custom(OptionalDataContent.self)
-    }()
-
-    /// A request manager that returns a ``Image`` type.
-    public private(set) lazy var image: TypedRequestManager<Image> = {
-        return custom(ImageContent.self)
-    }()
-
-    /// A request manager that returns a ``Image?`` type.
-    public private(set) lazy var imageOptional: TypedRequestManager<Image?> = {
-        return custom(OptionalImageContent.self)
-    }()
-
-    /// A request manager that returns a `Any(JSON)` type.
-    public private(set) lazy var json: TypedRequestManager<Any> = {
-        return custom(JSONContent.self)
-    }()
-
-    /// A request manager that returns a `Any?(JSON)` type.
-    public private(set) lazy var jsonOptional: TypedRequestManager<Any?> = {
-        return custom(OptionalJSONContent.self)
-    }()
-
-    // MARK: -
-
-    private func unfreeze() {
-        let scheduledRequests = $state.mutate { state in
-            state.isRunning = true
-            return state.tasksQueue
-        }
-
-        for request in scheduledRequests {
-            request.value.request.restart()
-        }
-    }
-
-    private func makeStopTheLineAction(stopTheLine: StopTheLine,
-                                       info: Info,
-                                       data: RequestResult) {
-        let newFactory = RequestManager(withPlugins: plugins,
-                                        stopTheLine: nil,
-                                        maxAttemptNumber: maxAttemptNumber)
-        stopTheLine.action(with: newFactory,
-                           originalParameters: info.request.parameters,
-                           response: data,
-                           userInfo: info.userInfo) { [self] result in
-            switch result {
-            case .useOriginal:
-                complete(with: data, for: info)
-            case .passOver(let newResponse):
-                complete(with: newResponse, for: info)
-            case .retry:
-                break
-            }
-            unfreeze()
-        }
-    }
-
-    private func checkStopTheLine(_ result: RequestResult,
-                                  info: Info) -> Bool {
-        guard let stopTheLine else {
-            return true
-        }
-
-        let verificationResult = stopTheLine.verify(response: result,
-                                                    for: info.parameters,
-                                                    userInfo: info.userInfo)
-        switch verificationResult {
-        case .stopTheLine:
-            if state.isRunning {
-                state.isRunning = false
-            }
-            makeStopTheLineAction(stopTheLine: stopTheLine,
-                                  info: info,
-                                  data: result)
-            return false
-        case .passOver:
-            return true
-        case .retry:
-            if info.attemptNumber < maxAttemptNumber {
-                info.attemptNumber += 1
-                info.request.restart()
-                return false
-            }
-            return true
-        }
-    }
-
-    private func tryComplete(with result: RequestResult,
-                             for info: Info) {
-        guard checkStopTheLine(result, info: info) else {
-            return
-        }
-
-        complete(with: result, for: info)
-    }
-
-    private func removeRequestIfNeeded(for info: Info) {
-        $state.mutate {
-            $0.tasksQueue[info.key] = nil
-        }
-    }
-
-    private func complete(with result: RequestResult,
-                          for info: Info) {
-        let userInfo = info.userInfo
-        let plugins = info.parameters.plugins
-        do {
-            for plugin in plugins {
-                try plugin.verify(data: result, userInfo: userInfo)
-            }
-        } catch {
-            result.set(error)
-        }
-
-        removeRequestIfNeeded(for: info)
-
-        let completion = info.completion
-        completion(result, userInfo, plugins)
-    }
-
-    private func createRequest(address: Address,
-                               with parameters: Parameters,
-                               userInfo: UserInfo) throws -> Request {
-        var urlRequest = try parameters.urlRequest(for: address)
-        for plugin in parameters.plugins {
-            plugin.prepare(parameters,
-                           request: &urlRequest)
-        }
-
-        let request = Request(address: address,
-                              with: parameters,
-                              urlRequestable: urlRequest)
-        return request
-    }
-
-    private func prepare(_ parameters: Parameters) -> Parameters {
-        let newPlugins: [Plugin]
-        if plugins.isEmpty {
-            newPlugins = parameters.plugins
-        } else {
-            var plugins = parameters.plugins
-            plugins += self.plugins
-            newPlugins = plugins
-        }
-
-        var newParameters = parameters
-        newParameters.plugins = newPlugins
-            .unified()
-            .sorted { a, b in
-                return a.priority > b.priority
-            }
-        return newParameters
-    }
-}
-
-extension RequestManager: RequestManagering {}
-
-// MARK: - PureRequestManager
-
-extension RequestManager: PureRequestManager {
-    public func map<T: CustomDecodable>(data: RequestResult,
-                                        to type: T.Type,
-                                        with parameters: Parameters) -> Result<T.Object, Error> {
-        let result = type.decode(with: data, decoder: parameters.decoder ?? .init())
-        switch result {
-        case .success:
-            data.set(nil)
-        case .failure(let error):
-            data.set(error)
-        }
-
-        return result
-    }
-
-    public func request(address: Address,
-                        with parameters: Parameters,
-                        inQueue completionQueue: DelayedQueue,
-                        completion: @escaping PureRequestManager.ResponseClosure) -> SmartTasking {
-        let parameters = prepare(parameters)
-        do {
-            let request = try createRequest(address: address,
-                                            with: parameters,
-                                            userInfo: parameters.userInfo)
-            let info: Info = .init(parameters: parameters,
-                                   request: request) { result, userInfo, plugins in
-                for plugin in plugins {
-                    plugin.didFinish(withData: result, userInfo: userInfo)
-                }
-
-                completionQueue.fire {
-                    completion(result)
-                }
-            }
-
-            $state.mutate {
-                $0.tasksQueue[info.key] = info
-            }
-
-            request.serviceCompletion = { [weak self, weak info] in
-                guard let self, let info else {
-                    return
-                }
-                removeRequestIfNeeded(for: info)
-            }
-
-            request.completion = { [weak self, weak info] result in
-                guard let self, let info else {
-                    return
-                }
-                tryComplete(with: result, for: info)
-            }
-
-            return SmartTask(runAction: { [state] in
-                if state.isRunning {
-                    request.start()
-                }
-            }, cancelAction: { [request] in
-                request.cancel()
-            })
-        } catch {
-            return SmartTask(runAction: {
-                let result = RequestResult(request: nil, body: nil, response: nil, error: error)
-                completion(result)
-            })
-        }
-    }
-}
-
-// MARK: - DecodableRequestManager
-
 #if swift(>=6.0)
-extension RequestManager: DecodableRequestManager {
-    public func request<T>(opt type: T.Type,
-                           address: Address,
-                           with parameters: Parameters,
-                           inQueue completionQueue: DelayedQueue,
-                           completion: @escaping @Sendable (Result<T?, Error>) -> Void) -> SmartTasking
-    where T: Decodable & Sendable {
-        return request(address: address,
-                       with: parameters,
-                       inQueue: completionQueue) { [self] data in
-            let result = map(data: data, to: OptionalDecodableContent<T>.self, with: parameters)
-            completionQueue.fire {
-                completion(result)
-            }
-        }
-    }
+/// A protocol that represents a ``SmartRequestManager`` interface which can be used to mock requests in unit tests.
+public protocol RequestManager: Sendable {
+    /// A closure that is called when a response is received.
+    typealias ResponseClosure = (_ result: RequestResult) -> Void
 
-    public func request<T>(_ type: T.Type,
-                           address: Address,
-                           with parameters: Parameters,
-                           inQueue completionQueue: Threading.DelayedQueue,
-                           completion: @escaping @Sendable (Result<T, Error>) -> Void) -> SmartTasking
-    where T: Decodable & Sendable {
-        return request(address: address,
-                       with: parameters,
-                       inQueue: completionQueue) { [self] data in
-            let result = map(data: data, to: DecodableContent<T>.self, with: parameters)
-            completionQueue.fire {
-                completion(result)
-            }
-        }
-    }
+    /// Sends a request to the specified address with the given parameters.
+    func request(address: Address,
+                 parameters: Parameters,
+                 completionQueue: DelayedQueue,
+                 completion: @escaping ResponseClosure) -> SmartTasking
 }
 #else
-extension RequestManager: DecodableRequestManager {
-    public func request<T>(opt type: T.Type,
-                           address: Address,
-                           with parameters: Parameters,
-                           inQueue completionQueue: DelayedQueue,
-                           completion: @escaping (Result<T?, Error>) -> Void) -> SmartTasking
-    where T: Decodable {
-        return request(address: address,
-                       with: parameters,
-                       inQueue: completionQueue) { [self] data in
-            let result = map(data: data, to: OptionalDecodableContent<T>.self, with: parameters)
-            completionQueue.fire {
-                completion(result)
-            }
-        }
-    }
+/// A protocol that represents a request manager interface which can be used to mock requests in unit tests.
+public protocol RequestManager {
+    /// A closure that is called when a response is received.
+    typealias ResponseClosure = (_ result: RequestResult) -> Void
 
-    public func request<T>(_ type: T.Type,
-                           address: Address,
-                           with parameters: Parameters,
-                           inQueue completionQueue: Threading.DelayedQueue,
-                           completion: @escaping (Result<T, Error>) -> Void) -> SmartTasking
-    where T: Decodable {
-        return request(address: address,
-                       with: parameters,
-                       inQueue: completionQueue) { [self] data in
-            let result = map(data: data, to: DecodableContent<T>.self, with: parameters)
-            completionQueue.fire {
-                completion(result)
-            }
-        }
-    }
+    /// Sends a request to the specified address with the given parameters.
+    func request(address: Address,
+                 parameters: Parameters,
+                 completionQueue: DelayedQueue,
+                 completion: @escaping ResponseClosure) -> SmartTasking
 }
 #endif
 
 public extension RequestManager {
-    /// creates protocol wrapped interface instead of concrete realization
-    /// let manager: RequestManagering = RequestManager()
-    /// vs
-    /// let manager = RequestManager.create()
-    static func create(withPlugins plugins: [Plugin] = [],
-                       stopTheLine: StopTheLine? = nil,
-                       maxAttemptNumber: Int = 1) -> RequestManagering {
-        return Self(withPlugins: plugins,
-                    stopTheLine: stopTheLine,
-                    maxAttemptNumber: maxAttemptNumber)
+    /// Sends a request to the specified address with the given parameters.
+    func request(address: Address, parameters: Parameters = .init()) -> AnyRequest {
+        return .init(pure: self, address: address, parameters: parameters)
+    }
+
+    /// Sends a request to the specified address with the given parameters.
+    func request(address: Address, parameters: Parameters = .init()) async -> RequestResult {
+        return await withCheckedContinuation { [self] continuation in
+            request(address: address, parameters: parameters, completionQueue: .absent) { result in
+                continuation.resume(returning: result)
+            }
+            .detach().deferredStart()
+        }
     }
 }
 
-// MARK: - private
-
-private extension RequestManager {
-    typealias Key = ObjectIdentifier
-    #if swift(>=6.0)
-    typealias ResponseClosureWithInfo = @Sendable (_ result: RequestResult, _ userInfo: UserInfo, _ plugins: [Plugin]) -> Void
-    #else
-    typealias ResponseClosureWithInfo = (_ result: RequestResult, _ userInfo: UserInfo, _ plugins: [Plugin]) -> Void
-    #endif
-
-    final class Info {
-        let key: Key
-        let parameters: Parameters
-        let request: Request
-        let completion: ResponseClosureWithInfo
-        #if swift(>=6.0)
-        nonisolated(unsafe) var attemptNumber: Int
-        #else
-        var attemptNumber: Int
-        #endif
-
-        var userInfo: UserInfo {
-            return parameters.userInfo
-        }
-
-        init(parameters: Parameters,
-             request: Request,
-             completion: @escaping ResponseClosureWithInfo) {
-            self.key = Key(request)
-            self.parameters = parameters
-            self.request = request
-            self.completion = completion
-            self.attemptNumber = 0
-        }
+public extension RequestManager {
+    /// ``Void`` request manager.
+    var void: TypedRequestManager<Void> {
+        return .init(VoidContent(), parent: self)
     }
 
-    final class State {
-        var isRunning: Bool = true
-        var tasksQueue: [Key: Info] = [:]
+    /// ``Decodable`` request manager.
+    var decodable: DecodableRequestManager {
+        return .init(parent: self)
+    }
+
+    // MARK: - strong
+
+    /// ``Data`` request manager.
+    var data: TypedRequestManager<Data> {
+        return custom(DataContent())
+    }
+
+    /// ``Image`` request manager.
+    var image: TypedRequestManager<Image> {
+        return custom(ImageContent())
+    }
+
+    /// ``JSON`` request manager.
+    var json: TypedRequestManager<Any> {
+        return custom(JSONContent())
+    }
+
+    // MARK: - optional
+
+    /// ``Data`` request manager.
+    var dataOptional: TypedRequestManager<Data?> {
+        return customOptional(DataContent())
+    }
+
+    /// ``Image`` request manager.
+    var imageOptional: TypedRequestManager<Image?> {
+        return customOptional(ImageContent())
+    }
+
+    /// ``JSON`` request manager.
+    var jsonOptional: TypedRequestManager<Any?> {
+        return customOptional(JSONContent())
+    }
+
+    // MARK: - custom
+
+    /// Custom request manager which can be used to create a request manager with a custom ``Deserializable`` of your own choice.
+    func custom<T: Deserializable>(_ decoder: T) -> TypedRequestManager<T.Object> {
+        return .init(decoder, parent: self)
+    }
+
+    /// Custom request manager which can be used to create a request manager with a custom ``Deserializable`` of your own choice.
+    func customOptional<T: Deserializable>(_ type: T) -> TypedRequestManager<T.Object?> {
+        return .init(type, parent: self)
     }
 }
-
-#if swift(>=6.0)
-extension RequestManager: @unchecked Sendable {}
-extension RequestManager.Info: Sendable {}
-extension RequestManager.State: @unchecked Sendable {}
-#endif

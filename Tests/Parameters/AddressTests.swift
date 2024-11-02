@@ -69,6 +69,63 @@ final class AddressTests: XCTestCase {
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
+
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(.details(.init(scheme: .http, host: "www.some.com", path: ["asd"]))).append(["param": "value"])
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
+
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(.init(scheme: .http, host: "www.some.com", path: ["asd"])).append(["param": "value"])
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
+
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(.url(.spry.testMake("http://www.some.com/asd"))).append(["param": "value"])
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
+
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(.spry.testMake("http://www.some.com/asd")).append(["param": "value"])
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
+
+        actualURL = XCTAssertNoThrowError {
+            let components = URLComponents(string: "http://www.some.com/asd")!
+            let subject = try Address(.components(components)).append(["param": "value"])
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
+
+        actualURL = XCTAssertNoThrowError {
+            let components = URLComponents(string: "http://www.some.com/asd")!
+            let subject = try Address(components).append(["param": "value"])
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
+
+        actualURL = XCTAssertNoThrowError {
+            let components = URLComponents(string: "http://www.some.com/asd")!
+            let subject = Address(components)
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd"))
+
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(scheme: .http, host: "www.some.com", path: ["asd"]).append(["param": "value"])
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
+
+        actualURL = XCTAssertNoThrowError {
+            let subject = try Address(scheme: "abc", host: "www.some.com", path: ["asd"], queryItems: ["some": nil]).append(["param": "value"])
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("abc://www.some.com/asd?some&param=value"))
     }
 
     func test_init() {

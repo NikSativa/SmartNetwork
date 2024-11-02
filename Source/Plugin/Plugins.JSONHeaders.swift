@@ -2,11 +2,11 @@ import Foundation
 
 // MARK: - Plugins.JSONHeaders
 
-extension Plugins {
+public extension Plugins {
     struct JSONHeaders {
-        let priority: PluginPriority
+        public let priority: PluginPriority
 
-        init(priority: PluginPriority = .jsonHeaders) {
+        public init(priority: PluginPriority = .jsonHeaders) {
             self.priority = priority
         }
     }
@@ -15,7 +15,7 @@ extension Plugins {
 // MARK: - Plugins.JSONHeaders + Plugin
 
 extension Plugins.JSONHeaders: Plugin {
-    func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation) {
+    public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation) {
         if let host = request.url?.host,
            request.value(forHTTPHeaderField: "Host") == nil {
             request.setValue(host, forHTTPHeaderField: "Host")
@@ -34,8 +34,8 @@ extension Plugins.JSONHeaders: Plugin {
         }
     }
 
-    func didFinish(withData data: RequestResult, userInfo: UserInfo) {}
-    func verify(data: RequestResult, userInfo: UserInfo) throws {}
-    func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo) {}
-    func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo) {}
+    public func didFinish(withData data: RequestResult, userInfo: UserInfo) {}
+    public func verify(data: RequestResult, userInfo: UserInfo) throws {}
+    public func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo) {}
+    public func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo) {}
 }

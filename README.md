@@ -20,12 +20,14 @@ Light weight wrapper around URLSession for easy network requests with strong typ
 
 - predefined API for basic types: *Void, Data, any Decodable, Image, Any(JSON)*
 - *async/await* and *closure* strategies in one interface
-- use `CustomDecodable` to define your own decoding strategy or type
+- use `Deserializable` to define your own decoding strategy or type
+- decode with `keyPath` for nested json objects in response.
 - **Plugin** is like Android interceptors. Handle every *request-response* in runtime! Make your own magic with validation, logging, auth, etc...
   + *Plugins.StatusCode* to handle http status codes or use *StatusCode* directly for easy mapping to human readable enumeration
   + *Plugins.Basic* or *Plugins.Bearer* for easy use auth strategy
   + *Plugins.TokenPlugin* to update every request headers or query parameters
   + *Plugins.Curl* to print every request in curl format
+  + *Plugins.CurlOS* to print every request in curl format with OS Logger
   + *Plugins.JSONHeaders* to add json specific headers to every request
 - **PluginPriority** to define order of plugins in chain of execution 
 - **StopTheLine** mechanic to handle any case when you need to stop whole network and wait while you make something: *update auth token, handle Captcha etc..*
@@ -33,32 +35,45 @@ Light weight wrapper around URLSession for easy network requests with strong typ
 - **SmartTask** for managing the lifecycle of network requests. Cancel the task deinitiation request or handle the detached task manually - everything is under control!
 - Easily complements [SmartImage](https://github.com/NikSativa/SmartImages) for image loading.
 
-
 ### New structure of network request organization based on that new interface:
 
 ```swift
-public protocol RequestManagering {
-    // MARK: -
-
-    var pure: PureRequestManager { get }
-    var decodable: DecodableRequestManager { get }
+public protocol RequestManager {
+    /// ``Void`` request manager.
     var void: TypedRequestManager<Void> { get }
+
+    /// ``Decodable`` request manager.
+    var decodable: DecodableRequestManager { get }
 
     // MARK: - strong
 
+    /// ``Data`` request manager.
     var data: TypedRequestManager<Data> { get }
+
+    /// ``Image`` request manager.
     var image: TypedRequestManager<Image> { get }
+
+    /// ``JSON`` request manager.
     var json: TypedRequestManager<Any> { get }
 
     // MARK: - optional
 
+    /// ``Data`` request manager.
     var dataOptional: TypedRequestManager<Data?> { get }
+
+    /// ``Image`` request manager.
     var imageOptional: TypedRequestManager<Image?> { get }
+
+    /// ``JSON`` request manager.
     var jsonOptional: TypedRequestManager<Any?> { get }
 
     // MARK: - custom
 
-    func custom<T: CustomDecodable>(_ type: T.Type) -> TypedRequestManager<T.Object>
+    /// Custom request manager which can be used to create a request manager with a custom ``Deserializable`` of your own choice.
+    func custom<T: Deserializable>(_ decoder: T) -> TypedRequestManager<T.Object> 
+
+    /// Custom request manager which can be used to create a request manager with a custom ``Deserializable`` of your own choice.
+    func customOptional<T: Deserializable>(_ type: T) -> TypedRequestManager<T.Object?>
 }
 ```
 
@@ -66,7 +81,8 @@ public protocol RequestManagering {
 
 ```swift
 Task {
-    let manager = RequestManager.create()
+    let address: Address = "www.apple.com"
+    let manager = SmartRequestManager.create()
     let result = await manager.decodable.request(TestInfo.self, address: address)
     switch result {
     case .success(let obj):
@@ -75,6 +91,50 @@ Task {
         // do something with error
     }
 }
+```
+or
+```swift
+Task {
+    let address: Address = "www.apple.com"
+    let manager = SmartRequestManager.create()
+    manager.decodable.request(TestInfo.self, address: address) { result in
+        switch result {
+        case .success(let obj):
+            // do something with response
+        case .failure(let error):
+            // do something with error
+        }
+    }
+    .detach().deferredStart()
+}
+```
+or
+```swift
+Task {
+    let address: Address = "www.apple.com"
+    let manager = SmartRequestManager.create()
+    let result = await manager.request(address: address).decodeAsync(TestInfo.self)
+    switch result {
+    case .success(let obj):
+        // do something with response
+    case .failure(let error):
+        // do something with error
+    }
+}
+```
+or
+```swift
+let address: Address = "www.apple.com"
+let manager = SmartRequestManager.create()
+manager.request(address: address).decode(TestInfo.self).complete { result in
+    switch result {
+    case .success(let obj):
+        // do something with response
+    case .failure(let error):
+        // do something with error
+    }
+}
+.detach().deferredStart()
 ```
 
 ## Custom request manager
@@ -88,14 +148,14 @@ protocol KeyPathDecodable<Response> {
     static var keyPath: [String] { get }
 }
 
-extension RequestManagering {
+extension SmartRequestManager {
     func keyPathed<T: KeyPathDecodable>(_ type: T.Type = T.self) -> TypedRequestManager<T.Response?> {
-        return custom(KeyPathDecodableContent<T>.self)
+        return custom(KeyPathDecodableContent<T>())
     }
 }
 
-private struct KeyPathDecodableContent<T: KeyPathDecodable>: CustomDecodable {
-    static func decode(with data: RequestResult, decoder: @autoclosure () -> JSONDecoder) -> Result<T.Response?, Error> {
+private struct KeyPathDecodableContent<T: KeyPathDecodable>: Deserializable {
+    func decode(with data: RequestResult, parameters: Parameters) -> Result<T.Response?, Error> {
         if let error = data.error {
             return .failure(error)
         } else if let data = data.body {
@@ -104,7 +164,7 @@ private struct KeyPathDecodableContent<T: KeyPathDecodable>: CustomDecodable {
             }
 
             do {
-                let obj = try data.decode(T.Response.self, keyPath: T.keyPath, decoder: decoder())
+                let obj = try data.decode(T.Response.self, keyPath: T.keyPath)
                 return .success(obj)
             } catch {
                 return .failure(error)

@@ -10,10 +10,23 @@ public enum HTTPStubBody {
     case filePath(path: String)
     /// Data body.
     case data(Data)
-    /// Encodable body.
-    case encodable(any Encodable)
     /// Encodable body with specified JSONEncoder.
-    case encodableWithEncoder(any Encodable, JSONEncoder)
+    case encodable(any Encodable, with: JSONEncoder)
+
+    /// Encodable body.
+    public static func encodable(_ obj: any Encodable) -> Self {
+        return .encodable(obj, with: .init())
+    }
+
+    /// Encodable body.
+    public static func encode(_ obj: any Encodable) -> Self {
+        return .encodable(obj, with: .init())
+    }
+
+    /// Encodable body.
+    public static func encode(_ obj: any Encodable, with encoder: JSONEncoder) -> Self {
+        return .encodable(obj, with: encoder)
+    }
 
     #if swift(>=6.0)
     internal nonisolated(unsafe) static var iOSVerificationEnabled: Bool = true
@@ -45,13 +58,9 @@ extension HTTPStubBody {
             }
         case .data(let data):
             return data
-        case .encodable(let encodable):
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
+        case .encodable(let encodable, let encoder):
+            encoder.outputFormatting = encoder.outputFormatting.union([.sortedKeys, .prettyPrinted])
             let data = try? encoder.encode(encodable)
-            return data
-        case .encodableWithEncoder(let encodable, let jSONEncoder):
-            let data = try? jSONEncoder.encode(encodable)
             return data
         }
     }

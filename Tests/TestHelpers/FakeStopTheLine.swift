@@ -15,7 +15,7 @@ public final class FakeStopTheLine: StopTheLine, Spryable, SpryEquatable {
     }
 
     var completion: StopTheLineCompletion?
-    public func action(with manager: RequestManagering,
+    public func action(with manager: SmartRequestManager,
                        originalParameters parameters: Parameters,
                        response: RequestResult,
                        userInfo: UserInfo,

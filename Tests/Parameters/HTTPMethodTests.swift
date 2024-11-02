@@ -23,5 +23,6 @@ final class HTTPMethodTests: XCTestCase {
         }
 
         XCTAssertEqual(HTTPMethod.other("other").toString(), "other")
+        XCTAssertEqual(("other" as HTTPMethod).toString(), "other")
     }
 }
