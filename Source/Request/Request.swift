@@ -19,10 +19,10 @@ internal final class Request {
 
     let urlRequestable: URLRequestRepresentation
 
-    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     var completion: CompletionCallback?
 
-    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     var serviceCompletion: (() -> Void)?
 
     private var plugins: [Plugin] {
@@ -209,7 +209,7 @@ extension Request: CustomStringConvertible {
 private final class SessionAdaptor {
     private let session: SmartURLSession
     private let progressHandler: ProgressHandler?
-    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     private var task: SessionTask?
     private var observer: Any?
 

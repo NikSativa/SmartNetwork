@@ -17,7 +17,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/NikSativa/SpryKit.git", .upToNextMajor(from: "3.0.1")),
-        .package(url: "https://github.com/NikSativa/Threading.git", .upToNextMajor(from: "2.0.1"))
+        .package(url: "https://github.com/NikSativa/Threading.git", .upToNextMajor(from: "2.1.0"))
     ],
     targets: [
         .target(name: "SmartNetwork",

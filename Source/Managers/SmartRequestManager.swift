@@ -13,7 +13,7 @@ import Threading
 ///
 /// - Important: This is a real request manager.
 public final class SmartRequestManager {
-    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     private var state: State = .init()
     private let plugins: [Plugin]
     private let stopTheLine: StopTheLine?

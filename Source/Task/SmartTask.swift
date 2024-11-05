@@ -26,13 +26,13 @@ import Threading
 /// .deferredStart() // or `start()`
 /// ```
 public final class SmartTask {
-    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     private var cancelAction: (() -> Void)?
 
-    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     private var runAction: (() -> Void)?
 
-    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     private var shouldCancelOnDeinit: Bool = true
 
     /// Initializes a SmartTask instance with the provided run and cancel actions.

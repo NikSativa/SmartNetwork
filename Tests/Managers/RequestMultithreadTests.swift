@@ -16,9 +16,9 @@ final class RequestMultithreadTests: XCTestCase {
 
     private let testObj = TestInfo(id: 1)
 
-    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     private var exps: [XCTestExpectation] = []
-    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     private var result: [TestInfo?] = []
 
     private let subject = SmartRequestManager.create()

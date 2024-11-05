@@ -3,7 +3,7 @@ import Threading
 
 internal extension DelayedQueue {
     func unFire(_ block: @escaping () -> Void) {
-        let sendable = UnSendable(block)
+        let sendable = USendable(block)
         fire {
             sendable.value()
         }

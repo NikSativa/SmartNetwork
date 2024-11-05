@@ -7,7 +7,6 @@ import XCTest
 final class RequestEncodingErrorTests: XCTestCase {
     func test_subname() {
         XCTAssertEqual(RequestEncodingError.other(.invalidValue(111, .init(codingPath: [], debugDescription: "descr"))).subname, ".other(Swift.EncodingError.invalidValue(111, Swift.EncodingError.Context(codingPath: [], debugDescription: \"descr\", underlyingError: nil)))")
-        XCTAssertEqual(RequestEncodingError.invalidParameters.subname, "invalidParameters")
         XCTAssertEqual(RequestEncodingError.brokenURL.subname, "brokenURL")
         XCTAssertEqual(RequestEncodingError.brokenAddress.subname, "brokenAddress")
         XCTAssertEqual(RequestEncodingError.brokenHost.subname, "brokenHost")

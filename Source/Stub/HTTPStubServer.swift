@@ -34,7 +34,7 @@ public final class HTTPStubServer {
 
     public static let shared: HTTPStubServer = .init()
 
-    @Atomic(mutex: Mutex.pthread(.recursive), read: .sync, write: .sync)
+    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     private var responses: [Info] = []
     private var counter: UInt = 0
 

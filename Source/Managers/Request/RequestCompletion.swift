@@ -39,7 +39,7 @@ public extension RequestCompletion {
     func async() async -> Object {
         return await withCheckedContinuation { continuation in
             complete(in: .absent) { result in
-                let wrapped = UnSendable(result)
+                let wrapped = USendable(result)
                 continuation.resume(returning: wrapped.value)
             }
             .detach().deferredStart()
@@ -51,7 +51,7 @@ public extension RequestCompletion {
     where Object == Result<T, Error> {
         return try await withCheckedThrowingContinuation { continuation in
             complete(in: .absent) { result in
-                let wrapped = UnSendable(result)
+                let wrapped = USendable(result)
                 continuation.resume(with: wrapped.value)
             }
             .detach().deferredStart()

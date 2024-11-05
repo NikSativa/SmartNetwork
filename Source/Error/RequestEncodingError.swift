@@ -4,8 +4,6 @@ import Foundation
 public enum RequestEncodingError: Error {
     /// Wraps another EncodingError within it.
     case other(EncodingError)
-    /// Indicates an issue with invalid parameters for encoding.
-    case invalidParameters
     /// Represents errors related to a broken or malformed URL.
     case brokenURL
     /// Indicates errors related to a broken address in the request.
@@ -16,9 +14,6 @@ public enum RequestEncodingError: Error {
     case cantEncodeImage
     /// Indicates errors related to invalid JSON.
     case invalidJSON
-
-    /// Indicates errors related to encoding a body part.
-    case bodyPartInvalid
 }
 
 // MARK: - RequestErrorDescription
@@ -29,8 +24,6 @@ extension RequestEncodingError: RequestErrorDescription {
         case .other(let encodingError):
             let description = (encodingError as NSError).description
             return ".other(\(description))"
-        case .invalidParameters:
-            return "invalidParameters"
         case .brokenURL:
             return "brokenURL"
         case .brokenAddress:
@@ -41,8 +34,6 @@ extension RequestEncodingError: RequestErrorDescription {
             return "cantEncodeImage"
         case .invalidJSON:
             return "invalidJSON"
-        case .bodyPartInvalid:
-            return "bodyPartInvalid"
         }
     }
 }

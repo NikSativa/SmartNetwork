@@ -64,7 +64,7 @@ public extension DecodableRequestManager {
                     parameters: parameters,
                     decoding: decoding,
                     completionQueue: .absent) { data in
-                let sendable = UnSendable(data)
+                let sendable = USendable(data)
                 completion.resume(returning: sendable.value)
             }
             .detach().deferredStart()
@@ -85,7 +85,7 @@ public extension DecodableRequestManager {
                             parameters: parameters,
                             decoding: decoding,
                             completionQueue: .absent) { data in
-                let sendable = UnSendable(data)
+                let sendable = USendable(data)
                 completion.resume(returning: sendable.value)
             }
             .detach().deferredStart()
@@ -108,7 +108,7 @@ public extension DecodableRequestManager {
                     parameters: parameters,
                     decoding: decoding,
                     completionQueue: .absent) { data in
-                let sendable = UnSendable(data)
+                let sendable = USendable(data)
                 completion.resume(with: sendable.value)
             }
             .detach().deferredStart()
@@ -129,7 +129,7 @@ public extension DecodableRequestManager {
                             parameters: parameters,
                             decoding: decoding,
                             completionQueue: .absent) { data in
-                let sendable = UnSendable(data)
+                let sendable = USendable(data)
                 completion.resume(with: sendable.value)
             }
             .detach().deferredStart()

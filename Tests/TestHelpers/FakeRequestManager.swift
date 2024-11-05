@@ -19,7 +19,7 @@ final class FakeRequestManager: RequestManager, @unchecked Sendable {
     }
 
     func request(address: Address, parameters: Parameters, completionQueue: DelayedQueue, completion: @escaping ResponseClosure) -> SmartTasking {
-        let sendable = UnSendable(completion)
+        let sendable = USendable(completion)
         Queue.default.async { [sendable, response] in
             Queue.main.sync {
                 sendable.value(response ?? .testMake())
