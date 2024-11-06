@@ -8,7 +8,7 @@ public extension Address {
     static func testMake(scheme: Scheme? = .https,
                          host: String = "www.apple.com",
                          path: [String] = [],
-                         queryItems: QueryItems = [],
+                         queryItems: QueryItems = [:],
                          fragment: String? = nil,
                          shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
                          shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) -> Self {
@@ -24,7 +24,7 @@ public extension Address {
     static func testMake(scheme: Scheme? = .https,
                          host: String = "www.apple.com",
                          endpoint: String,
-                         queryItems: QueryItems = [],
+                         queryItems: QueryItems = [:],
                          fragment: String? = nil,
                          shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
                          shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) -> Self {

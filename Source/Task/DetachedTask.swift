@@ -9,7 +9,7 @@ import Threading
 ///
 /// - Important: ``DetachedTask`` is designed to be detached from the request, which means request will not be canceled when the task is deallocated.
 /// - Note: Don't forget that ``AnyCancellable`` is cancelling the task on deinitialization.
-public protocol DetachedTask: Cancellable {
+public protocol DetachedTask: Cancellable, CustomDebugStringConvertible, CustomStringConvertible {
     /// The user information associated with the task.
     ///
     /// - Note: you can use the ``.smartTaskRequestAddressKey`` key to determine which request the task belongs to.
@@ -27,9 +27,19 @@ public protocol DetachedTask: Cancellable {
     func deferredStart() -> Self
 }
 
+public extension DetachedTask {
+    var description: String {
+        return userInfo.description
+    }
+
+    var debugDescription: String {
+        return userInfo.debugDescription
+    }
+}
+
 public extension UserInfoKey {
     /// The key used to determine which request the task belongs to
-    static let smartTaskRequestAddressKey: Self = "SmartNetwork.SmartTask.Request.Address"
+    static let smartTaskRequestAddressKey: Self = "SmartNetwork.SmartTask.Request.Address.Key"
 }
 
 internal extension SmartTask {

@@ -15,27 +15,13 @@ public struct AddressDetails: Hashable {
                 host: String,
                 port: Int? = nil,
                 path: [String] = [],
-                queryItems: QueryItems = [],
+                queryItems: QueryItems = [:],
                 fragment: String? = nil) {
         self.scheme = scheme
         self.host = host
         self.port = port
         self.path = path
         self.queryItems = queryItems
-        self.fragment = fragment
-    }
-
-    public init(scheme: Scheme? = .https,
-                host: String,
-                port: Int? = nil,
-                path: [String] = [],
-                queryItems: [String: String?],
-                fragment: String? = nil) {
-        self.scheme = scheme
-        self.host = host
-        self.port = port
-        self.path = path
-        self.queryItems = .init(queryItems)
         self.fragment = fragment
     }
 }
@@ -48,7 +34,7 @@ public extension AddressDetails {
         self.path = components.path.components(separatedBy: "/")
         self.fragment = components.fragment
 
-        let items: [QueryItems.Element] = (components.queryItems ?? []).map {
+        let items: [SmartItem<String?>] = (components.queryItems ?? []).map {
             return .init(key: $0.name, value: $0.value)
         }
         self.queryItems = .init(items)
@@ -65,22 +51,41 @@ public extension AddressDetails {
     }
 }
 
-// MARK: - CustomDebugStringConvertible, CustomStringConvertible
+// MARK: - CustomDebugStringConvertible
 
-extension AddressDetails: CustomDebugStringConvertible, CustomStringConvertible {
-    public var description: String {
-        return makeDescription()
-    }
-
+extension AddressDetails: CustomDebugStringConvertible {
     public var debugDescription: String {
         return makeDescription()
     }
+}
 
+// MARK: - CustomStringConvertible
+
+extension AddressDetails: CustomStringConvertible {
+    public var description: String {
+        return makeDescription()
+    }
+}
+
+private extension AddressDetails {
     private func makeDescription() -> String {
-        if let url = try? url(shouldAddSlashAfterEndpoint: false, shouldRemoveSlashesForEmptyScheme: true) {
-            return url.absoluteString
-        }
-        return "AddressDetails(\(scheme?.toString() ?? "nil"), \(host), \(port ?? 0), \(path), \(fragment ?? ""))"
+        let text: [String?] = [
+            scheme?.toString().map { "\($0)://" },
+            host,
+            port.map { ":\($0)" },
+            path.isEmpty ? nil : "/",
+            path.joined(separator: "/"),
+            queryItems.isEmpty ? nil : "?",
+            queryItems.mapToDescription().map {
+                if let value = $0.value {
+                    return "\($0.key)=\(value)"
+                }
+                return $0.key
+            }.joined(separator: "&"),
+            fragment.map { "#\($0)" }
+        ]
+
+        return text.filterNils().joined()
     }
 }
 

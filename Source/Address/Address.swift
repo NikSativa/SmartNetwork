@@ -81,7 +81,7 @@ public extension Address {
          host: String,
          port: Int? = nil,
          path: [String] = [],
-         queryItems: QueryItems = [],
+         queryItems: QueryItems = [:],
          fragment: String? = nil,
          shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
          shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) {
@@ -96,26 +96,6 @@ public extension Address {
                                      fragment: fragment)
         self.source = .details(details)
     }
-
-    init(scheme: Scheme? = .https,
-         host: String,
-         port: Int? = nil,
-         path: [String] = [],
-         queryItems: [String: String?],
-         fragment: String? = nil,
-         shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
-         shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) {
-        self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
-        self.shouldRemoveSlashesForEmptyScheme = shouldRemoveSlashesForEmptyScheme
-
-        let details = AddressDetails(scheme: scheme,
-                                     host: host,
-                                     port: port,
-                                     path: path,
-                                     queryItems: .init(queryItems),
-                                     fragment: fragment)
-        self.source = .details(details)
-    }
 }
 
 // MARK: - ExpressibleByStringLiteral
@@ -123,6 +103,64 @@ public extension Address {
 extension Address: ExpressibleByStringLiteral {
     public init(stringLiteral value: String) {
         self.init(value)
+    }
+}
+
+// MARK: - CustomDebugStringConvertible
+
+extension Address: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        if let url = try? url() {
+            return url.absoluteString
+        }
+
+        return source.debugDescription
+    }
+}
+
+// MARK: - CustomStringConvertible
+
+extension Address: CustomStringConvertible {
+    public var description: String {
+        if let url = try? url() {
+            return url.absoluteString
+        }
+
+        return source.description
+    }
+}
+
+// MARK: - Address.Source + CustomDebugStringConvertible
+
+extension Address.Source: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .url(let url):
+            return url.debugDescription
+        case .string(let str):
+            return str
+        case .components(let components):
+            return components.debugDescription
+        case .details(let details):
+            return details.debugDescription
+        }
+    }
+}
+
+// MARK: - Address.Source + CustomStringConvertible
+
+extension Address.Source: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .url(let url):
+            return url.description
+        case .string(let str):
+            return str
+        case .components(let components):
+            return components.description
+        case .details(let details):
+            return details.description
+        }
     }
 }
 

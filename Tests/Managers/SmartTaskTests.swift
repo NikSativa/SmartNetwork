@@ -19,11 +19,6 @@ final class SmartTaskTests: XCTestCase {
 
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
             subject.value.start()
-            #if (os(macOS) || os(iOS) || supportsVisionOS) && (arch(x86_64) || arch(arm64))
-            XCTAssertThrowsAssertion {
-                subject.value.start()
-            }
-            #endif
 
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
                 subject.value.cancel()

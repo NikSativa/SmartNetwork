@@ -88,14 +88,14 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
         let newUrl: String
         switch operation {
         case .set(let key):
-            let newParam = [key, value].compactMap { $0 }.joined(separator: "=")
+            let newParam = [key, value].filterNils().joined(separator: "=")
             if url == Constant.url {
                 newUrl = [url.absoluteString, "?", newParam].joined()
             } else {
                 newUrl = url.absoluteString.replacingOccurrences(of: "my_token_key=broken_token_string", with: newParam)
             }
         case .add(let key):
-            let newParam = [key, value].compactMap { $0 }.joined(separator: "=")
+            let newParam = [key, value].filterNils().joined(separator: "=")
             if url == Constant.url {
                 newUrl = [url.absoluteString, "?", newParam].joined()
             } else {

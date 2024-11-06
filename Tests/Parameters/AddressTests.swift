@@ -168,21 +168,21 @@ final class AddressTests: XCTestCase {
 
 private func XCTAssertAddress(expected: String,
                               path: [String] = [],
-                              queryItems: QueryItems = [],
+                              queryItems: QueryItems = [:],
                               fragment: String? = nil,
                               shouldAddSlashAfterEndpoint: Bool = false,
                               shouldRemoveSlashesForEmptyScheme: Bool = false,
                               file: StaticString = #filePath,
                               line: UInt = #line) {
+    let subject = Address(scheme: .https,
+                          host: "some.com",
+                          port: 11,
+                          path: path,
+                          queryItems: queryItems,
+                          fragment: fragment,
+                          shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
+                          shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
     let mainUrl = XCTAssertNoThrowError(file: file, line: line) {
-        let subject = Address(scheme: .https,
-                              host: "some.com",
-                              port: 11,
-                              path: path,
-                              queryItems: queryItems,
-                              fragment: fragment,
-                              shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
-                              shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
         return try subject.url()
     }
     let expectedURL: URL = .spry.testMake(expected)
@@ -203,4 +203,7 @@ private func XCTAssertAddress(expected: String,
         return try subject.url()
     }
     XCTAssertEqual(stringURL, mainUrl, file: file, line: line)
+
+    XCTAssertEqual(subject.description, expected, file: file, line: line)
+    XCTAssertEqual(subject.debugDescription, expected, file: file, line: line)
 }

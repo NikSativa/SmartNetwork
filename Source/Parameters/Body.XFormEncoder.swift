@@ -26,7 +26,7 @@ extension Body {
         static func encodeParameters(parameters: [String: Any]) -> Data? {
             return parameters
                 .map { key, value -> String in
-                    return [key, percentEscapeString(value)].compactMap { $0 }.joined(separator: "=")
+                    return [key, percentEscapeString(value)].filterNils().joined(separator: "=")
                 }
                 .joined(separator: "&").data(using: String.Encoding.utf8)
         }

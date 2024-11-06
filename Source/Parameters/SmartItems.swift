@@ -1,50 +1,83 @@
 import Foundation
 
 /// Type representing query items. It is an array of key-value pairs.
-public typealias QueryItems = [SmartItem<String?>]
+public typealias QueryItems = SmartItems<String?>
 
 /// The header fields of a network request.
-public typealias HeaderFields = [SmartItem<String>]
+public typealias HeaderFields = SmartItems<String>
 
-public extension Array {
-    init<T>(_ items: [String: T])
-        where T: Hashable, Element == SmartItem<T> {
-        self.init(items.map(Element.init(key:value:)))
+/// The ``SmartItem`` struct in Swift represents a key-value pairs collection.
+/// This struct is intended to encapsulate a pair of key and value for constructing and processing key-value pairs effectively within the system.
+public struct SmartItems<T: Hashable>: Hashable {
+    private var rawValues: [SmartItem<T>]
+}
+
+public extension SmartItems {
+    /// Initializes a new instance with the provided items.
+    init(_ items: [SmartItem<T>]) {
+        self.rawValues = items
     }
 
-    /// add new one
-    mutating func append<T>(key: String, value: T)
-    where T: Hashable, Element == SmartItem<T> {
-        append(.init(key: key, value: value))
+    /// Initializes a new instance with the provided items.
+    init(_ items: [String: T]) {
+        self.rawValues = items.map(SmartItem.init(key:value:))
     }
 
-    /// - NOTE: replacing all previously added items and add new one
-    mutating func set<T>(_ item: SmartItem<T>)
-    where T: Hashable, Element == SmartItem<T> {
-        self = filter {
+    /// Initializes a new instance with the provided items.
+    init() {
+        self.rawValues = []
+    }
+
+    /// A Boolean value indicating whether the collection is empty.
+    var isEmpty: Bool {
+        return rawValues.isEmpty
+    }
+
+    /// The number of items in the collection.
+    var count: Int {
+        return rawValues.count
+    }
+
+    /// Adds a new element at the end of the array.
+    mutating func append(key: String, value: T) {
+        rawValues.append(.init(key: key, value: value))
+    }
+
+    /// Sets a new element at the end of the array.
+    ///
+    /// - Important: If the key already exists, it will be replaced.
+    mutating func set(_ item: SmartItem<T>) {
+        rawValues = rawValues.filter {
             return $0.key != item.key
         }
-        append(item)
+        rawValues.append(item)
     }
 
-    /// - NOTE: replacing all previously added items and add new one
-    mutating func set<T>(key: String, value: T)
-    where T: Hashable, Element == SmartItem<T> {
+    /// Sets a new element at the end of the array.
+    ///
+    /// - Important: If the key already exists, it will be replaced.
+    mutating func set(key: String, value: T) {
         set(.init(key: key, value: value))
     }
 
-    mutating func removeAll<T>(byKey key: String)
-    where T: Hashable, Element == SmartItem<T> {
-        self = filter {
+    /// Removes all elements from the collection.
+    mutating func removeAll() {
+        rawValues = []
+    }
+
+    /// Removes all elements from the collection with the specified key.
+    mutating func removeAll(byKey key: String) {
+        rawValues = rawValues.filter {
             return $0.key != key
         }
     }
 
     /// Subscript to get or set an item by key.
-    subscript<T>(key: String) -> Element?
-        where T: Hashable, Element == SmartItem<T> {
+    /// - Parameter key: The key to search for.
+    /// - Returns: the first element of the sequence that satisfies the given key.
+    subscript(key: String) -> SmartItem<T>? {
         get {
-            return first {
+            return rawValues.first {
                 return $0.key == key
             }
         }
@@ -56,12 +89,24 @@ public extension Array {
             }
         }
     }
+
+    /// Filters the elements of the collection.
+    func filter(_ isIncluded: (SmartItem<T>) throws -> Bool) rethrows -> Self {
+        let filtered = try rawValues.filter(isIncluded)
+        return .init(filtered)
+    }
+
+    /// Returns new collection with the elements of both collections.
+    @inline(__always)
+    static func +(lhs: Self, rhs: Self) -> Self {
+        return .init(lhs.rawValues + rhs.rawValues)
+    }
 }
 
-internal extension Array {
+internal extension SmartItems where T == String {
     func mapToResponse() -> [String: String]
-    where Element == SmartItem<String> {
-        let keysAndValues: [(String, String)] = map { ($0.key, $0.value) }
+    where T == String {
+        let keysAndValues: [(String, String)] = rawValues.map { ($0.key, $0.value) }
         let fields: [String: String] = .init(keysAndValues) { a, b in
             return [a, b].joined(separator: ",")
         }
@@ -69,22 +114,68 @@ internal extension Array {
     }
 }
 
+internal extension SmartItems where T == String? {
+    func mapToDescription() -> [String: String?] {
+        let keysAndValues: [(String, String?)] = rawValues.map { ($0.key, $0.value) }
+        let fields: [String: String?] = .init(keysAndValues) { a, b in
+            return [a, b].filterNils().joined(separator: ",")
+        }
+        return fields
+    }
+}
+
+// MARK: - Sequence
+
+extension SmartItems: Sequence {
+    public struct Iterator: IteratorProtocol {
+        private var index: Int
+        private let items: [SmartItem<T>]
+
+        internal init(items: [SmartItem<T>]) {
+            self.index = 0
+            self.items = items
+        }
+
+        public mutating func next() -> SmartItem<T>? {
+            if index < items.count {
+                let item = items[index]
+                index += 1
+                return item
+            } else {
+                return nil
+            }
+        }
+    }
+
+    public func makeIterator() -> Iterator {
+        return .init(items: rawValues)
+    }
+}
+
+// MARK: - CustomDebugStringConvertible
+
+extension SmartItems: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return rawValues.debugDescription
+    }
+}
+
+// MARK: - CustomStringConvertible
+
+extension SmartItems: CustomStringConvertible {
+    public var description: String {
+        return rawValues.description
+    }
+}
+
 // MARK: - ExpressibleByDictionaryLiteral
 
-#if hasFeature(RetroactiveAttribute) && swift(>=5.9)
-extension QueryItems: @retroactive ExpressibleByDictionaryLiteral {
-    public init(dictionaryLiteral elements: (String, String?)...) {
-        self = elements.map(Element.init(key:value:))
+extension SmartItems: ExpressibleByDictionaryLiteral {
+    public init(dictionaryLiteral elements: (String, T)...) {
+        self.rawValues = elements.map(SmartItem.init(key:value:))
     }
 }
-#else
-extension QueryItems: ExpressibleByDictionaryLiteral {
-    public init(dictionaryLiteral elements: (String, String?)...) {
-        self = elements.map(Element.init(key:value:))
-    }
-}
-#endif
 
 #if swift(>=6.0)
-extension QueryItems: Sendable {}
+extension SmartItems: @unchecked Sendable {}
 #endif

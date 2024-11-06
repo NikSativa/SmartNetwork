@@ -46,22 +46,22 @@ public extension Address {
 
     static func +(lhs: Self, rhs: QueryItems) throws -> Self {
         let details = try lhs.detailed + rhs
-        return Self(details,
-                    shouldAddSlashAfterEndpoint: lhs.shouldAddSlashAfterEndpoint,
-                    shouldRemoveSlashesForEmptyScheme: lhs.shouldRemoveSlashesForEmptyScheme)
+        return .init(details,
+                     shouldAddSlashAfterEndpoint: lhs.shouldAddSlashAfterEndpoint,
+                     shouldRemoveSlashesForEmptyScheme: lhs.shouldRemoveSlashesForEmptyScheme)
     }
 
     static func +(lhs: Self, rhs: [String]) throws -> Self {
         let details = try lhs.detailed + rhs
-        return Self(details,
-                    shouldAddSlashAfterEndpoint: lhs.shouldAddSlashAfterEndpoint,
-                    shouldRemoveSlashesForEmptyScheme: lhs.shouldRemoveSlashesForEmptyScheme)
+        return .init(details,
+                     shouldAddSlashAfterEndpoint: lhs.shouldAddSlashAfterEndpoint,
+                     shouldRemoveSlashesForEmptyScheme: lhs.shouldRemoveSlashesForEmptyScheme)
     }
 
     static func +(lhs: Self, rhs: String) throws -> Self {
         let details = try lhs.detailed + rhs
-        return Self(details,
-                    shouldAddSlashAfterEndpoint: lhs.shouldAddSlashAfterEndpoint,
-                    shouldRemoveSlashesForEmptyScheme: lhs.shouldRemoveSlashesForEmptyScheme)
+        return .init(details,
+                     shouldAddSlashAfterEndpoint: lhs.shouldAddSlashAfterEndpoint,
+                     shouldRemoveSlashesForEmptyScheme: lhs.shouldRemoveSlashesForEmptyScheme)
     }
 }

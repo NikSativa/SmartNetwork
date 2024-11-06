@@ -28,29 +28,29 @@ public extension AddressDetails {
     }
 
     static func +(lhs: Self, rhs: QueryItems) -> Self {
-        return Self(scheme: lhs.scheme,
-                    host: lhs.host,
-                    port: lhs.port,
-                    path: lhs.path,
-                    queryItems: lhs.queryItems + rhs,
-                    fragment: lhs.fragment)
+        return .init(scheme: lhs.scheme,
+                     host: lhs.host,
+                     port: lhs.port,
+                     path: lhs.path,
+                     queryItems: lhs.queryItems + rhs,
+                     fragment: lhs.fragment)
     }
 
     static func +(lhs: Self, rhs: [String]) -> Self {
-        return Self(scheme: lhs.scheme,
-                    host: lhs.host,
-                    port: lhs.port,
-                    path: lhs.path + rhs,
-                    queryItems: lhs.queryItems,
-                    fragment: lhs.fragment)
+        return .init(scheme: lhs.scheme,
+                     host: lhs.host,
+                     port: lhs.port,
+                     path: lhs.path + rhs,
+                     queryItems: lhs.queryItems,
+                     fragment: lhs.fragment)
     }
 
     static func +(lhs: Self, rhs: String) -> Self {
-        return Self(scheme: lhs.scheme,
-                    host: lhs.host,
-                    port: lhs.port,
-                    path: lhs.path + [rhs],
-                    queryItems: lhs.queryItems,
-                    fragment: lhs.fragment)
+        return .init(scheme: lhs.scheme,
+                     host: lhs.host,
+                     port: lhs.port,
+                     path: lhs.path + [rhs],
+                     queryItems: lhs.queryItems,
+                     fragment: lhs.fragment)
     }
 }

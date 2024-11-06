@@ -39,28 +39,34 @@ extension UserInfo: ExpressibleByDictionaryLiteral {
     }
 }
 
-// MARK: - CustomDebugStringConvertible, CustomStringConvertible
+// MARK: - CustomDebugStringConvertible
 
-extension UserInfo: CustomDebugStringConvertible, CustomStringConvertible {
-    public var description: String {
-        return makeDescription() ?? values.description
-    }
-
+extension UserInfo: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return makeDescription() ?? values.debugDescription
+        return values.prettyPrinted() ?? values.description
     }
+}
 
-    private func makeDescription() -> String? {
+// MARK: - CustomStringConvertible
+
+extension UserInfo: CustomStringConvertible {
+    public var description: String {
+        return values.prettyPrinted() ?? values.description
+    }
+}
+
+private extension Dictionary {
+    func prettyPrinted() -> String? {
+        if isEmpty {
+            return "{}"
+        }
+
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .withoutEscapingSlashes, .sortedKeys]
 
-        let json: [UserInfoKey: String] = values.mapValues { value in
-            if let enc = value as? Encodable,
-               let data = try? encoder.encode(enc),
-               let text = String(data: data, encoding: .utf8) {
-                return text
-            }
-            return "\(value)"
+        var json: [String: String] = [:]
+        for (key, value) in self {
+            json[convert(key, encoder: encoder)] = convert(value, encoder: encoder)
         }
 
         guard let data = try? encoder.encode(json) else {
@@ -70,6 +76,25 @@ extension UserInfo: CustomDebugStringConvertible, CustomStringConvertible {
         let text = String(data: data, encoding: .utf8)
         return text
     }
+}
+
+@inline(__always)
+private func convert(_ value: Any, encoder: @autoclosure () -> JSONEncoder) -> String {
+    let strValue: String
+    if let str = value as? String {
+        strValue = str
+    } else if let value = value as? Encodable,
+              let data = try? encoder().encode(value),
+              let text = String(data: data, encoding: .utf8) {
+        strValue = text
+    } else if let value = value as? CustomStringConvertible {
+        strValue = value.description
+    } else if let value = value as? CustomDebugStringConvertible {
+        strValue = value.debugDescription
+    } else {
+        strValue = "\(value)"
+    }
+    return strValue
 }
 
 #if swift(>=6.0)

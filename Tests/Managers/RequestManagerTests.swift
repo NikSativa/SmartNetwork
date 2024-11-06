@@ -30,7 +30,7 @@ final class RequestManagerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         HTTPStubServer.shared.add(condition: .isHost(Constant.host1),
-                                  header: [.testMake(key: "some", value: "value1"), .testMake(key: "some", value: "value2")],
+                                  header: .init([.testMake(key: "some", value: "value1"), .testMake(key: "some", value: "value2")]),
                                   body: .encode(TestInfo(id: 1)),
                                   delayInSeconds: nil).store(in: &observers)
         HTTPStubServer.shared.add(condition: .isHost(Constant.host2),

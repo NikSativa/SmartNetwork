@@ -18,7 +18,7 @@ public extension RequestCompletion {
         return complete(in: RequestSettings.defaultResponseQueue, completion: completion)
     }
 
-    /// Completes the request without a completion.
+    /// Completes the request without a completion and starts it asynchronously.
     @discardableResult
     func oneWay() -> DetachedTask {
         return complete(in: RequestSettings.defaultResponseQueue) { _ in
@@ -47,7 +47,7 @@ public extension RequestCompletion {
     }
 
     /// Completes and start asynchronously the request with throwing error.
-    func asyncWithThrowing<T>() async throws -> T
+    func asyncWithThrowing<T>(_: T.Type = T.self) async throws -> T
     where Object == Result<T, Error> {
         return try await withCheckedThrowingContinuation { continuation in
             complete(in: .absent) { result in

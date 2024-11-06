@@ -14,6 +14,7 @@ public struct SmartItem<T: Hashable>: Hashable {
     /// The value of the query item.
     public let value: T
 
+    /// Initializes a new instance with the provided key and value.
     public init(key: String, value: T) {
         self.key = key
         self.value = value

@@ -41,13 +41,28 @@ final class AnyRequestTests: XCTestCase {
         task.stub(.detach).andReturn(detachedTask)
         detachedTask.stub(.deferredStart).andReturn(detachedTask)
 
-        let exp = expectation(description: "\(#function) wait")
-        manager.fire {
-            await subject.async()
-        } completion: { _ in
-            exp.fulfill()
+        let exp1 = expectation(description: "\(#function) wait 1")
+        exp1.isInverted = true
+        Task.detached {
+            _ = await subject.async()
+            exp1.fulfill()
         }
-        wait(for: [exp], timeout: 1)
+        wait(for: [exp1], timeout: 0.1)
+
+        XCTAssertHaveReceived(manager, .requestWithAddress_Parameters_Completionqueue_Completion, countSpecifier: .atLeast(1))
+        XCTAssertHaveReceived(detachedTask, .deferredStart, countSpecifier: .atLeast(1))
+        XCTAssertHaveReceived(task, .detach, countSpecifier: .atLeast(1))
+        manager.resetCalls()
+        detachedTask.resetCalls()
+        task.resetCalls()
+
+        let exp2 = expectation(description: "\(#function) wait 2")
+        exp2.isInverted = true
+        Task.detached {
+            _ = try? await subject.decode(TestInfo.self).asyncWithThrowing()
+            exp2.fulfill()
+        }
+        wait(for: [exp2], timeout: 0.1)
 
         XCTAssertHaveReceived(manager, .requestWithAddress_Parameters_Completionqueue_Completion, countSpecifier: .atLeast(1))
         XCTAssertHaveReceived(detachedTask, .deferredStart, countSpecifier: .atLeast(1))
@@ -77,20 +92,27 @@ final class AnyRequestTests: XCTestCase {
         manager.stub(.requestWithAddress_Parameters_Completionqueue_Completion).andReturn(task)
 
         let exp1 = expectation(description: "\(#function) wait 1")
-        manager.fire {
-            await subject.decodeAsync(TestInfo.self, with: { .init() }, keyPath: [])
-        } completion: { _ in
+        exp1.isInverted = true
+        Task.detached {
+            _ = await subject.decodeAsync(TestInfo.self, with: { .init() }, keyPath: [])
             exp1.fulfill()
         }
-        wait(for: [exp1], timeout: 1)
+        wait(for: [exp1], timeout: 0.1)
+
+        XCTAssertHaveReceived(manager, .requestWithAddress_Parameters_Completionqueue_Completion, countSpecifier: .atLeast(1))
+        XCTAssertHaveReceived(detachedTask, .deferredStart, countSpecifier: .atLeast(1))
+        XCTAssertHaveReceived(task, .detach, countSpecifier: .atLeast(1))
+        manager.resetCalls()
+        detachedTask.resetCalls()
+        task.resetCalls()
 
         let exp2 = expectation(description: "\(#function) wait 2")
-        manager.fire {
-            try? await subject.decodeAsyncWithThrowing(TestInfo.self, with: { .init() }, keyPath: [])
-        } completion: { _ in
+        exp2.isInverted = true
+        Task.detached {
+            _ = try? await subject.decodeAsyncWithThrowing(TestInfo.self, with: { .init() }, keyPath: [])
             exp2.fulfill()
         }
-        wait(for: [exp2], timeout: 1)
+        wait(for: [exp2], timeout: 0.1)
 
         XCTAssertHaveReceived(manager, .requestWithAddress_Parameters_Completionqueue_Completion, countSpecifier: .atLeast(1))
         XCTAssertHaveReceived(detachedTask, .deferredStart, countSpecifier: .atLeast(1))

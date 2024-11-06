@@ -69,8 +69,6 @@ extension SmartTask: SmartTasking {
 
 extension SmartTask: DetachedTask {
     public func start() {
-        assert(runAction != nil, "should be called only once")
-
         let runAction = $runAction.mutate { runAction in
             let action = runAction
             runAction = nil

@@ -13,21 +13,19 @@ public struct UserInfoKey: RawRepresentable, Hashable, ExpressibleByStringLitera
     }
 }
 
-// MARK: - Decodable
+// MARK: - CustomDebugStringConvertible
 
-extension UserInfoKey: Decodable {
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        self.rawValue = try container.decode(String.self)
+extension UserInfoKey: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return rawValue
     }
 }
 
-// MARK: - Encodable
+// MARK: - CustomStringConvertible
 
-extension UserInfoKey: Encodable {
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(rawValue)
+extension UserInfoKey: CustomStringConvertible {
+    public var description: String {
+        return rawValue
     }
 }
 

@@ -2,6 +2,8 @@ import Foundation
 import Threading
 
 /// This struct represents the parameters required for a network request.
+///
+/// - Note: You can use ``UserInfo`` to pass data between any part of the network layer like ``Plugin``, ``Stopper`` etc.
 public struct Parameters {
     /// The header fields for the request.
     public let header: HeaderFields
@@ -22,10 +24,13 @@ public struct Parameters {
     /// The session for the request
     public let session: SmartURLSession?
 
-    /// used only on client side. best practice to use it to identify request in the Plugin's
+    /// ``UserInfo`` for the request.
+    ///
+    /// - Note: You can use ``UserInfo`` to pass data between any part of the network layer like ``Plugin``, ``Stopper`` etc.
     public let userInfo: UserInfo
 
-    public init(header: HeaderFields = [],
+    /// Initializes a new Parameters object.
+    public init(header: HeaderFields = [:],
                 method: HTTPMethod? = .get,
                 body: Body? = nil,
                 plugins: [Plugin] = [],
@@ -46,35 +51,15 @@ public struct Parameters {
         self.userInfo = userInfo
         self.session = session
     }
+}
 
-    public init(header: [String: String],
-                method: HTTPMethod? = .get,
-                body: Body? = nil,
-                plugins: [Plugin] = [],
-                cacheSettings: CacheSettings? = nil,
-                requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
-                timeoutInterval: TimeInterval = RequestSettings.timeoutInterval,
-                progressHandler: ProgressHandler? = nil,
-                userInfo: UserInfo = .init(),
-                session: SmartURLSession? = nil) {
-        self.header = .init(header)
-        self.method = method
-        self.body = body
-        self.plugins = plugins
-        self.timeoutInterval = timeoutInterval
-        self.cacheSettings = cacheSettings
-        self.requestPolicy = requestPolicy
-        self.progressHandler = progressHandler
-        self.userInfo = userInfo
-        self.session = session
-    }
-
+public extension Parameters {
     /// Generates a URLRequest representation of the Parameters for a given address.
     /// - Parameters:
     ///   - address: The ``Address`` to generate the ``URL`` for the request.
     /// - Returns: A representation of the ``URLRequest`` based on the Parameters.
     /// - Throws: An error if ``URL`` creation or request building fails.
-    public func urlRequest(for address: Address) throws -> URLRequestRepresentation {
+    func urlRequest(for address: Address) throws -> URLRequestRepresentation {
         let url = try address.url()
         var request = URLRequest(url: url,
                                  cachePolicy: requestPolicy,
@@ -88,6 +73,36 @@ public struct Parameters {
         try body.fill(&request)
 
         return request
+    }
+
+    /// Adds headers to the parameters.
+    @inline(__always)
+    static func +(lhs: Self, rhs: HeaderFields) -> Self {
+        return .init(header: lhs.header + rhs,
+                     method: lhs.method,
+                     body: lhs.body,
+                     plugins: lhs.plugins,
+                     cacheSettings: lhs.cacheSettings,
+                     requestPolicy: lhs.requestPolicy,
+                     timeoutInterval: lhs.timeoutInterval,
+                     progressHandler: lhs.progressHandler,
+                     userInfo: lhs.userInfo,
+                     session: lhs.session)
+    }
+
+    /// Adds plugins to the parameters.
+    @inline(__always)
+    static func +(lhs: Self, rhs: [Plugin]) -> Self {
+        return .init(header: lhs.header,
+                     method: lhs.method,
+                     body: lhs.body,
+                     plugins: lhs.plugins + rhs,
+                     cacheSettings: lhs.cacheSettings,
+                     requestPolicy: lhs.requestPolicy,
+                     timeoutInterval: lhs.timeoutInterval,
+                     progressHandler: lhs.progressHandler,
+                     userInfo: lhs.userInfo,
+                     session: lhs.session)
     }
 }
 

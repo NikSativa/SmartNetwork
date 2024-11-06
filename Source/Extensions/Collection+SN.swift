@@ -20,6 +20,14 @@ internal extension Collection {
     var nilIfEmpty: Self? {
         return isEmpty ? nil : self
     }
+
+    func filterNils<T>() -> [T] where Element == T? {
+        #if swift(>=6.0)
+        return compactMap(\.self)
+        #else
+        return compactMap { $0 }
+        #endif
+    }
 }
 
 internal extension Optional where Wrapped: Collection {

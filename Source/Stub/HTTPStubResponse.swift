@@ -14,7 +14,7 @@ public struct HTTPStubResponse {
 
     /// Initializes an HTTPStubResponse object with the provided parameters.
     public init(statusCode: StatusCode = 200,
-                header: HeaderFields = [],
+                header: HeaderFields = [:],
                 body: HTTPStubBody = .empty,
                 error: Error? = nil,
                 delayInSeconds: TimeInterval? = nil) {
@@ -26,41 +26,14 @@ public struct HTTPStubResponse {
     }
 
     /// Initializes an HTTPStubResponse object with the provided parameters.
-    public init(statusCode: StatusCode = 200,
-                header: [String: String] = [:],
-                body: HTTPStubBody = .empty,
-                error: Error? = nil,
-                delayInSeconds: TimeInterval? = nil) {
-        self.statusCode = statusCode
-        self.header = .init(header)
-        self.body = body
-        self.error = error
-        self.delayInSeconds = delayInSeconds
-    }
-
-    /// Initializes an HTTPStubResponse object with the provided parameters.
     public init(statusCode: StatusCode.Kind,
-                header: HeaderFields = [],
+                header: HeaderFields = [:],
                 body: HTTPStubBody = .empty,
                 error: Error? = nil,
                 delayInSeconds: TimeInterval? = nil) {
         let statusCode = StatusCode(statusCode)
         self.statusCode = statusCode
         self.header = header
-        self.body = body
-        self.error = error
-        self.delayInSeconds = delayInSeconds
-    }
-
-    /// Initializes an HTTPStubResponse object with the provided parameters.
-    public init(statusCode: StatusCode.Kind,
-                header: [String: String] = [:],
-                body: HTTPStubBody = .empty,
-                error: Error? = nil,
-                delayInSeconds: TimeInterval? = nil) {
-        let statusCode = StatusCode(statusCode)
-        self.statusCode = statusCode
-        self.header = .init(header)
         self.body = body
         self.error = error
         self.delayInSeconds = delayInSeconds

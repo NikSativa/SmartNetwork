@@ -6,9 +6,8 @@ import XCTest
 
 final class UserInfoTests: XCTestCase {
     func test_init() {
-        var subject: UserInfo
+        var subject: UserInfo = .init()
 
-        subject = .init()
         XCTAssert(subject.isEmpty)
         XCTAssertEqual(subject.values.count, 0)
 
@@ -45,5 +44,49 @@ final class UserInfoTests: XCTestCase {
         XCTAssertEqual(subject.value(of: Any.self, for: "obj") as? TestInfo, TestInfo(id: 2))
         XCTAssertNil(subject.value(of: Int.self, for: "obj"))
         XCTAssertNil(subject.value(of: String.self, for: "obj"))
+    }
+
+    func test_description() {
+        var subject: UserInfo = .init()
+        XCTAssertEqual(subject.description, "{}")
+        XCTAssertEqual(subject.debugDescription, "{}")
+
+        subject[.smartTaskRequestAddressKey] = "address"
+        var expected =
+            """
+            {
+              "SmartNetwork.SmartTask.Request.Address.Key" : "address"
+            }
+            """
+        XCTAssertEqual(subject.description, expected)
+        XCTAssertEqual(subject.debugDescription, expected)
+
+        subject = [
+            "int": 1,
+            "str": "text",
+            "obj": TestInfo(id: 1)
+        ]
+        expected =
+            """
+            {
+              "int" : "1",
+              "obj" : "{\\n  \\"id\\" : 1\\n}",
+              "str" : "text"
+            }
+            """
+        XCTAssertEqual(subject.description, expected)
+        XCTAssertEqual(subject.debugDescription, expected)
+
+        subject = [
+            .smartTaskRequestAddressKey: Address.testMake()
+        ]
+        expected =
+            """
+            {
+              "SmartNetwork.SmartTask.Request.Address.Key" : "https://www.apple.com"
+            }
+            """
+        XCTAssertEqual(subject.description, expected)
+        XCTAssertEqual(subject.debugDescription, expected)
     }
 }
