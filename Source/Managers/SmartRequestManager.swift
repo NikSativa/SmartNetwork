@@ -236,11 +236,13 @@ private extension SmartRequestManager {
             }, cancelAction: { [request] in
                 request.cancel()
             })
+            .fillUserInfo(with: address)
         } catch {
             return SmartTask(runAction: {
                 let result = RequestResult(request: nil, body: nil, response: nil, error: error)
                 completion(result)
             })
+            .fillUserInfo(with: address)
         }
     }
 }

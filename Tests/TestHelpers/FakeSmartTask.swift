@@ -6,6 +6,9 @@ import Threading
 
 @Spryable
 final class FakeSmartTask: SmartTasking {
+    @SpryableVar
+    var userInfo: UserInfo
+
     @SpryableFunc
     func detach() -> DetachedTask
 

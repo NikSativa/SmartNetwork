@@ -5,7 +5,7 @@ import SpryKit
 // MARK: - UserInfo + SpryEquatable
 
 extension UserInfo: SpryEquatable {
-    public static func testMake(storage: [String: Any] = [:]) -> Self {
+    public static func testMake(storage: [UserInfoKey: Any] = [:]) -> Self {
         return .init(storage)
     }
 }

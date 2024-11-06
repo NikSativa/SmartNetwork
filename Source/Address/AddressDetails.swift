@@ -65,6 +65,25 @@ public extension AddressDetails {
     }
 }
 
+// MARK: - CustomDebugStringConvertible, CustomStringConvertible
+
+extension AddressDetails: CustomDebugStringConvertible, CustomStringConvertible {
+    public var description: String {
+        return makeDescription()
+    }
+
+    public var debugDescription: String {
+        return makeDescription()
+    }
+
+    private func makeDescription() -> String {
+        if let url = try? url(shouldAddSlashAfterEndpoint: false, shouldRemoveSlashesForEmptyScheme: true) {
+            return url.absoluteString
+        }
+        return "AddressDetails(\(scheme?.toString() ?? "nil"), \(host), \(port ?? 0), \(path), \(fragment ?? ""))"
+    }
+}
+
 private extension String? {
     var sdk: Scheme? {
         guard let self, !self.isEmpty else {

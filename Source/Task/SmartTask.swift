@@ -35,6 +35,8 @@ public final class SmartTask {
     @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     private var shouldCancelOnDeinit: Bool = true
 
+    public lazy var userInfo: UserInfo = .init()
+
     /// Initializes a SmartTask instance with the provided run and cancel actions.
     ///
     /// * Parameters:
