@@ -15,6 +15,12 @@ final class AddressDetailsTests: XCTestCase {
         XCTAssertEqual(actualURL, .spry.testMake("some.com/endpoint"))
 
         actualURL = XCTAssertNoThrowError {
+            let subject = try AddressDetails(string: "http://localhost:50000") + "endpoint"
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://localhost:50000/endpoint"))
+
+        actualURL = XCTAssertNoThrowError {
             let subject = try AddressDetails("my://some.com") + "endpoint"
             return try subject.url()
         }

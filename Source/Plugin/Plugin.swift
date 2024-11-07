@@ -28,12 +28,12 @@ public protocol Plugin: Sendable {
     /// Just before the completion call
     func didFinish(withData data: RequestResult, userInfo: UserInfo)
 
-    /// super internal level which can be called multiple time based on your Manager's config ('maxAttemptNumber' or/and 'stopTheLine'
+    /// Super internal level which can be called multiple time based on your Manager's config ('maxAttemptNumber' or/and 'stopTheLine')
     func willSend(_ parameters: Parameters,
                   request: URLRequestRepresentation,
                   userInfo: UserInfo)
 
-    /// Super internal level which can be called multiple time based on your Manager's config ('maxAttemptNumber' or/and 'stopTheLine'
+    /// Super internal level which can be called multiple time based on your Manager's config ('maxAttemptNumber' or/and 'stopTheLine')
     func didReceive(_ parameters: Parameters,
                     request: URLRequestRepresentation,
                     data: RequestResult,
@@ -71,12 +71,12 @@ public protocol Plugin {
     /// Just before the completion call
     func didFinish(withData data: RequestResult, userInfo: UserInfo)
 
-    /// super internal level which can be called multiple time based on your Manager's config ('maxAttemptNumber' or/and 'stopTheLine'
+    /// Super internal level which can be called multiple time based on your Manager's config ('maxAttemptNumber' or/and 'stopTheLine')
     func willSend(_ parameters: Parameters,
                   request: URLRequestRepresentation,
                   userInfo: UserInfo)
 
-    /// Super internal level which can be called multiple time based on your Manager's config ('maxAttemptNumber' or/and 'stopTheLine'
+    /// Super internal level which can be called multiple time based on your Manager's config ('maxAttemptNumber' or/and 'stopTheLine')
     func didReceive(_ parameters: Parameters,
                     request: URLRequestRepresentation,
                     data: RequestResult,

@@ -278,8 +278,7 @@ final class RequestManagerTests: XCTestCase {
     }
 
     func test_stop_the_line_action_passOver() {
-        stop_the_line(.passOver(.testMake(statusCode: StatusCode.Kind.badGateway.rawValue)),
-                      newCode: .badGateway)
+        stop_the_line(.passOver(.testMake(statusCode: StatusCode.Kind.badGateway.rawValue, error: StatusCode(.badGateway))), newCode: .badGateway)
     }
 
     private func stop_the_line(_ action: StopTheLineResult, newCode: StatusCode.Kind? = nil) {
@@ -304,10 +303,12 @@ final class RequestManagerTests: XCTestCase {
 
         let expectation3: XCTestExpectation = .init(description: "should receive response")
         subject.request(address: Constant.brokenAddress,
-                        parameters: .init(body: .encode(TestInfo(id: 1)))).decode(TestInfo.self).complete {
-            result.value = $0
-            expectation3.fulfill()
-        }.storing(in: &observers).start()
+                        parameters: .init(body: .encode(TestInfo(id: 1))))
+            .decode(TestInfo.self)
+            .complete {
+                result.value = $0
+                expectation3.fulfill()
+            }.storing(in: &observers).start()
 
         let expectation7: XCTestExpectation = .init(description: "should not receive response")
         expectation7.isInverted = true
@@ -316,9 +317,11 @@ final class RequestManagerTests: XCTestCase {
         // waiter
         let expectation4: XCTestExpectation = .init(description: "should receive response")
         subject.request(address: Constant.address1,
-                        parameters: .init(body: .empty)).decode(TestInfo.self).complete { _ in
-            expectation4.fulfill()
-        }.detach().deferredStart()
+                        parameters: .init(body: .empty))
+            .decode(TestInfo.self)
+            .complete { _ in
+                expectation4.fulfill()
+            }.detach().deferredStart()
 
         // returns response immediately, but in queue while stop the line activated
         let expectation8: XCTestExpectation = .init(description: "should not receive response")

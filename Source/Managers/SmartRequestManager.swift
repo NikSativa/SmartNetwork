@@ -97,6 +97,19 @@ private extension SmartRequestManager {
         }
     }
 
+    func checkResult(_ result: RequestResult, info: Info) {
+        let userInfo = info.userInfo
+        let plugins = info.parameters.plugins
+
+        do {
+            for plugin in plugins {
+                try plugin.verify(data: result, userInfo: userInfo)
+            }
+        } catch {
+            result.set(error: error)
+        }
+    }
+
     func checkStopTheLine(_ result: RequestResult, info: Info) -> Bool {
         guard let stopTheLine else {
             return true
@@ -126,8 +139,9 @@ private extension SmartRequestManager {
         }
     }
 
-    func tryComplete(with result: RequestResult,
-                     for info: Info) {
+    func tryComplete(with result: RequestResult, for info: Info) {
+        checkResult(result, info: info)
+
         guard checkStopTheLine(result, info: info) else {
             return
         }
@@ -141,21 +155,12 @@ private extension SmartRequestManager {
         }
     }
 
-    func complete(with result: RequestResult,
-                  for info: Info) {
-        let userInfo = info.userInfo
-        let plugins = info.parameters.plugins
-        do {
-            for plugin in plugins {
-                try plugin.verify(data: result, userInfo: userInfo)
-            }
-        } catch {
-            result.set(error: error)
-        }
-
+    func complete(with result: RequestResult, for info: Info) {
         removeRequestIfNeeded(for: info)
 
         let completion = info.completion
+        let userInfo = info.userInfo
+        let plugins = info.parameters.plugins
         completion(result, userInfo, plugins)
     }
 

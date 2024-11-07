@@ -31,7 +31,7 @@ public extension AddressDetails {
         self.scheme = components.scheme.sdk
         self.host = try components.host.unwrap(orThrow: RequestEncodingError.brokenHost)
         self.port = components.port
-        self.path = components.path.components(separatedBy: "/")
+        self.path = components.path.components(separatedBy: "/").filter { !$0.isEmpty }
         self.fragment = components.fragment
 
         let items: [SmartItem<String?>] = (components.queryItems ?? []).map {

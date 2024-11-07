@@ -26,15 +26,15 @@ final class PluginPriorityTests: XCTestCase {
         }
 
         let expected: [Plugin] = [
-            Plugins.JSONHeaders(),
+            Plugins.Curl(logger: { _, _ in }),
             Plugins.AuthBasic(with: {
                 return .init(username: "AuthBasic", password: "AuthBasic")
             }),
             Plugins.AuthBearer(with: {
                 return "AuthBearer"
             }),
-            Plugins.Curl(logger: { _, _ in }),
-            Plugins.StatusCode()
+            Plugins.StatusCode(),
+            Plugins.JSONHeaders()
         ]
 
         XCTAssertEqual(actual.map(\.id), expected.map(\.id))
@@ -64,16 +64,16 @@ final class PluginPriorityTests: XCTestCase {
         }
 
         let expected: [Plugin] = [
-            Plugins.JSONHeaders(),
+            Plugins.Curl(logger: { _, _ in }),
+            Plugins.CurlOS(),
             Plugins.AuthBasic(with: {
                 return .init(username: "AuthBasic", password: "AuthBasic")
             }),
             Plugins.AuthBearer(with: {
                 return "AuthBearer"
             }),
-            Plugins.Curl(logger: { _, _ in }),
-            Plugins.CurlOS(),
-            Plugins.StatusCode()
+            Plugins.StatusCode(),
+            Plugins.JSONHeaders()
         ]
 
         XCTAssertEqual(actual.map(\.id), expected.map(\.id))
@@ -104,6 +104,7 @@ final class PluginPriorityTests: XCTestCase {
         }
 
         let expected: [Plugin] = [
+            Plugins.Curl(logger: { _, _ in }),
             FakePlugin(id: "fake_1000", priority: 1000),
             Plugins.AuthBasic(with: {
                 return .init(username: "AuthBasic", password: "AuthBasic")
@@ -112,7 +113,6 @@ final class PluginPriorityTests: XCTestCase {
             Plugins.AuthBearer(with: {
                 return "AuthBearer"
             }),
-            Plugins.Curl(logger: { _, _ in }),
             FakePlugin(id: "fake_110", priority: 110),
             Plugins.StatusCode(),
             FakePlugin(id: "fake_0", priority: 0)
