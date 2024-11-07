@@ -231,8 +231,7 @@ final class RequestManagerTests: XCTestCase {
         let stopTheLine: FakeStopTheLine = .init()
 
         let subject = SmartRequestManager.create(withPlugins: [Plugins.StatusCode()],
-                                                 stopTheLine: stopTheLine,
-                                                 maxAttemptNumber: 1)
+                                                 stopTheLine: stopTheLine)
         let result: SendableResult<Result<TestInfo, Error>> = .init()
 
         // passOver
@@ -248,22 +247,52 @@ final class RequestManagerTests: XCTestCase {
         XCTAssertThrowsError(try result.value?.get(), StatusCode(.badRequest))
     }
 
-    func test_stop_the_line_verify_retry() {
+    func test_stop_the_line_and_skip_it() {
         let stopTheLine: FakeStopTheLine = .init()
 
         let subject = SmartRequestManager.create(withPlugins: [Plugins.StatusCode()],
-                                                 stopTheLine: stopTheLine,
-                                                 maxAttemptNumber: 1)
+                                                 stopTheLine: stopTheLine)
         let result: SendableResult<Result<TestInfo, Error>> = .init()
 
-        // retry (maxAttemptNumber: 1)
+        // passOver
+        let expectation: XCTestExpectation = .init(description: "should receive response")
+        stopTheLine.stub(.verify).andReturn(StopTheLineAction.stopTheLine)
+        subject.request(address: Constant.brokenAddress, parameters: .init(shouldIgnoreStopTheLine: true))
+            .decode(TestInfo.self)
+            .complete {
+                result.value = $0
+                expectation.fulfill()
+            }
+            .storing(in: &observers)
+            .start()
+
+        wait(for: [expectation], timeout: Constant.timeoutInSeconds)
+        XCTAssertThrowsError(try result.value?.get(), StatusCode(.badRequest))
+        XCTAssertHaveNotReceived(stopTheLine, .verify)
+    }
+
+    func test_stop_the_line_verify_retry() {
+        let stopTheLine: FakeStopTheLine = .init()
+
+        let subject = SmartRequestManager.create(withPlugins: [Plugins.StatusCode()], stopTheLine: stopTheLine)
+        let result: SendableResult<Result<TestInfo, Error>> = .init()
+
+        // retry
+        let expectation1: XCTestExpectation = .init(description: "should not receive response")
         let expectation2: XCTestExpectation = .init(description: "should receive response")
+        expectation1.isInverted = true
         stopTheLine.stubAgain(.verify).andReturn(StopTheLineAction.retry)
-        subject.request(address: Constant.brokenAddress,
-                        parameters: .init(body: .encode(TestInfo(id: 1)))).decode(TestInfo.self).complete {
-            result.value = $0
-            expectation2.fulfill()
-        }.storing(in: &observers).start()
+        let req = subject.request(address: Constant.brokenAddress, parameters: .init(body: .encode(TestInfo(id: 1))))
+            .decode(TestInfo.self)
+            .complete {
+                result.value = $0
+                expectation1.fulfill()
+                expectation2.fulfill()
+            }
+
+        req.start()
+        wait(for: [expectation1], timeout: Constant.timeoutInSeconds)
+        stopTheLine.stubAgain(.verify).andReturn(StopTheLineAction.passOver)
 
         wait(for: [expectation2], timeout: Constant.timeoutInSeconds)
         XCTAssertThrowsError(try result.value?.get(), StatusCode(.badRequest))
@@ -284,8 +313,7 @@ final class RequestManagerTests: XCTestCase {
     private func stop_the_line(_ action: StopTheLineResult, newCode: StatusCode.Kind? = nil) {
         let stopTheLine: FakeStopTheLine = .init()
         let subject = SmartRequestManager.create(withPlugins: [Plugins.StatusCode()],
-                                                 stopTheLine: stopTheLine,
-                                                 maxAttemptNumber: 1)
+                                                 stopTheLine: stopTheLine)
         let result: SendableResult<Result<TestInfo, Error>> = .init()
 
         // stopTheLine

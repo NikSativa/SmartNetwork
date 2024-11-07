@@ -7,20 +7,33 @@ import Threading
 public struct Parameters {
     /// The header fields for the request.
     public let header: HeaderFields
+
     /// The HTTP method for the request.
     public let method: HTTPMethod?
+
     /// The body of the request.
     public let body: Body?
+
     /// The timeout interval for the request. Default is 30 seconds. Change it using `RequestSettings.timeoutInterval`.
     public let timeoutInterval: TimeInterval
+
     /// The cache settings for the request.
     public let cacheSettings: CacheSettings?
+
     /// The cache policy for the request. Default is `.useProtocolCachePolicy`.
     public let requestPolicy: URLRequest.CachePolicy
+
     /// The plugins for the request.
     public internal(set) var plugins: [Plugin]
+
+    /// A flag to ignore the `StopTheLine` for the request.
+    ///
+    /// - Important: This flag is useful for requests that should not be stopped by the `StopTheLine` mechanism.
+    public let shouldIgnoreStopTheLine: Bool
+
     /// The progress handler for the request
     public let progressHandler: ProgressHandler?
+
     /// The session for the request
     public let session: SmartURLSession?
 
@@ -39,6 +52,7 @@ public struct Parameters {
                 timeoutInterval: TimeInterval = RequestSettings.timeoutInterval,
                 progressHandler: ProgressHandler? = nil,
                 userInfo: UserInfo = .init(),
+                shouldIgnoreStopTheLine: Bool = false,
                 session: SmartURLSession? = nil) {
         self.header = header
         self.method = method
@@ -49,6 +63,7 @@ public struct Parameters {
         self.requestPolicy = requestPolicy
         self.progressHandler = progressHandler
         self.userInfo = userInfo
+        self.shouldIgnoreStopTheLine = shouldIgnoreStopTheLine
         self.session = session
     }
 }

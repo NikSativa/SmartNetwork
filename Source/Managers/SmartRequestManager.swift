@@ -4,9 +4,8 @@ import Threading
 /// The ``SmartRequestManager`` class in Swift serves as a crucial component within the system,
 /// managing various aspects related to requests efficiently.
 /// It encompasses functionalities such as handling request states, maintaining task queues,
-/// and managing request attempts. Additionally, the class incorporates plugins,
-/// mechanisms for stopping request processing,
-/// and parameters for controlling the maximum number of request attempts.
+/// and managing request attempts. Additionally, the class incorporates plugins and
+/// mechanisms for stopping request processing..
 /// The ``SmartRequestManager`` class plays a pivotal role in orchestrating and
 /// executing request-related tasks within the system,
 /// ensuring streamlined and organized request management.
@@ -17,15 +16,16 @@ public final class SmartRequestManager {
     private var state: State = .init()
     private let plugins: [Plugin]
     private let stopTheLine: StopTheLine?
-    private let maxAttemptNumber: Int
 
-    /// Initializes a new instance of the ``SmartRequestManager`` class with the specified plugins, stopTheLine, and maxAttemptNumber.
+    /// Initializes a new instance of the ``SmartRequestManager`` class with the specified plugins, stopTheLine.
+    ///
+    /// - Parameters:
+    ///  - plugins: The plugins to be used in the request manager for each request.
+    ///  - stopTheLine: The stopTheLine mechanism to be used in the request manager for each request.
     public required init(withPlugins plugins: [Plugin] = [],
-                         stopTheLine: StopTheLine? = nil,
-                         maxAttemptNumber: Int = 1) {
+                         stopTheLine: StopTheLine? = nil) {
         self.plugins = plugins
         self.stopTheLine = stopTheLine
-        self.maxAttemptNumber = max(maxAttemptNumber, 1)
     }
 
     /// Creates protocol wrapped interface instead of concrete realization
@@ -40,11 +40,9 @@ public final class SmartRequestManager {
     ///
     /// - Tip: The protocol is useful for mocking and testing request management functionalities in Swift.
     public static func create(withPlugins plugins: [Plugin] = [],
-                              stopTheLine: StopTheLine? = nil,
-                              maxAttemptNumber: Int = 1) -> RequestManager {
+                              stopTheLine: StopTheLine? = nil) -> RequestManager {
         return Self(withPlugins: plugins,
-                    stopTheLine: stopTheLine,
-                    maxAttemptNumber: maxAttemptNumber)
+                    stopTheLine: stopTheLine)
     }
 }
 
@@ -78,9 +76,7 @@ private extension SmartRequestManager {
     func makeStopTheLineAction(stopTheLine: StopTheLine,
                                info: Info,
                                data: RequestResult) {
-        let newFactory = Self(withPlugins: plugins,
-                              stopTheLine: nil,
-                              maxAttemptNumber: maxAttemptNumber)
+        let newFactory = Self(withPlugins: plugins, stopTheLine: nil)
         stopTheLine.action(with: newFactory,
                            originalParameters: info.request.parameters,
                            response: data,
@@ -111,7 +107,7 @@ private extension SmartRequestManager {
     }
 
     func checkStopTheLine(_ result: RequestResult, info: Info) -> Bool {
-        guard let stopTheLine else {
+        guard let stopTheLine, !info.parameters.shouldIgnoreStopTheLine else {
             return true
         }
 
@@ -130,12 +126,8 @@ private extension SmartRequestManager {
         case .passOver:
             return true
         case .retry:
-            if info.attemptNumber < maxAttemptNumber {
-                info.attemptNumber += 1
-                info.request.restart()
-                return false
-            }
-            return true
+            info.request.restart()
+            return false
         }
     }
 
@@ -204,6 +196,7 @@ private extension SmartRequestManager {
                        completion: @escaping RequestManager.ResponseClosure) -> SmartTasking {
         let parameters = prepare(parameters)
         do {
+            let shouldIgnoreStopTheLine = parameters.shouldIgnoreStopTheLine
             let request = try createRequest(address: address,
                                             parameters: parameters,
                                             userInfo: parameters.userInfo)
@@ -222,20 +215,20 @@ private extension SmartRequestManager {
                 $0.tasksQueue[info.key] = info
             }
 
-            request.serviceCompletion = { [weak self, weak info] in
-                if let self, let info {
+            request.serviceCompletion = { [weak self, info] in
+                if let self {
                     removeRequestIfNeeded(for: info)
                 }
             }
 
-            request.completion = { [weak self, weak info] result in
-                if let self, let info {
+            request.completion = { [weak self, info] result in
+                if let self {
                     tryComplete(with: result, for: info)
                 }
             }
 
             return SmartTask(runAction: { [state] in
-                if state.isRunning {
+                if state.isRunning || shouldIgnoreStopTheLine {
                     request.start()
                 }
             }, cancelAction: { [request] in
@@ -262,16 +255,11 @@ private extension SmartRequestManager {
     typealias ResponseClosureWithInfo = (_ result: RequestResult, _ userInfo: UserInfo, _ plugins: [Plugin]) -> Void
     #endif
 
-    final class Info {
+    struct Info {
         let key: Key
         let parameters: Parameters
         let request: Request
         let completion: ResponseClosureWithInfo
-        #if swift(>=6.0)
-        nonisolated(unsafe) var attemptNumber: Int
-        #else
-        var attemptNumber: Int
-        #endif
 
         var userInfo: UserInfo {
             return parameters.userInfo
@@ -284,7 +272,6 @@ private extension SmartRequestManager {
             self.parameters = parameters
             self.request = request
             self.completion = completion
-            self.attemptNumber = 0
         }
     }
 
