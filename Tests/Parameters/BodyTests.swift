@@ -115,7 +115,7 @@ final class BodyTests: XCTestCase {
     }
 
     func test_xform_encodable_and_encoder() {
-        let info = TestInfo2(id: 1, id2: 2, id3: 3)
+        let info = TestBody(id: 1, id2: 2, id3: 3)
         XCTAssertNoThrowError(try Body.xform(info, encoder: .init()).fill(&request))
 
         let text = request.httpBody.flatMap {
@@ -130,7 +130,7 @@ final class BodyTests: XCTestCase {
     }
 
     func test_xform_encodable_without_encoder() {
-        let info = TestInfo2(id: 1, id2: 2, id3: 3)
+        let info = TestBody(id: 1, id2: 2, id3: 3)
         XCTAssertNoThrowError(try Body.xform(info).fill(&request))
 
         let text = request.httpBody.flatMap {
@@ -145,7 +145,7 @@ final class BodyTests: XCTestCase {
     }
 }
 
-private struct TestInfo2: Codable, Equatable {
+private struct TestBody: Codable, Equatable {
     let id: Int
     let id2: Int
     let id3: Int

@@ -10,7 +10,8 @@ internal extension Result where Failure: Error {
             if let error = error as? RequestDecodingError {
                 switch error {
                 case .emptyResponse,
-                     .nilResponse:
+                     .nilResponse,
+                     .nilResponseByKeyPath:
                     return .success(nil)
                 case .brokenImage,
                      .brokenResponse,

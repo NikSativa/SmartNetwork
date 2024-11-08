@@ -23,7 +23,7 @@ internal final class Request {
     var completion: CompletionCallback?
 
     @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
-    var serviceCompletion: (() -> Void)?
+    var serviceClosure: (() -> Void)?
 
     private var plugins: [Plugin] {
         return parameters.plugins
@@ -153,27 +153,38 @@ internal final class Request {
 
     private func fireCompletion(data: RequestResult) {
         stopSessionRequest()
+
         let completion = completion
+        self.completion = nil
         completion?(data)
     }
 
     private func tryFireCancellation() -> Bool {
         if isCanceled {
-            serviceCompletion?()
+            fireServiceClosure()
             return false
         }
         return true
     }
+
+    private func fireServiceClosure() {
+        let serviceCompletion = serviceClosure
+        serviceClosure = nil
+        serviceCompletion?()
+    }
 }
 
 extension Request {
-    func start() {
-        startRealRequest()
-    }
+    /// Starts the request.
+    /// - Returns: `true` if the request was started, `false` if the request was canceled.
+    func tryStart() -> Bool {
+        if isCanceled {
+            return false
+        }
 
-    func restart() {
-        isCanceled = false
         startRealRequest()
+
+        return true
     }
 
     func cancel() {

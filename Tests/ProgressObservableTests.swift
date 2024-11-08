@@ -6,7 +6,7 @@ import XCTest
 final class ProgressObservableTests: XCTestCase {
     func test_observe() {
         let subject: Progress = .init(totalUnitCount: 100)
-        let events: SendableResult<[Int]> = .init(value: [])
+        let events: UnsafeValue<[Int]> = .init(value: [])
         let observer: Any? = subject.observe { progress in
             let percent = Int(progress.fractionCompleted * 100)
             events.value.append(percent)

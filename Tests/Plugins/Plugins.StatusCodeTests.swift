@@ -6,11 +6,9 @@ import XCTest
 
 final class StatusCodePluginTests: XCTestCase {
     func test_shouldNotIgnoreSuccess() {
-        let subject = Plugins.StatusCode(shouldIgnore200th: false, shouldIgnoreNil: false)
+        let subject = Plugins.StatusCode(shouldIgnore200th: false, shouldIgnoreNil: false, shouldIgnorePreviousError: false)
 
-        XCTAssertNoThrowError(try subject.verify(data: .testMake(), userInfo: .init()))
-
-        XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 200), userInfo: .init()))
+        XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: 200), userInfo: .init()))
         XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 0), userInfo: .init()))
         XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: -1), userInfo: .init()))
 
@@ -22,8 +20,13 @@ final class StatusCodePluginTests: XCTestCase {
         XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 400), userInfo: .init()), StatusCode(.badRequest))
         XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 404), userInfo: .init()), StatusCode(.notFound))
 
+        // shouldIgnorePreviousError
+        XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: 304, error: RequestError.generic), userInfo: .init()))
+        XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: 400, error: RequestError.generic), userInfo: .init()))
+        XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: 404, error: RequestError.generic), userInfo: .init()))
+
         // statusCode: nil
-        XCTAssertNoThrowError(try subject.verify(data: .testMake(), userInfo: .init()))
+        XCTAssertThrowsError(try subject.verify(data: .testMake(), userInfo: .init()), StatusCode.none)
 
         // should nothing happen
         let requestable: FakeURLRequestRepresentation = .init()
@@ -33,11 +36,9 @@ final class StatusCodePluginTests: XCTestCase {
     }
 
     func test_shouldIgnoreSuccess() {
-        let subject = Plugins.StatusCode(shouldIgnore200th: true)
+        let subject = Plugins.StatusCode(shouldIgnore200th: true, shouldIgnoreNil: true, shouldIgnorePreviousError: true)
 
-        XCTAssertNoThrowError(try subject.verify(data: .testMake(), userInfo: .init()))
         XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: 200), userInfo: .init()))
-
         XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 0), userInfo: .init()))
         XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: -1), userInfo: .init()))
 
@@ -52,6 +53,11 @@ final class StatusCodePluginTests: XCTestCase {
         XCTAssertNoThrowError(try subject.verify(data: .testMake(statusCode: 204), userInfo: .init()))
         XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 400), userInfo: .init()), StatusCode(.badRequest))
         XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 404), userInfo: .init()), StatusCode(.notFound))
+
+        // shouldIgnorePreviousError
+        XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 304, error: RequestError.generic), userInfo: .init()), StatusCode(.notModified))
+        XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 400, error: RequestError.generic), userInfo: .init()), StatusCode(.badRequest))
+        XCTAssertThrowsError(try subject.verify(data: .testMake(statusCode: 404, error: RequestError.generic), userInfo: .init()), StatusCode(.notFound))
 
         // statusCode: nil
         XCTAssertNoThrowError(try subject.verify(data: .testMake(), userInfo: .init()))

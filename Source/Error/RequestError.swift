@@ -43,6 +43,7 @@ public indirect enum RequestError: Error {
 }
 
 public extension Error {
+    /// Converts the error to a RequestError case based on its type
     var requestError: RequestError {
         return .init(self)
     }

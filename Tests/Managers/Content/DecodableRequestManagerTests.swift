@@ -27,7 +27,7 @@ final class DecodableRequestManagerTests: XCTestCase {
     }
 
     func test_api_any() {
-        let actual: SendableResult<TestInfo> = .init()
+        let actual: UnsafeValue<TestInfo> = .init()
         let exp = expectation(description: #function)
         subject.request(TestInfo.self, address: address) { obj in
             actual.value = try? obj.get()
@@ -35,10 +35,29 @@ final class DecodableRequestManagerTests: XCTestCase {
         }.deferredStart(in: Queue.main).store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
         XCTAssertEqual(info, actual.value)
+
+//        let result = run_test(TestInfo.self) { subject, completion in
+//            return subject.request(TestInfo.self, address: address, completionQueue: .absent, completion: completion)
+//        }
+//        XCTAssertTrue(result.info() == info)
+    }
+
+    private func run_test<T>(_: T.Type, _ subject: (DecodableRequestManager, (Result<T, Error>) -> Void) -> SmartTasking) -> Result<T, Error>? {
+        let actual: UnsafeResult<T> = .init()
+        let exp = expectation(description: #function)
+        let manager = SmartRequestManager.create().decodable
+
+        subject(manager) { obj in
+            actual.value = obj
+            exp.fulfill()
+        }.deferredStart().store(in: &observers)
+
+        wait(for: [exp], timeout: timeoutInSeconds)
+        return actual.value
     }
 
     func test_api_main() {
-        let actual: SendableResult<TestInfo> = .init()
+        let actual: UnsafeValue<TestInfo> = .init()
         let exp = expectation(description: #function)
         subject.request(TestInfo.self,
                         address: address,
@@ -52,7 +71,7 @@ final class DecodableRequestManagerTests: XCTestCase {
     }
 
     func test_api_main_opt() {
-        let actual: SendableResult<TestInfo> = .init()
+        let actual: UnsafeValue<TestInfo> = .init()
         let exp = expectation(description: #function)
         subject.requestOptional(TestInfo.self,
                                 address: address,

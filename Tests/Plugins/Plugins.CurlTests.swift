@@ -20,7 +20,7 @@ final class PluginsCurlTests: XCTestCase {
 
     let parameters: Parameters = .testMake()
     lazy var requestable: FakeURLRequestRepresentation = .init()
-    var actual: SendableResult<[Plugins.Curl.Component: String?]> = .init(value: [:])
+    var actual: UnsafeValue<[Plugins.Curl.Component: String?]> = .init(value: [:])
     lazy var subject = Plugins.Curl { [actual] component, text in
         actual.value[component] = text()
     }

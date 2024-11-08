@@ -55,6 +55,11 @@ final class RequestErrorTests: XCTestCase {
         let expected10 = actual10
         XCTAssertEqualError(actual10.requestError, expected10)
         XCTAssertEqualError(RequestError(actual10), expected10)
+
+        let actual11 = RequestError.other(RequestError.other(StatusCode.noContent))
+        let expected11 = RequestError.statusCode(.noContent)
+        XCTAssertEqualError(actual11.requestError, expected11)
+        XCTAssertEqualError(RequestError(actual11), expected11)
     }
 
     func test_subname() {

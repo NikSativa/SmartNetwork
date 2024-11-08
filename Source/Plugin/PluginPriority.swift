@@ -1,16 +1,16 @@
 import Foundation
 
-/// The priority of the plugins in the which they will be executed.
+/// The priority of the plugins is used to determine the order in which they will be executed.
 ///
-/// The higher the value, the faster the plugin will executed. The lower the value, the later the plugin will be executed.
 /// The default priority of the plugins is as follows:
-///   - `jsonHeaders`
+///   - `curl`
 ///   - `authBasic`
 ///   - `authBearer`
-///   - `curl`
 ///   - `statusCode`.
+///   - `jsonHeaders`
 ///
-/// If you want to change the priority of the plugins, you can create a new instance of this struct with a different value and assign it to the plugin.
+///  - Important: The higher the value, the faster the plugin will executed. The lower the value, the later the plugin will be executed.
+///  - Note: If you want to change the priority of the plugins, you can create a new instance of this struct with a different value and assign it to the plugin.
 public struct PluginPriority: Comparable, Hashable, RawRepresentable {
     public let rawValue: Int
 

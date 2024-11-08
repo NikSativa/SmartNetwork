@@ -12,6 +12,8 @@ public enum RequestDecodingError: Error {
     case nilResponse
     /// Indicates errors related to an empty response
     case emptyResponse
+    /// Indicates errors related to a nil response by key path
+    case nilResponseByKeyPath(String)
 }
 
 // MARK: - RequestErrorDescription
@@ -30,6 +32,8 @@ extension RequestDecodingError: RequestErrorDescription {
             return "nilResponse"
         case .emptyResponse:
             return "emptyResponse"
+        case .nilResponseByKeyPath(let key):
+            return "nilResponseByKeyPath(\(key))"
         }
     }
 }

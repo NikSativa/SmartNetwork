@@ -25,6 +25,10 @@ public extension StatusCode {
     static var noContent: Self {
         return .init(.noContent)
     }
+
+    static var none: Self {
+        return .init(code: -1)
+    }
 }
 
 // MARK: - RequestErrorDescription

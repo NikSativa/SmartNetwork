@@ -66,7 +66,7 @@ final class RequestManagerTests: XCTestCase {
     func test_stubbing() {
         let expectation1 = expectation(description: "should receive response")
         let subject = SmartRequestManager.create()
-        let response: SendableResult<TestInfo> = .init()
+        let response: UnsafeValue<TestInfo> = .init()
         subject
             .request(address: Constant.address1).decode(TestInfo.self).complete {
                 response.value = try? $0.get()
@@ -156,7 +156,7 @@ final class RequestManagerTests: XCTestCase {
 
         let subject = SmartRequestManager.create(withPlugins: [pluginStatusCode, pluginStatusCode, pluginForManager, pluginStatusCode])
 
-        let response: SendableResult<TestInfo> = .init()
+        let response: UnsafeValue<TestInfo> = .init()
         let expectation1 = expectation(description: "should receive response")
         subject.request(address: Constant.address1,
                         parameters: .init(plugins: [pluginForParam, pluginStatusCode, pluginForParam, pluginStatusCode],
@@ -216,7 +216,7 @@ final class RequestManagerTests: XCTestCase {
     func test_lack_parameters() {
         let expectation: XCTestExpectation = .init(description: "should receive response")
         let subject = SmartRequestManager.create()
-        let result: SendableResult<Result<TestInfo, Error>> = .init()
+        let result: UnsafeResult<TestInfo> = .init()
         subject.request(address: Constant.address1,
                         parameters: .init(body: .encode(BrokenTestInfo(id: 1)))).decode(TestInfo.self).complete {
             result.value = $0
@@ -232,7 +232,7 @@ final class RequestManagerTests: XCTestCase {
 
         let subject = SmartRequestManager.create(withPlugins: [Plugins.StatusCode()],
                                                  stopTheLine: stopTheLine)
-        let result: SendableResult<Result<TestInfo, Error>> = .init()
+        let result: UnsafeResult<TestInfo> = .init()
 
         // passOver
         let expectation: XCTestExpectation = .init(description: "should receive response")
@@ -252,7 +252,7 @@ final class RequestManagerTests: XCTestCase {
 
         let subject = SmartRequestManager.create(withPlugins: [Plugins.StatusCode()],
                                                  stopTheLine: stopTheLine)
-        let result: SendableResult<Result<TestInfo, Error>> = .init()
+        let result: UnsafeResult<TestInfo> = .init()
 
         // passOver
         let expectation: XCTestExpectation = .init(description: "should receive response")
@@ -275,7 +275,7 @@ final class RequestManagerTests: XCTestCase {
         let stopTheLine: FakeStopTheLine = .init()
 
         let subject = SmartRequestManager.create(withPlugins: [Plugins.StatusCode()], stopTheLine: stopTheLine)
-        let result: SendableResult<Result<TestInfo, Error>> = .init()
+        let result: UnsafeResult<TestInfo> = .init()
 
         // retry
         let expectation1: XCTestExpectation = .init(description: "should not receive response")
@@ -314,7 +314,7 @@ final class RequestManagerTests: XCTestCase {
         let stopTheLine: FakeStopTheLine = .init()
         let subject = SmartRequestManager.create(withPlugins: [Plugins.StatusCode()],
                                                  stopTheLine: stopTheLine)
-        let result: SendableResult<Result<TestInfo, Error>> = .init()
+        let result: UnsafeResult<TestInfo> = .init()
 
         // stopTheLine
         stopTheLine.resetCallsAndStubs()

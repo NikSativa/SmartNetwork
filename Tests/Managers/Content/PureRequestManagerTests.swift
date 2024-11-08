@@ -24,7 +24,7 @@ final class PureRequestManagerTests: XCTestCase {
     }
 
     func test_api_any() {
-        let actual: SendableResult<RequestResult> = .init()
+        let actual: UnsafeValue<RequestResult> = .init()
         let exp = expectation(description: #function)
         subject.request(address: address).complete { obj in
             actual.value = obj
@@ -35,7 +35,7 @@ final class PureRequestManagerTests: XCTestCase {
     }
 
     func test_api_main() {
-        let actual: SendableResult<RequestResult> = .init()
+        let actual: UnsafeValue<RequestResult> = .init()
         let exp = expectation(description: #function)
         subject.request(address: address,
                         parameters: .testMake(),

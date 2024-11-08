@@ -24,9 +24,11 @@ public struct TypedRequest<T> {
 
 extension TypedRequest: RequestCompletion {
     public typealias Object = Result<T, Error>
+
     public func complete(in completionQueue: Threading.DelayedQueue, completion: @escaping CompletionClosure) -> SmartTasking {
-        return anyRequest.complete(in: completionQueue) { [anyRequest] result in
-            let object = decoder(result, anyRequest.parameters)
+        let parameters = anyRequest.parameters
+        return anyRequest.complete(in: completionQueue) { [parameters] result in
+            let object = decoder(result, parameters)
             completion(object)
         }
     }

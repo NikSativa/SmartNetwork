@@ -6,26 +6,54 @@ import XCTest
 @testable import SmartNetwork
 
 final class RequestableTests: XCTestCase {
-    func test_regular_request() {
-        var responses: [RequestResult] = []
-        let task: FakeSessionTask = .init()
-        let session: FakeSession = .init()
-        let parameters: Parameters = .testMake(session: session)
+    var responses: [RequestResult] = []
+    var requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy
 
-        let sdkRequest = URLRequest.spry.testMake(url: "apple.com")
+    let task: FakeSessionTask = .init()
+    let session: FakeSession = .init()
+    let cache: FakeRequestCache = .init()
+    let sdkRequest = URLRequest.spry.testMake(url: "apple.com")
+
+    lazy var cacheSettings: CacheSettings = .testMake(cache: cache)
+
+    lazy var parameters: Parameters = .testMake(cacheSettings: cacheSettings,
+                                                requestPolicy: requestPolicy,
+                                                session: session)
+
+    lazy var urlRequestable: FakeURLRequestRepresentation = {
         let urlRequestable: FakeURLRequestRepresentation = .init()
         urlRequestable.stub(.sdk).andReturn(sdkRequest)
         urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
+        return urlRequestable
+    }()
 
-        let subject = Request(address: .testMake(),
-                              parameters: parameters,
-                              urlRequestable: urlRequestable)
-        subject.completion = { data in
-            responses.append(data)
+    var subject: Request!
+
+    lazy var setUpSubject: () -> Void = { [self] in
+        subject = Request(address: .testMake(),
+                          parameters: parameters,
+                          urlRequestable: urlRequestable)
+        subject.completion = { [weak self] data in
+            self?.responses.append(data)
         }
+    }
+
+    override func tearDown() {
+        super.tearDown()
+        urlRequestable.resetCallsAndStubs()
+        task.resetCallsAndStubs()
+        session.resetCallsAndStubs()
+    }
+
+    func test_parameters() {
+        setUpSubject()
         XCTAssertEqual(subject.parameters, parameters)
         XCTAssertEqual(subject.description, "<GET request: https://www.apple.com>")
-        XCTAssertEqual(subject.debugDescription, "<GET request: https://www.apple.com>")
+        XCTAssertEqual(subject?.debugDescription ?? "", "<GET request: https://www.apple.com>")
+    }
+
+    func test_regular_request_start_cancel_start() {
+        setUpSubject()
 
         // idle request -> nothing happen
         XCTAssertNoThrow(subject.cancel())
@@ -37,9 +65,9 @@ final class RequestableTests: XCTestCase {
         task.stub(.resume).andReturn()
         session.stub(.task).andReturn(task)
 
-        subject.restart()
-        XCTAssertHaveReceived(task, .resume)
-        XCTAssertHaveReceived(session, .task)
+        XCTAssertFalse(subject.tryStart())
+        XCTAssertHaveNotReceived(task, .resume)
+        XCTAssertHaveNotReceived(session, .task)
 
         // cancel
         task.resetCallsAndStubs()
@@ -48,102 +76,120 @@ final class RequestableTests: XCTestCase {
         task.stub(.isRunning).andReturn(true)
         task.stub(.cancel).andReturn()
         subject.cancel()
+        XCTAssertFalse(subject.tryStart())
 
-        XCTAssertHaveReceived(task, .isRunning)
-        XCTAssertHaveReceived(task, .cancel)
+        XCTAssertHaveNotReceived(task, .isRunning)
+        XCTAssertHaveNotReceived(task, .cancel)
         XCTAssertTrue(responses.isEmpty)
+    }
 
-        // reset everything before start again
-        task.resetCallsAndStubs()
-        session.resetCallsAndStubs()
+    func test_regular_request_string() {
+        setUpSubject()
 
         // create new task and retain it
         task.stub(.resume).andReturn()
         session.stub(.task).andReturn(task)
+        cache.stub(.cachedResponse).andReturn(nil)
 
-        // start again
-        subject.restart()
+        // start
+        XCTAssertTrue(subject.tryStart())
 
         XCTAssertHaveReceived(task, .resume, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(session, .task)
+        XCTAssertHaveReceived(cache, .cachedResponse)
 
         // should stop task before triggering response
         task.stub(.cancel).andReturn()
         task.stub(.isRunning).andReturn(true)
 
         // receive response
-        session.completionHandler?(nil, nil, nil)
+        let strData: Data = "data".data(using: .utf8)!
+        session.completionHandler?(strData, nil, nil)
 
-        XCTAssertEqual(responses, [.testMake(request: sdkRequest)])
         XCTAssertHaveReceived(task, .cancel, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(task, .isRunning, countSpecifier: .exactly(1))
 
-        // impossible behavior, but expected that response can be received more then once
-        // test logger
-        let strData: Data = "data".data(using: .utf8)!
-        session.completionHandler?(strData, nil, nil)
         XCTAssertEqual(responses, [
-            .testMake(request: sdkRequest),
             .testMake(request: sdkRequest, body: .data(strData))
         ])
+    }
 
+    func test_regular_request_json() {
+        requestPolicy = .reloadIgnoringLocalCacheData
+        setUpSubject()
+
+        // create new task and retain it
+        task.stub(.resume).andReturn()
+        session.stub(.task).andReturn(task)
+        cache.stub(.removeCachedResponse).andReturn()
+
+        // start
+        XCTAssertTrue(subject.tryStart())
+
+        XCTAssertHaveReceived(task, .resume, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(session, .task)
+        XCTAssertHaveReceived(cache, .removeCachedResponse)
+
+        // should stop task before triggering response
+        task.stub(.cancel).andReturn()
+        task.stub(.isRunning).andReturn(true)
+
+        // receive response
         let jsonData: Data = "{ \"data\": 111 }".data(using: .utf8)!
         session.completionHandler?(jsonData, nil, nil)
+
+        XCTAssertHaveReceived(task, .cancel, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(task, .isRunning, countSpecifier: .exactly(1))
+
         XCTAssertEqual(responses, [
-            .testMake(request: sdkRequest),
-            .testMake(request: sdkRequest, body: .data(strData)),
             .testMake(request: sdkRequest, body: .data(jsonData))
         ])
+    }
 
+    func test_regular_request_emptyData() {
+        requestPolicy = .reloadIgnoringLocalAndRemoteCacheData
+        setUpSubject()
+
+        // create new task and retain it
+        task.stub(.resume).andReturn()
+        session.stub(.task).andReturn(task)
+        cache.stub(.removeCachedResponse).andReturn()
+
+        // start
+        XCTAssertTrue(subject.tryStart())
+
+        XCTAssertHaveReceived(task, .resume, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(session, .task)
+        XCTAssertHaveReceived(cache, .removeCachedResponse)
+
+        // should stop task before triggering response
+        task.stub(.cancel).andReturn()
+        task.stub(.isRunning).andReturn(true)
+
+        // receive response
         let emptyData = Data()
         session.completionHandler?(emptyData, nil, nil)
+
+        XCTAssertHaveReceived(task, .cancel, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(task, .isRunning, countSpecifier: .exactly(1))
+
         XCTAssertEqual(responses, [
-            .testMake(request: sdkRequest),
-            .testMake(request: sdkRequest, body: .data(strData)),
-            .testMake(request: sdkRequest, body: .data(jsonData)),
             .testMake(request: sdkRequest, body: .data(emptyData))
         ])
     }
 
     func test_cancel_request_before_deinit() {
-        var responses: [RequestResult] = []
-        let task: FakeSessionTask = .init()
-        let session: FakeSession = .init()
-        let parameters: Parameters = .testMake(session: session)
+        requestPolicy = .reloadIgnoringCacheData
+        setUpSubject()
 
-        let sdkRequest = URLRequest.spry.testMake(url: "apple.com")
-        let urlRequestable: FakeURLRequestRepresentation = .init()
-        urlRequestable.stub(.sdk).andReturn(sdkRequest)
-        urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
-
-        var subject: Request! = Request(address: .testMake(),
-                                        parameters: parameters,
-                                        urlRequestable: urlRequestable)
-
-        XCTAssertEqual(subject.description, "<GET request: https://www.apple.com>")
-        XCTAssertEqual(subject.debugDescription, "Optional(<GET request: https://www.apple.com>)")
-
-        subject.completion = { data in
-            responses.append(data)
-        }
-
-        XCTAssertEqual(subject!.parameters, parameters)
-        XCTAssertEqual(subject!.description, "<GET request: https://www.apple.com>")
-        XCTAssertEqual(subject!.debugDescription, "<GET request: https://www.apple.com>")
-
-        // idle request -> nothing happen
-        XCTAssertNoThrow(subject.cancel())
-
-        XCTAssertHaveNoRecordedCalls(session)
-        XCTAssertHaveNoRecordedCalls(task)
-
-        // start
         task.stub(.resume).andReturn()
         session.stub(.task).andReturn(task)
+        cache.stub(.removeCachedResponse).andReturn()
 
-        subject.restart()
+        XCTAssertTrue(subject.tryStart())
         XCTAssertHaveReceived(task, .resume)
         XCTAssertHaveReceived(session, .task)
+        XCTAssertHaveReceived(cache, .removeCachedResponse)
 
         // deinit request before request ended
         task.resetCallsAndStubs()
@@ -156,45 +202,14 @@ final class RequestableTests: XCTestCase {
     }
 
     func test_cancel_request_before_response() {
-        var responses: [RequestResult] = []
-        let task: FakeSessionTask = .init()
-        let session: FakeSession = .init()
+        requestPolicy = .reloadRevalidatingCacheData
+        setUpSubject()
 
-        let cache: FakeRequestCache = .init()
-        let cacheSettings: CacheSettings = .testMake(cache: cache)
-
-        let parameters: Parameters = .testMake(cacheSettings: cacheSettings,
-                                               requestPolicy: .reloadIgnoringLocalAndRemoteCacheData,
-                                               session: session)
-
-        let sdkRequest = URLRequest.spry.testMake(url: "apple.com")
-        let urlRequestable: FakeURLRequestRepresentation = .init()
-        urlRequestable.stub(.sdk).andReturn(sdkRequest)
-        urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
-
-        let subject = Request(address: .testMake(),
-                              parameters: parameters,
-                              urlRequestable: urlRequestable)
-        subject.completion = { data in
-            responses.append(data)
-        }
-
-        XCTAssertEqual(subject.parameters, parameters)
-        XCTAssertEqual(subject.description, "<GET request: https://www.apple.com>")
-        XCTAssertEqual(subject.debugDescription, "<GET request: https://www.apple.com>")
-
-        // idle request -> nothing happen
-        XCTAssertNoThrow(subject.cancel())
-
-        XCTAssertHaveNoRecordedCalls(session)
-        XCTAssertHaveNoRecordedCalls(task)
-
-        // start
         task.stub(.resume).andReturn()
         session.stub(.task).andReturn(task)
         cache.stub(.removeCachedResponse).andReturn()
 
-        subject.restart()
+        XCTAssertTrue(subject.tryStart())
         XCTAssertHaveReceived(task, .resume)
         XCTAssertHaveReceived(session, .task)
         XCTAssertHaveReceived(cache, .removeCachedResponse)
@@ -215,49 +230,17 @@ final class RequestableTests: XCTestCase {
         XCTAssertEqual(responses, [])
     }
 
-    func test_regular_request_with_cache() {
-        var responses: [RequestResult] = []
-        let task: FakeSessionTask = .init()
-        let session: FakeSession = .init()
+    func test_regular_request_without_cache() {
+        requestPolicy = .useProtocolCachePolicy
+        setUpSubject()
 
-        let cache: FakeRequestCache = .init()
-        let cacheSettings: CacheSettings = .testMake(cache: cache, responseQueue: .absent)
-
-        let parameters: Parameters = .testMake(cacheSettings: cacheSettings,
-                                               requestPolicy: .returnCacheDataElseLoad,
-                                               progressHandler: { _ in },
-                                               session: session)
-
-        let sdkRequest = URLRequest.spry.testMake(url: "apple.com")
-        let urlRequestable: FakeURLRequestRepresentation = .init()
-        urlRequestable.stub(.sdk).andReturn(sdkRequest)
-        urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
-
-        let subject = Request(address: .testMake(host: "http://apple.com"),
-                              parameters: parameters,
-                              urlRequestable: urlRequestable)
-        subject.completion = { data in
-            responses.append(data)
-        }
-
-        XCTAssertEqual(subject.parameters, parameters)
-        XCTAssertEqual(subject.description, "<GET request: broken url>")
-        XCTAssertEqual(subject.debugDescription, "<GET request: broken url>")
-
-        // idle request -> nothing happen
-        XCTAssertNoThrow(subject.cancel())
-
-        XCTAssertHaveNoRecordedCalls(session)
-        XCTAssertHaveNoRecordedCalls(task)
-
-        // start
         session.stub(.task).andReturn(task)
         task.stub(.progress).andReturn(Progress())
         task.stub(.resume).andReturn()
         task.stub(.isRunning).andReturn(false)
         cache.stub(.cachedResponse).andReturn(nil)
 
-        subject.restart()
+        XCTAssertTrue(subject.tryStart())
         XCTAssertHaveReceived(cache, .cachedResponse)
 
         let strData: Data = "data".data(using: .utf8).unsafelyUnwrapped
@@ -273,13 +256,28 @@ final class RequestableTests: XCTestCase {
         XCTAssertEqual(responses, [
             .testMake(request: sdkRequest, body: .data(strData), response: urlResponse)
         ])
+    }
 
+    func test_regular_request_with_cache() {
+        requestPolicy = .useProtocolCachePolicy
+        setUpSubject()
+
+        session.stub(.task).andReturn(task)
+        task.stub(.progress).andReturn(Progress())
+        task.stub(.resume).andReturn()
+        task.stub(.isRunning).andReturn(false)
+
+        let strData: Data = "data".data(using: .utf8).unsafelyUnwrapped
+        let urlResponse = HTTPURLResponse(url: sdkRequest.url.unsafelyUnwrapped,
+                                          mimeType: "application/x-binary",
+                                          expectedContentLength: -1,
+                                          textEncodingName: nil)
         let cachedResponse = CachedURLResponse(response: urlResponse, data: strData)
-        cache.stubAgain(.cachedResponse).andReturn(cachedResponse)
-        subject.start()
+        cache.stub(.cachedResponse).andReturn(cachedResponse)
+
+        XCTAssertTrue(subject.tryStart())
 
         XCTAssertEqual(responses, [
-            .testMake(request: sdkRequest, body: .data(strData), response: urlResponse),
             .testMake(request: sdkRequest, body: .data(strData), response: urlResponse)
         ])
     }

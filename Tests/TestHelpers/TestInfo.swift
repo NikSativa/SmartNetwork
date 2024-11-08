@@ -10,10 +10,24 @@ struct TestInfo: Codable, Equatable {
     }
 }
 
+struct TestInfo2: Codable, Equatable {
+    let id2: Int
+
+    var data: Data? {
+        let encoder = JSONEncoder()
+        return try? encoder.encode(self)
+    }
+}
+
 extension Data {
     func info() -> TestInfo? {
         let encoder = JSONDecoder()
         return try? encoder.decode(TestInfo.self, from: self)
+    }
+
+    func info2() -> TestInfo2? {
+        let encoder = JSONDecoder()
+        return try? encoder.decode(TestInfo2.self, from: self)
     }
 }
 

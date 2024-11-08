@@ -25,25 +25,26 @@ private struct ModelResponse<NestedModel: Decodable>: Decodable {
     public init(from decoder: Decoder) throws {
         // Split nested paths with '.'
         guard var keyPaths: [String] = decoder.userInfo[.keyPath] as? [String] else {
-            throw RequestDecodingError.brokenResponse
+            throw RequestDecodingError.nilResponseByKeyPath("Key path not found")
         }
 
         // Get last key to extract in the end
         guard let lastKey: String = keyPaths.popLast() else {
-            throw RequestDecodingError.brokenResponse
+            throw RequestDecodingError.nilResponseByKeyPath("Key path is empty")
         }
 
         // Loop getting container until reach final one
         var targetContainer = try decoder.container(keyedBy: Key.self)
-        for k in keyPaths {
-            guard let key = Key(stringValue: k) else {
-                throw RequestDecodingError.brokenResponse
+        for key in keyPaths {
+            guard let key = Key(stringValue: key) else {
+                throw RequestDecodingError.nilResponseByKeyPath(key)
             }
             targetContainer = try targetContainer.nestedContainer(keyedBy: Key.self, forKey: key)
         }
 
+        // Extract final model
         guard let key = Key(stringValue: lastKey) else {
-            throw RequestDecodingError.brokenResponse
+            throw RequestDecodingError.nilResponseByKeyPath(lastKey)
         }
         self.nested = try targetContainer.decode(NestedModel.self, forKey: key)
     }

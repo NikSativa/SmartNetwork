@@ -63,13 +63,15 @@ extension SmartRequestManager: RequestManager {
 
 private extension SmartRequestManager {
     func unfreeze() {
-        let scheduledRequests = $state.mutate { state in
+        let infos = $state.mutate { state in
             state.isRunning = true
-            return state.tasksQueue
+            return state.tasksQueue.values
         }
 
-        for request in scheduledRequests {
-            request.value.request.restart()
+        for info in infos {
+            if !prepareRequest(info: info).tryStart() {
+                removeRequestIfNeeded(for: info.key)
+            }
         }
     }
 
@@ -78,7 +80,7 @@ private extension SmartRequestManager {
                                data: RequestResult) {
         let newFactory = Self(withPlugins: plugins, stopTheLine: nil)
         stopTheLine.action(with: newFactory,
-                           originalParameters: info.request.parameters,
+                           originalParameters: info.originalParameters,
                            response: data,
                            userInfo: info.userInfo) { [self] result in
             switch result {
@@ -95,7 +97,7 @@ private extension SmartRequestManager {
 
     func checkResult(_ result: RequestResult, info: Info) {
         let userInfo = info.userInfo
-        let plugins = info.parameters.plugins
+        let plugins = info.plugins
 
         do {
             for plugin in plugins {
@@ -107,12 +109,12 @@ private extension SmartRequestManager {
     }
 
     func checkStopTheLine(_ result: RequestResult, info: Info) -> Bool {
-        guard let stopTheLine, !info.parameters.shouldIgnoreStopTheLine else {
+        guard let stopTheLine, !info.requestParameters.shouldIgnoreStopTheLine else {
             return true
         }
 
         let verificationResult = stopTheLine.verify(response: result,
-                                                    for: info.parameters,
+                                                    for: info.requestParameters,
                                                     userInfo: info.userInfo)
         switch verificationResult {
         case .stopTheLine:
@@ -126,7 +128,9 @@ private extension SmartRequestManager {
         case .passOver:
             return true
         case .retry:
-            info.request.restart()
+            if !prepareRequest(info: info).tryStart() {
+                removeRequestIfNeeded(for: info.key)
+            }
             return false
         }
     }
@@ -141,18 +145,18 @@ private extension SmartRequestManager {
         complete(with: result, for: info)
     }
 
-    func removeRequestIfNeeded(for info: Info) {
+    func removeRequestIfNeeded(for key: Key) {
         $state.mutate {
-            $0.tasksQueue[info.key] = nil
+            $0.tasksQueue[key] = nil
         }
     }
 
     func complete(with result: RequestResult, for info: Info) {
-        removeRequestIfNeeded(for: info)
+        removeRequestIfNeeded(for: info.key)
 
         let completion = info.completion
         let userInfo = info.userInfo
-        let plugins = info.parameters.plugins
+        let plugins = info.plugins
         completion(result, userInfo, plugins)
     }
 
@@ -191,16 +195,15 @@ private extension SmartRequestManager {
     }
 
     func createRequest(address: Address,
-                       parameters: Parameters,
+                       parameters originalParameters: Parameters,
                        completionQueue: DelayedQueue,
                        completion: @escaping RequestManager.ResponseClosure) -> SmartTasking {
-        let parameters = prepare(parameters)
+        let parameters = prepare(originalParameters)
         do {
-            let shouldIgnoreStopTheLine = parameters.shouldIgnoreStopTheLine
             let request = try createRequest(address: address,
                                             parameters: parameters,
                                             userInfo: parameters.userInfo)
-            let info: Info = .init(parameters: parameters,
+            let info: Info = .init(originalParameters: originalParameters,
                                    request: request) { result, userInfo, plugins in
                 for plugin in plugins {
                     plugin.didFinish(withData: result, userInfo: userInfo)
@@ -210,26 +213,16 @@ private extension SmartRequestManager {
                     completion(result)
                 }
             }
+            let key = info.key
 
-            $state.mutate {
-                $0.tasksQueue[info.key] = info
-            }
+            prepareRequest(info: info)
 
-            request.serviceCompletion = { [weak self, info] in
-                if let self {
-                    removeRequestIfNeeded(for: info)
-                }
-            }
-
-            request.completion = { [weak self, info] result in
-                if let self {
-                    tryComplete(with: result, for: info)
-                }
-            }
-
-            return SmartTask(runAction: { [state] in
+            let shouldIgnoreStopTheLine = parameters.shouldIgnoreStopTheLine
+            return SmartTask(runAction: { [weak self, request, state, key] in
                 if state.isRunning || shouldIgnoreStopTheLine {
-                    request.start()
+                    if !request.tryStart() {
+                        self?.removeRequestIfNeeded(for: key)
+                    }
                 }
             }, cancelAction: { [request] in
                 request.cancel()
@@ -243,46 +236,84 @@ private extension SmartRequestManager {
             .fillUserInfo(with: address)
         }
     }
+
+    @discardableResult
+    func prepareRequest(info: Info) -> Request {
+        let key = info.key
+        let request = info.request
+
+        $state.mutate {
+            $0.tasksQueue[info.key] = info
+        }
+
+        // retain manager which will be released after request completion
+        request.serviceClosure = { [self, key] in
+            removeRequestIfNeeded(for: key)
+        }
+
+        // NOT retain manager which will be released after request completion
+        request.completion = { [weak self, info] result in
+            self?.tryComplete(with: result, for: info)
+        }
+
+        return request
+    }
 }
 
 // MARK: - private
 
 private extension SmartRequestManager {
-    typealias Key = ObjectIdentifier
-    #if swift(>=6.0)
     typealias ResponseClosureWithInfo = (_ result: RequestResult, _ userInfo: UserInfo, _ plugins: [Plugin]) -> Void
-    #else
-    typealias ResponseClosureWithInfo = (_ result: RequestResult, _ userInfo: UserInfo, _ plugins: [Plugin]) -> Void
-    #endif
 
     struct Info {
         let key: Key
-        let parameters: Parameters
+        let originalParameters: Parameters
         let request: Request
         let completion: ResponseClosureWithInfo
 
         var userInfo: UserInfo {
-            return parameters.userInfo
+            return request.parameters.userInfo
         }
 
-        init(parameters: Parameters,
+        var plugins: [Plugin] {
+            return request.parameters.plugins
+        }
+
+        var requestParameters: Parameters {
+            return request.parameters
+        }
+
+        init(originalParameters: Parameters,
              request: Request,
              completion: @escaping ResponseClosureWithInfo) {
-            self.key = Key(request)
-            self.parameters = parameters
+            self.key = Key()
             self.request = request
+            self.originalParameters = originalParameters
             self.completion = completion
         }
     }
 
-    struct State {
+    final class State {
         var isRunning: Bool = true
         var tasksQueue: [Key: Info] = [:]
+    }
+
+    final class Key: Hashable {
+        private let uuid: UUID = .init()
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(uuid)
+        }
+
+        static func ==(lhs: Key, rhs: Key) -> Bool {
+            return lhs.uuid == rhs.uuid
+        }
     }
 }
 
 #if swift(>=6.0)
 extension SmartRequestManager: @unchecked Sendable {}
 extension SmartRequestManager.Info: @unchecked Sendable {}
-extension SmartRequestManager.State: Sendable {}
+extension SmartRequestManager.State: @unchecked Sendable {}
+extension SmartRequestManager.Key: Sendable {}
 #endif
