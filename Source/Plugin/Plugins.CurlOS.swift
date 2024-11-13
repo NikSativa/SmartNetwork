@@ -13,12 +13,14 @@ public extension Plugins {
     /// - Parameters:
     ///  - priority: The priority of the plugin.
     ///  - shouldPrintBody: A flag that indicates whether the response body should be printed to the console or to the logger. The default value is `false`.
+    ///  - options: The options for the `Curl` plugin. The default value is `.all`.
     ///
     /// - Note: Sometimes the response body can be very large, so it is better to print it to the console for debugging purposes.
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     static func CurlOS(priority: PluginPriority = .curlOS,
                        logger: Logger? = nil,
-                       shouldPrintBody: Bool = false) -> Plugins.Curl {
+                       shouldPrintBody: Bool = false,
+                       options: Plugins.Curl.Options = .all) -> Plugins.Curl {
         let logger = logger ?? Logger(subsystem: Bundle.main.bundleIdentifier ?? "SmartNetwork.curlOS", category: "Network")
         return Plugins.Curl(id: Plugins.Curl.makeHash(withAdditionalHash: "OS"),
                             priority: priority) { component, text in

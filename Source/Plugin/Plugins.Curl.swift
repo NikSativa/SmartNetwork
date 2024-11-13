@@ -21,6 +21,24 @@ public extension Plugins {
             case body
         }
 
+        /// The options for the `Curl` plugin.
+        public struct Options: OptionSet {
+            public let rawValue: Int
+
+            public init(rawValue: Int) {
+                self.rawValue = rawValue
+            }
+
+            /// Logs the request before sending it.
+            public static let willSend: Self = .init(rawValue: 1 << 0)
+            /// Logs the response after receiving response.
+            public static let didReceive: Self = .init(rawValue: 1 << 1)
+            /// Logs the response after the request is finished.
+            public static let didFinish: Self = .init(rawValue: 1 << 2)
+            /// Logs all the phases.
+            public static let all: Self = [.willSend, .didFinish, .didReceive]
+        }
+
         #if swift(>=6.0)
         public nonisolated(unsafe) let id: AnyHashable
         #else
@@ -29,18 +47,25 @@ public extension Plugins {
 
         public let priority: PluginPriority
         private let logger: Logging
+        private let options: Options
 
         public init(id: AnyHashable? = nil,
                     priority: PluginPriority = .curl,
+                    options: Options = .all,
                     logger: @escaping Logging) {
             self.id = id ?? Self.makeHash()
             self.priority = priority
             self.logger = logger
+            self.options = options
         }
 
         public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation) {}
         public func verify(data: RequestResult, userInfo: UserInfo) throws {}
         public func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo) {
+            guard options.contains(.willSend) else {
+                return
+            }
+
             logger(.phase) {
                 "willSend"
             }
@@ -51,9 +76,36 @@ public extension Plugins {
             }
         }
 
-        public func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo) {}
+        public func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo) {
+            guard options.contains(.didReceive) else {
+                return
+            }
+
+            logger(.phase) {
+                "didReceive"
+            }
+
+            logger(.curl) {
+                let curl = makeCurl(for: data.request?.sdk)
+                return curl
+            }
+
+            logger(.error) {
+                let error = data.error?.requestError.subname
+                return error
+            }
+
+            logger(.body) {
+                let body = makeResponseBody(data.body)
+                return body
+            }
+        }
 
         public func didFinish(withData data: RequestResult, userInfo: UserInfo) {
+            guard options.contains(.didFinish) else {
+                return
+            }
+
             logger(.phase) {
                 "didFinish"
             }
@@ -134,3 +186,7 @@ public extension Plugins {
         }
     }
 }
+
+#if swift(>=6.0)
+extension Plugins.Curl.Options: Sendable {}
+#endif
