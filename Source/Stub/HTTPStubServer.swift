@@ -91,7 +91,7 @@ public extension HTTPStubServer {
     func add(condition: HTTPStubCondition,
              statusCode: StatusCode = 200,
              header: HeaderFields = [:],
-             body: HTTPStubBody = .empty,
+             body: HTTPStubBody? = nil,
              error: Error? = nil,
              delayInSeconds: TimeInterval? = nil) -> AnyCancellable {
         let response: HTTPStubResponse = .init(statusCode: statusCode,

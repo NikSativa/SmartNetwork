@@ -64,7 +64,7 @@ internal final class Request {
                                        headerFields: stub.header.mapToResponse())
             }
             let responseData = RequestResult(request: urlRequestable,
-                                             body: stub.body.data,
+                                             body: stub.body?.data,
                                              response: response,
                                              error: stub.error)
             if let delay = stub.delayInSeconds, delay > 0 {

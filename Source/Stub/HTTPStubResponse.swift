@@ -7,7 +7,7 @@ public struct HTTPStubResponse {
     /// The header fields of the response.
     public let header: HeaderFields
     /// The body of the response.
-    public let body: HTTPStubBody
+    public let body: HTTPStubBody?
     /// The error that occurred during the request, if any.
     public let error: Error?
     public let delayInSeconds: TimeInterval?
@@ -15,7 +15,7 @@ public struct HTTPStubResponse {
     /// Initializes an HTTPStubResponse object with the provided parameters.
     public init(statusCode: StatusCode = 200,
                 header: HeaderFields = [:],
-                body: HTTPStubBody = .empty,
+                body: HTTPStubBody? = nil,
                 error: Error? = nil,
                 delayInSeconds: TimeInterval? = nil) {
         self.statusCode = statusCode
@@ -28,7 +28,7 @@ public struct HTTPStubResponse {
     /// Initializes an HTTPStubResponse object with the provided parameters.
     public init(statusCode: StatusCode.Kind,
                 header: HeaderFields = [:],
-                body: HTTPStubBody = .empty,
+                body: HTTPStubBody? = nil,
                 error: Error? = nil,
                 delayInSeconds: TimeInterval? = nil) {
         let statusCode = StatusCode(statusCode)

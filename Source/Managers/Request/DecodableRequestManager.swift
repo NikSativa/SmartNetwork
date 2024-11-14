@@ -30,20 +30,20 @@ public extension DecodableRequestManager {
     }
 
     /// Sends a request to the specified address with the given parameters.
-    func requestOptional<T>(_ type: T.Type = T.self,
-                            keyPath: [String] = [],
-                            address: Address,
-                            parameters: Parameters = .init(),
-                            decoding: JSONDecoding? = nil,
-                            completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
-                            completion: @escaping (Result<T?, Error>) -> Void) -> SmartTasking
-    where T: Decodable {
+    func request<T>(_ type: T.Type = T.self,
+                    keyPath: [String] = [],
+                    address: Address,
+                    parameters: Parameters = .init(),
+                    decoding: JSONDecoding? = nil,
+                    completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
+                    completion: @escaping (Result<T, Error>) -> Void) -> SmartTasking
+    where T: Decodable & ExpressibleByNilLiteral {
         return parent.request(address: address,
                               parameters: parameters,
                               completionQueue: completionQueue) { result in
             let decoder = DecodableContent<T>(decoder: decoding, keyPath: keyPath)
             let obj = decoder.decode(with: result, parameters: parameters)
-            let recovered = obj.recoverResult()
+            let recovered = obj.recoverResult(nil)
             completion(recovered)
         }
     }
@@ -72,19 +72,19 @@ public extension DecodableRequestManager {
     }
 
     /// Sends a request to the specified address with the given parameters.
-    func requestOptional<T>(_ type: T.Type = T.self,
-                            keyPath: [String] = [],
-                            address: Address,
-                            parameters: Parameters = .init(),
-                            decoding: JSONDecoding? = nil) async -> Result<T?, Error>
-    where T: Decodable {
+    func request<T>(_ type: T.Type = T.self,
+                    keyPath: [String] = [],
+                    address: Address,
+                    parameters: Parameters = .init(),
+                    decoding: JSONDecoding? = nil) async -> Result<T, Error>
+    where T: Decodable & ExpressibleByNilLiteral {
         return await withCheckedContinuation { [self] completion in
-            requestOptional(type,
-                            keyPath: keyPath,
-                            address: address,
-                            parameters: parameters,
-                            decoding: decoding,
-                            completionQueue: .absent) { data in
+            request(type,
+                    keyPath: keyPath,
+                    address: address,
+                    parameters: parameters,
+                    decoding: decoding,
+                    completionQueue: .absent) { data in
                 let sendable = USendable(data)
                 completion.resume(returning: sendable.value)
             }
@@ -116,19 +116,19 @@ public extension DecodableRequestManager {
     }
 
     /// Sends a request to the specified address with the given parameters.
-    func requestOptionalWithThrowing<T>(_ type: T.Type = T.self,
-                                        keyPath: [String] = [],
-                                        address: Address,
-                                        parameters: Parameters = .init(),
-                                        decoding: JSONDecoding? = nil) async throws -> T?
-    where T: Decodable {
+    func requestWithThrowing<T>(_ type: T.Type = T.self,
+                                keyPath: [String] = [],
+                                address: Address,
+                                parameters: Parameters = .init(),
+                                decoding: JSONDecoding? = nil) async throws -> T
+    where T: Decodable & ExpressibleByNilLiteral {
         return try await withCheckedThrowingContinuation { [self] completion in
-            requestOptional(type,
-                            keyPath: keyPath,
-                            address: address,
-                            parameters: parameters,
-                            decoding: decoding,
-                            completionQueue: .absent) { data in
+            request(type,
+                    keyPath: keyPath,
+                    address: address,
+                    parameters: parameters,
+                    decoding: decoding,
+                    completionQueue: .absent) { data in
                 let sendable = USendable(data)
                 completion.resume(with: sendable.value)
             }

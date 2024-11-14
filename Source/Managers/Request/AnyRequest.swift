@@ -42,6 +42,18 @@ public extension AnyRequest {
         return .init(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath))
     }
 
+    /// Requests a ``Decodable`` object.
+    func decode<T>(_ type: T.Type = T.self, with decoder: JSONDecoder, keyPath: [String] = []) -> TypedRequest<T>
+    where T: Decodable & ExpressibleByNilLiteral {
+        return .init(anyRequest: self, decoder: DecodableContent<T>(decoder: { decoder }, keyPath: keyPath))
+    }
+
+    /// Requests a ``Decodable`` object.
+    func decode<T>(_ type: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: [String] = []) -> TypedRequest<T>
+    where T: Decodable & ExpressibleByNilLiteral {
+        return .init(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath))
+    }
+
     /// Requests a ``Decodable`` object asynchronously.
     func decodeAsync<T>(_ type: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: [String] = []) async -> Result<T, Error>
     where T: Decodable {
@@ -51,6 +63,18 @@ public extension AnyRequest {
     /// Requests a ``Decodable`` object asynchronously with throwing error.
     func decodeAsyncWithThrowing<T>(_ type: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: [String] = []) async throws -> T
     where T: Decodable {
+        return try await TypedRequest<T>(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath)).asyncWithThrowing()
+    }
+
+    /// Requests a ``Decodable`` object asynchronously.
+    func decodeAsync<T>(_ type: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: [String] = []) async -> Result<T, Error>
+    where T: Decodable & ExpressibleByNilLiteral {
+        return await TypedRequest<T>(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath)).async()
+    }
+
+    /// Requests a ``Decodable`` object asynchronously with throwing error.
+    func decodeAsyncWithThrowing<T>(_ type: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: [String] = []) async throws -> T
+    where T: Decodable & ExpressibleByNilLiteral {
         return try await TypedRequest<T>(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath)).asyncWithThrowing()
     }
 

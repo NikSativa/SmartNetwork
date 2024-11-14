@@ -7,10 +7,19 @@ public struct TypedRequest<T> {
     typealias DecodingClosure = (_ data: RequestResult, _ parameters: Parameters) -> Result<T, Error>
     private let decoder: DecodingClosure
 
-    internal init<D: Deserializable>(anyRequest: AnyRequest, decoder: D) where D.Object == T {
+    internal init<D: Deserializable>(anyRequest: AnyRequest, decoder: D)
+        where D.Object == T {
         self.anyRequest = anyRequest
         self.decoder = { data, parameters in
             return decoder.decode(with: data, parameters: parameters)
+        }
+    }
+
+    internal init<D: Deserializable>(anyRequest: AnyRequest, decoder: D)
+        where D.Object == T, T: ExpressibleByNilLiteral {
+        self.anyRequest = anyRequest
+        self.decoder = { data, parameters in
+            return decoder.decode(with: data, parameters: parameters).recoverResult(nil)
         }
     }
 

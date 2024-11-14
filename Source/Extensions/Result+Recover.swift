@@ -1,25 +1,32 @@
 import Foundation
 
 internal extension Result where Failure: Error {
+    func recoverResult(_ defaultValue: Success) -> Result<Success, Failure> {
+        switch self {
+        case .success(let obj):
+            return .success(obj)
+        case .failure(let error):
+            return error.isRecoverable ? .success(defaultValue) : .failure(error)
+        }
+    }
+
     func recoverResult() -> Result<Success?, Failure> {
         switch self {
         case .success(let obj):
             return .success(obj)
         case .failure(let error):
-            // prevent `indirect` compiler error
-            if let error = error as? RequestDecodingError {
-                switch error {
-                case .emptyResponse,
-                     .nilResponse,
-                     .nilResponseByKeyPath:
-                    return .success(nil)
-                case .brokenImage,
-                     .brokenResponse,
-                     .other:
-                    break
-                }
-            }
-            return .failure(error)
+            return error.isRecoverable ? .success(nil) : .failure(error)
+        }
+    }
+}
+
+private extension Error {
+    var isRecoverable: Bool {
+        switch requestError {
+        case .decoding:
+            return true
+        default:
+            return false
         }
     }
 }

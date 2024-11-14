@@ -40,7 +40,7 @@ public final class HTTPStubProtocol: URLProtocol {
         Queue.background.asyncAfter(deadline: .now() + delayInSeconds) { [self, client] in
             if let error = stub.error {
                 client.urlProtocol(self, didFailWithError: error)
-            } else if let data = stub.body.data {
+            } else if let data = stub.body?.data {
                 client.urlProtocol(self, didLoad: data)
             }
 

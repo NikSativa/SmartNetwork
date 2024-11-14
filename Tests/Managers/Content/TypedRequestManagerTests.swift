@@ -40,14 +40,14 @@ final class TypedRequestManagerTests: XCTestCase {
         let result = run_test(Data.self) { subject in
             return subject.data.request(address: address)
         }
-        XCTAssertTrue(result.info() == info)
+        XCTAssertEqual(result.info(), info)
     }
 
     func test_api_dataOptional() {
         let result = run_test(Data?.self) { subject in
             return subject.dataOptional.request(address: address)
         }
-        XCTAssertTrue(result.info() == info)
+        XCTAssertEqual(result.info(), info)
     }
 
     private func run_test<T>(_: T.Type, _ subject: (RequestManager) -> TypedRequest<T>) -> Result<T, Error>? {
@@ -70,14 +70,14 @@ final class TypedRequestManagerTests: XCTestCase {
         let result = await run_async_test(Data.self) { subject in
             return await subject.data.request(address: address).async()
         }
-        XCTAssertTrue(result.info() == info)
+        XCTAssertEqual(result.info(), info)
     }
 
     func test_api_async_dataOptional() async {
         let result = await run_async_test(Data?.self) { subject in
             return await subject.dataOptional.request(address: address).async()
         }
-        XCTAssertTrue(result.info() == info)
+        XCTAssertEqual(result.info(), info)
     }
 
     private func run_async_test<T>(_: T.Type, _ subject: (RequestManager) async -> Result<T, Error>) async -> Result<T, Error>? {
@@ -123,24 +123,13 @@ final class TypedRequestManagerTests: XCTestCase {
     }
 }
 
-@inline(__always)
-private func == <T: Equatable>(lhs: Result<T, Error>?, rhs: T) -> Bool {
-    switch (lhs, rhs) {
-    case (.success(let l), let r):
-        return l == r
-    case (.failure, _),
-         (.none, _):
-        return false
-    }
-}
-
 private extension Result<Data, Error>? {
-    func info() -> Result<TestInfo, Error>? {
+    func info() -> Result<TestInfo, Error> {
         switch self {
         case .none:
-            return nil
+            return .failure(RequestError.generic)
         case .success(let data):
-            return data.info().map(Result.success)
+            return data.info().map(Result.success) ?? .failure(RequestError.generic)
         case .failure(let error):
             return .failure(error)
         }
@@ -148,12 +137,12 @@ private extension Result<Data, Error>? {
 }
 
 private extension Result<Data?, Error>? {
-    func info() -> Result<TestInfo, Error>? {
+    func info() -> Result<TestInfo, Error> {
         switch self {
         case .none:
-            return nil
+            return .failure(RequestError.generic)
         case .success(let data):
-            return data?.info().map(Result.success)
+            return data?.info().map(Result.success) ?? .failure(RequestError.generic)
         case .failure(let error):
             return .failure(error)
         }
