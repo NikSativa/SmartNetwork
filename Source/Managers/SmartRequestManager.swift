@@ -11,7 +11,7 @@ import Threading
 /// ensuring streamlined and organized request management.
 ///
 /// See detailed scheme of network request management:
-/// ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/SmartNetwork.jpg)
+/// ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/SmartNetwork.jpg)
 ///
 /// - Important: This is a real request manager.
 public final class SmartRequestManager {
@@ -19,16 +19,20 @@ public final class SmartRequestManager {
     private var state: State = .init()
     private let plugins: [Plugin]
     private let stopTheLine: StopTheLine?
+    private let retrier: SmartRetrier?
 
     /// Initializes a new instance of the ``SmartRequestManager`` class with the specified plugins, stopTheLine.
     ///
     /// - Parameters:
     ///  - plugins: The plugins to be used in the request manager for each request.
     ///  - stopTheLine: The stopTheLine mechanism to be used in the request manager for each request.
+    ///  - retrier: The retrier mechanism to be used in the request manager for each request.
     public required init(withPlugins plugins: [Plugin] = [],
-                         stopTheLine: StopTheLine? = nil) {
+                         stopTheLine: StopTheLine? = nil,
+                         retrier: SmartRetrier? = nil) {
         self.plugins = plugins
         self.stopTheLine = stopTheLine
+        self.retrier = retrier
     }
 
     /// Creates protocol wrapped interface instead of concrete realization
@@ -43,9 +47,11 @@ public final class SmartRequestManager {
     ///
     /// - Tip: The protocol is useful for mocking and testing request management functionalities in Swift.
     public static func create(withPlugins plugins: [Plugin] = [],
-                              stopTheLine: StopTheLine? = nil) -> RequestManager {
+                              stopTheLine: StopTheLine? = nil,
+                              retrier: SmartRetrier? = nil) -> RequestManager {
         return Self(withPlugins: plugins,
-                    stopTheLine: stopTheLine)
+                    stopTheLine: stopTheLine,
+                    retrier: retrier)
     }
 }
 
@@ -65,6 +71,12 @@ extension SmartRequestManager: RequestManager {
 }
 
 private extension SmartRequestManager {
+    func retryRequest(info: Info) {
+        if !prepareRequest(info: info).tryStart() {
+            removeRequestIfNeeded(for: info.key)
+        }
+    }
+
     func unfreeze() {
         let infos = $state.mutate { state in
             state.isRunning = true
@@ -72,9 +84,7 @@ private extension SmartRequestManager {
         }
 
         for info in infos {
-            if !prepareRequest(info: info).tryStart() {
-                removeRequestIfNeeded(for: info.key)
-            }
+            retryRequest(info: info)
         }
     }
 
@@ -98,7 +108,9 @@ private extension SmartRequestManager {
         }
     }
 
-    func checkResult(_ result: RequestResult, info: Info) {
+    /// Check result with plugins and retrier mechanism
+    ///  - Returns: `true` if the request should be finished, `false` if the request should be retried.
+    func checkFinishing(of result: RequestResult, info: Info) -> Bool {
         let userInfo = info.userInfo
         let plugins = info.plugins
 
@@ -108,6 +120,35 @@ private extension SmartRequestManager {
             }
         } catch {
             result.set(error: error)
+        }
+
+        let retryOrFinish = retrier?.retryOrFinish(result: result, userInfo: userInfo) ?? .doNotRetry
+        defer {
+            userInfo.attemptsCount += 1
+        }
+
+        switch retryOrFinish {
+        case .retry:
+            let request = prepareRequest(info: info)
+            Queue.default.async { [weak self, info] in
+                if !request.tryStart() {
+                    self?.removeRequestIfNeeded(for: info.key)
+                }
+            }
+            return false
+        case .retryWithDelay(let delay):
+            let request = prepareRequest(info: info)
+            Queue.default.asyncAfter(deadline: .now() + delay) { [weak self, info] in
+                if !request.tryStart() {
+                    self?.removeRequestIfNeeded(for: info.key)
+                }
+            }
+            return false
+        case .doNotRetry:
+            return true
+        case .doNotRetryWithError(let newError):
+            result.set(error: newError)
+            return true
         }
     }
 
@@ -131,15 +172,15 @@ private extension SmartRequestManager {
         case .passOver:
             return true
         case .retry:
-            if !prepareRequest(info: info).tryStart() {
-                removeRequestIfNeeded(for: info.key)
-            }
+            retryRequest(info: info)
             return false
         }
     }
 
     func tryComplete(with result: RequestResult, for info: Info) {
-        checkResult(result, info: info)
+        guard checkFinishing(of: result, info: info) else {
+            return
+        }
 
         guard checkStopTheLine(result, info: info) else {
             return

@@ -38,6 +38,7 @@ internal final class Request {
     }
 
     deinit {
+        fireServiceClosure()
         sessionAdaptor.stop()
     }
 
@@ -179,11 +180,11 @@ extension Request {
     /// - Returns: `true` if the request was started, `false` if the request was canceled.
     func tryStart() -> Bool {
         if isCanceled {
+            fireServiceClosure()
             return false
         }
 
         startRealRequest()
-
         return true
     }
 
@@ -234,8 +235,8 @@ private final class SessionAdaptor {
         stop()
 
         let newTask = session.task(with: request) { [weak self] data, response, error in
-            completionHandler(data, response, error)
             self?.stop()
+            completionHandler(data, response, error)
         }
 
         if let progressHandler {

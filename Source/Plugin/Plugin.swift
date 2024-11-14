@@ -6,8 +6,11 @@ public enum Plugins {}
 #if swift(>=6.0)
 /// Protocol that defines the mechanism of request interception and response validation.
 ///
-/// See detailed scheme of network request management with plugins:
-/// ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/SmartNetwork.jpg)
+/// See detailed scheme how network works:
+/// ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/SmartNetwork.jpg)
+///
+/// See the diagram of how the plugins work:
+/// ![Plugins behavior](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/Plugins_behavior.jpg)
 public protocol Plugin: Sendable {
     /// A unique ID that guarantees that plugins are not duplicated
     ///
@@ -51,6 +54,12 @@ public protocol Plugin: Sendable {
 }
 #else
 /// Protocol that defines the mechanism of request interception and response validation.
+///
+/// See detailed scheme how network works:
+/// ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/SmartNetwork.jpg)
+///
+/// See the diagram of how the plugins work:
+/// ![Plugins behavior](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/Plugins_behavior.jpg)
 public protocol Plugin {
     /// A unique ID that guarantees that plugins are not duplicated
     ///

@@ -35,8 +35,11 @@ Light weight wrapper around URLSession for easy network requests with strong typ
 - **SmartTask** for managing the lifecycle of network requests. Cancel the task deinitiation request or handle the detached task manually - everything is under control!
 - Easily complements [SmartImage](https://github.com/NikSativa/SmartImages) for image loading.
 
-## See [how SmartNetwork works](./SmartNetwork.pdf)(in `pdf` format).
-![Network scheme](./SmartNetwork.jpg)
+## See [how SmartNetwork works](./.instructions/SmartNetwork.pdf)(in `pdf` format).
+![Network scheme](./.instructions/SmartNetwork.jpg)
+
+## See [Plugins behavior](./.instructions/Plugins_behavior.pdf)(in `pdf` format).
+![Plugins behavior](./.instructions/Plugins_behavior.jpg)
 
 ### New structure of network request organization based on that modern interface:
 
