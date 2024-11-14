@@ -10,6 +10,9 @@ import Threading
 /// executing request-related tasks within the system,
 /// ensuring streamlined and organized request management.
 ///
+/// See detailed scheme of network request management:
+/// ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/SmartNetwork.jpg)
+///
 /// - Important: This is a real request manager.
 public final class SmartRequestManager {
     @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
