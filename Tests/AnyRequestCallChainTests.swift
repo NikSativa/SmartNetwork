@@ -12,7 +12,7 @@ final class AnyRequestCallChainTests: XCTestCase {
     private let addressOther: Address = .testMake(string: "http://example1.com/other")
     private let addressComplex: Address = .testMake(string: "http://example1.com/complex")
 
-    private let requestManager: SmartRequestManager = .init(withPlugins: [Plugins.CurlOS()])
+    private let requestManager: SmartRequestManager = .init()
     private let okObj = TestInfo(id: 1)
     private let okObj2 = TestInfo2(id2: 2)
 

@@ -3,16 +3,19 @@ import Foundation
 /// A class representing the result of a network request.
 /// It contains the original URLRequest, the body data of the response, the URLResponse, and any error that occurred.
 public final class RequestResult {
-    /// The original URLRequest made for the request.
+    /// The original ``URLRequestRepresentation`` made for the request.
     public let request: URLRequestRepresentation?
 
-    /// The body data of the response.
+    /// The body ``Data`` of the response.
     public let body: Data?
 
-    /// The URLResponse received from the request.
+    /// The ``URLResponse`` received from the request.
     public let response: URLResponse?
 
-    /// The error that occurred during the request, if any.
+    /// The ``SmartURLSession`` that made the request.
+    public let session: SmartURLSession
+
+    /// The ``Error`` that occurred during the request, if any.
     public private(set) var error: Error?
 
     /// Lazily computed property to extract the URL from an HTTPURLResponse.
@@ -42,11 +45,13 @@ public final class RequestResult {
     public init(request: URLRequestRepresentation?,
                 body: Data?,
                 response: URLResponse?,
-                error: Error?) {
+                error: Error?,
+                session: SmartURLSession) {
         self.request = request
         self.body = body
         self.response = response
         self.error = error
+        self.session = session
     }
 
     /// Updates the error property of the RequestResult object.
@@ -54,6 +59,20 @@ public final class RequestResult {
     /// - Parameter error: The error object to set.
     internal func set(error: Error?) {
         self.error = error
+    }
+}
+
+// MARK: - CURLConvertible
+
+extension RequestResult: CURLConvertible {
+    /// cURL representation of the instance.
+    ///
+    /// - Returns: The cURL equivalent of the instance.
+    public func cURLDescription() -> String {
+        guard let sdk = request?.sdk else {
+            return "$ curl command could not be created"
+        }
+        return cURLDescription(with: session, request: sdk)
     }
 }
 

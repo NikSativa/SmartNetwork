@@ -56,7 +56,7 @@ public extension SmartItems {
     /// Sets a new element at the end of the array.
     ///
     /// - Important: If the key already exists, it will be replaced.
-    mutating func set(key: String, value: T) {
+    mutating func set(_ key: String, value: T) {
         set(.init(key: key, value: value))
     }
 
@@ -74,16 +74,16 @@ public extension SmartItems {
 
     /// Subscript to get or set an item by key.
     /// - Parameter key: The key to search for.
-    /// - Returns: the first element of the sequence that satisfies the given key.
-    subscript(key: String) -> SmartItem<T>? {
+    /// - Returns: The value of the first element of the sequence that satisfies the given key.
+    subscript(_ key: String) -> T? {
         get {
             return rawValues.first {
                 return $0.key == key
-            }
+            }?.value
         }
         set {
             if let newValue {
-                set(newValue)
+                set(.init(key: key, value: newValue))
             } else {
                 removeAll(byKey: key)
             }

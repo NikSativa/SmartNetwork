@@ -56,9 +56,14 @@ final class HTTPStubProtocolTests: XCTestCase {
             let _ = try await session.data(for: request)
             XCTFail("Should throw an error")
         } catch {
+            #if os(watchOS)
+            XCTAssertEqual((error as NSError).domain, NSURLErrorDomain, (error as NSError).domain)
+            XCTAssertEqual((error as NSError).code, -1003, error.localizedDescription)
+            #else
             let errorDomain = String(reflecting: RequestError.self)
-            XCTAssertEqual((error as NSError).domain, errorDomain, error.localizedDescription)
+            XCTAssertEqual((error as NSError).domain, errorDomain, (error as NSError).domain)
             XCTAssertEqual((error as NSError).code, 2, error.localizedDescription)
+            #endif
         }
     }
 

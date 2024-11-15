@@ -19,6 +19,7 @@ final class PluginsCurlTests: XCTestCase {
     }()
 
     let parameters: Parameters = .testMake()
+    let session: FakeSmartURLSession = .init()
     lazy var requestable: FakeURLRequestRepresentation = .init()
     var actual: UnsafeValue<[Plugins.Curl.Component: String?]> = .init(value: [:])
     lazy var subject = Plugins.Curl { [actual] component, text in
@@ -27,23 +28,28 @@ final class PluginsCurlTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        session.stub(.configuration).andReturn(URLSessionConfiguration.default)
+    }
+
+    override func tearDown() {
+        super.tearDown()
+        session.resetCallsAndStubs()
         actual.value = [:]
     }
 
     func test_empty() throws {
-        subject.prepare(parameters, request: requestable)
+        subject.prepare(parameters, request: requestable, session: session)
 
         requestable.stub(.sdk).andReturn(request)
-        subject.willSend(parameters, request: requestable, userInfo: .testMake())
+        subject.willSend(parameters, request: requestable, userInfo: .testMake(), session: session)
         XCTAssertHaveReceived(requestable, .sdk, countSpecifier: .atLeast(1))
         requestable.resetCallsAndStubs()
 
         XCTAssertEqual(actual.value, [
             .phase: "willSend",
-            .curl: "curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
-        ])
+            .curl: "$ curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
+        ], String(describing: actual.value![.curl]))
         actual.value = [:]
-
         subject.didReceive(parameters, request: requestable, data: .testMake(), userInfo: .testMake())
 
         let data: RequestResult = .testMake(url: .spry.testMake(), statusCode: 222)
@@ -56,23 +62,23 @@ final class PluginsCurlTests: XCTestCase {
         XCTAssertEqual(actual.value, [
             .phase: "didFinish",
             .error: nil,
-            .body: nil,
-            .curl: "curl -v \\\n\t-X GET \\\n\t\"http://www.some.com\""
-        ])
+            .body: "< nil >",
+            .curl: "$ curl -v \\\n\t-X GET \\\n\t\"http://www.some.com\""
+        ], String(describing: actual.value![.curl]))
     }
 
     func test_body() throws {
-        subject.prepare(parameters, request: requestable)
+        subject.prepare(parameters, request: requestable, session: session)
 
         requestable.stub(.sdk).andReturn(request)
-        subject.willSend(parameters, request: requestable, userInfo: .testMake())
+        subject.willSend(parameters, request: requestable, userInfo: .testMake(), session: session)
         XCTAssertHaveReceived(requestable, .sdk, countSpecifier: .atLeast(1))
         requestable.resetCallsAndStubs()
 
         XCTAssertEqual(actual.value, [
             .phase: "willSend",
-            .curl: "curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
-        ])
+            .curl: "$ curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
+        ], String(describing: actual.value![.curl]))
         actual.value = [:]
 
         subject.didReceive(parameters, request: requestable, data: .testMake(), userInfo: .testMake())
@@ -88,22 +94,22 @@ final class PluginsCurlTests: XCTestCase {
             .phase: "didFinish",
             .error: nil,
             .body: "{\n  \"id\" : 2\n}",
-            .curl: "curl -v \\\n\t-X GET \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
-        ])
+            .curl: "$ curl -v \\\n\t-X GET \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
+        ], String(describing: actual.value![.curl]))
     }
 
     func test_error() throws {
-        subject.prepare(parameters, request: requestable)
+        subject.prepare(parameters, request: requestable, session: session)
 
         requestable.stub(.sdk).andReturn(request)
-        subject.willSend(parameters, request: requestable, userInfo: .testMake())
+        subject.willSend(parameters, request: requestable, userInfo: .testMake(), session: session)
         XCTAssertHaveReceived(requestable, .sdk, countSpecifier: .atLeast(1))
         requestable.resetCallsAndStubs()
 
         XCTAssertEqual(actual.value, [
             .phase: "willSend",
-            .curl: "curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
-        ])
+            .curl: "$ curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
+        ], String(describing: actual.value![.curl]))
         actual.value = [:]
 
         subject.didReceive(parameters, request: requestable, data: .testMake(), userInfo: .testMake())
@@ -120,7 +126,7 @@ final class PluginsCurlTests: XCTestCase {
             .phase: "didFinish",
             .error: "generic",
             .body: "{\n  \"id\" : 2\n}",
-            .curl: "curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some2=value2\""
-        ])
+            .curl: "$ curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some2=value2\""
+        ], String(describing: actual.value![.curl]))
     }
 }

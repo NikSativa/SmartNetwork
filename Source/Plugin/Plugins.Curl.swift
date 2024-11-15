@@ -13,32 +13,6 @@ public extension Plugins {
         public typealias Logging = (_ component: Component, _ text: () -> String?) -> Void
         #endif
 
-        /// The `curl` component of the log.
-        public enum Component {
-            case phase
-            case curl
-            case error
-            case body
-        }
-
-        /// The options for the `Curl` plugin.
-        public struct Options: OptionSet {
-            public let rawValue: Int
-
-            public init(rawValue: Int) {
-                self.rawValue = rawValue
-            }
-
-            /// Logs the request before sending it.
-            public static let willSend: Self = .init(rawValue: 1 << 0)
-            /// Logs the response after receiving response.
-            public static let didReceive: Self = .init(rawValue: 1 << 1)
-            /// Logs the response after the request is finished.
-            public static let didFinish: Self = .init(rawValue: 1 << 2)
-            /// Logs all the phases.
-            public static let all: Self = [.willSend, .didFinish, .didReceive]
-        }
-
         #if swift(>=6.0)
         public nonisolated(unsafe) let id: AnyHashable
         #else
@@ -59,9 +33,9 @@ public extension Plugins {
             self.options = options
         }
 
-        public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation) {}
+        public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, session: SmartURLSession) {}
         public func verify(data: RequestResult, userInfo: UserInfo) throws {}
-        public func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo) {
+        public func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession) {
             guard options.contains(.willSend) else {
                 return
             }
@@ -71,7 +45,7 @@ public extension Plugins {
             }
 
             logger(.curl) {
-                let curl = makeCurl(for: request.sdk)
+                let curl = request.cURLDescription(with: session)
                 return curl
             }
         }
@@ -86,7 +60,7 @@ public extension Plugins {
             }
 
             logger(.curl) {
-                let curl = makeCurl(for: data.request?.sdk)
+                let curl = data.cURLDescription()
                 return curl
             }
 
@@ -111,7 +85,7 @@ public extension Plugins {
             }
 
             logger(.curl) {
-                let curl = makeCurl(for: data.request?.sdk)
+                let curl = data.cURLDescription()
                 return curl
             }
 
@@ -126,39 +100,9 @@ public extension Plugins {
             }
         }
 
-        private func makeCurl(for request: URLRequest?) -> String? {
-            guard let request,
-                  let url = request.url,
-                  let method = request.httpMethod else {
-                return nil
-            }
-
-            var components = ["curl -v"]
-            components.append("-X \(method)")
-
-            let headers: HeaderFields = .init(request.allHTTPHeaderFields ?? [:])
-            for header in headers {
-                let escapedValue = header.value.replacingOccurrences(of: "\"", with: "\\\"")
-                components.append("-H \"\(header.key): \(escapedValue)\"")
-            }
-
-            if let httpBodyData = request.httpBody {
-                let httpBody = String(decoding: httpBodyData, as: UTF8.self)
-                var escapedBody = httpBody.replacingOccurrences(of: "\\\"", with: "\\\\\"")
-                escapedBody = escapedBody.replacingOccurrences(of: "\"", with: "\\\"")
-
-                components.append("-d \"\(escapedBody)\"")
-            }
-
-            components.append("\"\(url.absoluteString)\"")
-
-            let result = components.joined(separator: " \\\n\t")
-            return result
-        }
-
-        private func makeResponseBody(_ body: Data?) -> String? {
+        private func makeResponseBody(_ body: Data?) -> String {
             guard let body else {
-                return nil
+                return "< nil >"
             }
 
             if body.isEmpty {
@@ -184,6 +128,34 @@ public extension Plugins {
 
             return responseText
         }
+    }
+}
+
+public extension Plugins.Curl {
+    /// The `curl` component of the log.
+    enum Component {
+        case phase
+        case curl
+        case error
+        case body
+    }
+
+    /// The options for the `Curl` plugin.
+    struct Options: OptionSet {
+        public let rawValue: Int
+
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+
+        /// Logs the request before sending it.
+        public static let willSend: Self = .init(rawValue: 1 << 0)
+        /// Logs the response after receiving response.
+        public static let didReceive: Self = .init(rawValue: 1 << 1)
+        /// Logs the response after the request is finished.
+        public static let didFinish: Self = .init(rawValue: 1 << 2)
+        /// Logs all the phases.
+        public static let all: Self = [.willSend, .didFinish, .didReceive]
     }
 }
 

@@ -21,36 +21,27 @@ public protocol Plugin: Sendable {
     var priority: PluginPriority { get }
 
     /// A function that will be called before the request is sent.
-    func prepare(_ parameters: Parameters,
-                 request: inout URLRequestRepresentation)
+    func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, session: SmartURLSession)
 
     /// A function that will be called after the response is received.
     ///
     /// - Note: if the response is not successful, you can throw an error here.
     /// - Important: only the first error thrown will be passed to the completion block and the rest will be ignored.
-    func verify(data: RequestResult,
-                userInfo: UserInfo) throws
+    func verify(data: RequestResult, userInfo: UserInfo) throws
 
     /// Just before the completion call
     func didFinish(withData data: RequestResult, userInfo: UserInfo)
 
     /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
-    func willSend(_ parameters: Parameters,
-                  request: URLRequestRepresentation,
-                  userInfo: UserInfo)
+    func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession)
 
     /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
-    func didReceive(_ parameters: Parameters,
-                    request: URLRequestRepresentation,
-                    data: RequestResult,
-                    userInfo: UserInfo)
+    func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo)
 
     /// Just a notification that the request was somehow cancelled. can be called at any time and multiple times. for debug purposes or your own logic
     ///
     /// - Note: has an empty default implementation
-    func wasCancelled(_ parameters: Parameters,
-                      request: URLRequestRepresentation,
-                      userInfo: UserInfo)
+    func wasCancelled(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession)
 }
 #else
 /// Protocol that defines the mechanism of request interception and response validation.
@@ -69,37 +60,28 @@ public protocol Plugin {
     /// The priority in which the plugin will be executed in the list of plugins.
     var priority: PluginPriority { get }
 
-    /// A function that will be called before the request is sent
-    func prepare(_ parameters: Parameters,
-                 request: inout URLRequestRepresentation)
+    /// A function that will be called before the request is sent.
+    func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, session: SmartURLSession)
 
-    /// A function that will be called after the response is received
+    /// A function that will be called after the response is received.
     ///
     /// - Note: if the response is not successful, you can throw an error here.
     /// - Important: only the first error thrown will be passed to the completion block and the rest will be ignored.
-    func verify(data: RequestResult,
-                userInfo: UserInfo) throws
+    func verify(data: RequestResult, userInfo: UserInfo) throws
 
     /// Just before the completion call
     func didFinish(withData data: RequestResult, userInfo: UserInfo)
 
     /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
-    func willSend(_ parameters: Parameters,
-                  request: URLRequestRepresentation,
-                  userInfo: UserInfo)
+    func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession)
 
     /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
-    func didReceive(_ parameters: Parameters,
-                    request: URLRequestRepresentation,
-                    data: RequestResult,
-                    userInfo: UserInfo)
+    func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo)
 
     /// Just a notification that the request was somehow cancelled. can be called at any time and multiple times. for debug purposes or your own logic
     ///
     /// - Note: has an empty default implementation
-    func wasCancelled(_ parameters: Parameters,
-                      request: URLRequestRepresentation,
-                      userInfo: UserInfo)
+    func wasCancelled(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession)
 }
 #endif
 
@@ -121,9 +103,7 @@ public extension Plugin {
         return [makeHash(), hash]
     }
 
-    func wasCancelled(_ parameters: Parameters,
-                      request: URLRequestRepresentation,
-                      userInfo: UserInfo) {
+    func wasCancelled(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession) {
         // nothing to do
     }
 

@@ -7,6 +7,7 @@ public typealias ProgressHandler = @Sendable (Progress) -> Void
 /// A type representing a network session which you can override for your own behaviours.
 public protocol SmartURLSession: Sendable {
     typealias CompletionHandler = @Sendable (Data?, URLResponse?, Error?) -> Void
+    var configuration: URLSessionConfiguration { get }
     func task(with request: URLRequest, completionHandler: @escaping CompletionHandler) -> SessionTask
 }
 #else
@@ -16,6 +17,7 @@ public typealias ProgressHandler = (Progress) -> Void
 /// A type representing a network session which you can override for your own behaviours.
 public protocol SmartURLSession {
     typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
+    var configuration: URLSessionConfiguration { get }
     func task(with request: URLRequest, completionHandler: @escaping CompletionHandler) -> SessionTask
 }
 #endif

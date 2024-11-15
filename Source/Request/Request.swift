@@ -5,13 +5,13 @@ internal final class Request {
     typealias CompletionCallback = (RequestResult) -> Void
 
     private lazy var sessionAdaptor: SessionAdaptor = {
-        let session = parameters.session ?? RequestSettings.sharedSession
         return .init(session: session, progressHandler: parameters.progressHandler)
     }()
 
     private let address: Address
     private var isCanceled: Bool = false
 
+    let session: SmartURLSession
     let parameters: Parameters
     var userInfo: UserInfo {
         return parameters.userInfo
@@ -31,10 +31,12 @@ internal final class Request {
 
     init(address: Address,
          parameters: Parameters,
-         urlRequestable: URLRequestRepresentation) {
+         urlRequestable: URLRequestRepresentation,
+         session: SmartURLSession) {
         self.address = address
         self.parameters = parameters
         self.urlRequestable = urlRequestable
+        self.session = session
     }
 
     deinit {
@@ -52,7 +54,8 @@ internal final class Request {
         for plugin in plugins {
             plugin.willSend(parameters,
                             request: urlRequestable,
-                            userInfo: userInfo)
+                            userInfo: userInfo,
+                            session: session)
         }
 
         let sdkRequest = urlRequestable.sdk
@@ -66,7 +69,8 @@ internal final class Request {
             let responseData = RequestResult(request: urlRequestable,
                                              body: stub.body?.data,
                                              response: response,
-                                             error: stub.error)
+                                             error: stub.error,
+                                             session: session)
             if let delay = stub.delayInSeconds, delay > 0 {
                 HTTPStubServer.defaultResponseQueue.asyncAfter(deadline: .now() + delay) { [weak self] in
                     guard let self, tryFireCancellation() else {
@@ -107,7 +111,8 @@ internal final class Request {
                 let responseData = RequestResult(request: urlRequestable,
                                                  body: cached.data,
                                                  response: cached.response,
-                                                 error: nil)
+                                                 error: nil,
+                                                 session: session)
                 cacheSettings.responseQueue.fire { [self] in
                     fireCompletionAndNotifyPlugins(data: responseData)
                 }
@@ -131,7 +136,8 @@ internal final class Request {
             let responseData = RequestResult(request: urlRequestable,
                                              body: data,
                                              response: response,
-                                             error: error)
+                                             error: error,
+                                             session: session)
 
             fireCompletionAndNotifyPlugins(data: responseData)
         }
@@ -195,7 +201,8 @@ extension Request {
         for plugin in plugins {
             plugin.wasCancelled(parameters,
                                 request: urlRequestable,
-                                userInfo: userInfo)
+                                userInfo: userInfo,
+                                session: session)
         }
     }
 }

@@ -44,8 +44,7 @@ public extension Plugins {
             self.type = type
         }
 
-        public func prepare(_ parameters: Parameters,
-                            request: inout URLRequestRepresentation) {
+        public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, session: SmartURLSession) {
             let value = tokenProvider()
 
             switch type {
@@ -81,7 +80,7 @@ public extension Plugins {
 
         public func verify(data: RequestResult, userInfo: UserInfo) throws {}
         public func didFinish(withData data: RequestResult, userInfo: UserInfo) {}
-        public func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo) {}
+        public func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession) {}
         public func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo) {}
     }
 }

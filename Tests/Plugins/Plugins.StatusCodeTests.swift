@@ -5,6 +5,8 @@ import XCTest
 @testable import SmartNetwork
 
 final class StatusCodePluginTests: XCTestCase {
+    let session: FakeSmartURLSession = .init()
+
     func test_shouldNotIgnoreSuccess() {
         let subject = Plugins.StatusCode(shouldIgnore200th: false, shouldIgnoreNil: false, shouldIgnorePreviousError: false)
 
@@ -30,8 +32,8 @@ final class StatusCodePluginTests: XCTestCase {
 
         // should nothing happen
         let requestable: FakeURLRequestRepresentation = .init()
-        subject.prepare(.testMake(), request: requestable)
-        subject.willSend(.testMake(), request: requestable, userInfo: .testMake())
+        subject.prepare(.testMake(), request: requestable, session: session)
+        subject.willSend(.testMake(), request: requestable, userInfo: .testMake(), session: session)
         subject.didReceive(.testMake(), request: requestable, data: .testMake(), userInfo: .testMake())
     }
 
@@ -64,8 +66,8 @@ final class StatusCodePluginTests: XCTestCase {
 
         // should nothing happen
         let requestable: FakeURLRequestRepresentation = .init()
-        subject.prepare(.testMake(), request: requestable)
-        subject.willSend(.testMake(), request: requestable, userInfo: .testMake())
+        subject.prepare(.testMake(), request: requestable, session: session)
+        subject.willSend(.testMake(), request: requestable, userInfo: .testMake(), session: session)
         subject.didReceive(.testMake(), request: requestable, data: .testMake(), userInfo: .testMake())
     }
 }

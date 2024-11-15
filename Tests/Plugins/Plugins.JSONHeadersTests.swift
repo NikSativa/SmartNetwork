@@ -9,6 +9,7 @@ final class Plugins_JSONHeadersTests: XCTestCase {
         let subject = Plugins.JSONHeaders()
 
         let parameters: Parameters = .testMake()
+        let session: FakeSmartURLSession = .init()
         let requestable: FakeURLRequestRepresentation = .init()
         requestable.stub(.url).andReturn(URL.spry.testMake("https://www.apple.com"))
         requestable.stub(.value).with("Host").andReturn(nil)
@@ -23,7 +24,7 @@ final class Plugins_JSONHeadersTests: XCTestCase {
         requestable.stub(.value).with("Connection").andReturn(nil)
         requestable.stub(.setValue).with("keep-alive", "Connection").andReturn()
 
-        subject.prepare(parameters, request: requestable)
+        subject.prepare(parameters, request: requestable, session: session)
         XCTAssertHaveReceived(requestable, .setValue, countSpecifier: .atLeast(4))
         requestable.resetCallsAndStubs()
 
@@ -32,7 +33,7 @@ final class Plugins_JSONHeadersTests: XCTestCase {
         }
         XCTAssertTrue(parameters.userInfo.isEmpty)
 
-        subject.willSend(parameters, request: requestable, userInfo: .testMake())
+        subject.willSend(parameters, request: requestable, userInfo: .testMake(), session: session)
         subject.didReceive(parameters, request: requestable, data: .testMake(), userInfo: .testMake())
 
         let data: RequestResult = .testMake(url: .spry.testMake(), statusCode: 222)

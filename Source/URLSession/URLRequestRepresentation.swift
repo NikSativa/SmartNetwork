@@ -1,7 +1,7 @@
 import Foundation
 
 #if swift(>=6.0)
-public protocol URLRequestRepresentation: Sendable {
+public protocol URLRequestRepresentation: Sendable, CURLConvertible {
     var sdk: URLRequest { get }
     var allHTTPHeaderFields: [String: String]? { get }
     var url: URL? { get set }
@@ -12,7 +12,7 @@ public protocol URLRequestRepresentation: Sendable {
     mutating func setValue(_ value: String?, forHTTPHeaderField field: String)
 }
 #else
-public protocol URLRequestRepresentation {
+public protocol URLRequestRepresentation: CURLConvertible {
     var sdk: URLRequest { get }
     var allHTTPHeaderFields: [String: String]? { get }
     var url: URL? { get set }
@@ -29,5 +29,14 @@ public protocol URLRequestRepresentation {
 extension URLRequest: URLRequestRepresentation {
     public var sdk: URLRequest {
         return self
+    }
+}
+
+public extension URLRequestRepresentation {
+    /// cURL representation of the instance.
+    ///
+    /// - Returns: The cURL equivalent of the instance.
+    func cURLDescription(with session: SmartURLSession = RequestSettings.sharedSession) -> String {
+        return cURLDescription(with: session, request: sdk)
     }
 }

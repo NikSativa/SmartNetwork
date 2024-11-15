@@ -14,11 +14,11 @@ private final class TestPlugin: Plugin {
         self.priority = .init(rawValue: input)
     }
 
-    func prepare(_ parameters: SmartNetwork.Parameters, request: inout SmartNetwork.URLRequestRepresentation) {
+    func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, session: SmartURLSession) {
         fatalError("not used in that test")
     }
 
-    func verify(data: SmartNetwork.RequestResult, userInfo: SmartNetwork.UserInfo) throws {
+    func verify(data: RequestResult, userInfo: UserInfo) throws {
         fatalError("not used in that test")
     }
 
@@ -26,11 +26,11 @@ private final class TestPlugin: Plugin {
         fatalError("not used in that test")
     }
 
-    func willSend(_ parameters: SmartNetwork.Parameters, request: SmartNetwork.URLRequestRepresentation, userInfo: SmartNetwork.UserInfo) {
+    func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession) {
         fatalError("not used in that test")
     }
 
-    func didReceive(_ parameters: SmartNetwork.Parameters, request: SmartNetwork.URLRequestRepresentation, data: SmartNetwork.RequestResult, userInfo: SmartNetwork.UserInfo) {
+    func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo) {
         fatalError("not used in that test")
     }
 }

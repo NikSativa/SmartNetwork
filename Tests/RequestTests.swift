@@ -10,15 +10,14 @@ final class RequestableTests: XCTestCase {
     var requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy
 
     let task: FakeSessionTask = .init()
-    let session: FakeSession = .init()
+    let session: FakeSmartURLSession = .init()
     let cache: FakeRequestCache = .init()
     let sdkRequest = URLRequest.spry.testMake(url: "apple.com")
 
     lazy var cacheSettings: CacheSettings = .testMake(cache: cache)
 
     lazy var parameters: Parameters = .testMake(cacheSettings: cacheSettings,
-                                                requestPolicy: requestPolicy,
-                                                session: session)
+                                                requestPolicy: requestPolicy)
 
     lazy var urlRequestable: FakeURLRequestRepresentation = {
         let urlRequestable: FakeURLRequestRepresentation = .init()
@@ -32,7 +31,8 @@ final class RequestableTests: XCTestCase {
     lazy var setUpSubject: () -> Void = { [self] in
         subject = Request(address: .testMake(),
                           parameters: parameters,
-                          urlRequestable: urlRequestable)
+                          urlRequestable: urlRequestable,
+                          session: session)
         subject.completion = { [weak self] data in
             self?.responses.append(data)
         }
@@ -286,14 +286,16 @@ final class RequestableTests: XCTestCase {
         let urlRequestable: FakeURLRequestRepresentation = .init()
         var subject: Request! = Request(address: .testMake(),
                                         parameters: .testMake(method: .get),
-                                        urlRequestable: urlRequestable)
+                                        urlRequestable: urlRequestable,
+                                        session: session)
 
         XCTAssertEqual(subject.description, "<GET request: https://www.apple.com>")
         XCTAssertEqual(subject.debugDescription, "Optional(<GET request: https://www.apple.com>)")
 
         subject = Request(address: .testMake(),
                           parameters: .testMake(header: ["some": "a"], method: nil),
-                          urlRequestable: urlRequestable)
+                          urlRequestable: urlRequestable,
+                          session: session)
 
         XCTAssertEqual(subject!.description, "<`No method` request: https://www.apple.com headers: [some: a]>")
         XCTAssertEqual(subject!.debugDescription, "<`No method` request: https://www.apple.com headers: [some: a]>")

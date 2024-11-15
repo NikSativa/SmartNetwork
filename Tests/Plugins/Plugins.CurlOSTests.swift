@@ -20,14 +20,25 @@ final class PluginsCurlOSTests: XCTestCase {
     }()
 
     let parameters: Parameters = .testMake()
+    let session: FakeSmartURLSession = .init()
     lazy var requestable: FakeURLRequestRepresentation = .init()
+
+    override func setUp() {
+        super.setUp()
+        session.stub(.configuration).andReturn(URLSessionConfiguration.default)
+    }
+
+    override func tearDown() {
+        super.tearDown()
+        session.resetCallsAndStubs()
+    }
 
     func test_empty() throws {
         let subject = Plugins.CurlOS(shouldPrintBody: true)
-        subject.prepare(parameters, request: requestable)
+        subject.prepare(parameters, request: requestable, session: session)
 
         requestable.stub(.sdk).andReturn(request)
-        subject.willSend(parameters, request: requestable, userInfo: .testMake())
+        subject.willSend(parameters, request: requestable, userInfo: .testMake(), session: session)
         XCTAssertHaveReceived(requestable, .sdk, countSpecifier: .atLeast(1))
         requestable.resetCallsAndStubs()
 
@@ -43,10 +54,10 @@ final class PluginsCurlOSTests: XCTestCase {
 
     func test_body() throws {
         let subject = Plugins.CurlOS(shouldPrintBody: false)
-        subject.prepare(parameters, request: requestable)
+        subject.prepare(parameters, request: requestable, session: session)
 
         requestable.stub(.sdk).andReturn(request)
-        subject.willSend(parameters, request: requestable, userInfo: .testMake())
+        subject.willSend(parameters, request: requestable, userInfo: .testMake(), session: session)
         XCTAssertHaveReceived(requestable, .sdk, countSpecifier: .atLeast(1))
         requestable.resetCallsAndStubs()
 
@@ -62,10 +73,10 @@ final class PluginsCurlOSTests: XCTestCase {
 
     func test_error() throws {
         let subject = Plugins.CurlOS(shouldPrintBody: true)
-        subject.prepare(parameters, request: requestable)
+        subject.prepare(parameters, request: requestable, session: session)
 
         requestable.stub(.sdk).andReturn(request)
-        subject.willSend(parameters, request: requestable, userInfo: .testMake())
+        subject.willSend(parameters, request: requestable, userInfo: .testMake(), session: session)
         XCTAssertHaveReceived(requestable, .sdk, countSpecifier: .atLeast(1))
         requestable.resetCallsAndStubs()
 

@@ -200,13 +200,13 @@ final class RequestManagerTests: XCTestCase {
             return parameters.plugins.map(\.id) == expected.map(\.id)
         }
 
-        XCTAssertHaveReceived(pluginForManager, .prepare, with: pluginValidator, Argument.anything, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .prepare, with: pluginValidator, Argument.anything, Argument.anything, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForManager, .verify, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForManager, .willSend, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForManager, .didReceive, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForManager, .didFinish, countSpecifier: .exactly(1))
 
-        XCTAssertHaveReceived(pluginForParam, .prepare, with: pluginValidator, Argument.anything, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .prepare, with: pluginValidator, Argument.anything, Argument.anything, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForParam, .verify, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForParam, .willSend, countSpecifier: .exactly(1))
         XCTAssertHaveReceived(pluginForParam, .didReceive, countSpecifier: .exactly(1))

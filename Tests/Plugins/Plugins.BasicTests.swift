@@ -5,6 +5,8 @@ import XCTest
 @testable import SmartNetwork
 
 final class PluginsBasicTests: XCTestCase {
+    let session: FakeSmartURLSession = .init()
+
     func test_authToken() throws {
         let subject = Plugins.AuthBasic {
             return .init(username: "my_token_username", password: "my_token_password")
@@ -13,8 +15,7 @@ final class PluginsBasicTests: XCTestCase {
         let parameters: Parameters = .testMake()
         let requestable: FakeURLRequestRepresentation = .init()
         requestable.stub(.setValue).andReturn()
-        subject.prepare(parameters,
-                        request: requestable)
+        subject.prepare(parameters, request: requestable, session: session)
         let token = "Basic bXlfdG9rZW5fdXNlcm5hbWU6bXlfdG9rZW5fcGFzc3dvcmQ="
         XCTAssertHaveReceived(requestable, .setValue, with: token, "Authorization", countSpecifier: .exactly(1))
         XCTAssertNoThrowError {
@@ -26,7 +27,7 @@ final class PluginsBasicTests: XCTestCase {
         let data: RequestResult = .testMake(url: .spry.testMake(), statusCode: 222)
         requestable.resetCallsAndStubs()
 
-        subject.willSend(parameters, request: requestable, userInfo: .testMake())
+        subject.willSend(parameters, request: requestable, userInfo: .testMake(), session: session)
         subject.didReceive(parameters, request: requestable, data: .testMake(), userInfo: .testMake())
         try subject.verify(data: data, userInfo: .testMake())
         subject.didFinish(withData: data, userInfo: .testMake())

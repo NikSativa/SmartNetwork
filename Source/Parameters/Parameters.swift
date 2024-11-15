@@ -34,9 +34,6 @@ public struct Parameters {
     /// The progress handler for the request
     public let progressHandler: ProgressHandler?
 
-    /// The session for the request
-    public let session: SmartURLSession?
-
     /// ``UserInfo`` for the request.
     ///
     /// - Note: You can use ``UserInfo`` to pass data between any part of the network layer like ``Plugin``, ``Stopper`` etc.
@@ -52,8 +49,7 @@ public struct Parameters {
                 timeoutInterval: TimeInterval = RequestSettings.timeoutInterval,
                 progressHandler: ProgressHandler? = nil,
                 userInfo: UserInfo = .init(),
-                shouldIgnoreStopTheLine: Bool = false,
-                session: SmartURLSession? = nil) {
+                shouldIgnoreStopTheLine: Bool = false) {
         self.header = header
         self.method = method
         self.body = body
@@ -64,7 +60,6 @@ public struct Parameters {
         self.progressHandler = progressHandler
         self.userInfo = userInfo
         self.shouldIgnoreStopTheLine = shouldIgnoreStopTheLine
-        self.session = session
     }
 }
 
@@ -101,8 +96,7 @@ public extension Parameters {
                      requestPolicy: lhs.requestPolicy,
                      timeoutInterval: lhs.timeoutInterval,
                      progressHandler: lhs.progressHandler,
-                     userInfo: lhs.userInfo,
-                     session: lhs.session)
+                     userInfo: lhs.userInfo)
     }
 
     /// Adds plugins to the parameters.
@@ -116,8 +110,7 @@ public extension Parameters {
                      requestPolicy: lhs.requestPolicy,
                      timeoutInterval: lhs.timeoutInterval,
                      progressHandler: lhs.progressHandler,
-                     userInfo: lhs.userInfo,
-                     session: lhs.session)
+                     userInfo: lhs.userInfo)
     }
 }
 

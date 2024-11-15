@@ -13,8 +13,7 @@ extension Parameters: SpryEquatable {
                                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
                                 timeoutInterval: TimeInterval = RequestSettings.timeoutInterval,
                                 progressHandler: ProgressHandler? = nil,
-                                userInfo: UserInfo = .init(),
-                                session: SmartURLSession? = nil) -> Self {
+                                userInfo: UserInfo = .init()) -> Self {
         return .init(header: header,
                      method: method,
                      body: body,
@@ -23,8 +22,7 @@ extension Parameters: SpryEquatable {
                      requestPolicy: requestPolicy,
                      timeoutInterval: timeoutInterval,
                      progressHandler: progressHandler,
-                     userInfo: userInfo,
-                     session: session)
+                     userInfo: userInfo)
     }
 }
 

@@ -11,7 +11,8 @@ extension RequestResult: Equatable, SpryEquatable {
                                 httpVersion: String? = nil,
                                 headerFields: [String: String]? = nil,
                                 body: Body? = nil,
-                                error: Error? = nil) -> Self {
+                                error: Error? = nil,
+                                session: SmartURLSession = RequestSettings.sharedSession) -> Self {
         var request = URLRequest(url: url)
         for field in headerFields ?? [:] {
             request.addValue(field.value, forHTTPHeaderField: field.key)
@@ -23,17 +24,20 @@ extension RequestResult: Equatable, SpryEquatable {
                                                statusCode: statusCode,
                                                httpVersion: httpVersion,
                                                headerFields: headerFields),
-                     error: error)
+                     error: error,
+                     session: session)
     }
 
     public static func testMake(request: URLRequestRepresentation? = nil,
                                 body: Body? = nil,
                                 response: URLResponse? = nil,
-                                error: Error? = nil) -> Self {
+                                error: Error? = nil,
+                                session: SmartURLSession = RequestSettings.sharedSession) -> Self {
         return .init(request: request,
                      body: body.data,
                      response: response,
-                     error: error)
+                     error: error,
+                     session: session)
     }
 
     public static func ==(lhs: RequestResult, rhs: RequestResult) -> Bool {

@@ -19,15 +19,15 @@ final class QueryItemsTests: XCTestCase {
             .testMake(key: "item", value: "2")
         ]))
 
-        subject.set(key: "item", value: "value")
+        subject.set("item", value: "value")
         XCTAssertEqual(subject, .init([
             .testMake(key: "item2", value: "value2"),
             .testMake(key: "item", value: "value")
         ]))
-        XCTAssertEqual(subject["item"]?.value, "value")
+        XCTAssertEqual(subject["item"], "value")
 
-        subject["item"] = .testMake(key: "item", value: "valueNew")
-        XCTAssertEqual(subject["item"]?.value, "valueNew")
+        subject["item"] = "valueNew"
+        XCTAssertEqual(subject["item"], "valueNew")
 
         subject["item"] = nil
         XCTAssertEqual(subject["item"], nil)

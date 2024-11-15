@@ -18,21 +18,25 @@ public final class SmartRequestManager {
     @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     private var state: State = .init()
     private let plugins: [Plugin]
+    private let session: SmartURLSession
     private let stopTheLine: StopTheLine?
     private let retrier: SmartRetrier?
 
     /// Initializes a new instance of the ``SmartRequestManager`` class with the specified plugins, stopTheLine.
     ///
     /// - Parameters:
-    ///  - plugins: The plugins to be used in the request manager for each request.
-    ///  - stopTheLine: The stopTheLine mechanism to be used in the request manager for each request.
-    ///  - retrier: The retrier mechanism to be used in the request manager for each request.
+    ///  - plugins: The ``Plugin`` to be used in the request manager for each request. Default is `[]`.
+    ///  - stopTheLine: The ``StopTheLine`` mechanism to be used in the request manager for each request. Default is `nil`.
+    ///  - retrier: The ``SmartRetrier`` mechanism to be used in the request manager for each request. Default is `nil`.
+    ///  - session: The ``SmartURLSession`` to be used in the request manager for each request. Default is `RequestSettings.sharedSession`.
     public required init(withPlugins plugins: [Plugin] = [],
                          stopTheLine: StopTheLine? = nil,
-                         retrier: SmartRetrier? = nil) {
+                         retrier: SmartRetrier? = nil,
+                         session: SmartURLSession = RequestSettings.sharedSession) {
         self.plugins = plugins
         self.stopTheLine = stopTheLine
         self.retrier = retrier
+        self.session = session
     }
 
     /// Creates protocol wrapped interface instead of concrete realization
@@ -46,12 +50,21 @@ public final class SmartRequestManager {
     /// ```
     ///
     /// - Tip: The protocol is useful for mocking and testing request management functionalities in Swift.
+    ///
+    /// - Parameters:
+    ///  - plugins: The ``Plugin`` to be used in the request manager for each request. Default is `[]`.
+    ///  - stopTheLine: The ``StopTheLine`` mechanism to be used in the request manager for each request. Default is `nil`.
+    ///  - retrier: The ``SmartRetrier`` mechanism to be used in the request manager for each request. Default is `nil`.
+    ///  - session: The ``SmartURLSession`` to be used in the request manager for each request. Default is `RequestSettings.sharedSession`.
+    ///  - Returns: A new instance of the ``RequestManager`` protocol.
     public static func create(withPlugins plugins: [Plugin] = [],
                               stopTheLine: StopTheLine? = nil,
-                              retrier: SmartRetrier? = nil) -> RequestManager {
+                              retrier: SmartRetrier? = nil,
+                              session: SmartURLSession = RequestSettings.sharedSession) -> RequestManager {
         return Self(withPlugins: plugins,
                     stopTheLine: stopTheLine,
-                    retrier: retrier)
+                    retrier: retrier,
+                    session: session)
     }
 }
 
@@ -209,13 +222,13 @@ private extension SmartRequestManager {
                        userInfo: UserInfo) throws -> Request {
         var urlRequest = try parameters.urlRequest(for: address)
         for plugin in parameters.plugins {
-            plugin.prepare(parameters,
-                           request: &urlRequest)
+            plugin.prepare(parameters, request: &urlRequest, session: session)
         }
 
         let request = Request(address: address,
                               parameters: parameters,
-                              urlRequestable: urlRequest)
+                              urlRequestable: urlRequest,
+                              session: session)
         return request
     }
 
@@ -273,8 +286,12 @@ private extension SmartRequestManager {
             })
             .fillUserInfo(with: address)
         } catch {
-            return SmartTask(runAction: {
-                let result = RequestResult(request: nil, body: nil, response: nil, error: error)
+            return SmartTask(runAction: { [session] in
+                let result = RequestResult(request: nil,
+                                           body: nil,
+                                           response: nil,
+                                           error: error,
+                                           session: session)
                 completion(result)
             })
             .fillUserInfo(with: address)
