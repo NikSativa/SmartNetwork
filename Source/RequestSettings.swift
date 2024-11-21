@@ -25,6 +25,12 @@ public enum RequestSettings: Sendable {
 
     /// Default timeout for every request (in seconds)
     public nonisolated(unsafe) static var timeoutInterval: TimeInterval = 30
+
+    /// If you want to use cURL representation with '$' at the beginning of the line, you can set this parameter to 'true'
+    public nonisolated(unsafe) static var curlStartsWithDollar: Bool = false
+
+    /// Disallowed headers for cURL representation. Default is ["Accept-Encoding"]. You can add your own headers here to exclude them from cURL representation.
+    public nonisolated(unsafe) static var curlDisallowedHeaders: Set<String> = ["Accept-Encoding"]
 }
 #else
 /// Global settings for every request
@@ -50,5 +56,11 @@ public enum RequestSettings {
 
     /// Default timeout for every request (in seconds)
     public static var timeoutInterval: TimeInterval = 30
+
+    /// If you want to use cURL representation with '$' at the beginning of the line, you can set this parameter to 'true'
+    public static var curlStartsWithDollar: Bool = false
+
+    /// Disallowed headers for cURL representation. Default is ["Accept-Encoding"]. You can add your own headers here to exclude them from cURL representation.
+    public static var curlDisallowedHeaders: Set<String> = ["Accept-Encoding"]
 }
 #endif

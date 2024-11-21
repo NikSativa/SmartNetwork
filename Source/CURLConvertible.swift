@@ -18,7 +18,7 @@ public extension CURLConvertible {
             return "$ curl command could not be created"
         }
 
-        var components = ["$ curl -v"]
+        var components = [RequestSettings.curlStartsWithDollar ? "$ curl -v" : "curl -v"]
 
         components.append("-X \(method)")
 
@@ -67,9 +67,12 @@ public extension CURLConvertible {
             }
         }
 
+        let curlDisallowedHeaders = RequestSettings.curlDisallowedHeaders
         for header in headers {
-            let escapedValue = header.value.replacingOccurrences(of: "\"", with: "\\\"")
-            components.append("-H \"\(header.key): \(escapedValue)\"")
+            if !curlDisallowedHeaders.contains(header.key) {
+                let escapedValue = header.value.replacingOccurrences(of: "\"", with: "\\\"")
+                components.append("-H \"\(header.key): \(escapedValue)\"")
+            }
         }
 
         if let httpBodyData = request.httpBody {

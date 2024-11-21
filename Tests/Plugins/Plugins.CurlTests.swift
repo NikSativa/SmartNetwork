@@ -38,6 +38,8 @@ final class PluginsCurlTests: XCTestCase {
     }
 
     func test_empty() throws {
+        RequestSettings.curlStartsWithDollar = true
+
         subject.prepare(parameters, request: requestable, session: session)
 
         requestable.stub(.sdk).andReturn(request)
@@ -68,6 +70,8 @@ final class PluginsCurlTests: XCTestCase {
     }
 
     func test_body() throws {
+        RequestSettings.curlStartsWithDollar = false
+
         subject.prepare(parameters, request: requestable, session: session)
 
         requestable.stub(.sdk).andReturn(request)
@@ -77,7 +81,7 @@ final class PluginsCurlTests: XCTestCase {
 
         XCTAssertEqual(actual.value, [
             .phase: "willSend",
-            .curl: "$ curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
+            .curl: "curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
         ], String(describing: actual.value![.curl]))
         actual.value = [:]
 
@@ -94,11 +98,13 @@ final class PluginsCurlTests: XCTestCase {
             .phase: "didFinish",
             .error: nil,
             .body: "{\n  \"id\" : 2\n}",
-            .curl: "$ curl -v \\\n\t-X GET \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
+            .curl: "curl -v \\\n\t-X GET \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
         ], String(describing: actual.value![.curl]))
     }
 
     func test_error() throws {
+        RequestSettings.curlStartsWithDollar = true
+
         subject.prepare(parameters, request: requestable, session: session)
 
         requestable.stub(.sdk).andReturn(request)
