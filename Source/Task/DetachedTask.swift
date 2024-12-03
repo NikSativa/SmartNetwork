@@ -36,15 +36,3 @@ public extension DetachedTask {
         return userInfo.debugDescription
     }
 }
-
-public extension UserInfoKey {
-    /// The key used to determine which request the task belongs to
-    static let smartTaskRequestAddressKey: Self = "SmartNetwork.SmartTask.Request.Address.Key"
-}
-
-internal extension SmartTask {
-    func fillUserInfo(with address: Address) -> Self {
-        userInfo[.smartTaskRequestAddressKey] = address
-        return self
-    }
-}

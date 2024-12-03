@@ -7,10 +7,14 @@ public extension Plugins {
     final class Curl: Plugin {
         #if swift(>=6.0)
         /// The logging function.
-        public typealias Logging = @Sendable (_ component: Component, _ text: () -> String?) -> Void
+        public typealias Logging = @Sendable (_ component: Component, _ id: String, _ url: () -> String, _ text: () -> String?) -> Void
+        /// The logging function.
+        public typealias SimpleLogging = @Sendable (_ component: Component, _ text: () -> String?) -> Void
         #else
         /// The logging function.
-        public typealias Logging = (_ component: Component, _ text: () -> String?) -> Void
+        public typealias Logging = (_ component: Component, _ id: String, _ url: () -> String, _ text: () -> String?) -> Void
+        /// The logging function.
+        public typealias SimpleLogging = (_ component: Component, _ text: () -> String?) -> Void
         #endif
 
         #if swift(>=6.0)
@@ -33,6 +37,18 @@ public extension Plugins {
             self.options = options
         }
 
+        public init(id: AnyHashable? = nil,
+                    priority: PluginPriority = .curl,
+                    options: Options = .all,
+                    logger: @escaping SimpleLogging) {
+            self.id = id ?? Self.makeHash()
+            self.priority = priority
+            self.logger = { component, _, _, text in
+                logger(component, text)
+            }
+            self.options = options
+        }
+
         public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, session: SmartURLSession) {}
         public func verify(data: RequestResult, userInfo: UserInfo) throws {}
         public func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession) {
@@ -40,11 +56,16 @@ public extension Plugins {
                 return
             }
 
-            logger(.phase) {
+            let id = userInfo.uniqueID.uuidString
+            let url: () -> String = {
+                return (try? userInfo.smartRequestAddress?.url() ?? request.url)?.absoluteString ?? "< no url >"
+            }
+
+            logger(.phase, id, url) {
                 "willSend"
             }
 
-            logger(.curl) {
+            logger(.curl, id, url) {
                 let curl = request.cURLDescription(with: session)
                 return curl
             }
@@ -55,21 +76,26 @@ public extension Plugins {
                 return
             }
 
-            logger(.phase) {
+            let id = userInfo.uniqueID.uuidString
+            let url: () -> String = {
+                return (try? userInfo.smartRequestAddress?.url() ?? request.url)?.absoluteString ?? "< no url >"
+            }
+
+            logger(.phase, id, url) {
                 "didReceive"
             }
 
-            logger(.curl) {
+            logger(.curl, id, url) {
                 let curl = data.cURLDescription()
                 return curl
             }
 
-            logger(.error) {
+            logger(.error, id, url) {
                 let error = data.error?.requestError.subname
                 return error
             }
 
-            logger(.body) {
+            logger(.body, id, url) {
                 let body = makeResponseBody(data.body)
                 return body
             }
@@ -80,21 +106,26 @@ public extension Plugins {
                 return
             }
 
-            logger(.phase) {
+            let id = userInfo.uniqueID.uuidString
+            let url: () -> String = {
+                return (try? userInfo.smartRequestAddress?.url() ?? data.url)?.absoluteString ?? "< no url >"
+            }
+
+            logger(.phase, id, url) {
                 "didFinish"
             }
 
-            logger(.curl) {
+            logger(.curl, id, url) {
                 let curl = data.cURLDescription()
                 return curl
             }
 
-            logger(.error) {
+            logger(.error, id, url) {
                 let error = data.error?.requestError.subname
                 return error
             }
 
-            logger(.body) {
+            logger(.body, id, url) {
                 let body = makeResponseBody(data.body)
                 return body
             }

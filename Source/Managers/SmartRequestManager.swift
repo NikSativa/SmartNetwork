@@ -372,6 +372,13 @@ private extension SmartRequestManager {
     }
 }
 
+private extension SmartTask {
+    func fillUserInfo(with address: Address) -> Self {
+        userInfo.smartRequestAddress = address
+        return self
+    }
+}
+
 #if swift(>=6.0)
 extension SmartRequestManager: @unchecked Sendable {}
 extension SmartRequestManager.Info: @unchecked Sendable {}

@@ -27,22 +27,3 @@ public protocol SmartRetrier {
     /// - Returns: The decision whether to retry the network request or finish. See ``RetryResult``
     func retryOrFinish(result: RequestResult, userInfo: UserInfo) -> RetryResult
 }
-
-public extension UserInfo {
-    /// The number of attempts made to perform a network request.
-    ///
-    /// - Note: The value is incremented by 1 each time a network request is made.
-    /// - Important: The countdown starts from 0.
-    internal(set) var attemptsCount: Int {
-        get {
-            return self[.smartNetworkRequestAttemptsCount] ?? 0
-        }
-        set {
-            self[.smartNetworkRequestAttemptsCount] = newValue
-        }
-    }
-}
-
-private extension UserInfoKey {
-    static let smartNetworkRequestAttemptsCount: Self = "SmartNetwork.SmartRetrier.AttemptsCount.Key"
-}

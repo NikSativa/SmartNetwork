@@ -22,7 +22,7 @@ final class PluginsCurlTests: XCTestCase {
     let session: FakeSmartURLSession = .init()
     lazy var requestable: FakeURLRequestRepresentation = .init()
     var actual: UnsafeValue<[Plugins.Curl.Component: String?]> = .init(value: [:])
-    lazy var subject = Plugins.Curl { [actual] component, text in
+    lazy var subject = Plugins.Curl { [actual] component, _, _, text in
         actual.value[component] = text()
     }
 
