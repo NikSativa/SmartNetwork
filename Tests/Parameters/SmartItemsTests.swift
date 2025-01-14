@@ -1,7 +1,6 @@
 import Foundation
+import SmartNetwork
 import XCTest
-
-@testable import SmartNetwork
 
 final class QueryItemsTests: XCTestCase {
     func test_item() {

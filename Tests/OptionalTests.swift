@@ -1,8 +1,7 @@
 import Foundation
+import SmartNetwork
 import SpryKit
 import XCTest
-
-@testable import SmartNetwork
 
 final class OptionalTests: XCTestCase {
     func test_unwrap() {

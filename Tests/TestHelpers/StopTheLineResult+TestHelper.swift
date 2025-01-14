@@ -1,7 +1,6 @@
 import Foundation
+import SmartNetwork
 import SpryKit
-
-@testable import SmartNetwork
 
 extension StopTheLineResult: Equatable, SpryEquatable {
     public static func ==(lhs: StopTheLineResult, rhs: StopTheLineResult) -> Bool {

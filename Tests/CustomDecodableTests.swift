@@ -132,7 +132,7 @@ private extension DecodableContent {
         self.init(decoder: nil, keyPath: [])
     }
 
-    init(keyPath: [String]) {
+    init(keyPath: DecodableKeyPath<Response>) {
         self.init(decoder: nil, keyPath: keyPath)
     }
 }

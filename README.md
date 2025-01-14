@@ -26,8 +26,8 @@ Light weight wrapper around URLSession for easy network requests with strong typ
   + *Plugins.StatusCode* to handle http status codes or use *StatusCode* directly for easy mapping to human readable enumeration
   + *Plugins.Basic* or *Plugins.Bearer* for easy use auth strategy
   + *Plugins.TokenPlugin* to update every request headers or query parameters
-  + *Plugins.Curl* to print every request in curl format
-  + *Plugins.CurlOS* to print every request in curl format with OS Logger
+  + *Plugins.Log* to print every request in curl format
+  + *Plugins.LogOS* to print every request in curl format with OS Logger
   + *Plugins.JSONHeaders* to add json specific headers to every request
 - **PluginPriority** to define order of plugins in chain of execution 
 - **StopTheLine** mechanic to handle any case when you need to stop whole network and wait while you make something: *update auth token, handle Captcha etc..*

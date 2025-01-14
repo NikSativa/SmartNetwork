@@ -13,7 +13,7 @@ public struct DecodableRequestManager {
 public extension DecodableRequestManager {
     /// Sends a request to the specified address with the given parameters.
     func request<T>(_ type: T.Type = T.self,
-                    keyPath: [String] = [],
+                    keyPath: DecodableKeyPath<T> = [],
                     address: Address,
                     parameters: Parameters = .init(),
                     decoding: JSONDecoding? = nil,
@@ -31,7 +31,7 @@ public extension DecodableRequestManager {
 
     /// Sends a request to the specified address with the given parameters.
     func request<T>(_ type: T.Type = T.self,
-                    keyPath: [String] = [],
+                    keyPath: DecodableKeyPath<T> = [],
                     address: Address,
                     parameters: Parameters = .init(),
                     decoding: JSONDecoding? = nil,
@@ -52,7 +52,7 @@ public extension DecodableRequestManager {
 
     /// Sends a request to the specified address with the given parameters.
     func request<T>(_ type: T.Type = T.self,
-                    keyPath: [String] = [],
+                    keyPath: DecodableKeyPath<T> = [],
                     address: Address,
                     parameters: Parameters = .init(),
                     decoding: JSONDecoding? = nil) async -> Result<T, Error>
@@ -73,7 +73,7 @@ public extension DecodableRequestManager {
 
     /// Sends a request to the specified address with the given parameters.
     func request<T>(_ type: T.Type = T.self,
-                    keyPath: [String] = [],
+                    keyPath: DecodableKeyPath<T> = [],
                     address: Address,
                     parameters: Parameters = .init(),
                     decoding: JSONDecoding? = nil) async -> Result<T, Error>
@@ -96,7 +96,7 @@ public extension DecodableRequestManager {
 
     /// Sends a request to the specified address with the given parameters.
     func requestWithThrowing<T>(_ type: T.Type = T.self,
-                                keyPath: [String] = [],
+                                keyPath: DecodableKeyPath<T> = [],
                                 address: Address,
                                 parameters: Parameters = .init(),
                                 decoding: JSONDecoding? = nil) async throws -> T
@@ -117,7 +117,7 @@ public extension DecodableRequestManager {
 
     /// Sends a request to the specified address with the given parameters.
     func requestWithThrowing<T>(_ type: T.Type = T.self,
-                                keyPath: [String] = [],
+                                keyPath: DecodableKeyPath<T> = [],
                                 address: Address,
                                 parameters: Parameters = .init(),
                                 decoding: JSONDecoding? = nil) async throws -> T

@@ -2,7 +2,7 @@ import Foundation
 
 struct DecodableContent<Response: Decodable>: Deserializable {
     let decoder: JSONDecoding?
-    let keyPath: [String]
+    let keyPath: DecodableKeyPath<Response>
 
     func decode(with data: RequestResult, parameters: Parameters) -> Result<Response, Error> {
         if let error = data.error {
@@ -15,14 +15,21 @@ struct DecodableContent<Response: Decodable>: Deserializable {
             do {
                 let decoder = decoder?() ?? .init()
                 let result: Response
-                if keyPath.isEmpty {
+                if keyPath.path.isEmpty {
                     result = try decoder.decode(Response.self, from: data)
                 } else {
-                    result = try data.decode(Response.self, keyPath: keyPath, decoder: decoder)
+                    result = try data.decode(Response.self, keyPath: keyPath.path, decoder: decoder)
                 }
                 return .success(result)
             } catch {
-                return .failure(error)
+                switch keyPath.fallback {
+                case .error(let error):
+                    return .failure(error)
+                case .value(let value):
+                    return .success(value)
+                case .none:
+                    return .failure(error)
+                }
             }
         } else {
             return .failure(RequestDecodingError.nilResponse)

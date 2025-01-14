@@ -1,7 +1,6 @@
 import Foundation
+import SmartNetwork
 import XCTest
-
-@testable import SmartNetwork
 
 final class StatusCodeTests: XCTestCase {
     func test_init() {

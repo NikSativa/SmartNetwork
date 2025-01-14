@@ -1,7 +1,6 @@
 import Foundation
+import SmartNetwork
 import SpryKit
-
-@testable import SmartNetwork
 
 public extension URLRequestRepresentation where Self: SpryFriendlyStringConvertible {
     var friendlyDescription: String {

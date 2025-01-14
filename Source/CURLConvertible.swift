@@ -85,6 +85,10 @@ public extension CURLConvertible {
 
         components.append("\"\(url.absoluteString)\"")
 
-        return components.joined(separator: " \\\n\t")
+        var curl = components.joined(separator: " \\\n\t")
+        if RequestSettings.curlPrettyPrinted {
+            curl += " | json_pp"
+        }
+        return curl
     }
 }

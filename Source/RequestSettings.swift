@@ -29,6 +29,9 @@ public enum RequestSettings: Sendable {
     /// If you want to use cURL representation with '$' at the beginning of the line, you can set this parameter to 'true'
     public nonisolated(unsafe) static var curlStartsWithDollar: Bool = false
 
+    /// If you want to use cURL representation with '| json\_pp' in the end of the line, you can set this parameter to 'true'
+    public nonisolated(unsafe) static var curlPrettyPrinted: Bool = false
+
     /// Disallowed headers for cURL representation. Default is ["Accept-Encoding"]. You can add your own headers here to exclude them from cURL representation.
     public nonisolated(unsafe) static var curlDisallowedHeaders: Set<String> = ["Accept-Encoding"]
 }
@@ -59,6 +62,9 @@ public enum RequestSettings {
 
     /// If you want to use cURL representation with '$' at the beginning of the line, you can set this parameter to 'true'
     public static var curlStartsWithDollar: Bool = false
+
+    /// If you want to use cURL representation with '| json\_pp' in the end of the line, you can set this parameter to 'true'
+    public static var curlPrettyPrinted: Bool = false
 
     /// Disallowed headers for cURL representation. Default is ["Accept-Encoding"]. You can add your own headers here to exclude them from cURL representation.
     public static var curlDisallowedHeaders: Set<String> = ["Accept-Encoding"]

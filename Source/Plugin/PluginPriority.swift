@@ -25,10 +25,12 @@ public struct PluginPriority: Comparable, Hashable, RawRepresentable {
     /// The priority of the `Plugins.AuthBearer` plugin.
     public static let authBearer: Self = .init(rawValue: 300)
 
-    /// The priority of the `Plugins.Curl` plugin.
-    ///
-    /// - Note: max priority to ensure that the headers are set before the other plugins.
+    /// The priority of the `Plugins.Log` plugin.
     public static let curl: Self = .init(rawValue: .max - 200)
+
+    /// The priority of the `Plugins.LogOS` plugin.
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+    public static let curlOS: Self = curl - 1
 
     /// The priority of the `Plugins.StatusCode` plugin.
     public static let statusCode: Self = .init(rawValue: 100)

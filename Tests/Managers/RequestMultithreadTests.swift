@@ -1,10 +1,9 @@
 import Combine
 import Foundation
+import SmartNetwork
 import SpryKit
 import Threading
 import XCTest
-
-@testable import SmartNetwork
 
 final class RequestMultithreadTests: XCTestCase {
     private let maxRequests = 500

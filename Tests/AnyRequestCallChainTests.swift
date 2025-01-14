@@ -211,14 +211,14 @@ final class AnyRequestCallChainTests: XCTestCase {
         expected(result.value, file, line)
     }
 
-    private func decodable<T>(_ type: T.Type, keyPath: [String] = [], address: Address? = nil) -> any RequestCompletion<Result<T, Error>>
+    private func decodable<T>(_ type: T.Type, keyPath: DecodableKeyPath<T> = [], address: Address? = nil) -> any RequestCompletion<Result<T, Error>>
     where T: Decodable & Equatable {
         return requestManager
             .request(address: address ?? self.address)
             .decode(type, keyPath: keyPath)
     }
 
-    private func decodable<T>(_ type: T.Type, keyPath: [String] = [], address: Address? = nil) -> any RequestCompletion<Result<T, Error>>
+    private func decodable<T>(_ type: T.Type, keyPath: DecodableKeyPath<T> = [], address: Address? = nil) -> any RequestCompletion<Result<T, Error>>
     where T: Decodable & Equatable & ExpressibleByNilLiteral {
         return requestManager
             .request(address: address ?? self.address)

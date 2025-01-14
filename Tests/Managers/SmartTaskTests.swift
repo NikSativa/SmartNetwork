@@ -1,9 +1,8 @@
 @preconcurrency import Combine
 import Foundation
+import SmartNetwork
 import SpryKit
 import XCTest
-
-@testable import SmartNetwork
 
 final class SmartTaskTests: XCTestCase {
     func test_cancel_task_once() {

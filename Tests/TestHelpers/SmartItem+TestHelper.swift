@@ -1,7 +1,6 @@
 import Foundation
+import SmartNetwork
 import SpryKit
-
-@testable import SmartNetwork
 
 extension SmartItem: SpryEquatable {
     public static func testMake(key: String = "", value: T) -> Self {

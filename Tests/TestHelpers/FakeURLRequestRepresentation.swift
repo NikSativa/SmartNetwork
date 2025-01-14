@@ -1,7 +1,6 @@
 import Foundation
+import SmartNetwork
 import SpryKit
-
-@testable import SmartNetwork
 
 public final class FakeURLRequestRepresentation: URLRequestRepresentation, Spryable {
     public enum ClassFunction: String, StringRepresentable {

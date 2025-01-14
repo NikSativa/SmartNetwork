@@ -1,10 +1,9 @@
 #if canImport(SpryMacroAvailable) && swift(>=6.0)
 import Foundation
+import SmartNetwork
 import SpryKit
 import Threading
 import XCTest
-
-@testable import SmartNetwork
 
 @Spryable
 final class FakeRequestManager: RequestManager, @unchecked Sendable {

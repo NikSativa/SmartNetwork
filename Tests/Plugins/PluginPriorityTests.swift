@@ -10,7 +10,7 @@ final class PluginPriorityTests: XCTestCase {
             Plugins.AuthBearer(with: {
                 return "AuthBearer"
             }),
-            Plugins.Curl(logger: { _, _ in }),
+            Plugins.Log(logger: { _ in }),
             Plugins.StatusCode(),
             Plugins.AuthBasic(with: {
                 return .init(username: "AuthBasic", password: "AuthBasic")
@@ -26,7 +26,7 @@ final class PluginPriorityTests: XCTestCase {
         }
 
         let expected: [Plugin] = [
-            Plugins.Curl(logger: { _, _ in }),
+            Plugins.Log(logger: { _ in }),
             Plugins.AuthBasic(with: {
                 return .init(username: "AuthBasic", password: "AuthBasic")
             }),
@@ -47,7 +47,7 @@ final class PluginPriorityTests: XCTestCase {
             Plugins.AuthBearer(with: {
                 return "AuthBearer"
             }),
-            Plugins.Curl(logger: { _, _, _, _ in }),
+            Plugins.Log(logger: { _ in }),
             Plugins.StatusCode(),
             Plugins.AuthBasic(with: {
                 return .init(username: "AuthBasic", password: "AuthBasic")
@@ -57,15 +57,15 @@ final class PluginPriorityTests: XCTestCase {
                 return "AuthBearer"
             }),
             Plugins.StatusCode(),
-            Plugins.CurlOS(),
+            Plugins.LogOS(),
             Plugins.JSONHeaders()
         ].unified().sorted { a, b in
             return a.priority > b.priority
         }
 
         let expected: [Plugin] = [
-            Plugins.Curl(logger: { _, _, _, _ in }),
-            Plugins.CurlOS(),
+            Plugins.Log(logger: { _ in }),
+            Plugins.LogOS(),
             Plugins.AuthBasic(with: {
                 return .init(username: "AuthBasic", password: "AuthBasic")
             }),
@@ -86,7 +86,7 @@ final class PluginPriorityTests: XCTestCase {
             Plugins.AuthBearer(with: {
                 return "AuthBearer"
             }),
-            Plugins.Curl(logger: { _, _, _, _ in }),
+            Plugins.Log(logger: { _ in }),
             Plugins.StatusCode(),
             FakePlugin(id: "fake_110", priority: 110),
             Plugins.AuthBasic(with: {
@@ -104,7 +104,7 @@ final class PluginPriorityTests: XCTestCase {
         }
 
         let expected: [Plugin] = [
-            Plugins.Curl(logger: { _, _, _, _ in }),
+            Plugins.Log(logger: { _ in }),
             FakePlugin(id: "fake_1000", priority: 1000),
             Plugins.AuthBasic(with: {
                 return .init(username: "AuthBasic", password: "AuthBasic")

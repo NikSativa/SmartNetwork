@@ -1,8 +1,7 @@
 import Foundation
+import SmartNetwork
 import SpryKit
 import Threading
-
-@testable import SmartNetwork
 
 public final class FakeSessionTask: SessionTask, Spryable, SpryEquatable {
     public enum ClassFunction: String, StringRepresentable {
