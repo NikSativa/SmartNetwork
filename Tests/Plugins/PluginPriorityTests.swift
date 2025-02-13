@@ -1,3 +1,4 @@
+#if canImport(SpryMacroAvailable) && swift(>=6.0)
 import Foundation
 import SpryKit
 import XCTest
@@ -138,3 +139,4 @@ final class PluginPriorityTests: XCTestCase {
         XCTAssertEqual(PluginPriority.authBasic - (30 as Int), .init(rawValue: 370))
     }
 }
+#endif

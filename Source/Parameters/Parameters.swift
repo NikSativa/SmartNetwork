@@ -34,11 +34,6 @@ public struct Parameters {
     /// The progress handler for the request
     public let progressHandler: ProgressHandler?
 
-    /// ``UserInfo`` for the request.
-    ///
-    /// - Note: You can use ``UserInfo`` to pass data between any part of the network layer like ``Plugin``, ``Stopper`` etc.
-    public let userInfo: UserInfo
-
     /// Initializes a new Parameters object.
     public init(header: HeaderFields = [:],
                 method: HTTPMethod? = .get,
@@ -46,9 +41,8 @@ public struct Parameters {
                 plugins: [Plugin] = [],
                 cacheSettings: CacheSettings? = nil,
                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
-                timeoutInterval: TimeInterval = RequestSettings.timeoutInterval,
+                timeoutInterval: TimeInterval = SmartNetworkSettings.timeoutInterval,
                 progressHandler: ProgressHandler? = nil,
-                userInfo: UserInfo = .init(),
                 shouldIgnoreStopTheLine: Bool = false) {
         self.header = header
         self.method = method
@@ -58,7 +52,6 @@ public struct Parameters {
         self.cacheSettings = cacheSettings
         self.requestPolicy = requestPolicy
         self.progressHandler = progressHandler
-        self.userInfo = userInfo
         self.shouldIgnoreStopTheLine = shouldIgnoreStopTheLine
     }
 }
@@ -80,7 +73,7 @@ public extension Parameters {
             request.addValue(item.value, forHTTPHeaderField: item.key)
         }
 
-        try body.fill(&request)
+        try body.encode().fill(&request)
 
         return request
     }
@@ -95,8 +88,7 @@ public extension Parameters {
                      cacheSettings: lhs.cacheSettings,
                      requestPolicy: lhs.requestPolicy,
                      timeoutInterval: lhs.timeoutInterval,
-                     progressHandler: lhs.progressHandler,
-                     userInfo: lhs.userInfo)
+                     progressHandler: lhs.progressHandler)
     }
 
     /// Adds plugins to the parameters.
@@ -109,8 +101,7 @@ public extension Parameters {
                      cacheSettings: lhs.cacheSettings,
                      requestPolicy: lhs.requestPolicy,
                      timeoutInterval: lhs.timeoutInterval,
-                     progressHandler: lhs.progressHandler,
-                     userInfo: lhs.userInfo)
+                     progressHandler: lhs.progressHandler)
     }
 }
 

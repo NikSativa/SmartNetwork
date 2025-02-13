@@ -22,8 +22,10 @@ public protocol SmartRetrier {
     ///  - Important: The ``UserInfo`` contains the number of attempts made to perform a network request.
     ///
     /// - Parameters:
-    ///   - result: The ``RequestResult`` of the network request.
+    ///   - result: The ``SmartResponse`` of the network request.
+    ///   - address: The ``Address`` of the network request.
+    ///   - parameters: The ``Parameters`` of the network request.
     ///   - userInfo: The ``UserInfo`` associated with the network request.
     /// - Returns: The decision whether to retry the network request or finish. See ``RetryResult``
-    func retryOrFinish(result: RequestResult, userInfo: UserInfo) -> RetryResult
+    func retryOrFinish(result: SmartResponse, address: Address, parameters: Parameters, userInfo: UserInfo) -> RetryResult
 }

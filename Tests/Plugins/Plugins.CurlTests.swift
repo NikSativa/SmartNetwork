@@ -10,15 +10,7 @@ final class PluginsCurlTests: XCTestCase {
     let headerFields: [String: String] = ["some": "value"]
     lazy var body: Body = .encode(TestInfo(id: 2))
 
-    lazy var request: URLRequest = {
-        var request = URLRequest(url: url)
-        for field in headerFields {
-            request.addValue(field.value, forHTTPHeaderField: field.key)
-        }
-        request.httpBody = body.data
-        return request
-    }()
-
+    let userInfo: UserInfo = .testMake()
     let parameters: Parameters = .testMake()
     let session: FakeSmartURLSession = .init()
     lazy var requestable: FakeURLRequestRepresentation = .init()
@@ -29,6 +21,15 @@ final class PluginsCurlTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        let request: URLRequest = {
+            var request = URLRequest(url: url)
+            for field in headerFields {
+                request.addValue(field.value, forHTTPHeaderField: field.key)
+            }
+            request.httpBody = try? body.encode().httpBody
+            return request
+        }()
+
         session.stub(.configuration).andReturn(URLSessionConfiguration.default)
         requestable.stub(.sdk).andReturn(request)
         requestable.stub(.allHTTPHeaderFields).andReturn([:])
@@ -37,30 +38,30 @@ final class PluginsCurlTests: XCTestCase {
 
     override func tearDown() {
         super.tearDown()
-        RequestSettings.curlPrettyPrinted = false
-        RequestSettings.curlStartsWithDollar = false
+        SmartNetworkSettings.curlPrettyPrinted = false
+        SmartNetworkSettings.curlStartsWithDollar = false
         session.resetCallsAndStubs()
         requestable.resetCallsAndStubs()
         actual.value = .init()
     }
 
-    func test_empty() throws {
-        RequestSettings.curlStartsWithDollar = true
-        RequestSettings.curlPrettyPrinted = true
+    func test_empty() async throws {
+        SmartNetworkSettings.curlStartsWithDollar = true
+        SmartNetworkSettings.curlPrettyPrinted = true
 
-        subject.prepare(parameters, request: requestable, session: session)
-        subject.willSend(parameters, request: requestable, userInfo: .testMake(), session: session)
+        await subject.prepare(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
+        subject.willSend(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
         XCTAssertEqual(actual.value.toTestable(), [
             .url: "http://www.some.com",
             .curl: "$ curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\" | json_pp",
             .phase: "willSend"
         ])
         actual.value = .init()
-        subject.didReceive(parameters, request: requestable, data: .testMake(), userInfo: .testMake())
+        subject.didReceive(parameters: parameters, userInfo: userInfo, request: requestable, data: .testMake())
 
-        let data: RequestResult = .testMake(url: .spry.testMake(), statusCode: 222)
-        try subject.verify(data: data, userInfo: .testMake())
-        subject.didFinish(withData: data, userInfo: .testMake())
+        let data: SmartResponse = .testMake(url: .spry.testMake(), statusCode: 222)
+        try subject.verify(parameters: parameters, userInfo: userInfo, data: data)
+        subject.didFinish(parameters: parameters, userInfo: userInfo, data: data)
 
         XCTAssertEqual(data.url, .spry.testMake())
         XCTAssertNil(data.urlError)
@@ -71,19 +72,19 @@ final class PluginsCurlTests: XCTestCase {
             .curl: "$ curl -v \\\n\t-X GET \\\n\t\"http://www.some.com\" | json_pp"
         ])
 
-        subject.wasCancelled(parameters, request: requestable, userInfo: .testMake(), session: session)
+        subject.wasCancelled(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
 
         XCTAssertHaveReceived(requestable, .sdk, countSpecifier: .atLeast(1))
         XCTAssertHaveReceived(requestable, .allHTTPHeaderFields, countSpecifier: .atLeast(1))
         XCTAssertHaveNotReceived(requestable, .url)
     }
 
-    func test_body() throws {
-        RequestSettings.curlStartsWithDollar = false
-        RequestSettings.curlPrettyPrinted = false
+    func test_body() async throws {
+        SmartNetworkSettings.curlStartsWithDollar = false
+        SmartNetworkSettings.curlPrettyPrinted = false
 
-        subject.prepare(parameters, request: requestable, session: session)
-        subject.willSend(parameters, request: requestable, userInfo: .testMake(), session: session)
+        await subject.prepare(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
+        subject.willSend(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
 
         XCTAssertEqual(actual.value.toTestable(), [
             .url: "http://www.some.com",
@@ -92,11 +93,11 @@ final class PluginsCurlTests: XCTestCase {
         ])
         actual.value = .init()
 
-        subject.didReceive(parameters, request: requestable, data: .testMake(), userInfo: .testMake())
+        subject.didReceive(parameters: parameters, userInfo: userInfo, request: requestable, data: .testMake())
 
-        let data: RequestResult = .testMake(url: url, statusCode: 222, body: .encode(TestInfo(id: 2)))
-        try subject.verify(data: data, userInfo: .testMake())
-        subject.didFinish(withData: data, userInfo: .testMake())
+        let data: SmartResponse = .testMake(url: url, statusCode: 222, body: .encode(TestInfo(id: 2)))
+        try subject.verify(parameters: parameters, userInfo: userInfo, data: data)
+        subject.didFinish(parameters: parameters, userInfo: userInfo, data: data)
 
         XCTAssertEqual(data.url, url)
         XCTAssertNil(data.urlError)
@@ -107,18 +108,18 @@ final class PluginsCurlTests: XCTestCase {
             .curl: "curl -v \\\n\t-X GET \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
         ])
 
-        subject.wasCancelled(parameters, request: requestable, userInfo: .testMake(), session: session)
+        subject.wasCancelled(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
 
         XCTAssertHaveReceived(requestable, .sdk, countSpecifier: .atLeast(1))
         XCTAssertHaveReceived(requestable, .allHTTPHeaderFields, countSpecifier: .atLeast(1))
         XCTAssertHaveNotReceived(requestable, .url)
     }
 
-    func test_error() throws {
-        RequestSettings.curlStartsWithDollar = true
+    func test_error() async throws {
+        SmartNetworkSettings.curlStartsWithDollar = true
 
-        subject.prepare(parameters, request: requestable, session: session)
-        subject.willSend(parameters, request: requestable, userInfo: .testMake(), session: session)
+        await subject.prepare(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
+        subject.willSend(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
 
         XCTAssertEqual(actual.value.toTestable(), [
             .phase: "willSend",
@@ -127,12 +128,10 @@ final class PluginsCurlTests: XCTestCase {
         ])
         actual.value = .init()
 
-        subject.didReceive(parameters, request: requestable, data: .testMake(), userInfo: .testMake())
-
         let url = URL.spry.testMake("https://www.some.com?some2=value2")
-        let data: RequestResult = .testMake(url: url, statusCode: 222, headerFields: ["some": "value"], body: .encode(TestInfo(id: 2)), error: RequestError.generic)
-        try subject.verify(data: data, userInfo: .testMake())
-        subject.didFinish(withData: data, userInfo: .testMake())
+        let data: SmartResponse = .testMake(url: url, statusCode: 222, headerFields: ["some": "value"], body: .encode(TestInfo(id: 2)), error: RequestError.generic)
+        try subject.verify(parameters: parameters, userInfo: userInfo, data: data)
+        subject.didFinish(parameters: parameters, userInfo: userInfo, data: data)
 
         XCTAssertEqual(data.url, url)
         XCTAssertNil(data.urlError)
@@ -145,7 +144,7 @@ final class PluginsCurlTests: XCTestCase {
             .url: "https://www.some.com?some2=value2"
         ])
 
-        subject.wasCancelled(parameters, request: requestable, userInfo: .testMake(), session: session)
+        subject.wasCancelled(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
 
         XCTAssertHaveReceived(requestable, .sdk, countSpecifier: .atLeast(1))
         XCTAssertHaveReceived(requestable, .allHTTPHeaderFields, countSpecifier: .atLeast(1))

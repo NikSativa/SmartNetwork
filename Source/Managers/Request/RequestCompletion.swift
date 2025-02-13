@@ -5,6 +5,10 @@ import Threading
 public protocol RequestCompletion<Object> {
     associatedtype Object
 
+    /// Completes the request with the given completion closure.
+    @discardableResult
+    func async() async -> Object
+
     /// A closure that is called when a response is received.
     typealias CompletionClosure = (Object) -> Void
 
@@ -15,46 +19,36 @@ public protocol RequestCompletion<Object> {
 public extension RequestCompletion {
     /// Completes the request with the given completion closure.
     func complete(completion: @escaping CompletionClosure) -> SmartTasking {
-        return complete(in: RequestSettings.defaultResponseQueue, completion: completion)
+        return complete(in: SmartNetworkSettings.defaultCompletionQueue, completion: completion)
     }
 
     /// Completes the request without a completion and starts it asynchronously.
     @discardableResult
     func oneWay() -> DetachedTask {
-        return complete(in: RequestSettings.defaultResponseQueue) { _ in
+        return complete(in: SmartNetworkSettings.defaultCompletionQueue) { _ in
             // nothing to do
         }
         .detach().deferredStart()
     }
 
     /// Completes the request with the given `Void` completion closure.
-    func complete(in completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
+    func complete(in completionQueue: DelayedQueue = SmartNetworkSettings.defaultCompletionQueue,
                   completion: @escaping () -> Void) -> SmartTasking {
         return complete(in: completionQueue) { _ in
             completion()
         }
     }
 
-    /// Completes and start asynchronously the request.
-    func async() async -> Object {
-        return await withCheckedContinuation { continuation in
-            complete(in: .absent) { result in
-                let wrapped = USendable(result)
-                continuation.resume(returning: wrapped.value)
-            }
-            .detach().deferredStart()
-        }
-    }
-
     /// Completes and start asynchronously the request with throwing error.
+    @discardableResult
     func asyncWithThrowing<T>(_: T.Type = T.self) async throws -> T
     where Object == Result<T, Error> {
-        return try await withCheckedThrowingContinuation { continuation in
-            complete(in: .absent) { result in
-                let wrapped = USendable(result)
-                continuation.resume(with: wrapped.value)
-            }
-            .detach().deferredStart()
+        let result = await async()
+        switch result {
+        case .success(let value):
+            return value
+        case .failure(let error):
+            throw error
         }
     }
 }

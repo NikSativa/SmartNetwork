@@ -3,27 +3,38 @@ import Threading
 
 /// A struct that represents a request with any type of response.
 public struct AnyRequest {
-    private let pure: RequestManager
-    private let address: Address
+    // all properties are only for `internal` uasge
+    internal let base: RequestManager
+    internal let address: Address
     internal let parameters: Parameters
+    internal let userInfo: UserInfo
 
-    internal init(pure: RequestManager, address: Address, parameters: Parameters) {
-        self.pure = pure
+    internal init(pure: RequestManager,
+                  address: Address,
+                  parameters: Parameters,
+                  userInfo: UserInfo) {
+        self.base = pure
         self.address = address
         self.parameters = parameters
+        self.userInfo = userInfo
     }
 }
 
 // MARK: - RequestCompletion
 
 extension AnyRequest: RequestCompletion {
-    public typealias Object = RequestResult
+    public typealias Object = SmartResponse
+
+    public func async() async -> SmartResponse {
+        return await base.request(address: address, parameters: parameters, userInfo: userInfo)
+    }
 
     /// Completes the request with the given completion closure.
-    public func complete(in completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
+    public func complete(in completionQueue: DelayedQueue = SmartNetworkSettings.defaultCompletionQueue,
                          completion: @escaping CompletionClosure) -> SmartTasking {
-        return pure.request(address: address,
+        return base.request(address: address,
                             parameters: parameters,
+                            userInfo: userInfo,
                             completionQueue: completionQueue,
                             completion: completion)
     }
@@ -79,7 +90,7 @@ public extension AnyRequest {
     }
 
     /// Requests a ``Image`` object.
-    func image() -> TypedRequest<Image> {
+    func image() -> TypedRequest<SmartImage> {
         return custom(ImageContent())
     }
 

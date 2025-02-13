@@ -18,7 +18,7 @@ public extension CURLConvertible {
             return "$ curl command could not be created"
         }
 
-        var components = [RequestSettings.curlStartsWithDollar ? "$ curl -v" : "curl -v"]
+        var components = [SmartNetworkSettings.curlStartsWithDollar ? "$ curl -v" : "curl -v"]
 
         components.append("-X \(method)")
 
@@ -67,7 +67,7 @@ public extension CURLConvertible {
             }
         }
 
-        let curlDisallowedHeaders = RequestSettings.curlDisallowedHeaders
+        let curlDisallowedHeaders = SmartNetworkSettings.curlDisallowedHeaders
         for header in headers {
             if !curlDisallowedHeaders.contains(header.key) {
                 let escapedValue = header.value.replacingOccurrences(of: "\"", with: "\\\"")
@@ -86,7 +86,7 @@ public extension CURLConvertible {
         components.append("\"\(url.absoluteString)\"")
 
         var curl = components.joined(separator: " \\\n\t")
-        if RequestSettings.curlPrettyPrinted {
+        if SmartNetworkSettings.curlPrettyPrinted {
             curl += " | json_pp"
         }
         return curl

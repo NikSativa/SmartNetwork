@@ -7,11 +7,9 @@ import Threading
 
 extension CacheSettings: SpryEquatable {
     public static func testMake(cache: RequestCache? = nil,
-                                responseQueue: DelayedQueue = .absent,
                                 storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly) -> Self {
         let cache = cache ?? URLCache(memoryCapacity: 1024 * 30, diskCapacity: 1024 * 30)
         return .init(cache: cache,
-                     responseQueue: responseQueue,
                      storagePolicy: storagePolicy)
     }
 }

@@ -11,7 +11,7 @@ extension Parameters: SpryEquatable {
                                 plugins: [Plugin] = [],
                                 cacheSettings: CacheSettings? = nil,
                                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
-                                timeoutInterval: TimeInterval = RequestSettings.timeoutInterval,
+                                timeoutInterval: TimeInterval = SmartNetworkSettings.timeoutInterval,
                                 progressHandler: ProgressHandler? = nil,
                                 userInfo: UserInfo = .init()) -> Self {
         return .init(header: header,
@@ -21,8 +21,7 @@ extension Parameters: SpryEquatable {
                      cacheSettings: cacheSettings,
                      requestPolicy: requestPolicy,
                      timeoutInterval: timeoutInterval,
-                     progressHandler: progressHandler,
-                     userInfo: userInfo)
+                     progressHandler: progressHandler)
     }
 }
 

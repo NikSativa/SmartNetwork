@@ -8,16 +8,15 @@ import Foundation
 ///
 /// - Note: Implement this protocol to define actions for stopping or continuing the execution flow based on request results.
 public protocol StopTheLine: Sendable {
-    typealias StopTheLineCompletion = (StopTheLineResult) -> Void
-
     func action(with manager: SmartRequestManager,
-                originalParameters parameters: Parameters,
-                response: RequestResult,
-                userInfo: UserInfo,
-                completion: @escaping StopTheLineCompletion)
+                response: SmartResponse,
+                address: Address,
+                parameters: Parameters,
+                userInfo: UserInfo) async throws -> StopTheLineResult
 
-    func verify(response: RequestResult,
-                for parameters: Parameters,
+    func verify(response: SmartResponse,
+                address: Address,
+                parameters: Parameters,
                 userInfo: UserInfo) -> StopTheLineAction
 }
 #else
@@ -28,16 +27,15 @@ public protocol StopTheLine: Sendable {
 ///
 /// - Note: Implement this protocol to define actions for stopping or continuing the execution flow based on request results.
 public protocol StopTheLine {
-    typealias StopTheLineCompletion = (StopTheLineResult) -> Void
-
     func action(with manager: SmartRequestManager,
-                originalParameters parameters: Parameters,
-                response: RequestResult,
-                userInfo: UserInfo,
-                completion: @escaping StopTheLineCompletion)
+                response: SmartResponse,
+                address: Address,
+                parameters: Parameters,
+                userInfo: UserInfo) async throws -> StopTheLineResult
 
-    func verify(response: RequestResult,
-                for parameters: Parameters,
+    func verify(response: SmartResponse,
+                address: Address,
+                parameters: Parameters,
                 userInfo: UserInfo) -> StopTheLineAction
 }
 #endif

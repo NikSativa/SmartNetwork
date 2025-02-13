@@ -2,57 +2,48 @@ import Foundation
 import Threading
 
 #if swift(>=6.0)
-/// A protocol that represents a ``SmartRequestManager`` interface which can be used to mock requests in unit tests.
 public protocol RequestManager: Sendable {
     /// A closure that is called when a response is received.
-    typealias ResponseClosure = (_ result: RequestResult) -> Void
+    typealias ResponseClosure = (_ result: SmartResponse) -> Void
 
     /// Sends a request to the specified address with the given parameters.
-    func request(address: Address,
-                 parameters: Parameters,
-                 completionQueue: DelayedQueue,
-                 completion: @escaping ResponseClosure) -> SmartTasking
+    func request(address: Address, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse
+
+    /// Sends a request to the specified address with the given parameters.
+    func request(address: Address, parameters: Parameters, userInfo: UserInfo, completionQueue: DelayedQueue, completion: @escaping ResponseClosure) -> SmartTasking
 }
 #else
-/// A protocol that represents a request manager interface which can be used to mock requests in unit tests.
 public protocol RequestManager {
     /// A closure that is called when a response is received.
-    typealias ResponseClosure = (_ result: RequestResult) -> Void
+    typealias ResponseClosure = (_ result: SmartResponse) -> Void
 
     /// Sends a request to the specified address with the given parameters.
-    func request(address: Address,
-                 parameters: Parameters,
-                 completionQueue: DelayedQueue,
-                 completion: @escaping ResponseClosure) -> SmartTasking
+    func request(address: Address, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse
+
+    /// Sends a request to the specified address with the given parameters.
+    func request(address: Address, parameters: Parameters, userInfo: UserInfo, completionQueue: DelayedQueue, completion: @escaping ResponseClosure) -> SmartTasking
 }
 #endif
 
 public extension RequestManager {
     /// Sends a request to the specified address with the given parameters.
-    func request(address: Address, parameters: Parameters = .init()) -> AnyRequest {
-        return .init(pure: self, address: address, parameters: parameters)
+    func request(address: Address, parameters: Parameters = .init(), userInfo: UserInfo = .init()) -> AnyRequest {
+        return .init(pure: self, address: address, parameters: parameters, userInfo: userInfo)
     }
 
     /// Sends a request to the specified address with the given parameters.
-    func request(address: Address, parameters: Parameters = .init()) async -> RequestResult {
-        return await withCheckedContinuation { [self] continuation in
-            request(address: address, parameters: parameters, completionQueue: .absent) { result in
-                continuation.resume(returning: result)
-            }
-            .detach().deferredStart()
-        }
+    func request(address: Address, parameters: Parameters = .init(), userInfo: UserInfo = .init()) async -> SmartResponse {
+        return await request(address: address, parameters: parameters, userInfo: userInfo)
     }
-}
 
-public extension RequestManager {
     /// ``Void`` request manager.
     var void: TypedRequestManager<Void> {
-        return .init(VoidContent(), parent: self)
+        return .init(VoidContent(), base: self)
     }
 
     /// ``Decodable`` request manager.
     var decodable: DecodableRequestManager {
-        return .init(parent: self)
+        return .init(base: self)
     }
 
     // MARK: - strong
@@ -63,7 +54,7 @@ public extension RequestManager {
     }
 
     /// ``Image`` request manager.
-    var image: TypedRequestManager<Image> {
+    var image: TypedRequestManager<SmartImage> {
         return custom(ImageContent())
     }
 
@@ -80,7 +71,7 @@ public extension RequestManager {
     }
 
     /// ``Image`` request manager.
-    var imageOptional: TypedRequestManager<Image?> {
+    var imageOptional: TypedRequestManager<SmartImage?> {
         return customOptional(ImageContent())
     }
 
@@ -93,11 +84,11 @@ public extension RequestManager {
 
     /// Custom request manager which can be used to create a request manager with a custom ``Deserializable`` of your own choice.
     func custom<T: Deserializable>(_ decoder: T) -> TypedRequestManager<T.Object> {
-        return .init(decoder, parent: self)
+        return .init(decoder, base: self)
     }
 
     /// Custom request manager which can be used to create a request manager with a custom ``Deserializable`` of your own choice.
     func customOptional<T: Deserializable>(_ type: T) -> TypedRequestManager<T.Object?> {
-        return .init(type, parent: self)
+        return .init(type, base: self)
     }
 }

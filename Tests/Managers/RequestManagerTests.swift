@@ -1,3 +1,4 @@
+#if canImport(SpryMacroAvailable) && swift(>=6.0)
 import Combine
 import Foundation
 import SmartNetwork
@@ -140,18 +141,18 @@ final class RequestManagerTests: XCTestCase {
         let pluginStatusCode = Plugins.StatusCode()
 
         let pluginForManager: FakePlugin = .init(id: 1, priority: 500)
-        pluginForManager.stub(.prepare).andReturn()
-        pluginForManager.stub(.verify).andReturn()
-        pluginForManager.stub(.willSend).andReturn()
-        pluginForManager.stub(.didReceive).andReturn()
-        pluginForManager.stub(.didFinish).andReturn()
+        pluginForManager.stub(.prepareWithParameters_Userinfo_Request_Session).andReturn()
+        pluginForManager.stub(.verifyWithParameters_Userinfo_Data).andReturn()
+        pluginForManager.stub(.willSendWithParameters_Userinfo_Request_Session).andReturn()
+        pluginForManager.stub(.didReceiveWithParameters_Userinfo_Request_Data).andReturn()
+        pluginForManager.stub(.didFinishWithParameters_Userinfo_Data).andReturn()
 
         let pluginForParam: FakePlugin = .init(id: 2, priority: 0)
-        pluginForParam.stub(.prepare).andReturn()
-        pluginForParam.stub(.verify).andReturn()
-        pluginForParam.stub(.willSend).andReturn()
-        pluginForParam.stub(.didReceive).andReturn()
-        pluginForParam.stub(.didFinish).andReturn()
+        pluginForParam.stub(.prepareWithParameters_Userinfo_Request_Session).andReturn()
+        pluginForParam.stub(.verifyWithParameters_Userinfo_Data).andReturn()
+        pluginForParam.stub(.willSendWithParameters_Userinfo_Request_Session).andReturn()
+        pluginForParam.stub(.didReceiveWithParameters_Userinfo_Request_Data).andReturn()
+        pluginForParam.stub(.didFinishWithParameters_Userinfo_Data).andReturn()
 
         let subject = SmartRequestManager.create(withPlugins: [pluginStatusCode, pluginStatusCode, pluginForManager, pluginStatusCode])
 
@@ -166,17 +167,17 @@ final class RequestManagerTests: XCTestCase {
 
         wait(for: [expectation1], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response.value, .init(id: 1))
-        XCTAssertHaveReceived(pluginForManager, .prepare, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForManager, .verify, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForManager, .willSend, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForManager, .didReceive, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForManager, .didFinish, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .prepareWithParameters_Userinfo_Request_Session, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .verifyWithParameters_Userinfo_Data, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .willSendWithParameters_Userinfo_Request_Session, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .didReceiveWithParameters_Userinfo_Request_Data, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .didFinishWithParameters_Userinfo_Data, countSpecifier: .exactly(1))
 
-        XCTAssertHaveReceived(pluginForParam, .prepare, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForParam, .verify, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForParam, .willSend, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForParam, .didReceive, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForParam, .didFinish, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .prepareWithParameters_Userinfo_Request_Session, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .verifyWithParameters_Userinfo_Data, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .willSendWithParameters_Userinfo_Request_Session, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .didReceiveWithParameters_Userinfo_Request_Data, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .didFinishWithParameters_Userinfo_Data, countSpecifier: .exactly(1))
 
         pluginForManager.resetCalls()
         pluginForParam.resetCalls()
@@ -199,28 +200,30 @@ final class RequestManagerTests: XCTestCase {
             return parameters.plugins.map(\.id) == expected.map(\.id)
         }
 
-        XCTAssertHaveReceived(pluginForManager, .prepare, with: pluginValidator, Argument.anything, Argument.anything, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForManager, .verify, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForManager, .willSend, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForManager, .didReceive, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForManager, .didFinish, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .prepareWithParameters_Userinfo_Request_Session, with: pluginValidator, Argument.anything, Argument.anything, Argument.anything, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .verifyWithParameters_Userinfo_Data, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .willSendWithParameters_Userinfo_Request_Session, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .didReceiveWithParameters_Userinfo_Request_Data, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForManager, .didFinishWithParameters_Userinfo_Data, countSpecifier: .exactly(1))
 
-        XCTAssertHaveReceived(pluginForParam, .prepare, with: pluginValidator, Argument.anything, Argument.anything, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForParam, .verify, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForParam, .willSend, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForParam, .didReceive, countSpecifier: .exactly(1))
-        XCTAssertHaveReceived(pluginForParam, .didFinish, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .prepareWithParameters_Userinfo_Request_Session, with: pluginValidator, Argument.anything, Argument.anything, Argument.anything, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .verifyWithParameters_Userinfo_Data, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .willSendWithParameters_Userinfo_Request_Session, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .didReceiveWithParameters_Userinfo_Request_Data, countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(pluginForParam, .didFinishWithParameters_Userinfo_Data, countSpecifier: .exactly(1))
     }
 
     func test_lack_parameters() {
         let expectation: XCTestExpectation = .init(description: "should receive response")
         let subject = SmartRequestManager.create()
         let result: UnsafeResult<TestInfo> = .init()
-        subject.request(address: Constant.address1,
-                        parameters: .init(body: .encode(BrokenTestInfo(id: 1)))).decode(TestInfo.self).complete {
-            result.value = $0
-            expectation.fulfill()
-        }.storing(in: &observers).start()
+        subject
+            .request(address: Constant.address1, parameters: .init(body: .encode(BrokenTestInfo(id: 1))))
+            .decode(TestInfo.self)
+            .complete {
+                result.value = $0
+                expectation.fulfill()
+            }.storing(in: &observers).start()
 
         wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertThrowsError(try result.value?.get(), RequestEncodingError.invalidJSON)
@@ -235,7 +238,7 @@ final class RequestManagerTests: XCTestCase {
 
         // passOver
         let expectation: XCTestExpectation = .init(description: "should receive response")
-        stopTheLine.stub(.verify).andReturn(StopTheLineAction.passOver)
+        stopTheLine.stub(.verifyWithResponse_Address_Parameters_Userinfo).andReturn(StopTheLineAction.passOver)
         subject.request(address: Constant.brokenAddress,
                         parameters: .init(body: .encode(TestInfo(id: 1)))).decode(TestInfo.self).complete {
             result.value = $0
@@ -255,7 +258,7 @@ final class RequestManagerTests: XCTestCase {
 
         // passOver
         let expectation: XCTestExpectation = .init(description: "should receive response")
-        stopTheLine.stub(.verify).andReturn(StopTheLineAction.stopTheLine)
+        stopTheLine.stub(.verifyWithResponse_Address_Parameters_Userinfo).andReturn(StopTheLineAction.stopTheLine)
         subject.request(address: Constant.brokenAddress, parameters: .init(shouldIgnoreStopTheLine: true))
             .decode(TestInfo.self)
             .complete {
@@ -267,7 +270,7 @@ final class RequestManagerTests: XCTestCase {
 
         wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertThrowsError(try result.value?.get(), StatusCode(.badRequest))
-        XCTAssertHaveNotReceived(stopTheLine, .verify)
+        XCTAssertHaveNotReceived(stopTheLine, .verifyWithResponse_Address_Parameters_Userinfo)
     }
 
     func test_stop_the_line_verify_retry() {
@@ -280,7 +283,7 @@ final class RequestManagerTests: XCTestCase {
         let expectation1: XCTestExpectation = .init(description: "should not receive response")
         let expectation2: XCTestExpectation = .init(description: "should receive response")
         expectation1.isInverted = true
-        stopTheLine.stubAgain(.verify).andReturn(StopTheLineAction.retry)
+        stopTheLine.stubAgain(.verifyWithResponse_Address_Parameters_Userinfo).andReturn(StopTheLineAction.retry)
         let req = subject.request(address: Constant.brokenAddress, parameters: .init(body: .encode(TestInfo(id: 1))))
             .decode(TestInfo.self)
             .complete {
@@ -291,7 +294,7 @@ final class RequestManagerTests: XCTestCase {
 
         req.start()
         wait(for: [expectation1], timeout: Constant.timeoutInSeconds)
-        stopTheLine.stubAgain(.verify).andReturn(StopTheLineAction.passOver)
+        stopTheLine.stubAgain(.verifyWithResponse_Address_Parameters_Userinfo).andReturn(StopTheLineAction.passOver)
 
         wait(for: [expectation2], timeout: Constant.timeoutInSeconds)
         XCTAssertThrowsError(try result.value?.get(), StatusCode(.badRequest))
@@ -317,9 +320,9 @@ final class RequestManagerTests: XCTestCase {
 
         // stopTheLine
         stopTheLine.resetCallsAndStubs()
-        stopTheLine.stub(.action).andReturn()
-        stopTheLine.stub(.verify).andDo { args in
-            guard let result = args[0] as? RequestResult else {
+        stopTheLine.stub(.actionWithWith_Response_Address_Parameters_Userinfo).andReturn(action)
+        stopTheLine.stub(.verifyWithResponse_Address_Parameters_Userinfo).andDo { args in
+            guard let result = args[0] as? SmartResponse else {
                 fatalError()
             }
             if result.request?.url?.host == Constant.brokenHost {
@@ -356,10 +359,11 @@ final class RequestManagerTests: XCTestCase {
         wait(for: [expectation8], timeout: Constant.stubbedTimeoutInSeconds)
 
         stopTheLine.resetCallsAndStubs()
-        stopTheLine.stub(.verify).andReturn(StopTheLineAction.passOver)
-        stopTheLine.completion?(action)
+        stopTheLine.stub(.actionWithWith_Response_Address_Parameters_Userinfo).andReturn(action)
+        stopTheLine.stub(.verifyWithResponse_Address_Parameters_Userinfo).andReturn(StopTheLineAction.passOver)
 
         wait(for: [expectation3, expectation4], timeout: Constant.timeoutInSeconds * 3)
         XCTAssertThrowsError(try result.value?.get(), StatusCode(newCode ?? .badRequest))
     }
 }
+#endif

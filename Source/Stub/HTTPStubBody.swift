@@ -12,6 +12,8 @@ public enum HTTPStubBody {
     case data(Data)
     /// Encodable body with specified JSONEncoder.
     case encodable(any Encodable, with: JSONEncoder)
+    /// Image body
+    case image(Body.ImageFormat)
 
     /// Encodable body.
     public static func encodable(_ obj: any Encodable) -> Self {
@@ -61,6 +63,20 @@ extension HTTPStubBody {
         case .encodable(let encodable, let encoder):
             encoder.outputFormatting = encoder.outputFormatting.union([.sortedKeys, .prettyPrinted])
             let data = try? encoder.encode(encodable)
+            return data
+        case .image(let image):
+            let data: Data?
+            switch image {
+            #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+            case .png(let image):
+                data = try? PlatformImage(image).pngData().unwrap(orThrow: RequestEncodingError.cantEncodeImage)
+            #endif
+
+            #if os(iOS) || os(tvOS) || os(watchOS) || supportsVisionOS
+            case .jpeg(let image, let quality):
+                data = try? PlatformImage(image).jpegData(compressionQuality: quality).unwrap(orThrow: RequestEncodingError.cantEncodeImage)
+            #endif
+            }
             return data
         }
     }

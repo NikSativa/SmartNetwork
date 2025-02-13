@@ -1,9 +1,11 @@
 import Foundation
+import Threading
 
 /// A type that stores arbitrary user information. It is a reference type to avoid 'copy on write'. It is not thread safe.
 public final class UserInfo {
     /// The values stored in the user info.
-    public private(set) var values: [UserInfoKey: Any]
+    @Atomic(mutex: .unfair, read: .sync, write: .sync)
+    public private(set) var values: [UserInfoKey: Any] = [:]
 
     /// Initializes a new instance with the provided values.
     public init(_ values: [UserInfoKey: Any] = [:]) {
@@ -12,22 +14,30 @@ public final class UserInfo {
 
     /// Indicates whether the user info is empty.
     public var isEmpty: Bool {
-        return values.isEmpty
+        return $values.mutate { values in
+            return values.isEmpty
+        }
     }
 
     /// Accesses the value associated with the given key for reading and writing.
     public subscript<T>(_ key: UserInfoKey) -> T? {
         get {
-            return values[key] as? T
+            return $values.mutate { values in
+                return values[key] as? T
+            }
         }
         set {
-            values[key] = newValue
+            $values.mutate { values in
+                values[key] = newValue
+            }
         }
     }
 
     /// Accesses the value associated with the given key.
     public func value<T>(of _: T.Type = T.self, for key: UserInfoKey) -> T? {
-        return values[key] as? T
+        return $values.mutate { values in
+            return values[key] as? T
+        }
     }
 }
 

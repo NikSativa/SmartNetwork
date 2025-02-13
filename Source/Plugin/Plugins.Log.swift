@@ -34,10 +34,10 @@ public extension Plugins {
             self.options = options
         }
 
-        public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, session: SmartURLSession) {}
-        public func verify(data: RequestResult, userInfo: UserInfo) throws {}
+        public func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async {}
+        public func verify(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) throws {}
 
-        public func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession) {
+        public func willSend(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession) {
             guard options.contains(.willSend) else {
                 return
             }
@@ -60,7 +60,7 @@ public extension Plugins {
             logger(collector)
         }
 
-        public func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo) {
+        public func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, data: SmartResponse) {
             guard options.contains(.didReceive) else {
                 return
             }
@@ -95,7 +95,7 @@ public extension Plugins {
             logger(collector)
         }
 
-        public func didFinish(withData data: RequestResult, userInfo: UserInfo) {
+        public func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) {
             guard options.contains(.didFinish) else {
                 return
             }
@@ -128,7 +128,7 @@ public extension Plugins {
             logger(collector)
         }
 
-        public func wasCancelled(_ parameters: Parameters, request: any URLRequestRepresentation, userInfo: UserInfo, session: any SmartURLSession) {
+        public func wasCancelled(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession) {
             let collector: DataCollection = .init()
                 .add(.id, userInfo.uniqueID)
                 .add(.phase, Phase.wasCancelled)

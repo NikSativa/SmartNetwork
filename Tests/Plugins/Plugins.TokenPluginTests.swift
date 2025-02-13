@@ -7,32 +7,32 @@ import XCTest
 final class PluginsTokenPluginTests: XCTestCase {
     let session: FakeSmartURLSession = .init()
 
-    func test_header_addToken() {
-        XCTAssertCheckToken(.header(.add(Constant.key)), value: Constant.value, url: Constant.urlWithQuery, session: session)
-        XCTAssertCheckToken(.header(.add(Constant.key)), value: nil, url: Constant.urlWithQuery, session: session)
-        XCTAssertCheckToken(.header(.add(Constant.key)), value: Constant.value, url: Constant.url, session: session)
-        XCTAssertCheckToken(.header(.add(Constant.key)), value: nil, url: Constant.url, session: session)
+    func test_header_addToken() async {
+        await XCTAssertCheckToken(.header(.add(Constant.key)), value: Constant.value, url: Constant.urlWithQuery, session: session)
+        await XCTAssertCheckToken(.header(.add(Constant.key)), value: nil, url: Constant.urlWithQuery, session: session)
+        await XCTAssertCheckToken(.header(.add(Constant.key)), value: Constant.value, url: Constant.url, session: session)
+        await XCTAssertCheckToken(.header(.add(Constant.key)), value: nil, url: Constant.url, session: session)
     }
 
-    func test_header_setToken() {
-        XCTAssertCheckToken(.header(.set(Constant.key)), value: Constant.value, url: Constant.urlWithQuery, session: session)
-        XCTAssertCheckToken(.header(.set(Constant.key)), value: nil, url: Constant.urlWithQuery, session: session)
-        XCTAssertCheckToken(.header(.set(Constant.key)), value: Constant.value, url: Constant.url, session: session)
-        XCTAssertCheckToken(.header(.set(Constant.key)), value: nil, url: Constant.url, session: session)
+    func test_header_setToken() async {
+        await XCTAssertCheckToken(.header(.set(Constant.key)), value: Constant.value, url: Constant.urlWithQuery, session: session)
+        await XCTAssertCheckToken(.header(.set(Constant.key)), value: nil, url: Constant.urlWithQuery, session: session)
+        await XCTAssertCheckToken(.header(.set(Constant.key)), value: Constant.value, url: Constant.url, session: session)
+        await XCTAssertCheckToken(.header(.set(Constant.key)), value: nil, url: Constant.url, session: session)
     }
 
-    func test_query_addToken() {
-        XCTAssertCheckToken(.queryParam(.add(Constant.key)), value: Constant.value, url: Constant.urlWithQuery, session: session)
-        XCTAssertCheckToken(.queryParam(.add(Constant.key)), value: nil, url: Constant.urlWithQuery, session: session)
-        XCTAssertCheckToken(.queryParam(.add(Constant.key)), value: Constant.value, url: Constant.url, session: session)
-        XCTAssertCheckToken(.queryParam(.add(Constant.key)), value: nil, url: Constant.url, session: session)
+    func test_query_addToken() async {
+        await XCTAssertCheckToken(.queryParam(.add(Constant.key)), value: Constant.value, url: Constant.urlWithQuery, session: session)
+        await XCTAssertCheckToken(.queryParam(.add(Constant.key)), value: nil, url: Constant.urlWithQuery, session: session)
+        await XCTAssertCheckToken(.queryParam(.add(Constant.key)), value: Constant.value, url: Constant.url, session: session)
+        await XCTAssertCheckToken(.queryParam(.add(Constant.key)), value: nil, url: Constant.url, session: session)
     }
 
-    func test_query_setToken() {
-        XCTAssertCheckToken(.queryParam(.set(Constant.key)), value: Constant.value, url: Constant.urlWithQuery, session: session)
-        XCTAssertCheckToken(.queryParam(.set(Constant.key)), value: nil, url: Constant.urlWithQuery, session: session)
-        XCTAssertCheckToken(.queryParam(.set(Constant.key)), value: Constant.value, url: Constant.url, session: session)
-        XCTAssertCheckToken(.queryParam(.set(Constant.key)), value: nil, url: Constant.url, session: session)
+    func test_query_setToken() async {
+        await XCTAssertCheckToken(.queryParam(.set(Constant.key)), value: Constant.value, url: Constant.urlWithQuery, session: session)
+        await XCTAssertCheckToken(.queryParam(.set(Constant.key)), value: nil, url: Constant.urlWithQuery, session: session)
+        await XCTAssertCheckToken(.queryParam(.set(Constant.key)), value: Constant.value, url: Constant.url, session: session)
+        await XCTAssertCheckToken(.queryParam(.set(Constant.key)), value: nil, url: Constant.url, session: session)
     }
 }
 
@@ -51,7 +51,7 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
                                  url: URL,
                                  session: FakeSmartURLSession,
                                  file: StaticString = #filePath,
-                                 line: UInt = #line) {
+                                 line: UInt = #line) async {
     let request: FakeURLRequestRepresentation = .init()
     switch type {
     case .header(let operation):
@@ -70,9 +70,9 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
     }
 
     let parameters: Parameters = .testMake()
-    subject.prepare(parameters, request: request, session: session)
-
-    XCTAssertTrue(parameters.userInfo.isEmpty)
+    let userInfo: UserInfo = .testMake()
+    await subject.prepare(parameters: parameters, userInfo: userInfo, request: request, session: session)
+    XCTAssertTrue(userInfo.isEmpty)
 
     switch type {
     case .header(let operation):
@@ -108,7 +108,7 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
         XCTAssertHaveReceived(request, .url, with: URL.spry.testMake(newUrl), countSpecifier: .exactly(1), file: file, line: line)
     }
 
-    let data: RequestResult = .testMake()
-    XCTAssertNoThrowError(try subject.verify(data: data, userInfo: parameters.userInfo))
+    let data: SmartResponse = .testMake()
+    XCTAssertNoThrowError(try subject.verify(parameters: parameters, userInfo: .testMake(), data: data))
     XCTAssertTrue(data.allHeaderFields.isEmpty)
 }

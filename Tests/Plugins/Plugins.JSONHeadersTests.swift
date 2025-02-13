@@ -5,9 +5,10 @@ import Threading
 import XCTest
 
 final class Plugins_JSONHeadersTests: XCTestCase {
-    func test_authToken() throws {
+    func test_authToken() async throws {
         let subject = Plugins.JSONHeaders()
 
+        let userInfo: UserInfo = .testMake()
         let parameters: Parameters = .testMake()
         let session: FakeSmartURLSession = .init()
         let requestable: FakeURLRequestRepresentation = .init()
@@ -24,21 +25,21 @@ final class Plugins_JSONHeadersTests: XCTestCase {
         requestable.stub(.value).with("Connection").andReturn(nil)
         requestable.stub(.setValue).with("keep-alive", "Connection").andReturn()
 
-        subject.prepare(parameters, request: requestable, session: session)
+        await subject.prepare(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
         XCTAssertHaveReceived(requestable, .setValue, countSpecifier: .atLeast(4))
         requestable.resetCallsAndStubs()
 
         XCTAssertNoThrowError {
-            try subject.verify(data: .testMake(), userInfo: .init())
+            try subject.verify(parameters: parameters, userInfo: userInfo, data: .testMake())
         }
-        XCTAssertTrue(parameters.userInfo.isEmpty)
+        XCTAssertTrue(userInfo.isEmpty)
 
-        subject.willSend(parameters, request: requestable, userInfo: .testMake(), session: session)
-        subject.didReceive(parameters, request: requestable, data: .testMake(), userInfo: .testMake())
+        subject.willSend(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
+        subject.didReceive(parameters: parameters, userInfo: userInfo, request: requestable, data: .testMake())
 
-        let data: RequestResult = .testMake(url: .spry.testMake(), statusCode: 222)
-        try subject.verify(data: data, userInfo: .testMake())
-        subject.didFinish(withData: data, userInfo: .testMake())
+        let data: SmartResponse = .testMake(url: .spry.testMake(), statusCode: 222)
+        try subject.verify(parameters: parameters, userInfo: userInfo, data: data)
+        subject.didFinish(parameters: parameters, userInfo: userInfo, data: data)
 
         XCTAssertEqual(data.url, .spry.testMake())
         XCTAssertNil(data.urlError)

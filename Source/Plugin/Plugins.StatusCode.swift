@@ -56,7 +56,7 @@ public extension Plugins {
             }
         }
 
-        public func verify(data: RequestResult, userInfo: UserInfo) throws {
+        public func verify(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) throws {
             if !shouldIgnorePreviousError, data.error != nil {
                 return
             }
@@ -72,9 +72,9 @@ public extension Plugins {
             }
         }
 
-        public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, session: SmartURLSession) {}
-        public func didFinish(withData data: RequestResult, userInfo: UserInfo) {}
-        public func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession) {}
-        public func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo) {}
+        public func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async {}
+        public func willSend(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession) {}
+        public func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, data: SmartResponse) {}
+        public func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) {}
     }
 }

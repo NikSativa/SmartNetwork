@@ -8,7 +8,7 @@ final class PureRequestManagerTests: XCTestCase {
     private let timeoutInSeconds: TimeInterval = 1
     private var observers: [AnyCancellable] = []
     private let address: Address = .testMake(string: "http://example1.com/signin")
-    private let subject: RequestManager = SmartRequestManager.create()
+    private let subject = SmartRequestManager.create()
     private let info = TestInfo(id: 1)
 
     override func setUp() {
@@ -24,7 +24,7 @@ final class PureRequestManagerTests: XCTestCase {
     }
 
     func test_api_any() {
-        let actual: UnsafeValue<RequestResult> = .init()
+        let actual: UnsafeValue<SmartResponse> = .init()
         let exp = expectation(description: #function)
         subject.request(address: address).complete { obj in
             actual.value = obj
@@ -35,10 +35,11 @@ final class PureRequestManagerTests: XCTestCase {
     }
 
     func test_api_main() {
-        let actual: UnsafeValue<RequestResult> = .init()
+        let actual: UnsafeValue<SmartResponse> = .init()
         let exp = expectation(description: #function)
         subject.request(address: address,
                         parameters: .testMake(),
+                        userInfo: .testMake(),
                         completionQueue: .absent) { obj in
             actual.value = obj
             exp.fulfill()

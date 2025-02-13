@@ -1,8 +1,12 @@
 import Foundation
+import os
+
+@available(*, deprecated, renamed: "SmartResponse", message: "Use 'SmartResponse' instead.")
+typealias RequestResult = SmartResponse
 
 /// A class representing the result of a network request.
 /// It contains the original URLRequest, the body data of the response, the URLResponse, and any error that occurred.
-public final class RequestResult {
+public final class SmartResponse {
     /// The original ``URLRequestRepresentation`` made for the request.
     public let request: URLRequestRepresentation?
 
@@ -35,7 +39,7 @@ public final class RequestResult {
     /// Lazily computed property to represent the error as a URLError if it exists.
     public lazy var urlError: URLError? = error as? URLError
 
-    /// Initializes a RequestResult object with the provided parameters.
+    /// Initializes a SmartResponse object with the provided parameters.
     ///
     /// - Parameters:
     /// - request: The URLRequest made for the request.
@@ -54,17 +58,28 @@ public final class RequestResult {
         self.session = session
     }
 
-    /// Updates the error property of the RequestResult object.
+    /// Updates the error property of the SmartResponse object.
     ///
     /// - Parameter error: The error object to set.
     internal func set(error: Error?) {
         self.error = error
     }
+
+    /// The `checkCancellation()` function is designed to check for a cancellation error in an asynchronous operation and handle it appropriately.
+    /// If a cancellation error is detected, the function throws an error
+    internal func checkCancellation() throws {
+        if let error = error as? CancellationError {
+            throw error
+        } else if let error = error as? URLError,
+                  error.code == .cancelled {
+            throw CancellationError()
+        }
+    }
 }
 
 // MARK: - CURLConvertible
 
-extension RequestResult: CURLConvertible {
+extension SmartResponse: CURLConvertible {
     /// cURL representation of the instance.
     ///
     /// - Returns: The cURL equivalent of the instance.
@@ -77,5 +92,5 @@ extension RequestResult: CURLConvertible {
 }
 
 #if swift(>=6.0)
-extension RequestResult: @unchecked Sendable {}
+extension SmartResponse: @unchecked Sendable {}
 #endif

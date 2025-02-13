@@ -12,5 +12,5 @@ public protocol Deserializable<Object> {
     ///   - decoder: *(if needed)* An autoclosure providing a ``JSONDecoder`` instance for decoding that was specified in ``Parameters``.
     ///
     /// - Returns: A Result object containing the decoded object or an error.
-    func decode(with data: RequestResult, parameters: Parameters) -> Result<Object, Error>
+    func decode(with data: SmartResponse, parameters: Parameters) -> Result<Object, Error>
 }

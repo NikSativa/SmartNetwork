@@ -4,7 +4,7 @@ struct DecodableContent<Response: Decodable>: Deserializable {
     let decoder: JSONDecoding?
     let keyPath: DecodableKeyPath<Response>
 
-    func decode(with data: RequestResult, parameters: Parameters) -> Result<Response, Error> {
+    func decode(with data: SmartResponse, parameters: Parameters) -> Result<Response, Error> {
         if let error = data.error {
             return .failure(error)
         } else if let data = data.body {

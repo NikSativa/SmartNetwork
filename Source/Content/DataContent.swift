@@ -1,7 +1,7 @@
 import Foundation
 
 struct DataContent: Deserializable {
-    func decode(with data: RequestResult, parameters: Parameters) -> Result<Data, Error> {
+    func decode(with data: SmartResponse, parameters: Parameters) -> Result<Data, Error> {
         if let error = data.error {
             return .failure(error)
         } else if let data = data.body {

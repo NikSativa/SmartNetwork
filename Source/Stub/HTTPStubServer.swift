@@ -20,13 +20,13 @@ public enum HTTPStubStrategy {
 public final class HTTPStubServer {
     #if swift(>=6.0)
     /// Default queue for stubs
-    public nonisolated(unsafe) static var defaultResponseQueue: Queueable = Queue.main
+    public nonisolated(unsafe) static var defaultCompletionQueue: Queueable = Queue.main
 
     /// Strategy for requests without stubs
     public nonisolated(unsafe) static var strategy: HTTPStubStrategy = .transparent
     #else
     /// Default queue for stubs
-    public static var defaultResponseQueue: Queueable = Queue.main
+    public static var defaultCompletionQueue: Queueable = Queue.main
 
     /// Strategy for requests without stubs
     public static var strategy: HTTPStubStrategy = .transparent
@@ -36,32 +36,36 @@ public final class HTTPStubServer {
 
     @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     private var responses: [Info] = []
-    private var counter: UInt = 0
 
     private init() {
         let registered = URLProtocol.registerClass(HTTPStubProtocol.self)
-        assert(registered)
+        assert(registered, "HTTPStubProtocol registration failed")
     }
 
     /// - Parameter path: only for the convenience of the Combine interface
     /// e.g. *stubTask.store(in: &bag)*
     public func add(condition: HTTPStubCondition,
-                    response: HTTPStubResponse) -> AnyCancellable {
+                    response: HTTPStubResponse) -> SmartTasking {
         return $responses.mutate { responses in
-            let id = counter
-            counter &+= 1
-
+            let id = UUID().uuidString
             let info = Info(id: id,
                             condition: condition,
                             response: response)
             responses.append(info)
 
-            let task = AnyCancellable { [weak self] in
-                self?.responses.removeAll(where: { info in
-                    return info.id == id
-                })
+            return SmartTask(runAction: {
+                // nothing to do
+            }) { [self] in
+                removeAll(withId: id)
             }
-            return task
+        }
+    }
+
+    private func removeAll(withId id: String) {
+        $responses.mutate { responses in
+            responses.removeAll(where: { info in
+                return info.id == id
+            })
         }
     }
 
@@ -93,7 +97,7 @@ public extension HTTPStubServer {
              header: HeaderFields = [:],
              body: HTTPStubBody? = nil,
              error: Error? = nil,
-             delayInSeconds: TimeInterval? = nil) -> AnyCancellable {
+             delayInSeconds: TimeInterval? = nil) -> SmartTasking {
         let response: HTTPStubResponse = .init(statusCode: statusCode,
                                                header: header,
                                                body: body,
@@ -107,7 +111,7 @@ public extension HTTPStubServer {
 
 private extension HTTPStubServer {
     struct Info {
-        let id: UInt
+        let id: String
         let condition: HTTPStubCondition
         let response: HTTPStubResponse
     }

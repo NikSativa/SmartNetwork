@@ -5,12 +5,12 @@ import Threading
 import UIKit
 
 /// A typealias representing an image.
-public typealias Image = UIImage
+public typealias SmartImage = UIImage
 #elseif os(macOS)
 import Cocoa
 
 /// A typealias representing an image.
-public typealias Image = NSImage
+public typealias SmartImage = NSImage
 #else
 #error("unsupported os")
 #endif
@@ -59,9 +59,9 @@ public enum Screen {
 #endif
 
 internal struct PlatformImage {
-    let sdk: Image
+    let sdk: SmartImage
 
-    init(_ image: Image) {
+    init(_ image: SmartImage) {
         self.sdk = image
     }
 

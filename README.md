@@ -4,7 +4,7 @@
 [![CI](https://github.com/NikSativa/SmartNetwork/actions/workflows/swift_macos.yml/badge.svg)](https://github.com/NikSativa/SmartNetwork/actions/workflows/swift_macos.yml)
 [![License](https://img.shields.io/github/license/Iterable/swift-sdk)](https://opensource.org/licenses/MIT)
 
-Light weight wrapper around URLSession for easy network requests with strong typed responses based on Decodable protocol or your own custom decoding strategy.  
+Light weight wrapper around URLSession for easy network requests with strong typed responses based on Decodable protocol or your own custom decoding strategy.
 
 ## The main features are: 
 - strong typed responses based on Decodable protocol
@@ -18,8 +18,8 @@ Light weight wrapper around URLSession for easy network requests with strong typ
   manager.decodable.request(TestInfo.self, address: address) { result in ... }.start()
   ```
 
+- *async/await* and *closure* strategies in one interface, but based on *async/await* concurrency
 - predefined API for basic types: *Void, Data, any Decodable, Image, Any(JSON)*
-- *async/await* and *closure* strategies in one interface
 - use `Deserializable` to define your own decoding strategy or type
 - decode with `keyPath` for nested json objects in response.
 - **Plugin** is like Android interceptors. Handle every *request-response* in runtime! Make your own magic with validation, logging, auth, etc...
@@ -57,7 +57,7 @@ public protocol RequestManager {
     var data: TypedRequestManager<Data> { get }
 
     /// ``Image`` request manager.
-    var image: TypedRequestManager<Image> { get }
+    var image: TypedRequestManager<SmartImage> { get }
 
     /// ``JSON`` request manager.
     var json: TypedRequestManager<Any> { get }
@@ -68,7 +68,7 @@ public protocol RequestManager {
     var dataOptional: TypedRequestManager<Data?> { get }
 
     /// ``Image`` request manager.
-    var imageOptional: TypedRequestManager<Image?> { get }
+    var imageOptional: TypedRequestManager<SmartImage?> { get }
 
     /// ``JSON`` request manager.
     var jsonOptional: TypedRequestManager<Any?> { get }
@@ -161,7 +161,7 @@ extension SmartRequestManager {
 }
 
 private struct KeyPathDecodableContent<T: KeyPathDecodable>: Deserializable {
-    func decode(with data: RequestResult, parameters: Parameters) -> Result<T.Response?, Error> {
+    func decode(with data: SmartResponse, parameters: Parameters) -> Result<T.Response?, Error> {
         if let error = data.error {
             return .failure(error)
         } else if let data = data.body {

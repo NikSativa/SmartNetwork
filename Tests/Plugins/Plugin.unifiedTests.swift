@@ -14,23 +14,23 @@ private final class TestPlugin: Plugin {
         self.priority = .init(rawValue: input)
     }
 
-    func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, session: SmartURLSession) {
+    func prepare(parameters: SmartNetwork.Parameters, userInfo: SmartNetwork.UserInfo, request: inout SmartNetwork.URLRequestRepresentation, session: SmartNetwork.SmartURLSession) async {
         fatalError("not used in that test")
     }
 
-    func verify(data: RequestResult, userInfo: UserInfo) throws {
+    func willSend(parameters: SmartNetwork.Parameters, userInfo: SmartNetwork.UserInfo, request: SmartNetwork.URLRequestRepresentation, session: SmartNetwork.SmartURLSession) {
         fatalError("not used in that test")
     }
 
-    func didFinish(withData data: RequestResult, userInfo: UserInfo) {
+    func didReceive(parameters: SmartNetwork.Parameters, userInfo: SmartNetwork.UserInfo, request: SmartNetwork.URLRequestRepresentation, data: SmartNetwork.SmartResponse) {
         fatalError("not used in that test")
     }
 
-    func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession) {
+    func verify(parameters: SmartNetwork.Parameters, userInfo: SmartNetwork.UserInfo, data: SmartNetwork.SmartResponse) throws {
         fatalError("not used in that test")
     }
 
-    func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo) {
+    func didFinish(parameters: SmartNetwork.Parameters, userInfo: SmartNetwork.UserInfo, data: SmartNetwork.SmartResponse) {
         fatalError("not used in that test")
     }
 }

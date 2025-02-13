@@ -88,4 +88,23 @@ final class UserInfoTests: XCTestCase {
         XCTAssertEqual(subject.description, expected)
         XCTAssertEqual(subject.debugDescription, expected)
     }
+
+    func test_multiThreadSafety() {
+        let subject: UserInfo = .init()
+
+        var exps: [XCTestExpectation] = []
+        for i in 0..<10000 {
+            let exp = expectation(description: "\(i)")
+            exps.append(exp)
+            DispatchQueue.global().async { [subject] in
+                let new = Int.random(in: 0..<1000)
+                subject["b"] = new // async write
+                XCTAssertTrue(subject["b"] != Optional<Int>.none) // async read
+                exp.fulfill()
+            }
+        }
+        wait(for: exps, timeout: 1.0)
+
+        XCTAssertTrue(subject["b"] != Optional<Int>.none)
+    }
 }

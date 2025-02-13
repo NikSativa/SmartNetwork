@@ -87,7 +87,7 @@ extension SmartTask: DetachedTask {
 
     @discardableResult
     public func deferredStart() -> Self {
-        RequestSettings.defferedStartQueue.async { [self] in
+        SmartNetworkSettings.defferedStartQueue.async { [self] in
             start()
         }
         return self

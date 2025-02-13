@@ -15,8 +15,7 @@ import Threading
 ///
 /// - Important: This is a real request manager.
 public final class SmartRequestManager {
-    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
-    private var state: State = .init()
+    private var isRunning: Bool = true
     private let plugins: [Plugin]
     private let session: SmartURLSession
     private let stopTheLine: StopTheLine?
@@ -32,7 +31,7 @@ public final class SmartRequestManager {
     public required init(withPlugins plugins: [Plugin] = [],
                          stopTheLine: StopTheLine? = nil,
                          retrier: SmartRetrier? = nil,
-                         session: SmartURLSession = RequestSettings.sharedSession) {
+                         session: SmartURLSession = SmartNetworkSettings.sharedSession) {
         self.plugins = plugins
         self.stopTheLine = stopTheLine
         self.retrier = retrier
@@ -60,7 +59,7 @@ public final class SmartRequestManager {
     public static func create(withPlugins plugins: [Plugin] = [],
                               stopTheLine: StopTheLine? = nil,
                               retrier: SmartRetrier? = nil,
-                              session: SmartURLSession = RequestSettings.sharedSession) -> RequestManager {
+                              session: SmartURLSession = SmartNetworkSettings.sharedSession) -> RequestManager {
         return Self(withPlugins: plugins,
                     stopTheLine: stopTheLine,
                     retrier: retrier,
@@ -71,306 +70,209 @@ public final class SmartRequestManager {
 // MARK: - RequestManager
 
 extension SmartRequestManager: RequestManager {
+    public func request(address: Address, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse {
+        return await startRequest(address: address, parameters: parameters, userInfo: userInfo)
+    }
+
+    /// Sends a request to the specified address with the given parameters.
     public func request(address: Address,
-                        parameters: Parameters,
-                        completionQueue: DelayedQueue,
+                        parameters: Parameters = .init(),
+                        userInfo: UserInfo = .init(),
+                        completionQueue: DelayedQueue = SmartNetworkSettings.defaultCompletionQueue,
                         completion: @escaping ResponseClosure) -> SmartTasking {
-        // internal to make protocol conformans small
-        return createRequest(address: address,
-                             parameters: parameters,
-                             completionQueue: completionQueue,
-                             completion: completion)
+        let task = Task.detached {
+            return await self.request(address: address, parameters: parameters, userInfo: userInfo)
+        }
+        return SmartTask {
+            let unsendable = USendable(completion)
+            Task.detached { [unsendable] in
+                let data = await task.value
+                do {
+                    try data.checkCancellation()
+                    completionQueue.fire {
+                        unsendable.value(data)
+                    }
+                } catch {
+                    // nothing to do. request was cancelled.
+                }
+            }
+        } cancelAction: {
+            task.cancel()
+        }
+        .fillUserInfo(with: address)
     }
 }
 
 private extension SmartRequestManager {
-    func retryRequest(info: Info) {
-        if !prepareRequest(info: info).tryStart() {
-            removeRequestIfNeeded(for: info.key)
+    func startRequest(address: Address, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse {
+        func retryAction() async -> SmartResponse {
+            return await startRequest(address: address, parameters: parameters, userInfo: userInfo)
         }
-    }
-
-    func unfreeze() {
-        let infos = $state.mutate { state in
-            state.isRunning = true
-            return state.tasksQueue.values
-        }
-
-        for info in infos {
-            retryRequest(info: info)
-        }
-    }
-
-    func makeStopTheLineAction(stopTheLine: StopTheLine,
-                               info: Info,
-                               data: RequestResult) {
-        let newFactory = Self(withPlugins: plugins, stopTheLine: nil)
-        stopTheLine.action(with: newFactory,
-                           originalParameters: info.originalParameters,
-                           response: data,
-                           userInfo: info.userInfo) { [self] result in
-            switch result {
-            case .useOriginal:
-                complete(with: data, for: info)
-            case .passOver(let newResponse):
-                complete(with: newResponse, for: info)
-            case .retry:
-                break
-            }
-            unfreeze()
-        }
-    }
-
-    /// Check result with plugins and retrier mechanism
-    ///  - Returns: `true` if the request should be finished, `false` if the request should be retried.
-    func checkFinishing(of result: RequestResult, info: Info) -> Bool {
-        let userInfo = info.userInfo
-        let plugins = info.plugins
 
         do {
-            for plugin in plugins {
-                try plugin.verify(data: result, userInfo: userInfo)
+            try await waitUntilRunning(parameters.shouldIgnoreStopTheLine)
+        } catch {
+            // if the `Task.sleep` is cancelled before the time ends.
+            return .init(error: error, session: session)
+        }
+
+        let parameters = prepare(parameters)
+
+        var data: SmartResponse
+        do {
+            let request = try await createRequest(address: address, parameters: parameters, userInfo: userInfo)
+
+            try await waitUntilRunning(parameters.shouldIgnoreStopTheLine)
+            data = await request.start()
+        } catch {
+            data = .init(error: error, session: session)
+        }
+
+        do {
+            for plugin in parameters.plugins {
+                try plugin.verify(parameters: parameters, userInfo: userInfo, data: data)
             }
         } catch {
-            result.set(error: error)
+            // In the event that the request already has an error, and the plugin throws a new one,
+            // then we must reduce the existing one, because the error from the `Plugin` is more priority for the application
+            data.set(error: error)
         }
 
-        let retryOrFinish = retrier?.retryOrFinish(result: result, userInfo: userInfo) ?? .doNotRetry
-        defer {
-            userInfo.attemptsCount += 1
+        if await shouldRetry(data, address: address, parameters: parameters, userInfo: userInfo) {
+            return await retryAction()
         }
 
-        switch retryOrFinish {
-        case .retry:
-            let request = prepareRequest(info: info)
-            Queue.default.async { [weak self, info] in
-                if !request.tryStart() {
-                    self?.removeRequestIfNeeded(for: info.key)
-                }
+        do {
+            assert(!Thread.isMainThread)
+            let stopTheLineResult = try await checkStopTheLine(data, address: address, parameters: parameters, userInfo: userInfo)
+            switch stopTheLineResult {
+            case .useOriginal:
+                break
+            case .passOver(let newResponse):
+                data = newResponse
+            case .retry:
+                return await retryAction()
+            case .retryWithDelay(let delay):
+                try await Task.sleep(seconds: delay)
+                return await retryAction()
             }
-            return false
-        case .retryWithDelay(let delay):
-            let request = prepareRequest(info: info)
-            Queue.default.asyncAfter(deadline: .now() + delay) { [weak self, info] in
-                if !request.tryStart() {
-                    self?.removeRequestIfNeeded(for: info.key)
-                }
-            }
-            return false
-        case .doNotRetry:
-            return true
-        case .doNotRetryWithError(let newError):
-            result.set(error: newError)
-            return true
-        }
-    }
-
-    func checkStopTheLine(_ result: RequestResult, info: Info) -> Bool {
-        guard let stopTheLine, !info.requestParameters.shouldIgnoreStopTheLine else {
-            return true
+        } catch {
+            // In the event that the request already has an error, and the plugin throws a new one,
+            // then we must reduce the existing one, because the error from the `StopTheLine` is more priority for the application
+            data.set(error: error)
         }
 
-        let verificationResult = stopTheLine.verify(response: result,
-                                                    for: info.requestParameters,
-                                                    userInfo: info.userInfo)
-        switch verificationResult {
-        case .stopTheLine:
-            if state.isRunning {
-                state.isRunning = false
-            }
-            makeStopTheLineAction(stopTheLine: stopTheLine,
-                                  info: info,
-                                  data: result)
-            return false
-        case .passOver:
-            return true
-        case .retry:
-            retryRequest(info: info)
-            return false
-        }
-    }
-
-    func tryComplete(with result: RequestResult, for info: Info) {
-        guard checkFinishing(of: result, info: info) else {
-            return
-        }
-
-        guard checkStopTheLine(result, info: info) else {
-            return
-        }
-
-        complete(with: result, for: info)
-    }
-
-    func removeRequestIfNeeded(for key: Key) {
-        $state.mutate {
-            $0.tasksQueue[key] = nil
-        }
-    }
-
-    func complete(with result: RequestResult, for info: Info) {
-        removeRequestIfNeeded(for: info.key)
-
-        let completion = info.completion
-        let userInfo = info.userInfo
-        let plugins = info.plugins
-        completion(result, userInfo, plugins)
-    }
-
-    func createRequest(address: Address,
-                       parameters: Parameters,
-                       userInfo: UserInfo) throws -> Request {
-        var urlRequest = try parameters.urlRequest(for: address)
         for plugin in parameters.plugins {
-            plugin.prepare(parameters, request: &urlRequest, session: session)
+            plugin.didFinish(parameters: parameters, userInfo: userInfo, data: data)
         }
 
-        let request = Request(address: address,
-                              parameters: parameters,
-                              urlRequestable: urlRequest,
-                              session: session)
-        return request
+        return data
+    }
+
+    func waitUntilRunning(_ shouldIgnoreStopTheLine: Bool) async throws {
+        if shouldIgnoreStopTheLine {
+            return
+        }
+
+        while !isRunning {
+            try await Task.sleep(seconds: 0.1)
+        }
     }
 
     func prepare(_ parameters: Parameters) -> Parameters {
-        let newPlugins: [Plugin]
-        if plugins.isEmpty {
-            newPlugins = parameters.plugins
-        } else {
-            var plugins = parameters.plugins
-            plugins += self.plugins
-            newPlugins = plugins
-        }
+        var parameters = parameters
 
-        var newParameters = parameters
-        newParameters.plugins = newPlugins
+        let newPlugins = (parameters.plugins + plugins)
             .unified()
             .sorted { a, b in
                 return a.priority > b.priority
             }
-        return newParameters
+        parameters.plugins = newPlugins
+        return parameters
     }
 
-    func createRequest(address: Address,
-                       parameters originalParameters: Parameters,
-                       completionQueue: DelayedQueue,
-                       completion: @escaping RequestManager.ResponseClosure) -> SmartTasking {
-        let parameters = prepare(originalParameters)
-        do {
-            let request = try createRequest(address: address,
-                                            parameters: parameters,
-                                            userInfo: parameters.userInfo)
-            let info: Info = .init(originalParameters: originalParameters,
-                                   request: request) { result, userInfo, plugins in
-                for plugin in plugins {
-                    plugin.didFinish(withData: result, userInfo: userInfo)
-                }
-
-                completionQueue.unFire {
-                    completion(result)
-                }
-            }
-            let key = info.key
-
-            prepareRequest(info: info)
-
-            let shouldIgnoreStopTheLine = parameters.shouldIgnoreStopTheLine
-            return SmartTask(runAction: { [weak self, request, state, key] in
-                if state.isRunning || shouldIgnoreStopTheLine {
-                    if !request.tryStart() {
-                        self?.removeRequestIfNeeded(for: key)
-                    }
-                }
-            }, cancelAction: { [request] in
-                request.cancel()
-            })
-            .fillUserInfo(with: address)
-        } catch {
-            return SmartTask(runAction: { [session] in
-                let result = RequestResult(request: nil,
-                                           body: nil,
-                                           response: nil,
-                                           error: error,
-                                           session: session)
-                completion(result)
-            })
-            .fillUserInfo(with: address)
-        }
-    }
-
-    @discardableResult
-    func prepareRequest(info: Info) -> Request {
-        let key = info.key
-        let request = info.request
-
-        $state.mutate {
-            $0.tasksQueue[info.key] = info
+    func createRequest(address: Address, parameters: Parameters, userInfo: UserInfo) async throws -> SmartRequest {
+        var urlRequest = try parameters.urlRequest(for: address)
+        for plugin in parameters.plugins {
+            await plugin.prepare(parameters: parameters, userInfo: userInfo, request: &urlRequest, session: session)
         }
 
-        // retain manager which will be released after request completion
-        request.serviceClosure = { [self, key] in
-            removeRequestIfNeeded(for: key)
-        }
-
-        // NOT retain manager which will be released after request completion
-        request.completion = { [weak self, info] result in
-            self?.tryComplete(with: result, for: info)
-        }
-
+        let request = SmartRequest(address: address,
+                                   parameters: parameters,
+                                   userInfo: userInfo,
+                                   urlRequestable: urlRequest,
+                                   session: session)
         return request
     }
+
+    @MainActor
+    func checkStopTheLine(_ result: SmartResponse,
+                          address: Address,
+                          parameters: Parameters,
+                          userInfo: UserInfo) async throws -> StopTheLineResult {
+        assert(Thread.isMainThread)
+
+        guard let stopTheLine, !parameters.shouldIgnoreStopTheLine else {
+            return .passOver(result)
+        }
+
+        let verificationResult = stopTheLine.verify(response: result,
+                                                    address: address,
+                                                    parameters: parameters,
+                                                    userInfo: userInfo)
+        switch verificationResult {
+        case .stopTheLine:
+            isRunning = false
+            let newFactory = Self(withPlugins: plugins, stopTheLine: nil, retrier: retrier)
+            do {
+                let result = try await stopTheLine.action(with: newFactory,
+                                                          response: result,
+                                                          address: address,
+                                                          parameters: parameters,
+                                                          userInfo: userInfo)
+                isRunning = true
+                return result
+            } catch {
+                isRunning = true
+                throw error
+            }
+        case .passOver:
+            return .passOver(result)
+        case .retry:
+            return .retry
+        }
+    }
+
+    func shouldRetry(_ data: SmartResponse, address: Address, parameters: Parameters, userInfo: UserInfo) async -> Bool {
+        let retryOrFinish = retrier?.retryOrFinish(result: data, address: address, parameters: parameters, userInfo: userInfo)
+        defer {
+            userInfo.attemptsCount += 1
+        }
+
+        do {
+            switch retryOrFinish ?? .doNotRetry {
+            case .retry:
+                return true
+            case .retryWithDelay(let delay):
+                try await Task.sleep(seconds: delay)
+                return true
+            case .doNotRetry:
+                return false
+            case .doNotRetryWithError(let error):
+                data.set(error: error)
+                return false
+            }
+        } catch {
+            // if the `Task.sleep` is cancelled before the time ends.
+            data.set(error: error)
+            return false
+        }
+    }
 }
 
-// MARK: - private
-
-private extension SmartRequestManager {
-    typealias ResponseClosureWithInfo = (_ result: RequestResult, _ userInfo: UserInfo, _ plugins: [Plugin]) -> Void
-
-    struct Info {
-        let key: Key
-        let originalParameters: Parameters
-        let request: Request
-        let completion: ResponseClosureWithInfo
-
-        var userInfo: UserInfo {
-            return request.parameters.userInfo
-        }
-
-        var plugins: [Plugin] {
-            return request.parameters.plugins
-        }
-
-        var requestParameters: Parameters {
-            return request.parameters
-        }
-
-        init(originalParameters: Parameters,
-             request: Request,
-             completion: @escaping ResponseClosureWithInfo) {
-            self.key = Key()
-            self.request = request
-            self.originalParameters = originalParameters
-            self.completion = completion
-        }
-    }
-
-    final class State {
-        var isRunning: Bool = true
-        var tasksQueue: [Key: Info] = [:]
-    }
-
-    final class Key: Hashable {
-        private let uuid: UUID = .init()
-
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(uuid)
-        }
-
-        static func ==(lhs: Key, rhs: Key) -> Bool {
-            return lhs.uuid == rhs.uuid
-        }
-    }
-}
+#if swift(>=6.0)
+extension SmartRequestManager: @unchecked Sendable {}
+#endif
 
 private extension SmartTask {
     func fillUserInfo(with address: Address) -> Self {
@@ -379,9 +281,8 @@ private extension SmartTask {
     }
 }
 
-#if swift(>=6.0)
-extension SmartRequestManager: @unchecked Sendable {}
-extension SmartRequestManager.Info: @unchecked Sendable {}
-extension SmartRequestManager.State: @unchecked Sendable {}
-extension SmartRequestManager.Key: Sendable {}
-#endif
+private extension SmartResponse {
+    convenience init(error: Error, session: SmartURLSession) {
+        self.init(request: nil, body: nil, response: nil, error: error, session: session)
+    }
+}

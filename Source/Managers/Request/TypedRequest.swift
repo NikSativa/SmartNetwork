@@ -4,7 +4,7 @@ import Threading
 public struct TypedRequest<T> {
     private let anyRequest: AnyRequest
 
-    typealias DecodingClosure = (_ data: RequestResult, _ parameters: Parameters) -> Result<T, Error>
+    typealias DecodingClosure = (_ data: SmartResponse, _ parameters: Parameters) -> Result<T, Error>
     private let decoder: DecodingClosure
 
     internal init<D: Deserializable>(anyRequest: AnyRequest, decoder: D)
@@ -33,6 +33,14 @@ public struct TypedRequest<T> {
 
 extension TypedRequest: RequestCompletion {
     public typealias Object = Result<T, Error>
+
+    @discardableResult
+    public func async() async -> Object {
+        let result = await anyRequest.async()
+        let parameters = anyRequest.parameters
+        let object = decoder(result, parameters)
+        return object
+    }
 
     public func complete(in completionQueue: Threading.DelayedQueue, completion: @escaping CompletionClosure) -> SmartTasking {
         let parameters = anyRequest.parameters

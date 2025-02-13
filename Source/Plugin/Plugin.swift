@@ -21,27 +21,27 @@ public protocol Plugin: Sendable {
     var priority: PluginPriority { get }
 
     /// A function that will be called before the request is sent.
-    func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, session: SmartURLSession)
+    func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async
+
+    /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
+    func willSend(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession)
+
+    /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
+    func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, data: SmartResponse)
 
     /// A function that will be called after the response is received.
     ///
     /// - Note: if the response is not successful, you can throw an error here.
     /// - Important: only the first error thrown will be passed to the completion block and the rest will be ignored.
-    func verify(data: RequestResult, userInfo: UserInfo) throws
+    func verify(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) throws
 
     /// Just before the completion call
-    func didFinish(withData data: RequestResult, userInfo: UserInfo)
-
-    /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
-    func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession)
-
-    /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
-    func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo)
+    func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse)
 
     /// Just a notification that the request was somehow cancelled. can be called at any time and multiple times. for debug purposes or your own logic
     ///
     /// - Note: has an empty default implementation
-    func wasCancelled(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession)
+    func wasCancelled(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession)
 }
 #else
 /// Protocol that defines the mechanism of request interception and response validation.
@@ -61,27 +61,27 @@ public protocol Plugin {
     var priority: PluginPriority { get }
 
     /// A function that will be called before the request is sent.
-    func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, session: SmartURLSession)
+    func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async
+
+    /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
+    func willSend(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession)
+
+    /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
+    func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, data: SmartResponse)
 
     /// A function that will be called after the response is received.
     ///
     /// - Note: if the response is not successful, you can throw an error here.
     /// - Important: only the first error thrown will be passed to the completion block and the rest will be ignored.
-    func verify(data: RequestResult, userInfo: UserInfo) throws
+    func verify(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) throws
 
     /// Just before the completion call
-    func didFinish(withData data: RequestResult, userInfo: UserInfo)
-
-    /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
-    func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession)
-
-    /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
-    func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo)
+    func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse)
 
     /// Just a notification that the request was somehow cancelled. can be called at any time and multiple times. for debug purposes or your own logic
     ///
     /// - Note: has an empty default implementation
-    func wasCancelled(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession)
+    func wasCancelled(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession)
 }
 #endif
 
@@ -103,7 +103,7 @@ public extension Plugin {
         return [makeHash(), hash]
     }
 
-    func wasCancelled(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession) {
+    func wasCancelled(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession) {
         // nothing to do
     }
 

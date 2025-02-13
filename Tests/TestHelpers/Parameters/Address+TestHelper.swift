@@ -10,8 +10,8 @@ public extension Address {
                          path: [String] = [],
                          queryItems: QueryItems = [:],
                          fragment: String? = nil,
-                         shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
-                         shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) -> Self {
+                         shouldAddSlashAfterEndpoint: Bool = SmartNetworkSettings.shouldAddSlashAfterEndpoint,
+                         shouldRemoveSlashesForEmptyScheme: Bool = SmartNetworkSettings.shouldRemoveSlashesForEmptyScheme) -> Self {
         return .init(scheme: scheme,
                      host: host,
                      path: path,
@@ -26,8 +26,8 @@ public extension Address {
                          endpoint: String,
                          queryItems: QueryItems = [:],
                          fragment: String? = nil,
-                         shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
-                         shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) -> Self {
+                         shouldAddSlashAfterEndpoint: Bool = SmartNetworkSettings.shouldAddSlashAfterEndpoint,
+                         shouldRemoveSlashesForEmptyScheme: Bool = SmartNetworkSettings.shouldRemoveSlashesForEmptyScheme) -> Self {
         return .init(scheme: scheme,
                      host: host,
                      path: [endpoint],

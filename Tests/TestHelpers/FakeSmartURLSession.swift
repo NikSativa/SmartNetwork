@@ -10,7 +10,7 @@ public final class FakeSmartURLSession: SmartURLSession, Spryable {
 
     public enum Function: String, StringRepresentable {
         case configuration
-        case task = "task(with:completionHandler:)"
+        case task = "task(for:)"
     }
 
     public init() {}
@@ -19,10 +19,8 @@ public final class FakeSmartURLSession: SmartURLSession, Spryable {
         return spryify()
     }
 
-    var completionHandler: CompletionHandler?
-    public func task(with request: URLRequest, completionHandler: @escaping CompletionHandler) -> SessionTask {
-        self.completionHandler = completionHandler
-        return spryify(arguments: request, completionHandler)
+    public func task(for request: URLRequest) async throws -> (URLSession.AsyncBytes, URLResponse) {
+        return spryify(arguments: request)
     }
 }
 

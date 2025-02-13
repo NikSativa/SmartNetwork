@@ -36,7 +36,7 @@ public extension URLRequestRepresentation {
     /// cURL representation of the instance.
     ///
     /// - Returns: The cURL equivalent of the instance.
-    func cURLDescription(with session: SmartURLSession = RequestSettings.sharedSession) -> String {
+    func cURLDescription(with session: SmartURLSession = SmartNetworkSettings.sharedSession) -> String {
         return cURLDescription(with: session, request: sdk)
     }
 }

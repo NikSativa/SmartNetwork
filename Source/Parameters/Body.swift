@@ -5,11 +5,11 @@ import Foundation
 public enum Body: ExpressibleByNilLiteral {
     public enum ImageFormat: Hashable {
         #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-        case png(Image)
+        case png(SmartImage)
         #endif
 
         #if os(iOS) || os(tvOS) || os(watchOS) || supportsVisionOS
-        case jpeg(Image, compressionQuality: CGFloat)
+        case jpeg(SmartImage, compressionQuality: CGFloat)
         #endif
     }
 
@@ -67,19 +67,40 @@ public extension Body {
     }
 }
 
-extension Optional where Wrapped == Body {
-    func fill(_ tempRequest: inout URLRequest) throws {
-        switch self {
-        case .none:
-            tempRequest.httpBody = nil
-        case .empty:
-            tempRequest.httpBody = Data()
-        case .data(let data):
-            tempRequest.httpBody = data
+public extension Optional where Wrapped == Body {
+    func encode() throws -> Body.EncodedBody {
+        return try (self?.encode()) ?? .init(httpBody: nil, [:])
+    }
+}
 
-            if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
-                tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
+public extension Body {
+    struct EncodedBody {
+        public let httpBody: Data?
+        public let headers: HeaderFields
+
+        public init(httpBody: Data?, _ headers: HeaderFields) {
+            self.httpBody = httpBody
+            self.headers = headers
+        }
+
+        public func fill(_ request: inout URLRequest) {
+            request.httpBody = httpBody
+            for item in headers {
+                if request.value(forHTTPHeaderField: item.key) == nil {
+                    request.setValue(item.value, forHTTPHeaderField: item.key)
+                }
             }
+        }
+    }
+
+    func encode() throws -> EncodedBody {
+        switch self {
+        case .empty:
+            return .init(httpBody: .init(), [:])
+        case .data(let data):
+            return .init(httpBody: data, [
+                "Content-Length": "\(data.count)"
+            ])
         case .image(let image):
             let data: Data
             switch image {
@@ -93,67 +114,39 @@ extension Optional where Wrapped == Body {
                 data = try PlatformImage(image).jpegData(compressionQuality: quality).unwrap(orThrow: RequestEncodingError.cantEncodeImage)
             #endif
             }
-
-            tempRequest.httpBody = data
-
-            if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
-                tempRequest.addValue("application/image", forHTTPHeaderField: "Content-Type")
-            }
-
-            if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
-                tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
-            }
+            return .init(httpBody: data, [
+                "Content-Type": "application/image",
+                "Content-Length": "\(data.count)"
+            ])
         case .encode(let object, let encoder):
             let encoder = encoder()
             let data = try encoder.encode(object)
-
-            tempRequest.httpBody = data
-
-            if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
-                tempRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
-            }
-
-            if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
-                tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
-            }
+            return .init(httpBody: data, [
+                "Content-Type": "application/json",
+                "Content-Length": "\(data.count)"
+            ])
         case .json(let json, let options):
             // sometimes it crashes the app on 'try JSONSerialization...' without that check
             guard JSONSerialization.isValidJSONObject(json) else {
                 throw RequestEncodingError.invalidJSON
             }
             let data = try JSONSerialization.data(withJSONObject: json, options: options)
-
-            tempRequest.httpBody = data
-
-            if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
-                tempRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
-            }
-
-            if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
-                tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
-            }
+            return .init(httpBody: data, [
+                "Content-Type": "application/json",
+                "Content-Length": "\(data.count)"
+            ])
         case .form(let form):
-            tempRequest.httpBody = form.encode()
-
-            if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
-                tempRequest.setValue(form.contentType, forHTTPHeaderField: "Content-Type")
-            }
-
-            if tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
-                tempRequest.addValue("\(form.contentLength)", forHTTPHeaderField: "Content-Length")
-            }
+            let data = form.encode()
+            return .init(httpBody: data, [
+                "Content-Type": form.contentType,
+                "Content-Length": "\(form.contentLength)"
+            ])
         case .xform(let parameters):
             let data = Body.XFormEncoder.encodeParameters(parameters: parameters)
-            tempRequest.httpBody = data
-
-            if tempRequest.value(forHTTPHeaderField: "Content-Type") == nil {
-                tempRequest.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-            }
-
-            if let data,
-               tempRequest.value(forHTTPHeaderField: "Content-Length") == nil {
-                tempRequest.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
-            }
+            return .init(httpBody: data, [
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Content-Length": "\(data?.count ?? 0)"
+            ])
         }
     }
 }
@@ -161,4 +154,5 @@ extension Optional where Wrapped == Body {
 #if swift(>=6.0)
 extension Body: @unchecked Sendable {}
 extension Body.ImageFormat: @unchecked Sendable {}
+extension Body.EncodedBody: Sendable {}
 #endif

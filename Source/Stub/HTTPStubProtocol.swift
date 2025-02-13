@@ -8,6 +8,14 @@ public final class HTTPStubProtocol: URLProtocol {
         return response != nil
     }
 
+    override public class func canInit(with task: URLSessionTask) -> Bool {
+        guard let request = task.originalRequest ?? task.currentRequest else {
+            return false
+        }
+        let response = HTTPStubServer.shared.response(for: request)
+        return response != nil
+    }
+
     override public class func canonicalRequest(for request: URLRequest) -> URLRequest {
         return request
     }
@@ -28,10 +36,7 @@ public final class HTTPStubProtocol: URLProtocol {
         }
 
         let response: URLResponse = request.url.flatMap { url in
-            return HTTPURLResponse(url: url,
-                                   statusCode: stub.statusCode.code,
-                                   httpVersion: "HTTP/1.1",
-                                   headerFields: stub.header.mapToResponse())
+            return stub.urlResponse(url: url)
         } ?? .init()
 
         client.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)

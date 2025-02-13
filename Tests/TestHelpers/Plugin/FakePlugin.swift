@@ -1,54 +1,38 @@
+#if canImport(SpryMacroAvailable) && swift(>=6.0)
 import Foundation
 import SmartNetwork
 import SpryKit
 
-public final class FakePlugin: Plugin, Spryable {
-    public enum ClassFunction: String, StringRepresentable {
-        case empty
-    }
-
-    public enum Function: String, StringRepresentable {
-        case prepare = "prepare(_:request:session:)"
-        case verify = "verify(data:userInfo:)"
-        case didFinish = "didFinish(withData:userInfo:)"
-        case willSend = "willSend(_:request:userInfo:session:)"
-        case didReceive = "didReceive(_:request:data:userInfo:)"
-        case wasCancelled = "wasCancelled(_:request:userInfo:session:)"
-    }
-
-    public let id: AnyHashable
-    public let priority: PluginPriority
+@Spryable
+final class FakePlugin: Plugin {
+    @SpryableVar
+    var id: AnyHashable
+    @SpryableVar
+    var priority: PluginPriority
 
     public init(id: AnyHashable, priority: PluginPriority) {
-        self.id = id
-        self.priority = priority
+        stub(.id).andReturn(id)
+        stub(.priority).andReturn(priority)
     }
 
-    public func prepare(_ parameters: Parameters, request: inout URLRequestRepresentation, session: SmartURLSession) {
-        return spryify(arguments: parameters, request, session)
-    }
+    @SpryableFunc
+    func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async
 
-    public func verify(data: RequestResult, userInfo: UserInfo) throws {
-        return spryify(arguments: data, userInfo)
-    }
+    @SpryableFunc
+    func willSend(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession)
 
-    public func didFinish(withData data: RequestResult, userInfo: UserInfo) {
-        return spryify(arguments: data, userInfo)
-    }
+    @SpryableFunc
+    func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, data: SmartResponse)
 
-    public func willSend(_ parameters: Parameters, request: URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession) {
-        return spryify(arguments: parameters, request, userInfo, session)
-    }
+    @SpryableFunc
+    func verify(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) throws
 
-    public func didReceive(_ parameters: Parameters, request: URLRequestRepresentation, data: RequestResult, userInfo: UserInfo) {
-        return spryify(arguments: parameters, request, data, userInfo)
-    }
+    @SpryableFunc
+    func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse)
 
-    public func wasCancelled(_ parameters: Parameters, request: any URLRequestRepresentation, userInfo: UserInfo, session: SmartURLSession) {
-        return spryify(arguments: parameters, request, userInfo, session, fallbackValue: ())
-    }
+    @SpryableFunc
+    func wasCancelled(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession)
 }
 
-#if swift(>=6.0)
 extension FakePlugin: @unchecked Sendable {}
 #endif

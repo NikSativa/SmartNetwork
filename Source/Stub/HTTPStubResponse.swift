@@ -38,6 +38,14 @@ public struct HTTPStubResponse {
         self.error = error
         self.delayInSeconds = delayInSeconds
     }
+
+    internal func urlResponse(url: URL) -> URLResponse {
+        let response = HTTPURLResponse(url: url,
+                                       statusCode: statusCode.code,
+                                       httpVersion: "HTTP/1.1",
+                                       headerFields: header.mapToResponse())
+        return response ?? URLResponse(url: url, mimeType: nil, expectedContentLength: -1, textEncodingName: nil)
+    }
 }
 
 #if swift(>=6.0)

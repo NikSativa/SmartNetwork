@@ -18,7 +18,7 @@ final class BodyTests: XCTestCase {
     }
 
     func test_nil() {
-        XCTAssertNoThrowError(try Body?.none.fill(&request))
+        XCTAssertNoThrowError(try Body?.none.encode().fill(&request))
         XCTAssertNil(request.httpBody)
     }
 
@@ -154,6 +154,6 @@ private struct TestBody: Codable, Equatable {
 private extension Body {
     func fill(_ tempRequest: inout URLRequest) throws {
         let opt: Self? = self
-        try opt.fill(&tempRequest)
+        try opt.encode().fill(&tempRequest)
     }
 }

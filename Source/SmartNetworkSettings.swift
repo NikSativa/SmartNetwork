@@ -1,15 +1,17 @@
 import Foundation
 import Threading
 
+@available(*, deprecated, renamed: "SmartNetworkSettings", message: "Use 'SmartNetworkSettings' instead.")
+public typealias RequestSettings = SmartNetworkSettings
+
 #if swift(>=6.0)
-/// Global settings for every request
-/// - can override in Parameters for individual tasks
-public enum RequestSettings: Sendable {
+/// Smart Network Settings contains default values for anything
+public enum SmartNetworkSettings: Sendable {
     /// Shared session for all requests which you can override for individual requests in ``Parameters``. Default is `URLSession.shared`
-    public nonisolated(unsafe) static var sharedSession: SmartURLSession = URLSession.shared
+    public nonisolated(unsafe) static var sharedSession: URLSession = .shared
 
     /// Default queue for responses
-    public nonisolated(unsafe) static var defaultResponseQueue: DelayedQueue = .async(Queue.main)
+    public nonisolated(unsafe) static var defaultCompletionQueue: DelayedQueue = .async(Queue.main)
 
     /// Default queue for `SmartTasking.defferedStart()` command - always async
     public nonisolated(unsafe) static var defferedStartQueue: Queueable = Queue.main
@@ -36,14 +38,13 @@ public enum RequestSettings: Sendable {
     public nonisolated(unsafe) static var curlDisallowedHeaders: Set<String> = ["Accept-Encoding"]
 }
 #else
-/// Global settings for every request
-/// - can override in Parameters for individual tasks
-public enum RequestSettings {
+/// Smart Network Settings contains default values for anything
+public enum SmartNetworkSettings {
     /// Shared session for all requests which you can override for individual requests in ``Parameters``. Default is `URLSession.shared`
-    public static var sharedSession: SmartURLSession = URLSession.shared
+    public static var sharedSession: URLSession = .shared
 
     /// Default queue for responses
-    public static var defaultResponseQueue: DelayedQueue = .async(Queue.main)
+    public static var defaultCompletionQueue: DelayedQueue = .async(Queue.main)
 
     /// Default queue for `SmartTasking.defferedStart()` command - always async
     public static var defferedStartQueue: Queueable = Queue.main

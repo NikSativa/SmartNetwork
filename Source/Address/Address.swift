@@ -22,8 +22,8 @@ public struct Address: Hashable {
     public let shouldRemoveSlashesForEmptyScheme: Bool
 
     init(_ urling: Source,
-         shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
-         shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) {
+         shouldAddSlashAfterEndpoint: Bool = SmartNetworkSettings.shouldAddSlashAfterEndpoint,
+         shouldRemoveSlashesForEmptyScheme: Bool = SmartNetworkSettings.shouldRemoveSlashesForEmptyScheme) {
         self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
         self.shouldRemoveSlashesForEmptyScheme = shouldRemoveSlashesForEmptyScheme
         self.source = urling
@@ -46,32 +46,32 @@ public struct Address: Hashable {
 
 public extension Address {
     init(_ urling: URL,
-         shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
-         shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) {
+         shouldAddSlashAfterEndpoint: Bool = SmartNetworkSettings.shouldAddSlashAfterEndpoint,
+         shouldRemoveSlashesForEmptyScheme: Bool = SmartNetworkSettings.shouldRemoveSlashesForEmptyScheme) {
         self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
         self.shouldRemoveSlashesForEmptyScheme = shouldRemoveSlashesForEmptyScheme
         self.source = .url(urling)
     }
 
     init(_ urling: String,
-         shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
-         shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) {
+         shouldAddSlashAfterEndpoint: Bool = SmartNetworkSettings.shouldAddSlashAfterEndpoint,
+         shouldRemoveSlashesForEmptyScheme: Bool = SmartNetworkSettings.shouldRemoveSlashesForEmptyScheme) {
         self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
         self.shouldRemoveSlashesForEmptyScheme = shouldRemoveSlashesForEmptyScheme
         self.source = .string(urling)
     }
 
     init(_ urling: URLComponents,
-         shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
-         shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) {
+         shouldAddSlashAfterEndpoint: Bool = SmartNetworkSettings.shouldAddSlashAfterEndpoint,
+         shouldRemoveSlashesForEmptyScheme: Bool = SmartNetworkSettings.shouldRemoveSlashesForEmptyScheme) {
         self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
         self.shouldRemoveSlashesForEmptyScheme = shouldRemoveSlashesForEmptyScheme
         self.source = .components(urling)
     }
 
     init(_ urling: AddressDetails,
-         shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
-         shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) {
+         shouldAddSlashAfterEndpoint: Bool = SmartNetworkSettings.shouldAddSlashAfterEndpoint,
+         shouldRemoveSlashesForEmptyScheme: Bool = SmartNetworkSettings.shouldRemoveSlashesForEmptyScheme) {
         self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
         self.shouldRemoveSlashesForEmptyScheme = shouldRemoveSlashesForEmptyScheme
         self.source = .details(urling)
@@ -83,8 +83,8 @@ public extension Address {
          path: [String] = [],
          queryItems: QueryItems = [:],
          fragment: String? = nil,
-         shouldAddSlashAfterEndpoint: Bool = RequestSettings.shouldAddSlashAfterEndpoint,
-         shouldRemoveSlashesForEmptyScheme: Bool = RequestSettings.shouldRemoveSlashesForEmptyScheme) {
+         shouldAddSlashAfterEndpoint: Bool = SmartNetworkSettings.shouldAddSlashAfterEndpoint,
+         shouldRemoveSlashesForEmptyScheme: Bool = SmartNetworkSettings.shouldRemoveSlashesForEmptyScheme) {
         self.shouldAddSlashAfterEndpoint = shouldAddSlashAfterEndpoint
         self.shouldRemoveSlashesForEmptyScheme = shouldRemoveSlashesForEmptyScheme
 

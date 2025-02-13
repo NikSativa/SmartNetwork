@@ -3,10 +3,10 @@ import Threading
 
 /// A class that manages requests and responses for a ``Decodable`` type.
 public struct DecodableRequestManager {
-    private let parent: RequestManager
+    private let base: RequestManager
 
-    public init(parent: RequestManager) {
-        self.parent = parent
+    public init(base: RequestManager) {
+        self.base = base
     }
 }
 
@@ -16,13 +16,15 @@ public extension DecodableRequestManager {
                     keyPath: DecodableKeyPath<T> = [],
                     address: Address,
                     parameters: Parameters = .init(),
+                    userInfo: UserInfo = .init(),
                     decoding: JSONDecoding? = nil,
-                    completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
+                    completionQueue: DelayedQueue = SmartNetworkSettings.defaultCompletionQueue,
                     completion: @escaping (Result<T, Error>) -> Void) -> SmartTasking
     where T: Decodable {
-        return parent.request(address: address,
-                              parameters: parameters,
-                              completionQueue: completionQueue) { result in
+        return base.request(address: address,
+                            parameters: parameters,
+                            userInfo: userInfo,
+                            completionQueue: completionQueue) { result in
             let decoder = DecodableContent<T>(decoder: decoding, keyPath: keyPath)
             let obj = decoder.decode(with: result, parameters: parameters)
             completion(obj)
@@ -34,13 +36,15 @@ public extension DecodableRequestManager {
                     keyPath: DecodableKeyPath<T> = [],
                     address: Address,
                     parameters: Parameters = .init(),
+                    userInfo: UserInfo = .init(),
                     decoding: JSONDecoding? = nil,
-                    completionQueue: DelayedQueue = RequestSettings.defaultResponseQueue,
+                    completionQueue: DelayedQueue = SmartNetworkSettings.defaultCompletionQueue,
                     completion: @escaping (Result<T, Error>) -> Void) -> SmartTasking
     where T: Decodable & ExpressibleByNilLiteral {
-        return parent.request(address: address,
-                              parameters: parameters,
-                              completionQueue: completionQueue) { result in
+        return base.request(address: address,
+                            parameters: parameters,
+                            userInfo: userInfo,
+                            completionQueue: completionQueue) { result in
             let decoder = DecodableContent<T>(decoder: decoding, keyPath: keyPath)
             let obj = decoder.decode(with: result, parameters: parameters)
             let recovered = obj.recoverResult(nil)
@@ -55,20 +59,11 @@ public extension DecodableRequestManager {
                     keyPath: DecodableKeyPath<T> = [],
                     address: Address,
                     parameters: Parameters = .init(),
+                    userInfo: UserInfo = .init(),
                     decoding: JSONDecoding? = nil) async -> Result<T, Error>
     where T: Decodable {
-        return await withCheckedContinuation { [self] completion in
-            request(type,
-                    keyPath: keyPath,
-                    address: address,
-                    parameters: parameters,
-                    decoding: decoding,
-                    completionQueue: .absent) { data in
-                let sendable = USendable(data)
-                completion.resume(returning: sendable.value)
-            }
-            .detach().deferredStart()
-        }
+        let request: AnyRequest = base.request(address: address, parameters: parameters, userInfo: userInfo)
+        return await request.decodeAsync(type, with: decoding, keyPath: keyPath)
     }
 
     /// Sends a request to the specified address with the given parameters.
@@ -76,20 +71,11 @@ public extension DecodableRequestManager {
                     keyPath: DecodableKeyPath<T> = [],
                     address: Address,
                     parameters: Parameters = .init(),
+                    userInfo: UserInfo = .init(),
                     decoding: JSONDecoding? = nil) async -> Result<T, Error>
     where T: Decodable & ExpressibleByNilLiteral {
-        return await withCheckedContinuation { [self] completion in
-            request(type,
-                    keyPath: keyPath,
-                    address: address,
-                    parameters: parameters,
-                    decoding: decoding,
-                    completionQueue: .absent) { data in
-                let sendable = USendable(data)
-                completion.resume(returning: sendable.value)
-            }
-            .detach().deferredStart()
-        }
+        let request: AnyRequest = base.request(address: address, parameters: parameters, userInfo: userInfo)
+        return await request.decodeAsync(type, with: decoding, keyPath: keyPath)
     }
 
     // MARK: - async throws
@@ -99,20 +85,11 @@ public extension DecodableRequestManager {
                                 keyPath: DecodableKeyPath<T> = [],
                                 address: Address,
                                 parameters: Parameters = .init(),
+                                userInfo: UserInfo = .init(),
                                 decoding: JSONDecoding? = nil) async throws -> T
     where T: Decodable {
-        return try await withCheckedThrowingContinuation { [self] completion in
-            request(type,
-                    keyPath: keyPath,
-                    address: address,
-                    parameters: parameters,
-                    decoding: decoding,
-                    completionQueue: .absent) { data in
-                let sendable = USendable(data)
-                completion.resume(with: sendable.value)
-            }
-            .detach().deferredStart()
-        }
+        let request: AnyRequest = base.request(address: address, parameters: parameters, userInfo: userInfo)
+        return try await request.decodeAsyncWithThrowing(type, with: decoding, keyPath: keyPath)
     }
 
     /// Sends a request to the specified address with the given parameters.
@@ -120,19 +97,10 @@ public extension DecodableRequestManager {
                                 keyPath: DecodableKeyPath<T> = [],
                                 address: Address,
                                 parameters: Parameters = .init(),
+                                userInfo: UserInfo = .init(),
                                 decoding: JSONDecoding? = nil) async throws -> T
     where T: Decodable & ExpressibleByNilLiteral {
-        return try await withCheckedThrowingContinuation { [self] completion in
-            request(type,
-                    keyPath: keyPath,
-                    address: address,
-                    parameters: parameters,
-                    decoding: decoding,
-                    completionQueue: .absent) { data in
-                let sendable = USendable(data)
-                completion.resume(with: sendable.value)
-            }
-            .detach().deferredStart()
-        }
+        let request: AnyRequest = base.request(address: address, parameters: parameters, userInfo: userInfo)
+        return try await request.decodeAsyncWithThrowing(type, with: decoding, keyPath: keyPath)
     }
 }
