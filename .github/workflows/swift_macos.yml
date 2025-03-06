@@ -42,10 +42,6 @@ jobs:
             runsOn: macOS-14
             swift: "5.9"
             outputFilter: xcbeautify --renderer github-actions
-          - xcode: "Xcode_14.3"
-            runsOn: macOS-13
-            swift: "5.8"
-            outputFilter: xcbeautify --renderer github-actions
     steps:
       - uses: NeedleInAJayStack/setup-swift@feat/swift-6 # swift-actions/setup-swift@main
         with:

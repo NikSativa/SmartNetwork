@@ -1,7 +1,6 @@
 import Foundation
 
-#if swift(>=6.0)
-public protocol URLRequestRepresentation: Sendable, CURLConvertible {
+public protocol URLRequestRepresentation: SmartSendable, CURLConvertible {
     var sdk: URLRequest { get }
     var allHTTPHeaderFields: [String: String]? { get }
     var url: URL? { get set }
@@ -11,18 +10,6 @@ public protocol URLRequestRepresentation: Sendable, CURLConvertible {
     mutating func addValue(_ value: String, forHTTPHeaderField field: String)
     mutating func setValue(_ value: String?, forHTTPHeaderField field: String)
 }
-#else
-public protocol URLRequestRepresentation: CURLConvertible {
-    var sdk: URLRequest { get }
-    var allHTTPHeaderFields: [String: String]? { get }
-    var url: URL? { get set }
-    var httpBody: Data? { get }
-
-    func value(forHTTPHeaderField field: String) -> String?
-    mutating func addValue(_ value: String, forHTTPHeaderField field: String)
-    mutating func setValue(_ value: String?, forHTTPHeaderField field: String)
-}
-#endif
 
 // MARK: - URLRequest + URLRequestRepresentation
 

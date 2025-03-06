@@ -9,7 +9,7 @@ import Threading
 ///
 /// - Important: ``DetachedTask`` is designed to be detached from the request, which means request will not be canceled when the task is deallocated.
 /// - Note: Don't forget that ``AnyCancellable`` is cancelling the task on deinitialization.
-public protocol DetachedTask: Cancellable, CustomDebugStringConvertible, CustomStringConvertible {
+public protocol DetachedTask: Cancellable, CustomDebugStringConvertible, CustomStringConvertible, SmartSendable {
     /// The user information associated with the task.
     ///
     /// - Note: you can use the ``.smartTaskRequestAddressKey`` key to determine which request the task belongs to.

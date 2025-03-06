@@ -22,12 +22,9 @@ final class PluginPriorityTests: XCTestCase {
             }),
             Plugins.StatusCode(),
             Plugins.JSONHeaders()
-        ].unified().sorted { a, b in
-            return a.priority > b.priority
-        }
+        ].prepareForExecution()
 
         let expected: [Plugin] = [
-            Plugins.Log(logger: { _ in }),
             Plugins.AuthBasic(with: {
                 return .init(username: "AuthBasic", password: "AuthBasic")
             }),
@@ -35,6 +32,7 @@ final class PluginPriorityTests: XCTestCase {
                 return "AuthBearer"
             }),
             Plugins.StatusCode(),
+            Plugins.Log(logger: { _ in }),
             Plugins.JSONHeaders()
         ]
 
@@ -60,13 +58,9 @@ final class PluginPriorityTests: XCTestCase {
             Plugins.StatusCode(),
             Plugins.LogOS(),
             Plugins.JSONHeaders()
-        ].unified().sorted { a, b in
-            return a.priority > b.priority
-        }
+        ].prepareForExecution()
 
         let expected: [Plugin] = [
-            Plugins.Log(logger: { _ in }),
-            Plugins.LogOS(),
             Plugins.AuthBasic(with: {
                 return .init(username: "AuthBasic", password: "AuthBasic")
             }),
@@ -74,6 +68,8 @@ final class PluginPriorityTests: XCTestCase {
                 return "AuthBearer"
             }),
             Plugins.StatusCode(),
+            Plugins.LogOS(),
+            Plugins.Log(logger: { _ in }),
             Plugins.JSONHeaders()
         ]
 
@@ -100,43 +96,73 @@ final class PluginPriorityTests: XCTestCase {
             FakePlugin(id: "fake_310", priority: 310),
             Plugins.StatusCode(),
             FakePlugin(id: "fake_0", priority: 0)
-        ].unified().sorted { a, b in
-            return a.priority > b.priority
-        }
+        ].prepareForExecution()
 
         let expected: [Plugin] = [
-            Plugins.Log(logger: { _ in }),
-            FakePlugin(id: "fake_1000", priority: 1000),
+            FakePlugin(id: "fake_0", priority: 0),
             Plugins.AuthBasic(with: {
                 return .init(username: "AuthBasic", password: "AuthBasic")
             }),
-            FakePlugin(id: "fake_310", priority: 310),
+            FakePlugin(id: "fake_110", priority: 110),
             Plugins.AuthBearer(with: {
                 return "AuthBearer"
             }),
-            FakePlugin(id: "fake_110", priority: 110),
             Plugins.StatusCode(),
-            FakePlugin(id: "fake_0", priority: 0)
+            FakePlugin(id: "fake_310", priority: 310),
+            FakePlugin(id: "fake_1000", priority: 1000),
+            Plugins.Log(logger: { _ in })
         ]
 
         XCTAssertEqual(actual.map(\.id), expected.map(\.id), actual.map(\.id).map { "\($0)" }.joined(separator: ", "))
     }
 
     func test_additiveArithmetic() {
-        XCTAssertEqual(PluginPriority.authBasic + PluginPriority.authBearer, .init(rawValue: 700))
-        XCTAssertEqual(PluginPriority.authBasic + PluginPriority.statusCode, .init(rawValue: 500))
-        XCTAssertEqual(PluginPriority.authBasic + 3, .init(rawValue: 403))
-        XCTAssertEqual(PluginPriority.authBasic + 30, .init(rawValue: 430))
-        XCTAssertEqual(PluginPriority.authBasic + (3 as Int), .init(rawValue: 403))
-        XCTAssertEqual(PluginPriority.authBasic + (30 as Int), .init(rawValue: 430))
+        XCTAssertEqual(PluginPriority.authBasic + PluginPriority.authBearer, .init(rawValue: 300))
+        XCTAssertEqual(PluginPriority.authBasic + PluginPriority.statusCode, .init(rawValue: 400))
+        XCTAssertEqual(PluginPriority.authBasic + 3, .init(rawValue: 103))
+        XCTAssertEqual(PluginPriority.authBasic + 30, .init(rawValue: 130))
 
-        XCTAssertEqual(PluginPriority.authBasic - PluginPriority.authBearer, .init(rawValue: 100))
-        XCTAssertEqual(PluginPriority.authBasic - PluginPriority.statusCode, .init(rawValue: 300))
-        XCTAssertEqual(PluginPriority.authBasic - 3, .init(rawValue: 397))
-        XCTAssertEqual(PluginPriority.authBasic - 30, .init(rawValue: 370))
-
-        XCTAssertEqual(PluginPriority.authBasic - (3 as Int), .init(rawValue: 397))
-        XCTAssertEqual(PluginPriority.authBasic - (30 as Int), .init(rawValue: 370))
+        XCTAssertEqual(PluginPriority.authBearer - PluginPriority.authBasic, .init(rawValue: 100))
+        XCTAssertEqual(PluginPriority.statusCode - PluginPriority.authBasic, .init(rawValue: 200))
+        XCTAssertEqual(PluginPriority.authBasic - 3, .init(rawValue: 97))
+        XCTAssertEqual(PluginPriority.authBasic - 30, .init(rawValue: 70))
     }
+
+    #if swift(>=6.0) && !supportsVisionOS
+    @available(macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
+    func test_overflows() {
+        XCTAssertThrowsAssertion {
+            PluginPriority(rawValue: .max) + 1
+        }
+
+        XCTAssertThrowsAssertion {
+            PluginPriority(rawValue: .min) - 1
+        }
+
+        XCTAssertThrowsAssertion {
+            PluginPriority(rawValue: .max) + 1
+        }
+
+        XCTAssertThrowsAssertion {
+            PluginPriority(rawValue: .min) - 1
+        }
+
+        XCTAssertThrowsAssertion {
+            PluginPriority(rawValue: .max) + PluginPriority(rawValue: 1)
+        }
+
+        XCTAssertThrowsAssertion {
+            PluginPriority(rawValue: .min) - PluginPriority(rawValue: 1)
+        }
+
+        XCTAssertThrowsAssertion {
+            PluginPriority(rawValue: .max) + PluginPriority(rawValue: 1)
+        }
+
+        XCTAssertThrowsAssertion {
+            PluginPriority(rawValue: .min) - PluginPriority(rawValue: 1)
+        }
+    }
+    #endif
 }
 #endif

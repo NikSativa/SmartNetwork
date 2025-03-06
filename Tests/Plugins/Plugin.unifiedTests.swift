@@ -5,11 +5,11 @@ import XCTest
 @testable import SmartNetwork
 
 private final class TestPlugin: Plugin {
-    private let input: Int
-    lazy var id: AnyHashable = TestPlugin.makeHash(withAdditionalHash: input)
+    private let input: PluginPriority.RawValue
+    lazy var id: ID = TestPlugin.makeHash(withAdditionalHash: input)
     let priority: PluginPriority
 
-    init(input: Int) {
+    init(input: PluginPriority.RawValue) {
         self.input = input
         self.priority = .init(rawValue: input)
     }

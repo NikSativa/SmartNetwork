@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol CURLConvertible {
+public protocol CURLConvertible: SmartSendable {
     /// cURL representation of the instance.
     ///
     /// - Returns: The cURL equivalent of the instance.

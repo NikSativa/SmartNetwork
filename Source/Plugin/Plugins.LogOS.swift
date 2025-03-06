@@ -22,7 +22,7 @@ public extension Plugins {
     typealias LoggerGenerator = (_ data: Plugins.Log.DataCollection) -> os.Logger
     #endif
 
-    enum LoggerProvider {
+    enum LoggerProvider: SmartSendable {
         case `default`
         case custom(os.Logger)
         case generator(LoggerGenerator)
@@ -109,10 +109,4 @@ public extension Plugins.LoggerProvider {
         }
     }
 }
-
-#if swift(>=6.0)
-@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
-extension Plugins.LoggerProvider: Sendable {}
-#endif
-
 #endif

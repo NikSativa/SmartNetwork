@@ -1,7 +1,7 @@
 import Foundation
 
 /// URL scheme
-public enum Scheme: Hashable {
+public enum Scheme: Hashable, SmartSendable {
     case http
     case https
 
@@ -30,7 +30,3 @@ internal extension Scheme {
         }
     }
 }
-
-#if swift(>=6.0)
-extension Scheme: Sendable {}
-#endif

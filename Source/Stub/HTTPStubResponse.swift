@@ -1,7 +1,7 @@
 import Foundation
 
 /// A struct representing the response of a stubbed HTTP request.
-public struct HTTPStubResponse {
+public struct HTTPStubResponse: SmartSendable {
     /// The status code of the response.
     public let statusCode: StatusCode
     /// The header fields of the response.
@@ -47,7 +47,3 @@ public struct HTTPStubResponse {
         return response ?? URLResponse(url: url, mimeType: nil, expectedContentLength: -1, textEncodingName: nil)
     }
 }
-
-#if swift(>=6.0)
-extension HTTPStubResponse: Sendable {}
-#endif

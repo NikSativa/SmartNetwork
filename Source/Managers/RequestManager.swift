@@ -1,29 +1,29 @@
 import Foundation
 import Threading
 
-#if swift(>=6.0)
-public protocol RequestManager: Sendable {
-    /// A closure that is called when a response is received.
+/// The ``RequestManager`` protocol defines mechanisms for sending requests
+/// and includes functions that handle the transmission of requests to specified addresses
+/// with specified parameters and with support for custom completion handling in specified queues.
+public protocol RequestManager: SmartSendable {
+    /// A closure that gets called upon receiving a response.
     typealias ResponseClosure = (_ result: SmartResponse) -> Void
 
-    /// Sends a request to the specified address with the given parameters.
+    /// Sends a request asynchronously to the specified address with the given parameters.
+    ///
+    /// - Parameter address: An ``Address`` object specifying the target address.
+    /// - Parameter parameters: A ``Parameters`` object containing the request parameters.
+    /// - Parameter userInfo: A ``UserInfo`` object with additional user information.
     func request(address: Address, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse
 
     /// Sends a request to the specified address with the given parameters.
+    ///
+    /// - Parameter address: An ``Address`` object specifying the target address.
+    /// - Parameter parameters: A ``Parameters`` object containing the request parameters.
+    /// - Parameter userInfo: A ``UserInfo`` object with additional user information.
+    /// - Parameter completionQueue: A ``DelayedQueue`` where the completion handler will be executed.
+    /// - Parameter completion: A ``ResponseClosure`` that is executed when a response is received.
     func request(address: Address, parameters: Parameters, userInfo: UserInfo, completionQueue: DelayedQueue, completion: @escaping ResponseClosure) -> SmartTasking
 }
-#else
-public protocol RequestManager {
-    /// A closure that is called when a response is received.
-    typealias ResponseClosure = (_ result: SmartResponse) -> Void
-
-    /// Sends a request to the specified address with the given parameters.
-    func request(address: Address, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse
-
-    /// Sends a request to the specified address with the given parameters.
-    func request(address: Address, parameters: Parameters, userInfo: UserInfo, completionQueue: DelayedQueue, completion: @escaping ResponseClosure) -> SmartTasking
-}
-#endif
 
 public extension RequestManager {
     /// Sends a request to the specified address with the given parameters.

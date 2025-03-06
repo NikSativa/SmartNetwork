@@ -268,7 +268,7 @@ private extension Body.MultipartForm {
         }
     }
 
-    struct Header: Equatable, Hashable, Sendable {
+    struct Header: Equatable, Hashable {
         let name: String
         let value: String
     }
@@ -293,6 +293,7 @@ private extension Body.MultipartForm {
 #if swift(>=6.0)
 extension Body.MultipartForm: @unchecked Sendable {}
 extension Body.MultipartForm.Name: Sendable {}
+extension Body.MultipartForm.Header: Sendable {}
 extension Body.MultipartForm.MimeType: Sendable {}
 extension Body.MultipartForm.Boundary: Sendable {}
 extension Body.MultipartForm.DataContent: Sendable {}

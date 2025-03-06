@@ -99,12 +99,12 @@ final class UserInfoTests: XCTestCase {
             DispatchQueue.global().async { [subject] in
                 let new = Int.random(in: 0..<1000)
                 subject["b"] = new // async write
-                XCTAssertTrue(subject["b"] != Optional<Int>.none) // async read
+                XCTAssertTrue(subject["b"] != Int?.none) // async read
                 exp.fulfill()
             }
         }
         wait(for: exps, timeout: 1.0)
 
-        XCTAssertTrue(subject["b"] != Optional<Int>.none)
+        XCTAssertTrue(subject["b"] != Int?.none)
     }
 }

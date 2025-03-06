@@ -196,7 +196,7 @@ final class RequestManagerTests: XCTestCase {
             guard let parameters = parameters as? Parameters else {
                 return false
             }
-            let expected: [Plugin] = [pluginForManager, pluginStatusCode, pluginForParam]
+            let expected: [Plugin] = [pluginForParam, pluginStatusCode, pluginForManager]
             return parameters.plugins.map(\.id) == expected.map(\.id)
         }
 

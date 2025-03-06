@@ -1,7 +1,7 @@
 import Foundation
 
 /// A type that represents a namespace of keys for a value in a `UserInfo` dictionary.
-public struct UserInfoKey: RawRepresentable, Hashable, ExpressibleByStringLiteral {
+public struct UserInfoKey: RawRepresentable, Hashable, ExpressibleByStringLiteral, SmartSendable {
     public let rawValue: String
 
     public init(rawValue: String) {
@@ -28,7 +28,3 @@ extension UserInfoKey: CustomStringConvertible {
         return rawValue
     }
 }
-
-#if swift(>=6.0)
-extension UserInfoKey: Sendable {}
-#endif

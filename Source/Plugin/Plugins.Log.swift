@@ -14,17 +14,12 @@ public extension Plugins {
         public typealias Logging = (_ data: DataCollection) -> Void
         #endif
 
-        #if swift(>=6.0)
-        public nonisolated(unsafe) let id: AnyHashable
-        #else
-        public let id: AnyHashable
-        #endif
-
+        public let id: ID
         public let priority: PluginPriority
         private let logger: Logging
         private let options: Options
 
-        public init(id: AnyHashable? = nil,
+        public init(id: ID? = nil,
                     priority: PluginPriority = .curl,
                     options: Options = .all,
                     logger: @escaping Logging) {
@@ -180,7 +175,7 @@ public extension Plugins {
 
 public extension Plugins.Log {
     /// The `curl` component of the log.
-    struct Component: Hashable, RawRepresentable, ExpressibleByStringLiteral, CustomDebugStringConvertible {
+    struct Component: Hashable, RawRepresentable, ExpressibleByStringLiteral, CustomDebugStringConvertible, SmartSendable {
         public let rawValue: String
 
         public init(rawValue: String) {
@@ -210,7 +205,7 @@ public extension Plugins.Log {
     }
 
     /// The `curl` phase of the log.
-    struct Phase: Hashable, RawRepresentable, ExpressibleByStringLiteral, CustomDebugStringConvertible {
+    struct Phase: Hashable, RawRepresentable, ExpressibleByStringLiteral, CustomDebugStringConvertible, SmartSendable {
         public let rawValue: String
 
         public init(rawValue: String) {
@@ -232,7 +227,7 @@ public extension Plugins.Log {
     }
 
     /// The options for the `Curl` plugin.
-    struct Options: OptionSet {
+    struct Options: OptionSet, SmartSendable {
         public let rawValue: Int
 
         public init(rawValue: Int) {
@@ -343,9 +338,3 @@ public extension Plugins.Log {
         }
     }
 }
-
-#if swift(>=6.0)
-extension Plugins.Log.Options: Sendable {}
-extension Plugins.Log.Component: Sendable {}
-extension Plugins.Log.Phase: Sendable {}
-#endif

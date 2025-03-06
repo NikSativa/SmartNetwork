@@ -3,7 +3,7 @@ import Foundation
 /// The ``AddressDetails`` struct in Swift represents a ``URL`` and contains specific components to define the address details.
 /// This struct is intended to encapsulate detailed information about a ``URL``, such as scheme, host, port,
 /// path components, query items, and fragment for constructing and processing ``URL``s effectively within the system.
-public struct AddressDetails: Hashable {
+public struct AddressDetails: Hashable, SmartSendable {
     public let scheme: Scheme?
     public let host: String
     public let port: Int?
@@ -104,7 +104,3 @@ private extension String? {
         }
     }
 }
-
-#if swift(>=6.0)
-extension AddressDetails: Sendable {}
-#endif

@@ -3,15 +3,15 @@ import Foundation
 public extension Plugins {
     #if swift(>=6.0)
     /// The token provider.
-    typealias TokenProvider = () -> String?
+    typealias TokenProvider = @Sendable () -> String?
     #else
     /// The token provider.
     typealias TokenProvider = () -> String?
     #endif
 
     /// The type of the plugin where the token will be applied.
-    enum TokenType {
-        public enum Operation {
+    enum TokenType: SmartSendable {
+        public enum Operation: SmartSendable {
             /// Set token to the request. The previous value will be rewriten.
             case set(String)
             /// Add token to the request. The new value will be added to the existing one.
@@ -28,13 +28,13 @@ public extension Plugins {
     /// The token can be added to the header or as a query parameter.
     /// The token will be added to the request before it is sent.
     final class TokenPlugin: Plugin {
-        public let id: AnyHashable
+        public let id: ID
         public let priority: PluginPriority
 
         private let tokenProvider: TokenProvider
         private let type: TokenType
 
-        public init(id: AnyHashable,
+        public init(id: ID,
                     priority: PluginPriority,
                     type: TokenType,
                     tokenProvider: @escaping TokenProvider) {
@@ -84,9 +84,3 @@ public extension Plugins {
         public func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) {}
     }
 }
-
-#if swift(>=6.0)
-extension Plugins.TokenType: Sendable {}
-extension Plugins.TokenType.Operation: Sendable {}
-extension Plugins.TokenPlugin: @unchecked Sendable {}
-#endif

@@ -35,7 +35,12 @@ public enum SmartNetworkSettings: Sendable {
     public nonisolated(unsafe) static var curlPrettyPrinted: Bool = false
 
     /// Disallowed headers for cURL representation. Default is ["Accept-Encoding"]. You can add your own headers here to exclude them from cURL representation.
-    public nonisolated(unsafe) static var curlDisallowedHeaders: Set<String> = ["Accept-Encoding"]
+    public nonisolated(unsafe) static var curlDisallowedHeaders: Set<String> = [
+        "Accept-Encoding",
+        "Connection",
+        "Accept",
+        "Host"
+    ]
 }
 #else
 /// Smart Network Settings contains default values for anything
@@ -68,6 +73,11 @@ public enum SmartNetworkSettings {
     public static var curlPrettyPrinted: Bool = false
 
     /// Disallowed headers for cURL representation. Default is ["Accept-Encoding"]. You can add your own headers here to exclude them from cURL representation.
-    public static var curlDisallowedHeaders: Set<String> = ["Accept-Encoding"]
+    public static var curlDisallowedHeaders: Set<String> = [
+        "Accept-Encoding",
+        "Connection",
+        "Accept",
+        "Host"
+    ]
 }
 #endif

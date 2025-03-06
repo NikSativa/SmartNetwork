@@ -220,14 +220,14 @@ private extension SmartRequest {
     }
 }
 
-#if swift(>=6.0)
-extension SmartRequest: @unchecked Sendable {}
-#endif
-
-public extension Progress {
+internal extension Progress {
     func observe(_ progressHandler: @escaping ProgressHandler) -> AnyObject {
         return observe(\.fractionCompleted, changeHandler: { progress, _ in
             progressHandler(progress)
         })
     }
 }
+
+#if swift(>=6.0)
+extension SmartRequest: @unchecked Sendable {}
+#endif

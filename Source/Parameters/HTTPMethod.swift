@@ -1,7 +1,7 @@
 import Foundation
 
 /// HTTP method types. It is used in `Parameters` to specify the HTTP method.
-public enum HTTPMethod: Hashable {
+public enum HTTPMethod: Hashable, SmartSendable {
     case get
     case head
     case post
@@ -48,7 +48,3 @@ internal extension HTTPMethod {
         }
     }
 }
-
-#if swift(>=6.0)
-extension HTTPMethod: Sendable {}
-#endif

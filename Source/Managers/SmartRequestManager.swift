@@ -182,11 +182,7 @@ private extension SmartRequestManager {
     func prepare(_ parameters: Parameters) -> Parameters {
         var parameters = parameters
 
-        let newPlugins = (parameters.plugins + plugins)
-            .unified()
-            .sorted { a, b in
-                return a.priority > b.priority
-            }
+        let newPlugins = (parameters.plugins + plugins).prepareForExecution()
         parameters.plugins = newPlugins
         return parameters
     }
@@ -270,10 +266,6 @@ private extension SmartRequestManager {
     }
 }
 
-#if swift(>=6.0)
-extension SmartRequestManager: @unchecked Sendable {}
-#endif
-
 private extension SmartTask {
     func fillUserInfo(with address: Address) -> Self {
         userInfo.smartRequestAddress = address
@@ -286,3 +278,7 @@ private extension SmartResponse {
         self.init(request: nil, body: nil, response: nil, error: error, session: session)
     }
 }
+
+#if swift(>=6.0)
+extension SmartRequestManager: @unchecked Sendable {}
+#endif

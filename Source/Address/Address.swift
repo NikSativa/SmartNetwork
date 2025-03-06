@@ -2,8 +2,8 @@ import Foundation
 
 /// The struct Address is designed to encapsulate URL-related information and
 /// provide flexibility in constructing URLs based on different sources and configurations.
-public struct Address: Hashable {
-    public enum Source: Hashable {
+public struct Address: Hashable, SmartSendable {
+    public enum Source: Hashable, SmartSendable {
         case string(String)
         case url(URL)
         case components(URLComponents)
@@ -163,8 +163,3 @@ extension Address.Source: CustomStringConvertible {
         }
     }
 }
-
-#if swift(>=6.0)
-extension Address: Sendable {}
-extension Address.Source: Sendable {}
-#endif

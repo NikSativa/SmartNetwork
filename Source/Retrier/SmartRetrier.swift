@@ -1,7 +1,7 @@
 import Foundation
 
 /// Outcome of determination whether retry is necessary.
-public enum RetryResult: Sendable {
+public enum RetryResult: SmartSendable {
     /// Retry should be attempted immediately.
     case retry
     /// Retry should be attempted after the associated `TimeInterval`.
@@ -16,7 +16,7 @@ public enum RetryResult: Sendable {
 ///
 /// See detailed scheme how network works:
 /// ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/SmartNetwork.jpg)
-public protocol SmartRetrier {
+public protocol SmartRetrier: SmartSendable {
     /// Determines whether to retry the network request or finish based on the result and user info.
     ///
     ///  - Important: The ``UserInfo`` contains the number of attempts made to perform a network request.

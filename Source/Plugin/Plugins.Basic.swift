@@ -21,7 +21,7 @@ public extension Plugins {
 
     #if swift(>=6.0)
     /// The basic authentication token provider.
-    typealias AuthBasicTokenProvider = () -> AuthBasicToken?
+    typealias AuthBasicTokenProvider = @Sendable () -> AuthBasicToken?
     #else
     /// The basic authentication token provider.
     typealias AuthBasicTokenProvider = () -> AuthBasicToken?
@@ -40,7 +40,3 @@ public extension Plugins {
                            })
     }
 }
-
-#if swift(>=6.0)
-extension Plugins.AuthBasicToken: Sendable {}
-#endif
