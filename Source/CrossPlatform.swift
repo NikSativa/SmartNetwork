@@ -58,15 +58,23 @@ public enum Screen {
 }
 #endif
 
-internal struct PlatformImage {
-    let sdk: SmartImage
+public struct PlatformImage {
+    public let sdk: SmartImage
 
-    init(_ image: SmartImage) {
+    public init(_ image: SmartImage) {
         self.sdk = image
     }
 
     #if os(macOS)
-    init?(data: Data) {
+    public init?(systemSymbolName: String) {
+        if let image = NSImage(systemSymbolName: systemSymbolName, accessibilityDescription: nil) {
+            self.init(image)
+        } else {
+            return nil
+        }
+    }
+
+    public init?(data: Data) {
         if let image = NSImage(data: data) {
             self.init(image)
         } else {
@@ -74,12 +82,20 @@ internal struct PlatformImage {
         }
     }
 
-    func pngData() -> Data? {
+    public func pngData() -> Data? {
         return sdk.pngData()
     }
 
     #elseif supportsVisionOS
-    init?(data: Data) {
+    public init?(systemSymbolName: String) {
+        if let image = UIImage(systemName: systemSymbolName) {
+            self.init(image)
+        } else {
+            return nil
+        }
+    }
+
+    public init?(data: Data) {
         let scale = Queue.isolatedMain.sync { Screen.scale }
 
         if let scale,
@@ -92,16 +108,24 @@ internal struct PlatformImage {
         }
     }
 
-    func pngData() -> Data? {
+    public func pngData() -> Data? {
         return sdk.pngData()
     }
 
-    func jpegData(compressionQuality: CGFloat) -> Data? {
+    public func jpegData(compressionQuality: CGFloat) -> Data? {
         return sdk.jpegData(compressionQuality: CGFloat(compressionQuality))
     }
 
     #elseif os(iOS) || os(tvOS) || os(watchOS)
-    init?(data: Data) {
+    public init?(systemSymbolName: String) {
+        if let image = UIImage(systemName: systemSymbolName) {
+            self.init(image)
+        } else {
+            return nil
+        }
+    }
+
+    public init?(data: Data) {
         let scale = Queue.isolatedMain.sync { Screen.scale }
 
         if let image = UIImage(data: data, scale: scale) {
@@ -111,11 +135,11 @@ internal struct PlatformImage {
         }
     }
 
-    func pngData() -> Data? {
+    public func pngData() -> Data? {
         return sdk.pngData()
     }
 
-    func jpegData(compressionQuality: CGFloat) -> Data? {
+    public func jpegData(compressionQuality: CGFloat) -> Data? {
         return sdk.jpegData(compressionQuality: CGFloat(compressionQuality))
     }
     #else

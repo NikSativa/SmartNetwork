@@ -8,7 +8,7 @@ public extension Plugins {
     /// A type that maps the ID and URL to a loggable strings.
     ///
     /// - Important: If returning `nil`, it will not be logged.
-    typealias CurlOSMapper = @Sendable (_ id: String, _ url: () -> String) -> String?
+    typealias CurlOSMapper = @Sendable (_ id: String, _ url: String) -> String?
 
     /// Logger generator
     typealias LoggerGenerator = @Sendable (_ data: Plugins.Log.DataCollection) -> os.Logger
@@ -16,7 +16,7 @@ public extension Plugins {
     /// A type that maps the ID and URL to a loggable strings.
     ///
     /// - Important: If returning `nil`, it will not be logged.
-    typealias CurlOSMapper = (_ id: String, _ url: () -> String) -> String?
+    typealias CurlOSMapper = (_ id: String, _ url: String) -> String?
 
     /// Logger generator
     typealias LoggerGenerator = (_ data: Plugins.Log.DataCollection) -> os.Logger
@@ -44,24 +44,18 @@ public extension Plugins {
                       options: Plugins.Log.Options = .all,
                       mapID: CurlOSMapper? = nil) -> Plugins.Log {
         return .init(id: Plugins.Log.makeHash(withAdditionalHash: "OS"),
-                     priority: priority) { data in
+                     priority: priority,
+                     options: options) { [mapID, shouldPrintBody] data in
             let logger = logger.get(data)
 
-            let id: String
-            if let mapID {
-                guard let uuid: UUID = data[safe: .id],
-                      let url: () -> String = data[safe: .url],
-                      let str = mapID(uuid.uuidString, url) else {
-                    logger.log(level: .error, "CurlOS: No ID mapping")
-                    return
-                }
+            let id: String?
+            if let mapID,
+               let uuid = data.get(safe: .id, ofType: UUID.self)?.uuidString,
+               let url = data.get(safe: .url, ofType: String.self),
+               let str = mapID(uuid, url) {
                 id = str
             } else {
-                guard let str: UUID = data[safe: .id] else {
-                    logger.log(level: .error, "CurlOS: No ID mapping")
-                    return
-                }
-                id = str.uuidString
+                id = nil
             }
 
             for (component, value) in data {
@@ -75,7 +69,15 @@ public extension Plugins {
                     continue
                 }
 
-                logger.log(level: component == .error ? .error : .info, "\(text) - \(id)")
+                if component == .body, shouldPrintBody {
+                    #if DEBUG
+                    print(text)
+                    #endif
+                } else if let id {
+                    logger.log(level: component == .error ? .error : .info, "\(text) - \(id)")
+                } else {
+                    logger.log(level: component == .error ? .error : .info, "\(text)")
+                }
             }
         }
     }
@@ -99,14 +101,19 @@ public extension Plugins.LoggerProvider {
         case .generator(let generator):
             return generator(data)
         case .identifiable:
-            let url: String = data[.url]
-            let uuid: UUID = data[.id]
-            let path: String = ((try? AddressDetails(string: url))?.path).map { $0.isEmpty ? "< root >" : $0.joined(separator: "/") } ?? "< unknown path >"
-            let id: String = uuid.uuidString.components(separatedBy: "-").first ?? uuid.uuidString
-            let identity = path + " " + id
-
+            let url = data[.url, ofType: String.self]
+            let uuid = data[.id, ofType: UUID.self].uuidString
+            let identity = PluginsLogIdentity(uuid, url)
             return .init(subsystem: Bundle.main.bundleIdentifier ?? "SmartNetwork", category: "Plugins.LogOS.\(identity)")
         }
     }
+}
+
+@inline(__always)
+public func PluginsLogIdentity(_ uuid: String, _ url: String) -> String {
+    let path: String = ((try? AddressDetails(string: url))?.path).map { $0.isEmpty ? "< root >" : $0.joined(separator: "/") } ?? "< unknown path >"
+    let id: String = uuid.components(separatedBy: "-").first ?? uuid
+    let identity = path + " " + id
+    return identity
 }
 #endif

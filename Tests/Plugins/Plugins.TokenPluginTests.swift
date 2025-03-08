@@ -60,6 +60,8 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
             request.stub(.addValue).with(value ?? Argument.nil, key).andReturn()
         case .set(let key):
             request.stub(.setValue).with(value ?? Argument.nil, key).andReturn()
+        case .trySet(let key):
+            request.stub(.setValue).with(value ?? Argument.nil, key).andReturn()
         }
     case .queryParam:
         request.stub(.url).andReturn(url)
@@ -85,11 +87,20 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
             }
         case .set(let key):
             XCTAssertHaveReceived(request, .setValue, with: value, key, countSpecifier: .exactly(1), file: file, line: line)
+        case .trySet(let key):
+            XCTAssertHaveReceived(request, .setValue, with: value, key, countSpecifier: .exactly(1), file: file, line: line)
         }
     case .queryParam(let operation):
         let newUrl: String
         switch operation {
         case .set(let key):
+            let newParam = [key, value].filterNils().joined(separator: "=")
+            if url == Constant.url {
+                newUrl = [url.absoluteString, "?", newParam].joined()
+            } else {
+                newUrl = url.absoluteString.replacingOccurrences(of: "my_token_key=broken_token_string", with: newParam)
+            }
+        case .trySet(let key):
             let newParam = [key, value].filterNils().joined(separator: "=")
             if url == Constant.url {
                 newUrl = [url.absoluteString, "?", newParam].joined()

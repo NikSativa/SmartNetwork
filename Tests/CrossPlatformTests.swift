@@ -29,5 +29,7 @@ final class CrossPlatformTests: XCTestCase {
 
         XCTAssertEqual(PlatformImage(image).sdk, image)
         XCTAssertEqualImage(PlatformImage(image).sdk, image)
+
+        XCTAssertNotNil(PlatformImage(systemSymbolName: "photo")?.sdk)
     }
 }

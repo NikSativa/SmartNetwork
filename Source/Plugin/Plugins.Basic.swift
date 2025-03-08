@@ -28,10 +28,10 @@ public extension Plugins {
     #endif
 
     /// The plugin that adds the basic authentication token to the header.
-    static func AuthBasic(with tokenProvider: @escaping AuthBasicTokenProvider) -> Plugin {
+    static func AuthBasic(overrideExisting: Bool = true, with tokenProvider: @escaping AuthBasicTokenProvider) -> Plugin {
         return TokenPlugin(id: "AuthBasic",
                            priority: .authBasic,
-                           type: .header(.set("Authorization")),
+                           type: .header(overrideExisting ? .set("Authorization") : .trySet("Authorization")),
                            tokenProvider: {
                                return tokenProvider().map { token in
                                    let token = Data("\(token.username):\(token.password)".utf8).base64EncodedString()

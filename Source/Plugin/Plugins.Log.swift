@@ -177,23 +177,32 @@ public extension Plugins.Log {
     /// The `curl` component of the log.
     struct Component: Hashable, RawRepresentable, ExpressibleByStringLiteral, CustomDebugStringConvertible, SmartSendable {
         public let rawValue: String
+        /// The value is indicating the index the ``Component`` will iterated.
+        public let sortingOrder: Int
 
         public init(rawValue: String) {
             self.rawValue = rawValue
+            self.sortingOrder = -1
         }
 
         public init(stringLiteral value: String) {
             self.rawValue = value
+            self.sortingOrder = -1
         }
 
+        init(rawValue: String, sortingOrder: Int) {
+            self.rawValue = rawValue
+            self.sortingOrder = sortingOrder
+        }
+
+        public static let phase: Self = .init(rawValue: "phase", sortingOrder: 0)
+        public static let url: Self = .init(rawValue: "url", sortingOrder: 10)
+        public static let curl: Self = .init(rawValue: "curl", sortingOrder: 20)
+        public static let error: Self = .init(rawValue: "error", sortingOrder: 30)
+        public static let requestError: Self = .init(rawValue: "requestError", sortingOrder: 40)
+        public static let body: Self = .init(rawValue: "body", sortingOrder: 50)
         public static let id: Self = "id"
-        public static let url: Self = "url"
-        public static let phase: Self = "phase"
-        public static let curl: Self = "curl"
         public static let headers: Self = "headers"
-        public static let error: Self = "error"
-        public static let requestError: Self = "requestError"
-        public static let body: Self = "body"
         public static let userInfo: Self = "userInfo"
         public static let parameters: Self = "parameters"
         public static let request: Self = "request"
@@ -246,28 +255,28 @@ public extension Plugins.Log {
         public static let all: Self = [.willSend, .didFinish, .didReceive, .wasCancelled]
     }
 
-    struct DataCollection: Sequence {
-        public typealias Getter = () -> Any
+    struct DataCollection: Sequence, CustomDebugStringConvertible {
+        public typealias Getter<T> = () -> T
 
-        public let data: [Component: Getter]
+        public let data: [Component: Getter<Any>]
 
-        public init(data: [Component: Getter] = [:]) {
+        public init(data: [Component: Getter<Any>] = [:]) {
             self.data = data
         }
 
-        public func add(_ key: Component, _ value: @autoclosure @escaping Getter) -> Self {
+        public func add(_ key: Component, _ value: @autoclosure @escaping Getter<Any>) -> Self {
             var data = data
             data[key] = value
             return .init(data: data)
         }
 
-        public func add(_ key: Component, _ value: @escaping Getter) -> Self {
+        public func add(_ key: Component, _ value: @escaping Getter<Any>) -> Self {
             var data = data
             data[key] = value
             return .init(data: data)
         }
 
-        public func add(_ key: Component, if condition: Bool, _ value: @escaping Getter) -> Self {
+        public func add(_ key: Component, if condition: Bool, _ value: @escaping Getter<Any>) -> Self {
             guard condition else {
                 return self
             }
@@ -277,36 +286,51 @@ public extension Plugins.Log {
             return .init(data: data)
         }
 
-        public func getClosure(safe key: Component) -> (() -> Any)? {
+        public func getClosure(safe key: Component) -> Getter<Any>? {
             return data[key]
         }
 
-        public func getClosure(_ key: Component) -> () -> Any {
+        public func getClosure(_ key: Component) -> Getter<Any> {
             return data[key]!
         }
 
-        public func getAny(safe key: Component) -> Any? {
+        public func getClosure<T>(safe key: Component, ofType: T.Type) -> Getter<T>? {
+            if let value = data[key]?() as? T {
+                return { [value] in
+                    return value
+                }
+            }
+            return nil
+        }
+
+        public func getClosure<T>(_ key: Component, ofType: T.Type) -> Getter<T> {
+            return { [data] in
+                return data[key]!() as! T
+            }
+        }
+
+        public func get(safe key: Component) -> Any? {
             return data[key]?()
         }
 
-        public func getAny(_ key: Component) -> Any {
+        public func get(_ key: Component) -> Any {
             return data[key]!()
         }
 
-        public func get<T>(safe key: Component, ofType: T.Type = T.self) -> T? {
+        public func get<T>(safe key: Component, ofType: T.Type) -> T? {
             return data[key]?() as? T
         }
 
-        public func get<T>(_ key: Component, ofType: T.Type = T.self) -> T {
+        public func get<T>(_ key: Component, ofType: T.Type) -> T {
             return data[key]?() as! T
         }
 
-        public subscript<T>(safe key: Component) -> T? {
-            return get(safe: key)
+        public subscript<T>(safe key: Component, ofType type: T.Type) -> T? {
+            return get(safe: key, ofType: type)
         }
 
-        public subscript<T>(_ key: Component) -> T {
-            return get(key)
+        public subscript<T>(_ key: Component, ofType type: T.Type) -> T {
+            return get(key, ofType: type)
         }
 
         public func makeIterator() -> Iterator {
@@ -314,14 +338,23 @@ public extension Plugins.Log {
         }
 
         public struct Iterator: IteratorProtocol {
-            public typealias Element = (key: Component, value: Getter)
+            public typealias Element = (key: Component, value: Getter<Any>)
 
             private let data: [Element]
             private var index: Int
 
             init(data: DataCollection) {
                 self.data = data.data.sorted(by: { a, b in
-                    return a.key.rawValue < b.key.rawValue
+                    switch (a.key.sortingOrder, b.key.sortingOrder) {
+                    case (-1, -1):
+                        return a.key.rawValue < b.key.rawValue
+                    case (-1, _):
+                        return false
+                    case (_, -1):
+                        return true
+                    default:
+                        return a.key.sortingOrder < b.key.sortingOrder
+                    }
                 })
                 self.index = 0
             }
@@ -335,6 +368,12 @@ public extension Plugins.Log {
                     return nil
                 }
             }
+        }
+
+        public var debugDescription: String {
+            return data.mapValues {
+                return $0()
+            }.debugDescription
         }
     }
 }

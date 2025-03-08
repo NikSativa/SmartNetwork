@@ -3,10 +3,10 @@ import Foundation
 public extension Plugins {
     #if swift(>=6.0)
     /// The token provider.
-    typealias TokenProvider = @Sendable () -> String?
+    typealias TokenProvider = @Sendable () async -> String?
     #else
     /// The token provider.
-    typealias TokenProvider = () -> String?
+    typealias TokenProvider = () async -> String?
     #endif
 
     /// The type of the plugin where the token will be applied.
@@ -14,6 +14,8 @@ public extension Plugins {
         public enum Operation: SmartSendable {
             /// Set token to the request. The previous value will be rewriten.
             case set(String)
+            /// Set token to the request only if no value for key.
+            case trySet(String)
             /// Add token to the request. The new value will be added to the existing one.
             case add(String)
         }
@@ -45,13 +47,17 @@ public extension Plugins {
         }
 
         public func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async {
-            let value = tokenProvider()
+            let value = await tokenProvider()
 
             switch type {
             case .header(let operation):
                 switch operation {
                 case .set(let key):
                     request.setValue(value, forHTTPHeaderField: key)
+                case .trySet(let key):
+                    if request.value(forHTTPHeaderField: key) == nil {
+                        request.setValue(value, forHTTPHeaderField: key)
+                    }
                 case .add(let key):
                     if let value {
                         request.addValue(value, forHTTPHeaderField: key)
@@ -65,6 +71,10 @@ public extension Plugins {
                     case .set(let key):
                         queryItems = queryItems.filter { $0.name != key }
                         queryItems.append(URLQueryItem(name: key, value: value))
+                    case .trySet(let key):
+                        if !queryItems.contains(where: { $0.name == key }) {
+                            queryItems.append(URLQueryItem(name: key, value: value))
+                        }
                     case .add(let key):
                         queryItems.append(URLQueryItem(name: key, value: value))
                     }

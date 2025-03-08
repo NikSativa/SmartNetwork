@@ -1,32 +1,24 @@
 import Foundation
 
 public struct AnyErrorRetrier: SmartRetrier {
-    public let result: RetryResult
+    #if swift(>=6.0)
+    public typealias Checker = @Sendable (any Error) -> RetryResult
+    #else
+    public typealias Checker = (any Error) -> RetryResult
+    #endif
+
+    public let checker: Checker
     public let attemptsCount: Int
 
-    public init(attemptsCount: Int = 3, result: RetryResult = .doNotRetry) {
+    public init(attemptsCount: Int = 3, checker: @escaping Checker) {
         self.attemptsCount = attemptsCount
-        self.result = result.validate()
+        self.checker = checker
     }
 
     public func retryOrFinish(result: SmartResponse, address: Address, parameters: Parameters, userInfo: UserInfo) -> RetryResult {
-        if userInfo.attemptsCount < attemptsCount {
-            return .retry
-        }
-        return self.result
-    }
-}
-
-private extension RetryResult {
-    func validate() -> Self {
-        switch self {
-        case .retry,
-             .retryWithDelay:
-            assertionFailure("Invalid retry result: \(self). Valid options are .doNotRetry and .doNotRetryWithError")
+        guard let error = result.error, userInfo.attemptsCount < attemptsCount else {
             return .doNotRetry
-        case .doNotRetry,
-             .doNotRetryWithError:
-            return self
         }
+        return checker(error)
     }
 }
