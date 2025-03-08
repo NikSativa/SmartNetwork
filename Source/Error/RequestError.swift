@@ -6,7 +6,6 @@ public indirect enum RequestError: Error {
     /// A generic error not specified further.
     /// Only for your purposes. StartNetwork does't throw this error.
     case generic
-    case cancelled
     /// Wraps another error within it.
     case other(Error)
     /// Represents errors related to network connection issues, using URLError
@@ -57,8 +56,6 @@ extension RequestError: RequestErrorDescription {
         switch self {
         case .generic:
             return "generic"
-        case .cancelled:
-            return "cancelled"
         case .other(let error):
             let description: String
             if let subname = (error as? RequestErrorDescription)?.subname {
