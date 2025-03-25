@@ -124,6 +124,7 @@ private extension SmartRequestManager {
 
             try await waitUntilRunning(parameters.shouldIgnoreStopTheLine)
             data = await request.start()
+            try await waitUntilRunning(parameters.shouldIgnoreStopTheLine)
         } catch {
             data = .init(error: error, session: session)
         }
@@ -144,6 +145,7 @@ private extension SmartRequestManager {
 
         do {
             assert(!Thread.isMainThread)
+            try await waitUntilRunning(parameters.shouldIgnoreStopTheLine)
             let stopTheLineResult = try await checkStopTheLine(data, address: address, parameters: parameters, userInfo: userInfo)
             switch stopTheLineResult {
             case .useOriginal:
