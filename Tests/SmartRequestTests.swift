@@ -1,3 +1,4 @@
+#if swift(>=6.0) && canImport(SwiftSyntax600)
 import Combine
 import Foundation
 import SpryKit
@@ -20,8 +21,8 @@ final class SmartRequestTests: XCTestCase {
 
     lazy var urlRequestable: FakeURLRequestRepresentation = {
         let urlRequestable: FakeURLRequestRepresentation = .init()
-        urlRequestable.stub(.sdk).andReturn(sdkRequest)
-        urlRequestable.stub(.allHTTPHeaderFields).andReturn(["String": "String"])
+        urlRequestable.stub(.sdk_get).andReturn(sdkRequest)
+        urlRequestable.stub(.allHTTPHeaderFields_get).andReturn(["String": "String"])
         return urlRequestable
     }()
 
@@ -92,3 +93,4 @@ final class SmartRequestTests: XCTestCase {
         XCTAssertEqual(subject.debugDescription, "<`No method` request: https://www.apple.com headers: [some: a]>")
     }
 }
+#endif

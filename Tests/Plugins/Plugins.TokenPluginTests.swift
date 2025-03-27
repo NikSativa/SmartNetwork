@@ -1,3 +1,4 @@
+#if swift(>=6.0) && canImport(SwiftSyntax600)
 import Foundation
 import SpryKit
 import XCTest
@@ -57,14 +58,15 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
     case .header(let operation):
         switch operation {
         case .add(let key):
-            request.stub(.addValue).with(value ?? Argument.nil, key).andReturn()
+            request.stub(.addValueWithValue_Forhttpheaderfield).with(value ?? Argument.nil, key).andReturn()
         case .set(let key):
-            request.stub(.setValue).with(value ?? Argument.nil, key).andReturn()
+            request.stub(.setValueWithValue_Forhttpheaderfield).with(value ?? Argument.nil, key).andReturn()
         case .trySet(let key):
-            request.stub(.setValue).with(value ?? Argument.nil, key).andReturn()
+            request.stub(.setValueWithValue_Forhttpheaderfield).with(value ?? Argument.nil, key).andReturn()
         }
     case .queryParam:
-        request.stub(.url).andReturn(url)
+        request.stub(.url_get).andReturn(url)
+        request.stub(.url_set).andReturn()
     }
 
     let subject: Plugins.TokenPlugin = .init(id: "test.token", priority: 0, type: type) {
@@ -81,14 +83,14 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
         switch operation {
         case .add(let key):
             if let value {
-                XCTAssertHaveReceived(request, .addValue, with: value, key, countSpecifier: .exactly(1), file: file, line: line)
+                XCTAssertHaveReceived(request, .addValueWithValue_Forhttpheaderfield, with: value, key, countSpecifier: .exactly(1), file: file, line: line)
             } else {
                 XCTAssertHaveNoRecordedCalls(request, file: file, line: line)
             }
         case .set(let key):
-            XCTAssertHaveReceived(request, .setValue, with: value, key, countSpecifier: .exactly(1), file: file, line: line)
+            XCTAssertHaveReceived(request, .setValueWithValue_Forhttpheaderfield, with: value, key, countSpecifier: .exactly(1), file: file, line: line)
         case .trySet(let key):
-            XCTAssertHaveReceived(request, .setValue, with: value, key, countSpecifier: .exactly(1), file: file, line: line)
+            XCTAssertHaveReceived(request, .setValueWithValue_Forhttpheaderfield, with: value, key, countSpecifier: .exactly(1), file: file, line: line)
         }
     case .queryParam(let operation):
         let newUrl: String
@@ -116,10 +118,11 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
             }
         }
 
-        XCTAssertHaveReceived(request, .url, with: URL.spry.testMake(newUrl), countSpecifier: .exactly(1), file: file, line: line)
+        XCTAssertHaveReceived(request, .url_set, with: URL.spry.testMake(newUrl), countSpecifier: .exactly(1), file: file, line: line)
     }
 
     let data: SmartResponse = .testMake()
     XCTAssertNoThrowError(try subject.verify(parameters: parameters, userInfo: .testMake(), data: data))
     XCTAssertTrue(data.allHeaderFields.isEmpty)
 }
+#endif

@@ -1,3 +1,4 @@
+#if swift(>=6.0) && canImport(SwiftSyntax600)
 import Foundation
 import SmartNetwork
 import SpryKit
@@ -13,10 +14,10 @@ final class PluginsBasicTests: XCTestCase {
         let parameters: Parameters = .testMake()
         let userInfo: UserInfo = .testMake()
         let requestable: FakeURLRequestRepresentation = .init()
-        requestable.stub(.setValue).andReturn()
+        requestable.stub(.setValueWithValue_Forhttpheaderfield).andReturn()
         await subject.prepare(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
         let token = "Basic bXlfdG9rZW5fdXNlcm5hbWU6bXlfdG9rZW5fcGFzc3dvcmQ="
-        XCTAssertHaveReceived(requestable, .setValue, with: token, "Authorization", countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(requestable, .setValueWithValue_Forhttpheaderfield, with: token, "Authorization", countSpecifier: .exactly(1))
         XCTAssertNoThrowError {
             try subject.verify(parameters: parameters, userInfo: userInfo, data: .testMake())
         }
@@ -35,3 +36,4 @@ final class PluginsBasicTests: XCTestCase {
         XCTAssertNil(data.urlError)
     }
 }
+#endif

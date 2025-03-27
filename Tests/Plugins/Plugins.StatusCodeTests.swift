@@ -1,3 +1,4 @@
+#if swift(>=6.0) && canImport(SwiftSyntax600)
 import Foundation
 import SmartNetwork
 import SpryKit
@@ -77,3 +78,4 @@ private extension Plugin {
         try verify(parameters: .testMake(), userInfo: .testMake(), data: data)
     }
 }
+#endif

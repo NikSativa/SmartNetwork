@@ -1,10 +1,10 @@
 import Foundation
 
 public protocol URLRequestRepresentation: SmartSendable, CURLConvertible {
-    var sdk: URLRequest { get }
-    var allHTTPHeaderFields: [String: String]? { get }
+    var sdk: URLRequest { get set }
+    var allHTTPHeaderFields: [String: String]? { get set }
     var url: URL? { get set }
-    var httpBody: Data? { get }
+    var httpBody: Data? { get set }
 
     func value(forHTTPHeaderField field: String) -> String?
     mutating func addValue(_ value: String, forHTTPHeaderField field: String)
@@ -15,7 +15,12 @@ public protocol URLRequestRepresentation: SmartSendable, CURLConvertible {
 
 extension URLRequest: URLRequestRepresentation {
     public var sdk: URLRequest {
-        return self
+        get {
+            return self
+        }
+        set {
+            self = newValue
+        }
     }
 }
 

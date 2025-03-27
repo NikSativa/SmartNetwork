@@ -1,3 +1,4 @@
+#if swift(>=6.0) && canImport(SwiftSyntax600)
 import Foundation
 import SmartNetwork
 import SpryKit
@@ -28,9 +29,9 @@ final class PluginsCurlOSTests: XCTestCase {
             return request
         }()
 
-        requestable.stub(.sdk).andReturn(request)
-        requestable.stub(.allHTTPHeaderFields).andReturn([:])
-        requestable.stub(.url).andReturn(URL.spry.testMake())
+        requestable.stub(.sdk_get).andReturn(request)
+        requestable.stub(.allHTTPHeaderFields_get).andReturn([:])
+        requestable.stub(.url_get).andReturn(URL.spry.testMake())
     }
 
     override func tearDown() {
@@ -54,9 +55,9 @@ final class PluginsCurlOSTests: XCTestCase {
 
         subject.wasCancelled(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
 
-        XCTAssertHaveReceived(requestable, .sdk, countSpecifier: .atLeast(1))
-        XCTAssertHaveReceived(requestable, .allHTTPHeaderFields, countSpecifier: .atLeast(1))
-        XCTAssertHaveNotReceived(requestable, .url)
+        XCTAssertHaveReceived(requestable, .sdk_get, countSpecifier: .atLeast(1))
+        XCTAssertHaveReceived(requestable, .allHTTPHeaderFields_get, countSpecifier: .atLeast(1))
+        XCTAssertHaveNotReceived(requestable, .url_set)
     }
 
     func test_body() async throws {
@@ -74,9 +75,9 @@ final class PluginsCurlOSTests: XCTestCase {
 
         subject.wasCancelled(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
 
-        XCTAssertHaveReceived(requestable, .sdk, countSpecifier: .atLeast(1))
-        XCTAssertHaveReceived(requestable, .allHTTPHeaderFields, countSpecifier: .atLeast(1))
-        XCTAssertHaveNotReceived(requestable, .url)
+        XCTAssertHaveReceived(requestable, .sdk_get, countSpecifier: .atLeast(1))
+        XCTAssertHaveReceived(requestable, .allHTTPHeaderFields_get, countSpecifier: .atLeast(1))
+        XCTAssertHaveNotReceived(requestable, .url_set)
     }
 
     func test_error() async throws {
@@ -95,8 +96,9 @@ final class PluginsCurlOSTests: XCTestCase {
 
         subject.wasCancelled(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
 
-        XCTAssertHaveReceived(requestable, .sdk, countSpecifier: .atLeast(1))
-        XCTAssertHaveReceived(requestable, .allHTTPHeaderFields, countSpecifier: .atLeast(1))
-        XCTAssertHaveNotReceived(requestable, .url)
+        XCTAssertHaveReceived(requestable, .sdk_get, countSpecifier: .atLeast(1))
+        XCTAssertHaveReceived(requestable, .allHTTPHeaderFields_get, countSpecifier: .atLeast(1))
+        XCTAssertHaveNotReceived(requestable, .url_set)
     }
 }
+#endif

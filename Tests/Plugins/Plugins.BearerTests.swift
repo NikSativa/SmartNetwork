@@ -1,3 +1,4 @@
+#if swift(>=6.0) && canImport(SwiftSyntax600)
 import Foundation
 import SmartNetwork
 import SpryKit
@@ -13,12 +14,13 @@ final class PluginsBearerTests: XCTestCase {
         let userInfo: UserInfo = .testMake()
         let session: FakeSmartURLSession = .init()
         let requestable: FakeURLRequestRepresentation = .init()
-        requestable.stub(.setValue).andReturn()
+        requestable.stub(.setValueWithValue_Forhttpheaderfield).andReturn()
         await subject.prepare(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
-        XCTAssertHaveReceived(requestable, .setValue, with: "Bearer my_token_string", "Authorization", countSpecifier: .exactly(1))
+        XCTAssertHaveReceived(requestable, .setValueWithValue_Forhttpheaderfield, with: "Bearer my_token_string", "Authorization", countSpecifier: .exactly(1))
         XCTAssertNoThrowError {
             try subject.verify(parameters: parameters, userInfo: userInfo, data: .testMake())
         }
         XCTAssertTrue(userInfo.isEmpty)
     }
 }
+#endif

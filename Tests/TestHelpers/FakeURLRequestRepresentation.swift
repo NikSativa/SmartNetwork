@@ -1,54 +1,31 @@
+#if swift(>=6.0) && canImport(SwiftSyntax600)
 import Foundation
 import SmartNetwork
 import SpryKit
 
-public final class FakeURLRequestRepresentation: URLRequestRepresentation, Spryable {
-    public enum ClassFunction: String, StringRepresentable {
-        case empty
-    }
+@Spryable
+final class FakeURLRequestRepresentation: URLRequestRepresentation {
+    init() {}
 
-    public enum Function: String, StringRepresentable {
-        case sdk
-        case allHTTPHeaderFields
-        case url
-        case httpBody
-        case addValue = "addValue(_:forHTTPHeaderField:)"
-        case setValue = "setValue(_:forHTTPHeaderField:)"
-        case value = "value(forHTTPHeaderField:)"
-    }
+    @SpryableVar(.get, .set)
+    var sdk: URLRequest
 
-    public init() {}
+    @SpryableVar(.get, .set)
+    var allHTTPHeaderFields: [String: String]?
 
-    public var sdk: URLRequest {
-        return spryify()
-    }
+    @SpryableVar(.get, .set)
+    var url: URL?
 
-    public var allHTTPHeaderFields: [String: String]? {
-        return spryify()
-    }
+    @SpryableVar(.get, .set)
+    var httpBody: Data?
 
-    public var url: URL? {
-        get {
-            return stubbedValue()
-        }
-        set {
-            return recordCall(arguments: newValue)
-        }
-    }
+    @SpryableFunc
+    func addValue(_ value: String, forHTTPHeaderField field: String)
 
-    public var httpBody: Data? {
-        return spryify()
-    }
+    @SpryableFunc
+    func setValue(_ value: String?, forHTTPHeaderField field: String)
 
-    public func addValue(_ value: String, forHTTPHeaderField field: String) {
-        return spryify(arguments: value, field)
-    }
-
-    public func setValue(_ value: String?, forHTTPHeaderField field: String) {
-        return spryify(arguments: value, field)
-    }
-
-    public func value(forHTTPHeaderField field: String) -> String? {
-        return spryify(arguments: field)
-    }
+    @SpryableFunc
+    func value(forHTTPHeaderField field: String) -> String?
 }
+#endif
