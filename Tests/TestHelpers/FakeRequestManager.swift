@@ -7,8 +7,6 @@ import XCTest
 
 @Spryable
 final class FakeRequestManager: RequestManager, @unchecked Sendable {
-    private var response: SmartResponse?
-
     @SpryableFunc
     func request(address: Address, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse
 
