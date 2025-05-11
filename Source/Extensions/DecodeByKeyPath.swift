@@ -1,12 +1,31 @@
 import Foundation
 
 public extension Data {
-    /// Decode data with keyPath and return a Decodable object of the given type.
+    /// Decodes JSON data into a `Decodable` object using a single key path component.
+    ///
+    /// This overload is a convenience method for accessing a nested object using one string key.
+    ///
+    /// - Parameters:
+    ///   - type: The expected `Decodable` type to decode.
+    ///   - keyPath: A string representing the key used to locate the nested object.
+    ///   - decoder: An optional `JSONDecoder` to use. Defaults to `JSONDecoder()`.
+    /// - Returns: The decoded object of the specified type.
+    /// - Throws: An error if decoding fails or the key path is invalid.
     func decode<T: Decodable>(_ type: T.Type, keyPath: String, decoder: JSONDecoder? = nil) throws -> T {
         return try decode(type, keyPath: [keyPath], decoder: decoder)
     }
 
-    /// Decode data with keyPath and return a Decodable object of the given type. If keyPath is empty, it will decode the data directly.
+    /// Decodes JSON data into a `Decodable` object using a sequence of key path components.
+    ///
+    /// This function allows decoding deeply nested objects using a chain of keys. If the key path is empty,
+    /// decoding occurs directly at the root level.
+    ///
+    /// - Parameters:
+    ///   - type: The expected `Decodable` type to decode.
+    ///   - keyPath: An array of strings representing the path to the nested object.
+    ///   - decoder: An optional `JSONDecoder` to use. Defaults to `JSONDecoder()`.
+    /// - Returns: The decoded object of the specified type.
+    /// - Throws: An error if decoding fails or the key path is invalid.
     func decode<T: Decodable>(_ type: T.Type, keyPath: [String], decoder: JSONDecoder? = nil) throws -> T {
         let decoder = decoder ?? JSONDecoder()
         if keyPath.isEmpty {
@@ -18,7 +37,10 @@ public extension Data {
     }
 }
 
-/// Dummy model that handles model extracting logic from a key
+/// A helper model that extracts a nested decodable object using a key path during decoding.
+///
+/// This type is used internally to traverse nested containers using a dynamic key path
+/// and decode the final object of interest.
 private struct ModelResponse<NestedModel: Decodable>: Decodable {
     let nested: NestedModel
 
@@ -50,7 +72,7 @@ private struct ModelResponse<NestedModel: Decodable>: Decodable {
     }
 }
 
-/// Dynamic key
+/// A dynamic coding key used to traverse JSON containers based on string keys.
 private struct Key: CodingKey {
     let stringValue: String
     let intValue: Int?
@@ -66,5 +88,6 @@ private struct Key: CodingKey {
 }
 
 internal extension CodingUserInfoKey {
+    /// A user info key used to pass the decoding key path into the decoder context.
     static let keyPath: Self = .init(rawValue: "SmartNetwork.custom.keyPath")!
 }

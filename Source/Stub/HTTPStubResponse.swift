@@ -1,6 +1,9 @@
 import Foundation
 
-/// A struct representing the response of a stubbed HTTP request.
+/// Represents a stubbed HTTP response used for testing network behavior.
+///
+/// `HTTPStubResponse` allows simulation of server responses with configurable status code, headers, body content,
+/// errors, and optional response delays.
 public struct HTTPStubResponse: SmartSendable {
     /// The status code of the response.
     public let statusCode: StatusCode
@@ -12,7 +15,14 @@ public struct HTTPStubResponse: SmartSendable {
     public let error: Error?
     public let delayInSeconds: TimeInterval?
 
-    /// Initializes an HTTPStubResponse object with the provided parameters.
+    /// Creates a new stubbed response with an explicit status code.
+    ///
+    /// - Parameters:
+    ///   - statusCode: The HTTP status code (e.g. 200, 404).
+    ///   - header: The response headers.
+    ///   - body: The optional body content.
+    ///   - error: An optional error to simulate network failure.
+    ///   - delayInSeconds: An optional delay before delivering the response.
     public init(statusCode: StatusCode = 200,
                 header: HeaderFields = [:],
                 body: HTTPStubBody? = nil,
@@ -25,7 +35,14 @@ public struct HTTPStubResponse: SmartSendable {
         self.delayInSeconds = delayInSeconds
     }
 
-    /// Initializes an HTTPStubResponse object with the provided parameters.
+    /// Creates a new stubbed response using a `StatusCode.Kind`.
+    ///
+    /// - Parameters:
+    ///   - statusCode: The semantic status code (e.g. `.ok`, `.notFound`).
+    ///   - header: The response headers.
+    ///   - body: The optional body content.
+    ///   - error: An optional error to simulate network failure.
+    ///   - delayInSeconds: An optional delay before delivering the response.
     public init(statusCode: StatusCode.Kind,
                 header: HeaderFields = [:],
                 body: HTTPStubBody? = nil,
@@ -39,6 +56,10 @@ public struct HTTPStubResponse: SmartSendable {
         self.delayInSeconds = delayInSeconds
     }
 
+    /// Builds a `URLResponse` object from the stubbed response, using the specified URL.
+    ///
+    /// - Parameter url: The URL to associate with the response.
+    /// - Returns: An `HTTPURLResponse` if possible, or a generic `URLResponse` fallback.
     internal func urlResponse(url: URL) -> URLResponse {
         let response = HTTPURLResponse(url: url,
                                        statusCode: statusCode.code,

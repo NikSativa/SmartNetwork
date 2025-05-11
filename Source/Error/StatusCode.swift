@@ -1,7 +1,9 @@
 import Foundation
 
-/// The StatusCode struct is designed to represent different status codes and their corresponding kinds,
-/// providing flexibility in error handling and status code representations within the system.
+/// Represents an HTTP status code with optional semantic categorization via `Kind`.
+///
+/// Encapsulates both the numeric code and, where applicable, a strongly typed `Kind` value that gives
+/// semantic meaning to the code. This is useful for matching, debugging, and analytics in HTTP workflows.
 public struct StatusCode: Error, Hashable, ExpressibleByIntegerLiteral, SmartSendable {
     public let code: Int
     public let kind: Kind?
@@ -34,6 +36,9 @@ public extension StatusCode {
 // MARK: - RequestErrorDescription
 
 extension StatusCode: RequestErrorDescription {
+    /// A human-readable label combining the semantic kind and numeric code.
+    ///
+    /// Example: `"notFound(404)"`. Useful for error logging or diagnostics.
     public var subname: String {
         return (kind?.name ?? "unknown") + "(\(code))"
     }
@@ -42,8 +47,9 @@ extension StatusCode: RequestErrorDescription {
 // MARK: - StatusCode.Kind
 
 public extension StatusCode {
-    /// This enum is designed to categorize status codes into different kinds,
-    /// facilitating error handling and status code interpretation within the system.
+    /// Defines semantic names for well-known HTTP status codes.
+    ///
+    /// This provides clarity when comparing or categorizing HTTP status codes programmatically.
     enum Kind: Int, Hashable, CaseIterable, SmartSendable {
         // MARK: - Successful responses
 
@@ -59,7 +65,7 @@ public extension StatusCode {
 
         // MARK: - Redirection messages
 
-        case multipleChoises = 300
+        case multipleChoices = 300
         case movedPermanently = 301
         case found = 302
         case seeOther = 303
@@ -75,11 +81,11 @@ public extension StatusCode {
         case notFound = 404
         case methodNotAllowed = 405
         case notAcceptable = 406
-        case proxyAuthenticationRequiered = 407
+        case proxyAuthenticationRequired = 407
         case timeout = 408
         case conflict = 409
         case gone = 410
-        case lenghtRequired = 411
+        case lengthRequired = 411
         case preconditionFailed = 412
         case payloadTooLarge = 413
         case uriTooLong = 414
@@ -103,7 +109,7 @@ public extension StatusCode {
         case gatewayTimeout = 504
         case httpVersionNotSupported = 505
         case variantAlsoNegotiates = 506
-        case insufficiantStorage = 507
+        case insufficientStorage = 507
         case loopDetected = 508
         case notExtended = 510
         case networkAuthenticationRequired = 511
@@ -111,6 +117,7 @@ public extension StatusCode {
 }
 
 public extension StatusCode.Kind {
+    /// Returns the name of the enum case as a string, suitable for logging or display.
     var name: String {
         let name: String? = String(reflecting: self).components(separatedBy: ".").last
         return name.unsafelyUnwrapped

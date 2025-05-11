@@ -1,12 +1,11 @@
 import Foundation
 
 public extension Optional {
-    /// Unwraps the optional value or throws the specified error.
+    /// Attempts to unwrap the optional value or throws a custom error if it is `nil`.
     ///
-    /// - Parameters:
-    ///   - error: The error to throw if the optional value is nil.
-    /// - Returns: The unwrapped value of the optional.
-    /// - Throws: The specified error if the optional value is nil.
+    /// - Parameter error: The error to throw when the value is `nil`.
+    /// - Returns: The unwrapped value.
+    /// - Throws: The provided error if the optional is `nil`.
     func unwrap(orThrow error: Error) throws -> Wrapped {
         switch self {
         case .none:
@@ -16,10 +15,10 @@ public extension Optional {
         }
     }
 
-    /// Unwraps the optional value or throws a default decoding error.
+    /// Attempts to unwrap the optional value or throws a default decoding error if it is `nil`.
     ///
-    /// - Returns: The unwrapped value of the optional.
-    /// - Throws: ``RequestDecodingError``.brokenResponse if the optional value is nil.
+    /// - Returns: The unwrapped value.
+    /// - Throws: `RequestDecodingError.brokenResponse` if the optional is `nil`.
     func unwrap() throws -> Wrapped {
         try unwrap(orThrow: RequestDecodingError.brokenResponse)
     }

@@ -5,6 +5,9 @@ import Threading
 @available(*, deprecated, renamed: "SmartRequest", message: "Use 'SmartRequest' instead.")
 typealias Request = SmartRequest
 
+/// Represents a complete network request lifecycle including execution, cancellation, caching, and plugin handling.
+///
+/// `SmartRequest` encapsulates all logic required to prepare, send, and manage HTTP requests using the SmartNetwork stack.
 internal struct SmartRequest {
     private let sessionAdaptor: SessionAdaptor
     private let address: Address
@@ -114,6 +117,9 @@ internal struct SmartRequest {
 }
 
 extension SmartRequest {
+    /// Executes the request and returns a `SmartResponse`, applying plugins, cache, and cancellation behavior.
+    ///
+    /// - Returns: A completed `SmartResponse` object representing the result of the request.
     func start() async -> SmartResponse {
         do {
             return try await withTaskCancellationHandler {
@@ -141,6 +147,7 @@ extension SmartRequest {
         }
     }
 
+    /// Cancels the in-flight request and notifies plugins of the cancellation event.
     func cancel() {
         sessionAdaptor.stop()
         notifyCancelation()
@@ -165,6 +172,7 @@ extension SmartRequest: CustomStringConvertible {
 
 // MARK: - private
 
+/// Manages low-level URLSession task execution and progress observation for a `SmartRequest`.
 private final class SessionAdaptor {
     private let session: SmartURLSession
     private let progressHandler: ProgressHandler?
@@ -181,6 +189,11 @@ private final class SessionAdaptor {
         stop()
     }
 
+    /// Executes the request and accumulates streamed response data.
+    ///
+    /// - Parameter request: The URL request to send.
+    /// - Returns: A tuple containing the response data and metadata.
+    /// - Throws: An error if the task fails or is cancelled.
     func dataTask(with request: URLRequest) async throws -> (Data, URLResponse) {
         stop()
 
@@ -202,6 +215,7 @@ private final class SessionAdaptor {
         return (data, response)
     }
 
+    /// Cancels the running task and clears its observer.
     func stop() {
         if task?.state == .running {
             task?.cancel()
@@ -212,6 +226,9 @@ private final class SessionAdaptor {
 }
 
 private extension SmartRequest {
+    /// Builds a debug-friendly description of the request.
+    ///
+    /// Includes method, URL, and headers (if present).
     func makeDescription() -> String {
         let url = try? address.url()
         let text = url?.absoluteString ?? "broken url"
@@ -221,6 +238,10 @@ private extension SmartRequest {
 }
 
 internal extension Progress {
+    /// Subscribes to progress updates and invokes the given handler on fraction completion changes.
+    ///
+    /// - Parameter progressHandler: Closure to be executed on progress updates.
+    /// - Returns: A token to retain the observation.
     func observe(_ progressHandler: @escaping ProgressHandler) -> AnyObject {
         return observe(\.fractionCompleted, changeHandler: { progress, _ in
             progressHandler(progress)

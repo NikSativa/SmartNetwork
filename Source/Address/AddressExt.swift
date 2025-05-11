@@ -16,34 +16,53 @@ public extension Address {
         }
     }
 
-    /// add path component
+    /// Appends a single path component to the URL.
     ///
-    ///     a.append("pathComponent")
-    ///     https://some.com  ->  https://some.com/pathComponent
+    /// Example:
+    /// ```swift
+    /// a.append("pathComponent")
+    /// // https://some.com -> https://some.com/pathComponent
+    /// ```
+    /// - Parameter pathComponent: The path segment to add.
+    /// - Returns: A new `Address` instance with the appended path.
+    /// - Throws: `RequestEncodingError` if the URL cannot be formed.
     func append(_ pathComponent: String) throws -> Self {
         return try Address(detailed + pathComponent,
                            shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
                            shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
     }
 
-    /// add path components `[pathComponent1,pathComponent2]`
+    /// Appends multiple path components to the URL.
     ///
-    ///     a.append(["pathComponent1", "pathComponent2"])
-    ///
-    ///     https://some.com  ->  https://some.com/pathComponent1/pathComponent2
+    /// Example:
+    /// ```swift
+    /// a.append(["pathComponent1", "pathComponent2"])
+    /// // https://some.com -> https://some.com/pathComponent1/pathComponent2
+    /// ```
+    /// - Parameter pathComponents: The path segments to add.
+    /// - Returns: A new `Address` instance with all components appended.
+    /// - Throws: `RequestEncodingError` if the URL cannot be formed.
     func append(_ pathComponents: [String]) throws -> Self {
         return try self + pathComponents
     }
 
-    /// add query items
+    /// Appends query items to the URL.
     ///
-    ///     a.append(["item1": "1", "item2": 2])
-    ///
-    ///     https://some.com  ->  https://some.com?item1=1&item2=2
+    /// Example:
+    /// ```swift
+    /// a.append(["item1": "1", "item2": 2])
+    /// // https://some.com -> https://some.com?item1=1&item2=2
+    /// ```
+    /// - Parameter queryItems: The query parameters to append.
+    /// - Returns: A new `Address` instance with appended query items.
+    /// - Throws: `RequestEncodingError` if the URL cannot be formed.
     func append(_ queryItems: QueryItems) throws -> Self {
         return try self + queryItems
     }
 
+    /// Combines the `Address` with `QueryItems` and returns a new `Address`.
+    ///
+    /// - Throws: `RequestEncodingError` if the resulting URL is invalid.
     static func +(lhs: Self, rhs: QueryItems) throws -> Self {
         let details = try lhs.detailed + rhs
         return .init(details,
@@ -51,6 +70,9 @@ public extension Address {
                      shouldRemoveSlashesForEmptyScheme: lhs.shouldRemoveSlashesForEmptyScheme)
     }
 
+    /// Combines the `Address` with `[String]` and returns a new `Address`.
+    ///
+    /// - Throws: `RequestEncodingError` if the resulting URL is invalid.
     static func +(lhs: Self, rhs: [String]) throws -> Self {
         let details = try lhs.detailed + rhs
         return .init(details,
@@ -58,6 +80,9 @@ public extension Address {
                      shouldRemoveSlashesForEmptyScheme: lhs.shouldRemoveSlashesForEmptyScheme)
     }
 
+    /// Combines the `Address` with `String` and returns a new `Address`.
+    ///
+    /// - Throws: `RequestEncodingError` if the resulting URL is invalid.
     static func +(lhs: Self, rhs: String) throws -> Self {
         let details = try lhs.detailed + rhs
         return .init(details,

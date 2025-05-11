@@ -1,11 +1,13 @@
 import Foundation
 
-/// An enumeration of actions that can be taken when a stop-the-line is encountered.
+/// Represents control flow decisions when a stop-the-line checkpoint is triggered in the request pipeline.
+///
+/// Used to indicate how the system should proceed—halt execution, continue with the response, or retry the request.
 public enum StopTheLineAction: Hashable, SmartSendable {
-    /// Stop the execution flow.
+    /// Halts the request processing pipeline at the current checkpoint.
     case stopTheLine
-    /// Pass over response and continue the execution flow.
+    /// Continues processing using the current response, bypassing the checkpoint.
     case passOver
-    /// Retry the request.
+    /// Restarts the request flow from the beginning.
     case retry
 }

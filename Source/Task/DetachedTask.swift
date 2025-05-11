@@ -2,27 +2,35 @@ import Combine
 import Foundation
 import Threading
 
-/// ``DetachedTask`` is a Swift protocol designed to manage tasks related to requests efficiently.
-/// It encapsulates the execution and cancellation actions associated with a task, providing a convenient way to handle these operations within the context of request management.
-/// The protocol extends the ``Cancellable`` protocol, which provides the ability to cancel the task.
-/// The protocol also provides methods to start the task immediately or schedule it to start in a specific queue.
+/// A protocol representing a cancellable asynchronous task with flexible lifecycle control.
 ///
-/// - Important: ``DetachedTask`` is designed to be detached from the request, which means request will not be canceled when the task is deallocated.
-/// - Note: Don't forget that ``AnyCancellable`` is cancelling the task on deinitialization.
+/// `DetachedTask` encapsulates execution and cancellation behavior for tasks tied to request lifecycles.
+/// It extends `Cancellable` and adds support for immediate or deferred execution, providing control over when
+/// and how a task is started. Unlike `AnyCancellable`, it supports detachment to avoid automatic cancellation
+/// on deallocation.
+///
+/// - Important: When using `DetachedTask`, the associated request will not be automatically cancelled when the task is deallocated.
+/// - Note: This differs from `AnyCancellable`, which cancels the task upon deinitialization. Use `DetachedTask` when you need manual control over task lifecycle.
 public protocol DetachedTask: Cancellable, CustomDebugStringConvertible, CustomStringConvertible, SmartSendable {
-    /// The user information associated with the task.
+    /// Metadata storage associated with the task.
     ///
-    /// - Note: you can use the ``.smartTaskRequestAddressKey`` key to determine which request the task belongs to.
+    /// Use this to store custom context like identifiers, retry counts, or diagnostic values.
+    /// You can also access `.smartTaskRequestAddressKey` to determine the associated request.
     var userInfo: UserInfo { get }
 
-    /// Start the task immediately
+    /// Starts the task immediately.
     func start()
 
-    /// Schedule the task to start in the specified queue
+    /// Schedules the task to start asynchronously on the specified queue.
+    ///
+    /// - Parameter queue: The queue on which to execute the task.
+    /// - Returns: The current task instance.
     @discardableResult
     func deferredStart(in queue: Queueable) -> Self
 
-    /// Start the task in the `RequestSettings.defferedStartQueue`
+    /// Schedules the task to start on the default queue defined in `RequestSettings.defferedStartQueue`.
+    ///
+    /// - Returns: The current task instance.
     @discardableResult
     func deferredStart() -> Self
 }

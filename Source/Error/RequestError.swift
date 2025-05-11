@@ -1,23 +1,29 @@
 import Foundation
 
-/// RequestError is an essential component for handling and
-/// categorizing errors that may arise during network requests within the system.
+/// A unified error type representing common failures during network operations.
+///
+/// `RequestError` standardizes various failure cases such as encoding, decoding,
+/// status code mismatches, and low-level connection issues. It helps streamline
+/// error inspection and categorization within the SmartNetwork system.
 public indirect enum RequestError: Error {
-    /// A generic error not specified further.
-    /// Only for your purposes. StartNetwork does't throw this error.
+    /// A generic fallback error not used internally by SmartNetwork.
+    /// Intended for client-defined or testing use only.
     case generic
-    /// Wraps another error within it.
+    /// Wraps any external error that doesn't match predefined categories.
     case other(Error)
-    /// Represents errors related to network connection issues, using URLError
+    /// Represents a network-level connection error using `URLError`.
     case connection(URLError)
-    /// Indicates errors that occur during request encoding, using RequestEncodingError
+    /// Indicates a failure during request body encoding.
     case encoding(RequestEncodingError)
-    /// Indicates errors that occur during response decoding, using RequestDecodingError
+    /// Indicates a failure during response decoding.
     case decoding(RequestDecodingError)
-    /// Represents errors related to HTTP status codes, using StatusCode
+    /// Represents an HTTP error based on a failed or unexpected status code.
     case statusCode(StatusCode)
 
-    /// Initializer that can convert a general Swift.Error to a specific RequestError case based on its type
+    /// Initializes a `RequestError` by mapping from a general `Error`.
+    ///
+    /// If the input error matches known types (`URLError`, `DecodingError`, etc.),
+    /// it is automatically wrapped in the appropriate `RequestError` case.
     public init(_ error: Swift.Error) {
         switch error {
         case RequestError.other(let newError):
@@ -43,7 +49,7 @@ public indirect enum RequestError: Error {
 }
 
 public extension Error {
-    /// Converts the error to a RequestError case based on its type
+    /// Converts any `Error` into a standardized `RequestError`.
     var requestError: RequestError {
         return .init(self)
     }
@@ -52,6 +58,9 @@ public extension Error {
 // MARK: - RequestError + RequestErrorDescription
 
 extension RequestError: RequestErrorDescription {
+    /// A structured, descriptive identifier for the error case and its associated value.
+    ///
+    /// Used in logging and diagnostics to disambiguate failure sources.
     public var subname: String {
         switch self {
         case .generic:

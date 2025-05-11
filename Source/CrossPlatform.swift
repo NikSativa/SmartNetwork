@@ -4,12 +4,22 @@ import Threading
 #if os(iOS) || os(tvOS) || os(watchOS) || supportsVisionOS
 import UIKit
 
-/// A typealias representing an image.
+/// Provides cross-platform typealiases and image utilities compatible with iOS, macOS, watchOS, tvOS, and visionOS.
+///
+/// This module abstracts platform-specific image APIs into a unified `PlatformImage` structure, allowing consistent
+/// creation and manipulation of images regardless of the underlying Apple platform.
+///
+/// Represents a platform-agnostic image type (`UIImage` on iOS, `NSImage` on macOS).
 public typealias SmartImage = UIImage
 #elseif os(macOS)
 import Cocoa
 
-/// A typealias representing an image.
+/// Provides cross-platform typealiases and image utilities compatible with iOS, macOS, watchOS, tvOS, and visionOS.
+///
+/// This module abstracts platform-specific image APIs into a unified `PlatformImage` structure, allowing consistent
+/// creation and manipulation of images regardless of the underlying Apple platform.
+///
+/// Represents a platform-agnostic image type (`UIImage` on iOS, `NSImage` on macOS).
 public typealias SmartImage = NSImage
 #else
 #error("unsupported os")
@@ -47,8 +57,9 @@ private enum Screen {
 
 #elseif supportsVisionOS
 public enum Screen {
-    // visionOS doesn't have a screen scale, so we'll just use 2x for Tests.
-    // override it on your own risk.
+    // Returns the display scale factor for rendering images.
+    //
+    // visionOS doesn't expose a screen scale, so a fallback (e.g., 2.0) can be used in tests or set manually.
     #if swift(>=6.0)
     @MainActor
     public static var scale: CGFloat?
@@ -58,6 +69,9 @@ public enum Screen {
 }
 #endif
 
+/// A platform-independent image wrapper that unifies image handling across Apple platforms.
+///
+/// Supports initialization from system symbols or raw image data and provides data conversion utilities like PNG or JPEG encoding.
 public struct PlatformImage {
     public let sdk: SmartImage
 
@@ -157,6 +171,7 @@ private extension Data {
 }
 
 private extension NSImage {
+    /// Returns PNG-encoded image data for the `NSImage` if possible.
     func pngData() -> Data? {
         return tiffRepresentation?.bitmap?.png
     }

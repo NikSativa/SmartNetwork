@@ -5,36 +5,56 @@ import Threading
 public typealias RequestSettings = SmartNetworkSettings
 
 #if swift(>=6.0)
-/// Smart Network Settings contains default values for anything
+/// Centralized configuration for default networking behavior used by SmartNetwork.
+///
+/// `SmartNetworkSettings` defines shared defaults such as session behavior, request formatting, and cURL representation
+/// preferences. These values apply globally unless explicitly overridden at the request level.
 public enum SmartNetworkSettings: Sendable {
-    /// Shared session for all requests which you can override for individual requests in ``Parameters``. Default is `URLSession.shared`
+    /// The default URL session used for all requests unless overridden in individual parameters.
+    /// Defaults to `URLSession.shared`.
     public nonisolated(unsafe) static var sharedSession: URLSession = .shared
 
-    /// Default queue for responses
+    /// The default queue on which response callbacks are delivered. Defaults to the main queue.
     public nonisolated(unsafe) static var defaultCompletionQueue: DelayedQueue = .async(Queue.main)
 
-    /// Default queue for `SmartTasking.defferedStart()` command - always async
-    public nonisolated(unsafe) static var defferedStartQueue: Queueable = Queue.main
+    /// The default queue used to defer request startup execution. Always runs asynchronously on the main queue.
+    public nonisolated(unsafe) static var deferredStartQueue: Queueable = Queue.main
 
-    /// URLComponents is require scheme and generates url like 'https://some.com/end?param=value'
-    /// this parameter will add '/' after domain or andpoint 'https://some.com/end/?param=value'
+    /// Appends a trailing slash to the URL endpoint if missing when constructing URLs using `URLComponents`.
+    ///
+    /// This is helpful for consistency in request URLs such as converting `https://host.com/endpoint` to
+    /// `https://host.com/endpoint/` before adding query parameters.
     public nonisolated(unsafe) static var shouldAddSlashAfterEndpoint: Bool = false
 
-    /// URLComponents is require scheme and generates url like '//some.com/end/?param=value'
-    /// this parameter will remove '//' from the begining of new URL
-    /// - change this setting on your own risk. I always recommend using the "Address" with the correct "Scheme"
+    /// Removes leading slashes (`//`) when constructing URLs with an empty scheme.
+    ///
+    /// Use with caution. It's recommended to always specify a valid URL scheme to avoid malformed URLs.
     public nonisolated(unsafe) static var shouldRemoveSlashesForEmptyScheme: Bool = false
 
-    /// Default timeout for every request (in seconds)
+    /// The default timeout interval for all network requests, in seconds.
     public nonisolated(unsafe) static var timeoutInterval: TimeInterval = 30
 
-    /// If you want to use cURL representation with '$' at the beginning of the line, you can set this parameter to 'true'
+    /// Adds a `$` symbol at the beginning of generated `cURL` commands, useful for shell demonstration output.
     public nonisolated(unsafe) static var curlStartsWithDollar: Bool = false
 
-    /// If you want to use cURL representation with '| json\_pp' in the end of the line, you can set this parameter to 'true'
+    /// Generated `cURL` commands for pretty-printing JSON output in compatible shells.
+    ///
+    /// This improves readability of JSON responses when pasting cURL commands into terminal environments.
     public nonisolated(unsafe) static var curlPrettyPrinted: Bool = false
 
-    /// Disallowed headers for cURL representation. Default is ["Accept-Encoding"]. You can add your own headers here to exclude them from cURL representation.
+    /// Enables pretty-printing of JSON output in generated `cURL` commands using `json_pp`.
+    ///
+    /// When enabled, the `cURL` output will append `| json_pp`, improving readability of JSON responses in terminal environments.
+    public nonisolated(unsafe) static var curlAddJSON_PP: Bool = false
+
+    /// Adds JSON-specific headers to generated `cURL` commands.
+    ///
+    /// When enabled, appends `-H "Accept: application/json"` and `-H "Content-Type: application/json"` to ensure correct server handling of JSON payloads.
+    public nonisolated(unsafe) static var curlAddJSONHeaders: Bool = false
+
+    /// A set of headers to exclude from generated `cURL` commands.
+    ///
+    /// These are typically added automatically by the networking stack or not useful for reproduction.
     public nonisolated(unsafe) static var curlDisallowedHeaders: Set<String> = [
         "Accept-Encoding",
         "Connection",
@@ -43,36 +63,56 @@ public enum SmartNetworkSettings: Sendable {
     ]
 }
 #else
-/// Smart Network Settings contains default values for anything
+/// Centralized configuration for default networking behavior used by SmartNetwork.
+///
+/// `SmartNetworkSettings` defines shared defaults such as session behavior, request formatting, and cURL representation
+/// preferences. These values apply globally unless explicitly overridden at the request level.
 public enum SmartNetworkSettings {
-    /// Shared session for all requests which you can override for individual requests in ``Parameters``. Default is `URLSession.shared`
+    /// The default URL session used for all requests unless overridden in individual parameters.
+    /// Defaults to `URLSession.shared`.
     public static var sharedSession: URLSession = .shared
 
-    /// Default queue for responses
+    /// The default queue on which response callbacks are delivered. Defaults to the main queue.
     public static var defaultCompletionQueue: DelayedQueue = .async(Queue.main)
 
-    /// Default queue for `SmartTasking.defferedStart()` command - always async
-    public static var defferedStartQueue: Queueable = Queue.main
+    /// The default queue used to defer request startup execution. Always runs asynchronously on the main queue.
+    public static var deferredStartQueue: Queueable = Queue.main
 
-    /// URLComponents is require scheme and generates url like 'https://some.com/end?param=value'
-    /// this parameter will add '/' after domain or andpoint 'https://some.com/end/?param=value'
+    /// Appends a trailing slash to the URL endpoint if missing when constructing URLs using `URLComponents`.
+    ///
+    /// This is helpful for consistency in request URLs such as converting `https://host.com/endpoint` to
+    /// `https://host.com/endpoint/` before adding query parameters.
     public static var shouldAddSlashAfterEndpoint: Bool = false
 
-    /// URLComponents is require scheme and generates url like '//some.com/end/?param=value'
-    /// this parameter will remove '//' from the begining of new URL
-    /// - change this setting on your own risk. I always recommend using the "Address" with the correct "Scheme"
+    /// Removes leading slashes (`//`) when constructing URLs with an empty scheme.
+    ///
+    /// Use with caution. It's recommended to always specify a valid URL scheme to avoid malformed URLs.
     public static var shouldRemoveSlashesForEmptyScheme: Bool = false
 
-    /// Default timeout for every request (in seconds)
+    /// The default timeout interval for all network requests, in seconds.
     public static var timeoutInterval: TimeInterval = 30
 
-    /// If you want to use cURL representation with '$' at the beginning of the line, you can set this parameter to 'true'
+    /// Adds a `$` symbol at the beginning of generated `cURL` commands, useful for shell demonstration output.
     public static var curlStartsWithDollar: Bool = false
 
-    /// If you want to use cURL representation with '| json\_pp' in the end of the line, you can set this parameter to 'true'
+    /// Generated `cURL` commands for pretty-printing JSON output in compatible shells.
+    ///
+    /// This improves readability of JSON responses when pasting cURL commands into terminal environments.
     public static var curlPrettyPrinted: Bool = false
 
-    /// Disallowed headers for cURL representation. Default is ["Accept-Encoding"]. You can add your own headers here to exclude them from cURL representation.
+    /// Enables pretty-printing of JSON output in generated `cURL` commands using `json_pp`.
+    ///
+    /// When enabled, the `cURL` output will append `| json_pp`, improving readability of JSON responses in terminal environments.
+    public static var curlAddJSON_PP: Bool = false
+
+    /// Adds JSON-specific headers to generated `cURL` commands.
+    ///
+    /// When enabled, appends `-H "Accept: application/json"` and `-H "Content-Type: application/json"` to ensure correct server handling of JSON payloads.
+    public static var curlAddJSONHeaders: Bool = false
+
+    /// A set of headers to exclude from generated `cURL` commands.
+    ///
+    /// These are typically added automatically by the networking stack or not useful for reproduction.
     public static var curlDisallowedHeaders: Set<String> = [
         "Accept-Encoding",
         "Connection",

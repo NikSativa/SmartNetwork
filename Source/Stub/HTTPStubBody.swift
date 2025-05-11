@@ -1,30 +1,37 @@
 import Foundation
 
-/// Body for stubbing a request with a HTTPStupServer.
+/// Represents the body content used in a stubbed HTTP response.
+///
+/// `HTTPStubBody` defines various ways to construct response bodies for test purposes, including raw data,
+/// file-based content, encoded models, or images. This is used in conjunction with `HTTPStubServer` to simulate
+/// different network response scenarios.
 public enum HTTPStubBody {
-    /// Empty body.
+    /// Represents a response with no body.
     case empty
-    /// File body in specified bundle.
+    /// Loads the body content from a file included in a specific bundle.
     case file(name: String, bundle: Bundle)
-    /// File body in specified path.
+    /// Loads the body content from a file at a specified filesystem path.
     case filePath(path: String)
-    /// Data body.
+    /// Uses the provided `Data` as the body content.
     case data(Data)
-    /// Encodable body with specified JSONEncoder.
+    /// Encodes an `Encodable` object using the given `JSONEncoder`.
     case encodable(any Encodable, with: JSONEncoder)
-    /// Image body
+    /// Encodes an image using the specified image format (e.g., PNG, JPEG).
     case image(Body.ImageFormat)
 
+    /// Convenience method to encode an `Encodable` object using a default `JSONEncoder`.
     /// Encodable body.
     public static func encodable(_ obj: any Encodable) -> Self {
         return .encodable(obj, with: .init())
     }
 
+    /// Convenience method to encode an `Encodable` object using a default `JSONEncoder`.
     /// Encodable body.
     public static func encode(_ obj: any Encodable) -> Self {
         return .encodable(obj, with: .init())
     }
 
+    /// Convenience method to encode an `Encodable` object using the specified `JSONEncoder`.
     /// Encodable body.
     public static func encode(_ obj: any Encodable, with encoder: JSONEncoder) -> Self {
         return .encodable(obj, with: encoder)

@@ -2,7 +2,9 @@ import Combine
 import Foundation
 import Threading
 
-/// Strategy for requests without stubs
+/// Defines fallback behavior for handling network requests that do not match any registered stubs.
+///
+/// Used by `HTTPStubServer` when no condition is satisfied for an incoming request.
 public enum HTTPStubStrategy {
     /// Pass request through to the network
     case transparent
@@ -14,9 +16,11 @@ public enum HTTPStubStrategy {
     case custom(CustomStrategy)
 }
 
-/// HTTPStubServer serves as a component responsible for managing stubs and handling network requests for stub responses.
-/// Provides methods like add to add a new stub with specific conditions, response details, status code, headers, body, error, and delay.
-/// Overall, HTTPStubServer plays a crucial role in managing stubs and facilitating the testing of network request handling in the system.
+/// A stub server that intercepts and optionally mocks network requests for testing.
+///
+/// `HTTPStubServer` maintains a list of registered conditions and responses used to simulate network behavior.
+/// It supports Combine-based task management, configurable default strategies for unmatched requests, and
+/// integration with `URLProtocol` for intercepting system-level networking.
 public final class HTTPStubServer {
     #if swift(>=6.0)
     /// Default queue for stubs
@@ -42,8 +46,15 @@ public final class HTTPStubServer {
         assert(registered, "HTTPStubProtocol registration failed")
     }
 
-    /// - Parameter path: only for the convenience of the Combine interface
-    /// e.g. *stubTask.store(in: &bag)*
+    /// Registers a new stubbed response for requests matching the given condition.
+    ///
+    /// This version supports integration with Combine by returning a `SmartTasking` that can be stored or cancelled.
+    /// Cancelling the returned task removes the stub.
+    ///
+    /// - Parameters:
+    ///   - condition: A closure or matcher used to test incoming requests.
+    ///   - response: The stubbed response to return for matching requests.
+    /// - Returns: A `SmartTasking` instance for cancellation.
     public func add(condition: HTTPStubCondition,
                     response: HTTPStubResponse) -> SmartTasking {
         return $responses.mutate { responses in
@@ -69,6 +80,7 @@ public final class HTTPStubServer {
         }
     }
 
+    /// Resolves a stubbed response for a given request, falling back to the configured strategy if none match.
     internal func response(for request: URLRequestRepresentation) -> HTTPStubResponse? {
         return $responses.mutate { responses in
             let found = responses.first { info in
@@ -92,6 +104,9 @@ public final class HTTPStubServer {
 }
 
 public extension HTTPStubServer {
+    /// Convenience method to register a stub response using individual components.
+    ///
+    /// Builds an `HTTPStubResponse` from status code, headers, body, error, and delay before registering.
     func add(condition: HTTPStubCondition,
              statusCode: StatusCode = 200,
              header: HeaderFields = [:],
@@ -110,6 +125,7 @@ public extension HTTPStubServer {
 // MARK: - HTTPStubServer.Info
 
 private extension HTTPStubServer {
+    /// Internal structure representing a stub entry including its ID, condition, and response.
     struct Info {
         let id: String
         let condition: HTTPStubCondition

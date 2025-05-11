@@ -1,7 +1,9 @@
 import Foundation
 
-/// A structure representing a key path used to access nested values in data structures.
-/// Supports fallback values and error handling.
+/// Represents a key path for accessing nested values during decoding.
+///
+/// `DecodableKeyPath` enables structured access to deeply nested values within a JSON object or other
+/// keyed containers. Supports fallback behavior for missing or invalid paths.
 ///
 /// Example Usage:
 /// ```swift
@@ -10,50 +12,38 @@ import Foundation
 /// let singleKeyPath: DecodableKeyPath<DTO> = "user"
 /// ```
 public struct DecodableKeyPath<T> {
-    /// Enumeration defining fallback behavior for inaccessible or missing key paths.
+    /// Defines fallback behavior when decoding a value at the specified key path fails.
     public enum Fallback {
-        /// Specifies an error to be thrown or logged when the key path is invalid.
+        /// Throws or logs the provided error when the key path is invalid or inaccessible.
         case error(Error)
-        /// Provides a default value of type `T`.
+        /// Returns a predefined default value when decoding fails.
         case value(T)
     }
 
-    /// An array of strings representing the sequence of keys in the key path.
+    /// The sequence of keys used to navigate nested containers.
     public let path: [String]
-    /// An optional fallback value to handle errors or provide default values.
+    /// Optional fallback behavior applied when decoding at the path fails.
     public let fallback: Fallback?
 
-    /// Initializes a `DecodableKeyPath` instance.
-    ///
-    /// Example Usage:
-    /// ```swift
-    /// let keyPath: DecodableKeyPath<DTO> = ["user", "profile", "name"]
-    /// ```
+    /// Initializes a `DecodableKeyPath` from an array of key components.
     ///
     /// - Parameters:
     ///   - path: An array of strings representing the key path.
-    ///   - fallback: An optional `Fallback` value for error handling or default values.
+    ///   - fallback: An optional fallback behavior to apply on decoding failure.
     ///
-    /// - Note: Throws `RequestDecodingError`.brokenKeyPath(...) error if fallback is not specified.
+    /// - Note: If no fallback is provided, decoding failure will result in a `RequestDecodingError.brokenKeyPath(...)`.
     public init(path: [String] = [], fallback: Fallback? = nil) {
         self.path = path
         self.fallback = fallback
     }
 
-    /// Initializes a `DecodableKeyPath` instance.
-    /// Path components should be separated by forward slashes (/) or be a single key of path.
-    ///
-    /// Example Usage:
-    /// ```swift
-    /// let keyPath: DecodableKeyPath<DTO> = "user/profile/name"
-    /// let singleKeyPath: DecodableKeyPath<DTO> = "user"
-    /// ```
+    /// Initializes a `DecodableKeyPath` from a slash-delimited string.
     ///
     /// - Parameters:
-    ///   - path: An array of strings representing the key path.
-    ///   - fallback: An optional `Fallback` value for error handling or default values.
+    ///   - path: A forward-slash-separated string representing the key path (e.g., "user/profile/name").
+    ///   - fallback: An optional fallback behavior to apply on decoding failure.
     ///
-    /// - Note: Throws `RequestDecodingError`.brokenKeyPath(...) error if fallback is not specified.
+    /// - Note: If no fallback is provided, decoding failure will result in a `RequestDecodingError.brokenKeyPath(...)`.
     public init(path: String, fallback: Fallback? = nil) {
         let path = path.components(separatedBy: "/").filter {
             return !$0.isEmpty

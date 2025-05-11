@@ -1,24 +1,31 @@
 import Foundation
 
-/// The enum also provides a RequestErrorDescription extension to handle and provide descriptions for each case within the RequestError system.
+/// Represents common encoding errors encountered during request construction.
+///
+/// `RequestEncodingError` categorizes failures that occur while encoding URLs, addresses,
+/// hosts, images, or JSON for a request. These errors are integrated into the `RequestError` system
+/// via the `RequestErrorDescription` protocol.
 public enum RequestEncodingError: Error {
-    /// Wraps another EncodingError within it.
+    /// Wraps a generic `EncodingError`, preserving the underlying cause.
     case other(EncodingError)
-    /// Represents errors related to a broken or malformed URL.
+    /// Indicates a malformed or invalid URL that failed during encoding.
     case brokenURL
-    /// Indicates errors related to a broken address in the request.
+    /// Indicates that the request address could not be correctly encoded.
     case brokenAddress
-    /// Indicates errors related to a broken host in the request.
+    /// Indicates failure to encode the host component of the URL.
     case brokenHost
-    /// Indicates errors related to encoding an image.
+    /// Indicates a failure to encode an image as part of the request body.
     case cantEncodeImage
-    /// Indicates errors related to invalid JSON.
+    /// Indicates a failure to produce valid JSON during encoding.
     case invalidJSON
 }
 
 // MARK: - RequestErrorDescription
 
 extension RequestEncodingError: RequestErrorDescription {
+    /// A short descriptive identifier for logging and diagnostics.
+    ///
+    /// Used by the `RequestErrorDescription` protocol to generate meaningful output for each error case.
     public var subname: String {
         switch self {
         case .other(let encodingError):

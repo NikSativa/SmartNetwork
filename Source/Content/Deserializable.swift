@@ -1,16 +1,18 @@
 import Foundation
 
-/// A protocol for deserialising of response data.
+/// A protocol for decoding response data into a strongly typed object.
+///
+/// Conforming types define how to transform raw `SmartResponse` data into a specific output type.
+/// This protocol enables flexible decoding logic for different data formats or content structures.
 public protocol Deserializable<Object> {
-    /// An associated type `Object` to specify the decoded object type.
+    /// The type that the response data will be decoded into.
     associatedtype Object
 
-    /// Implement this method to customize decoding behavior for specific data types.
+    /// Decodes the given response into a strongly typed result.
     ///
     /// - Parameters:
-    ///   - data: The data to be decoded.
-    ///   - decoder: *(if needed)* An autoclosure providing a ``JSONDecoder`` instance for decoding that was specified in ``Parameters``.
-    ///
-    /// - Returns: A Result object containing the decoded object or an error.
+    ///   - data: The response to decode, including body data and metadata.
+    ///   - parameters: The request parameters, which may contain decoding preferences.
+    /// - Returns: A `Result` containing either the decoded object or an error.
     func decode(with data: SmartResponse, parameters: Parameters) -> Result<Object, Error>
 }

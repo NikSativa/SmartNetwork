@@ -5,23 +5,24 @@ import os
 @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 public extension Plugins {
     #if swift(>=6.0)
-    /// A type that maps the ID and URL to a loggable strings.
+    /// A closure that maps a request ID and URL to a loggable string.
     ///
-    /// - Important: If returning `nil`, it will not be logged.
+    /// If `nil` is returned, the log entry will be skipped.
     typealias CurlOSMapper = @Sendable (_ id: String, _ url: String) -> String?
 
-    /// Logger generator
+    /// A closure that generates a custom `os.Logger` instance for a given logging data context.
     typealias LoggerGenerator = @Sendable (_ data: Plugins.Log.DataCollection) -> os.Logger
     #else
-    /// A type that maps the ID and URL to a loggable strings.
+    /// A closure that maps a request ID and URL to a loggable string.
     ///
-    /// - Important: If returning `nil`, it will not be logged.
+    /// If `nil` is returned, the log entry will be skipped.
     typealias CurlOSMapper = (_ id: String, _ url: String) -> String?
 
-    /// Logger generator
+    /// A closure that generates a custom `os.Logger` instance for a given logging data context.
     typealias LoggerGenerator = (_ data: Plugins.Log.DataCollection) -> os.Logger
     #endif
 
+    /// A strategy for selecting the `os.Logger` used to emit log messages.
     enum LoggerProvider: SmartSendable {
         case `default`
         case custom(os.Logger)
@@ -29,15 +30,18 @@ public extension Plugins {
         case identifiable
     }
 
-    /// A plugin that logs the request in the `curl` format.
-    /// - Parameters:
-    ///  - priority: The priority of the plugin.
-    ///  - logger: The `os.Logger` which will make logging, if you want override destination. The default value is `nil`.
-    ///  - shouldPrintBody: A flag that indicates whether the response body should be printed to the console or to the logger. The default value is `false`.
-    ///  - options: The options for the `Curl` plugin. The default value is `.all`.
-    ///  - mapID: A closure that maps the ID and URL to a loggable string. The default value is `nil`.
+    /// Creates a plugin that logs network requests using Apple's unified logging system (`os.Logger`).
     ///
-    /// - Note: Sometimes the response body can be very large, so it is better to print it to the console for debugging purposes.
+    /// The plugin supports structured logging of request/response data, including optional body printing.
+    ///
+    /// - Parameters:
+    ///   - priority: The execution priority of the plugin. Default is `.curlOS`.
+    ///   - logger: The logger configuration used to determine the logging destination.
+    ///   - shouldPrintBody: Whether to print the response body to the console in debug builds.
+    ///   - options: A set of logging options for controlling which parts of the request are logged.
+    ///   - mapID: An optional closure for converting request identifiers and URLs into a log-friendly string.
+    ///
+    /// - Note: In debug builds, large response bodies may be printed to the console instead of being logged.
     static func LogOS(priority: PluginPriority = .curlOS,
                       logger: LoggerProvider = .default,
                       shouldPrintBody: Bool = false,
@@ -83,6 +87,10 @@ public extension Plugins {
     }
 }
 
+/// Attempts to extract a `rawValue` string from an arbitrary value using reflection.
+///
+/// - Parameter value: The value to inspect.
+/// - Returns: A string if a `rawValue` is found; otherwise, `nil`.
 internal func rawable(_ value: Any) -> String? {
     let mirror = Mirror(reflecting: value)
     return mirror.children.first(where: { $0.label == "rawValue" })?.value as? String
@@ -92,6 +100,10 @@ internal func rawable(_ value: Any) -> String? {
 public extension Plugins.LoggerProvider {
     private static let defaultLogger: os.Logger = .init(subsystem: Bundle.main.bundleIdentifier ?? "SmartNetwork", category: "Plugins.LogOS")
 
+    /// Resolves the appropriate `os.Logger` instance based on the current logger configuration.
+    ///
+    /// - Parameter data: The logging context data for the request.
+    /// - Returns: An `os.Logger` for emitting log entries.
     func get(_ data: Plugins.Log.DataCollection) -> os.Logger {
         switch self {
         case .default:
@@ -109,6 +121,12 @@ public extension Plugins.LoggerProvider {
     }
 }
 
+/// Constructs a unique log identity string based on a request UUID and URL path.
+///
+/// - Parameters:
+///   - uuid: A request identifier.
+///   - url: The request URL.
+/// - Returns: A string combining the parsed path and a shortened UUID prefix.
 @inline(__always)
 public func PluginsLogIdentity(_ uuid: String, _ url: String) -> String {
     let path: String = ((try? AddressDetails(string: url))?.path).map { $0.isEmpty ? "< root >" : $0.joined(separator: "/") } ?? "< unknown path >"

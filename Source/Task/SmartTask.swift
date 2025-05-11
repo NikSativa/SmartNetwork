@@ -2,29 +2,12 @@ import Combine
 import Foundation
 import Threading
 
-/// ``SmartTask`` is a Swift protocol designed to manage tasks related to requests efficiently.
-/// It encapsulates the execution and cancellation actions associated with a request,
-/// providing a convenient way to handle these operations within the context of request management.
+/// A lightweight task manager for request execution and cancellation, conforming to `SmartTasking` and `DetachedTask`.
 ///
-/// - Important: ``SmartTask`` is designed to be attached to the request, which means request will be canceled when the task is deallocated.
-/// - Note: Don't forget that ``AnyCancellable`` is cancelling the task on deinitialization.
+/// `SmartTask` encapsulates task lifecycle operations, including immediate or deferred execution and automatic or manual cancellation.
+/// By default, it mimics `AnyCancellable` by canceling the task when deallocated—unless explicitly detached via `detach()`.
 ///
-/// ```swift
-/// // Creating a SmartTasking instance with a run action
-/// let task = SmartTask(runAction: {
-///    print("Task is running")
-/// }, cancelAction: {
-///    print("Task is canceled")
-/// })
-/// task.start()
-///
-/// // Using `detached()` to prevent cancellation on deinitialization
-/// SmartTask(runAction: {
-///    print("Another task is running")
-/// })
-/// .detach() // detach the task from the request
-/// .deferredStart() // or `start()`
-/// ```
+/// Use this class to manage request-bound asynchronous work in a way that is composable, testable, and memory-safe.
 public final class SmartTask {
     @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     private var cancelAction: (() -> Void)?
@@ -35,13 +18,16 @@ public final class SmartTask {
     @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
     private var shouldCancelOnDeinit: Bool = true
 
+    /// Arbitrary metadata associated with the task.
+    ///
+    /// Can be used to store request identifiers, retry counts, or custom diagnostics.
     public lazy var userInfo: UserInfo = .init()
 
-    /// Initializes a SmartTask instance with the provided run and cancel actions.
+    /// Creates a new `SmartTask` with the specified execution and cancellation behavior.
     ///
-    /// * Parameters:
-    ///   - runAction: The action to be executed when the task runs.
-    ///   - cancelAction: The action to be performed when the task is canceled (optional).
+    /// - Parameters:
+    ///   - runAction: The closure to execute when the task is started.
+    ///   - cancelAction: An optional closure to execute if the task is cancelled.
     public init(runAction: @escaping () -> Void,
                 cancelAction: (() -> Void)? = nil) {
         self.runAction = runAction
@@ -58,6 +44,10 @@ public final class SmartTask {
 // MARK: - SmartTasking
 
 extension SmartTask: SmartTasking {
+    /// Detaches the task from its cancellation-on-deinit behavior.
+    ///
+    /// Calling this prevents the task from being automatically cancelled when deallocated.
+    /// Returns the instance for chaining.
     @discardableResult
     public func detach() -> DetachedTask {
         shouldCancelOnDeinit = false
@@ -68,6 +58,7 @@ extension SmartTask: SmartTasking {
 // MARK: - DetachedTask
 
 extension SmartTask: DetachedTask {
+    /// Executes the task immediately on the current thread, if not already started.
     public func start() {
         let runAction = $runAction.mutate { runAction in
             let action = runAction
@@ -77,6 +68,10 @@ extension SmartTask: DetachedTask {
         runAction?()
     }
 
+    /// Schedules the task to execute on the provided queue.
+    ///
+    /// - Parameter queue: The execution queue.
+    /// - Returns: The current task instance.
     @discardableResult
     public func deferredStart(in queue: Queueable) -> Self {
         queue.async { [self] in
@@ -85,9 +80,12 @@ extension SmartTask: DetachedTask {
         return self
     }
 
+    /// Schedules the task to execute on the default deferred queue defined in `SmartNetworkSettings`.
+    ///
+    /// - Returns: The current task instance.
     @discardableResult
     public func deferredStart() -> Self {
-        SmartNetworkSettings.defferedStartQueue.async { [self] in
+        SmartNetworkSettings.deferredStartQueue.async { [self] in
             start()
         }
         return self
@@ -97,6 +95,7 @@ extension SmartTask: DetachedTask {
 // MARK: - Cancellable
 
 extension SmartTask: Cancellable {
+    /// Cancels the task and clears associated actions to release resources.
     public func cancel() {
         runAction = nil
 

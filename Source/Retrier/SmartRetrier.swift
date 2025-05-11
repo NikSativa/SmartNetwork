@@ -1,25 +1,33 @@
 import Foundation
 
-/// Outcome of determination whether retry is necessary.
+/// Represents the outcome of retry evaluation after a network request.
+///
+/// Used by `SmartRetrier` to indicate whether and how a failed request should be retried.
 public enum RetryResult: SmartSendable {
-    /// Retry should be attempted immediately.
+    /// Retry should be attempted immediately without delay.
     case retry
-    /// Retry should be attempted after the associated `TimeInterval`.
+    /// Retry should be attempted after the specified delay.
+    ///
+    /// - Parameter: The number of seconds to wait before retrying.
     case retryWithDelay(TimeInterval)
-    /// Do not retry.
+    /// No retry should be attempted; the request is considered complete.
     case doNotRetry
-    /// Do not retry due to the associated `Error`.
+    /// No retry should be attempted due to an error, which should be propagated.
+    ///
+    /// - Parameter: The error that triggered the decision to stop retrying.
     case doNotRetryWithError(any Error)
 }
 
-/// Protocol that defines the mechanism of request interception and response validation.
+/// Defines a retry strategy for failed or invalid network requests.
 ///
-/// See detailed scheme how network works:
-/// ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/SmartNetwork.jpg)
+/// `SmartRetrier` allows network clients to inspect the response and context of a failed request and decide whether to retry it,
+/// delay the retry, or propagate the failure. Integrates with `SmartRequestManager`.
+///
+/// See diagram: ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/SmartNetwork.jpg)
 public protocol SmartRetrier: SmartSendable {
-    /// Determines whether to retry the network request or finish based on the result and user info.
+    /// Determines whether the request should be retried based on the response and associated metadata.
     ///
-    ///  - Important: The ``UserInfo`` contains the number of attempts made to perform a network request.
+    /// Uses the response, request configuration, and user info—including retry count—to decide the next step.
     ///
     /// - Parameters:
     ///   - result: The ``SmartResponse`` of the network request.

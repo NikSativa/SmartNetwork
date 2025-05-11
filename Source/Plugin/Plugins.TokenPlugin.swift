@@ -2,21 +2,21 @@ import Foundation
 
 public extension Plugins {
     #if swift(>=6.0)
-    /// The token provider.
+    /// A closure that asynchronously provides a token string to be added to the request.
     typealias TokenProvider = @Sendable () async -> String?
     #else
-    /// The token provider.
+    /// A closure that asynchronously provides a token string to be added to the request.
     typealias TokenProvider = () async -> String?
     #endif
 
-    /// The type of the plugin where the token will be applied.
+    /// Defines where and how a token should be applied to an outgoing request.
     enum TokenType: SmartSendable {
         public enum Operation: SmartSendable {
-            /// Set token to the request. The previous value will be rewriten.
+            /// Sets the token unconditionally, replacing any existing value.
             case set(String)
-            /// Set token to the request only if no value for key.
+            /// Sets the token only if the header or query parameter is not already present.
             case trySet(String)
-            /// Add token to the request. The new value will be added to the existing one.
+            /// Appends the token to an existing header or query parameter.
             case add(String)
         }
 
@@ -26,9 +26,10 @@ public extension Plugins {
         case queryParam(Operation)
     }
 
-    /// A plugin that adds a token to the request.
-    /// The token can be added to the header or as a query parameter.
-    /// The token will be added to the request before it is sent.
+    /// A plugin that attaches a token to outgoing requests.
+    ///
+    /// Tokens can be injected into HTTP headers or query parameters using various strategies.
+    /// The plugin fetches the token asynchronously and modifies the request before it is sent.
     final class TokenPlugin: Plugin {
         public let id: ID
         public let priority: PluginPriority
@@ -46,6 +47,7 @@ public extension Plugins {
             self.type = type
         }
 
+        /// Modifies the request by attaching a token to its header or query string, based on the configured type and operation.
         public func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async {
             let value = await tokenProvider()
 

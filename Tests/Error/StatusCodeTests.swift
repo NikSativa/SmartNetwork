@@ -11,19 +11,19 @@ final class StatusCodeTests: XCTestCase {
         }
 
         XCTAssertEqual(StatusCode(.accepted).kind, .accepted)
-        XCTAssertEqual(StatusCode(.lenghtRequired).kind, .lenghtRequired)
-        XCTAssertEqual(StatusCode(.lenghtRequired).code, 411)
+        XCTAssertEqual(StatusCode(.lengthRequired).kind, .lengthRequired)
+        XCTAssertEqual(StatusCode(.lengthRequired).code, 411)
     }
 
     func test_name() {
-        XCTAssertEqual(StatusCode.Kind.lenghtRequired.name, "lenghtRequired")
+        XCTAssertEqual(StatusCode.Kind.lengthRequired.name, "lengthRequired")
     }
 
     func test_description() {
         XCTAssertEqual(StatusCode(code: 555).description, "StatusCode.unknown(555)")
         XCTAssertEqual(StatusCode(code: 545).debugDescription, "StatusCode.unknown(545)")
 
-        XCTAssertEqual(StatusCode(.lenghtRequired).description, "StatusCode.lenghtRequired(411)")
+        XCTAssertEqual(StatusCode(.lengthRequired).description, "StatusCode.lengthRequired(411)")
         XCTAssertEqual(StatusCode(.alreadyReported).debugDescription, "StatusCode.alreadyReported(208)")
     }
 

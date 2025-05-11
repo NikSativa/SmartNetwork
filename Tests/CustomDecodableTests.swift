@@ -22,7 +22,7 @@ final class DeserializableTests: XCTestCase {
         XCTAssertNil(try custom(decoder).get())
         XCTAssertEqual(try custom(decoder, body: bodyData).get(), bodyData)
         XCTAssertEqual(try custom(decoder, body: emptyData).get(), emptyData)
-        XCTAssertThrowsError(try custom(decoder, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
+        XCTAssertThrowsError(try custom(decoder, error: StatusCode(.lengthRequired)).get(), StatusCode(.lengthRequired))
         XCTAssertThrowsError(try custom(decoder, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
         XCTAssertThrowsError(try custom(decoder, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
     }
@@ -34,7 +34,7 @@ final class DeserializableTests: XCTestCase {
         }
         XCTAssertNil(try custom(decoder).get())
         XCTAssertEqual(try custom(decoder, body: bodyData).get(), .init(id: 1))
-        XCTAssertThrowsError(try custom(decoder, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
+        XCTAssertThrowsError(try custom(decoder, error: StatusCode(.lengthRequired)).get(), StatusCode(.lengthRequired))
         XCTAssertThrowsError(try custom(decoder, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
         XCTAssertThrowsError(try custom(decoder, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
         XCTAssertThrowsError(try custom(decoder, body: bodyBrokenData).get()) { _ in }
@@ -47,7 +47,7 @@ final class DeserializableTests: XCTestCase {
         }
         XCTAssertNil(try custom(decoder).get())
         XCTAssertEqual(try custom(decoder, body: bodyData).get(), 1)
-        XCTAssertThrowsError(try custom(decoder, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
+        XCTAssertThrowsError(try custom(decoder, error: StatusCode(.lengthRequired)).get(), StatusCode(.lengthRequired))
         XCTAssertThrowsError(try custom(decoder, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
         XCTAssertThrowsError(try custom(decoder, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
         XCTAssertThrowsError(try custom(decoder, body: bodyBrokenData).get()) { _ in }
@@ -67,7 +67,7 @@ final class DeserializableTests: XCTestCase {
         XCTAssertEqual(try custom(decoder, body: imageData).get()?.testData().unwrap(), imageData)
         #endif
         XCTAssertNil(try custom(decoder).get())
-        XCTAssertThrowsError(try custom(decoder, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
+        XCTAssertThrowsError(try custom(decoder, error: StatusCode(.lengthRequired)).get(), StatusCode(.lengthRequired))
         XCTAssertThrowsError(try custom(decoder, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
         XCTAssertThrowsError(try custom(decoder, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
         XCTAssertThrowsError(try custom(decoder, body: bodyBrokenData).get()) { _ in }
@@ -80,7 +80,7 @@ final class DeserializableTests: XCTestCase {
         }
         XCTAssertNil(try custom(decoder).get())
         XCTAssertEqual(try custom(decoder, body: bodyData).get() as! [String: Int], ["id": 1])
-        XCTAssertThrowsError(try custom(decoder, error: StatusCode(.lenghtRequired)).get(), StatusCode(.lenghtRequired))
+        XCTAssertThrowsError(try custom(decoder, error: StatusCode(.lengthRequired)).get(), StatusCode(.lengthRequired))
         XCTAssertThrowsError(try custom(decoder, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
         XCTAssertThrowsError(try custom(decoder, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)
         XCTAssertThrowsError(try custom(decoder, body: bodyBrokenData).get()) { _ in }
@@ -95,7 +95,7 @@ final class DeserializableTests: XCTestCase {
         XCTAssertTrue(custom(decoder, error: RequestDecodingError.nilResponse).isSuccess == true)
 
         XCTAssertTrue(custom(decoder, error: StatusCode(.multiStatus)).isSuccess == false)
-        XCTAssertTrue(custom(decoder, error: StatusCode(.lenghtRequired)).isSuccess == false)
+        XCTAssertTrue(custom(decoder, error: StatusCode(.lengthRequired)).isSuccess == false)
         XCTAssertTrue(custom(decoder, error: RequestDecodingError.brokenResponse).isSuccess == false)
     }
 

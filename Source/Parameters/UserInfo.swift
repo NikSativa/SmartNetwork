@@ -1,9 +1,14 @@
 import Foundation
 import Threading
 
-/// A type that stores arbitrary user information. It is a reference type to avoid 'copy on write'. It is not thread safe.
+/// A container for storing key-value metadata shared throughout the request lifecycle.
+///
+/// `UserInfo` is a reference type to avoid unnecessary copying and supports dynamic metadata lookup using `UserInfoKey`.
+/// It is not thread-safe by default, but atomic operations are used for internal synchronization.
 public final class UserInfo {
-    /// The values stored in the user info.
+    /// The internal dictionary used to store user-provided key-value pairs.
+    ///
+    /// Access is synchronized using an atomic property wrapper to ensure safe concurrent reads and writes.
     @Atomic(mutex: .unfair, read: .sync, write: .sync)
     public private(set) var values: [UserInfoKey: Any] = [:]
 
@@ -12,14 +17,16 @@ public final class UserInfo {
         self.values = values
     }
 
-    /// Indicates whether the user info is empty.
+    /// Returns `true` if no values are stored in the `UserInfo`.
     public var isEmpty: Bool {
         return $values.mutate { values in
             return values.isEmpty
         }
     }
 
-    /// Accesses the value associated with the given key for reading and writing.
+    /// Accesses the value associated with the given key.
+    ///
+    /// - Note: Use the generic type `T` to cast the value to the expected type.
     public subscript<T>(_ key: UserInfoKey) -> T? {
         get {
             return $values.mutate { values in
@@ -33,7 +40,12 @@ public final class UserInfo {
         }
     }
 
-    /// Accesses the value associated with the given key.
+    /// Retrieves the value associated with the given key, cast to a specific type.
+    ///
+    /// - Parameters:
+    ///   - type: The expected type of the value (inferred by default).
+    ///   - key: The key associated with the value.
+    /// - Returns: The typed value, or `nil` if no matching value is found.
     public func value<T>(of _: T.Type = T.self, for key: UserInfoKey) -> T? {
         return $values.mutate { values in
             return values[key] as? T
@@ -66,6 +78,7 @@ extension UserInfo: CustomStringConvertible {
 }
 
 private extension Dictionary {
+    /// Attempts to convert the dictionary into a pretty-printed JSON string for debugging purposes.
     func prettyPrinted() -> String? {
         if isEmpty {
             return "{}"
@@ -89,6 +102,12 @@ private extension Dictionary {
 }
 
 @inline(__always)
+/// Converts a value to a string using a JSON encoder or string protocol conformance.
+///
+/// - Parameters:
+///   - value: The value to convert.
+///   - encoder: A `JSONEncoder` used for encoding `Encodable` values.
+/// - Returns: A string representation of the value.
 private func convert(_ value: Any, encoder: @autoclosure () -> JSONEncoder) -> String {
     let strValue: String
     if let str = value as? String {

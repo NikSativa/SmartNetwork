@@ -2,14 +2,20 @@ import Foundation
 
 // MARK: - Body.MultipartForm
 
+/// Encodes multipart/form-data for use in HTTP requests with file uploads.
+///
+/// This class builds a multipart body using configurable boundaries and headers, allowing
+/// the inclusion of multiple parts (e.g., files or fields) with appropriate MIME types and metadata.
 public extension Body {
     final class MultipartForm {
-        /// The `Content-Type` header value containing the boundary used to generate the `multipart/form-data`.
+        /// The `Content-Type` header string used for multipart/form-data requests.
+        ///
+        /// Includes the dynamically generated boundary.
         var contentType: String {
             return "multipart/form-data; boundary=\(boundary.rawValue)"
         }
 
-        /// The content length of all body parts used to generate the `multipart/form-data` not including the boundaries.
+        /// The total size in bytes of the body content, excluding boundary markers.
         var contentLength: UInt64 {
             return bodyParts.reduce(0) { $0 + UInt64($1.data.count) }
         }
@@ -34,29 +40,22 @@ public extension Body {
             }
         }
 
-        /// Creates a body part from the data and appends it to the instance.
-        ///
-        /// The body part data will be encoded using the following format:
-        ///
-        /// - `Content-Disposition: form-data; name=#{name}; filename=#{filename}` (HTTP Header)
-        /// - `Content-Type: #{mimeType}` (HTTP Header)
-        /// - Encoded file data
-        /// - Multipart form boundary
+        /// Appends a new part to the multipart body.
         ///
         /// - Parameters:
-        ///   - data:     `Data` to encoding into the instance.
-        ///   - name:     Name to associate with the `Data` in the `Content-Disposition` HTTP header.
-        ///   - fileName: Filename to associate with the `Data` in the `Content-Disposition` HTTP header.
-        ///   - mimeType: MIME type to associate with the data in the `Content-Type` HTTP header.
+        ///   - data: The raw data to include.
+        ///   - name: The form field name.
+        ///   - fileName: An optional file name to include in the header.
+        ///   - mimeType: An optional MIME type to include in the header.
         public func append(_ data: Data, withName name: Name, fileName: String? = nil, mimeType: MimeType? = nil) {
             let headers = contentHeaders(withName: name, fileName: fileName, mimeType: mimeType)
             let bodyPart = BodyPart(headers: headers, data: data)
             bodyParts.append(bodyPart)
         }
 
-        /// Encodes all appended body parts into a single `Data` value.
+        /// Combines all appended parts into a single `Data` object with boundaries and headers.
         ///
-        /// - Returns: The encoded `Data`, if encoding is successful.
+        /// - Returns: Encoded multipart form body as `Data`.
         internal func encode() -> Data {
             var encoded = Data()
 
@@ -140,6 +139,7 @@ extension Body.MultipartForm: Equatable {
 // MARK: - Body.MultipartForm.Boundary
 
 public extension Body.MultipartForm {
+    /// Represents the boundary string used to separate parts in multipart data.
     struct Boundary: RawRepresentable, ExpressibleByStringLiteral, Hashable {
         public var rawValue: String
 
@@ -182,6 +182,7 @@ public extension Body.MultipartForm {
         }
     }
 
+    /// Represents the name of a multipart form field.
     struct Name: RawRepresentable, ExpressibleByStringLiteral, Hashable {
         public var rawValue: String
 
@@ -198,6 +199,7 @@ public extension Body.MultipartForm {
         public static let image: Self = "image"
     }
 
+    /// Represents a MIME type for a form part (e.g., image/jpeg).
     struct MimeType: RawRepresentable, ExpressibleByStringLiteral, Hashable {
         public var rawValue: String
 
@@ -214,6 +216,7 @@ public extension Body.MultipartForm {
         public static let png: Self = "image/png"
     }
 
+    /// Represents a single unit of data to include in a multipart form upload.
     struct DataContent: Hashable {
         public let name: Name
         public let fileName: String?

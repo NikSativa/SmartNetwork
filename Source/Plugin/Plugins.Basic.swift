@@ -1,11 +1,10 @@
 import Foundation
 
 public extension Plugins {
-    /// The basic authentication token.
+    /// Represents credentials used for HTTP Basic Authentication.
     ///
-    /// The `username` and `password` will be:
-    /// - encoded to Base64
-    /// - added to the header with the key `Authorization`.
+    /// When applied, the `username` and `password` are Base64-encoded and added to the request’s `Authorization` header
+    /// in the format: `Authorization: Basic <base64(username:password)>`.
     struct AuthBasicToken {
         /// The username.
         public let username: String
@@ -20,14 +19,21 @@ public extension Plugins {
     }
 
     #if swift(>=6.0)
-    /// The basic authentication token provider.
+    /// A closure that provides an `AuthBasicToken` instance or `nil` if credentials are unavailable.
     typealias AuthBasicTokenProvider = @Sendable () -> AuthBasicToken?
     #else
-    /// The basic authentication token provider.
+    /// A closure that provides an `AuthBasicToken` instance or `nil` if credentials are unavailable.
     typealias AuthBasicTokenProvider = () -> AuthBasicToken?
     #endif
 
-    /// The plugin that adds the basic authentication token to the header.
+    /// Creates a plugin that adds HTTP Basic Authentication to outgoing requests.
+    ///
+    /// Uses the provided token provider to generate a Base64-encoded `Authorization` header.
+    ///
+    /// - Parameters:
+    ///   - overrideExisting: If `true`, replaces any existing `Authorization` header.
+    ///   - tokenProvider: A closure that returns `AuthBasicToken` credentials.
+    /// - Returns: A `Plugin` that adds a `Basic` auth header to the request.
     static func AuthBasic(overrideExisting: Bool = true, with tokenProvider: @escaping AuthBasicTokenProvider) -> Plugin {
         return TokenPlugin(id: "AuthBasic",
                            priority: .authBasic,

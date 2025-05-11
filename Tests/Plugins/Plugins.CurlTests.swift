@@ -53,9 +53,9 @@ final class PluginsCurlTests: XCTestCase {
         await subject.prepare(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
         subject.willSend(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
         XCTAssertEqual(actual.value.toTestable(), [
+            .phase: "willSend",
             .url: "http://www.some.com",
-            .curl: "$ curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\" | json_pp",
-            .phase: "willSend"
+            .curl: "$ curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\n  \\\"id\\\" : 2\n}\" \\\n\t\"https://www.some.com?some=value\""
         ])
         actual.value = .init()
         subject.didReceive(parameters: parameters, userInfo: userInfo, request: requestable, data: .testMake())
@@ -66,11 +66,10 @@ final class PluginsCurlTests: XCTestCase {
 
         XCTAssertEqual(data.url, .spry.testMake())
         XCTAssertNil(data.urlError)
-
         XCTAssertEqual(actual.value.toTestable(), [
             .phase: "didFinish",
             .url: "http://www.some.com",
-            .curl: "$ curl -v \\\n\t-X GET \\\n\t\"http://www.some.com\" | json_pp"
+            .curl: "$ curl -v \\\n\t-X GET \\\n\t\"http://www.some.com\""
         ])
 
         subject.wasCancelled(parameters: parameters, userInfo: userInfo, request: requestable, session: session)

@@ -1,10 +1,10 @@
 import Foundation
 
 public extension UserInfo {
-    /// The number of attempts made to perform a network request.
+    /// Tracks the number of attempts made for a given network request.
     ///
-    /// - Note: The value is incremented by 1 each time a network request is made.
-    /// - Important: The countdown starts from 0.
+    /// This counter is incremented with each retry initiated by the network layer. The initial value is 0.
+    /// Used primarily for logging, retry logic, or custom backoff strategies.
     internal(set) var attemptsCount: Int {
         get {
             return self[.smartNetworkRequestAttemptsCount] ?? 0
@@ -14,9 +14,10 @@ public extension UserInfo {
         }
     }
 
-    /// The unique identifier of the UserInfo. You can overrides the value if needed on your own risk.
+    /// A unique identifier associated with the request context.
     ///
-    /// - Important: The value is set when the task is created and available only for tasks created by `SmartRequestManager`.
+    /// This value is assigned automatically when a task is created by `SmartRequestManager`.
+    /// It can be manually overridden if necessary, though doing so may lead to conflicts in request tracking.
     var uniqueID: UUID {
         get {
             if let cached: UUID = self[.smartUniqueIDKey] {
@@ -32,9 +33,10 @@ public extension UserInfo {
         }
     }
 
-    /// The key used to determine which request the task belongs to. You can't override or set the value.
+    /// Identifies the logical address or route associated with the network task.
     ///
-    /// - Important: The value is set when the task is created and available only for tasks created by `SmartRequestManager`.
+    /// This value is assigned by `SmartRequestManager` and should not be manually modified.
+    /// It helps associate the task with its originating request configuration.
     internal(set) var smartRequestAddress: Address? {
         get {
             return self[.smartTaskRequestAddressKey]

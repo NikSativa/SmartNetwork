@@ -6,24 +6,30 @@ public typealias QueryItems = SmartItems<String?>
 /// The header fields of a network request.
 public typealias HeaderFields = SmartItems<String>
 
-/// The ``SmartItem`` struct in Swift represents a key-value pairs collection.
-/// This struct is intended to encapsulate a pair of key and value for constructing and processing key-value pairs effectively within the system.
+/// A collection of key-value pairs represented as an array of `SmartItem` elements.
+///
+/// `SmartItems` is a generic structure used for organizing, accessing, and transforming ordered key-value data.
+/// It is commonly used for headers, query items, and other key-value use cases within SmartNetwork.
 public struct SmartItems<T: Hashable>: Hashable {
-    private var rawValues: [SmartItem<T>]
+    public private(set) var rawValues: [SmartItem<T>]
 }
 
 public extension SmartItems {
-    /// Initializes a new instance with the provided items.
+    /// Creates a new instance from an array of `SmartItem` values.
+    ///
+    /// - Parameter items: An array of key-value pairs.
     init(_ items: [SmartItem<T>]) {
         self.rawValues = items
     }
 
-    /// Initializes a new instance with the provided items.
+    /// Creates a new instance from a dictionary of keys and values.
+    ///
+    /// - Parameter items: A dictionary to convert into an array of `SmartItem` values.
     init(_ items: [String: T]) {
         self.rawValues = items.map(SmartItem.init(key:value:))
     }
 
-    /// Initializes a new instance with the provided items.
+    /// Creates an empty collection of `SmartItem` values.
     init() {
         self.rawValues = []
     }
@@ -38,14 +44,19 @@ public extension SmartItems {
         return rawValues.count
     }
 
-    /// Adds a new element at the end of the array.
+    /// Appends a new key-value pair to the end of the collection.
+    ///
+    /// - Parameters:
+    ///   - key: The key to add.
+    ///   - value: The associated value.
     mutating func append(key: String, value: T) {
         rawValues.append(.init(key: key, value: value))
     }
 
-    /// Sets a new element at the end of the array.
+    /// Inserts or replaces the element with the same key.
     ///
-    /// - Important: If the key already exists, it will be replaced.
+    /// If an item with the given key already exists, it will be removed and replaced by the new one.
+    /// - Parameter item: The key-value pair to insert or update.
     mutating func set(_ item: SmartItem<T>) {
         rawValues = rawValues.filter {
             return $0.key != item.key
@@ -53,9 +64,11 @@ public extension SmartItems {
         rawValues.append(item)
     }
 
-    /// Sets a new element at the end of the array.
+    /// Inserts or replaces the value for a given key.
     ///
-    /// - Important: If the key already exists, it will be replaced.
+    /// - Parameters:
+    ///   - key: The key to insert or update.
+    ///   - value: The value to associate with the key.
     mutating func set(_ key: String, value: T) {
         set(.init(key: key, value: value))
     }
@@ -65,16 +78,20 @@ public extension SmartItems {
         rawValues = []
     }
 
-    /// Removes all elements from the collection with the specified key.
+    /// Removes all elements that match the specified key.
+    ///
+    /// - Parameter key: The key of the elements to remove.
     mutating func removeAll(byKey key: String) {
         rawValues = rawValues.filter {
             return $0.key != key
         }
     }
 
-    /// Subscript to get or set an item by key.
-    /// - Parameter key: The key to search for.
-    /// - Returns: The value of the first element of the sequence that satisfies the given key.
+    /// Accesses the first value associated with the given key.
+    ///
+    /// Assigning `nil` removes all items with the specified key.
+    /// - Parameter key: The key to look up.
+    /// - Returns: The associated value, or `nil` if no match is found.
     subscript(_ key: String) -> T? {
         get {
             return rawValues.first {
@@ -90,13 +107,22 @@ public extension SmartItems {
         }
     }
 
-    /// Filters the elements of the collection.
+    /// Returns a new `SmartItems` instance containing only the elements that satisfy the given predicate.
+    ///
+    /// - Parameter isIncluded: A closure that takes an element and returns a Boolean value indicating
+    ///   whether the element should be included in the returned collection.
+    /// - Returns: A filtered `SmartItems` collection.
     func filter(_ isIncluded: (SmartItem<T>) throws -> Bool) rethrows -> Self {
         let filtered = try rawValues.filter(isIncluded)
         return .init(filtered)
     }
 
-    /// Returns new collection with the elements of both collections.
+    /// Returns a new `SmartItems` collection by concatenating two collections.
+    ///
+    /// - Parameters:
+    ///   - lhs: The first collection.
+    ///   - rhs: The second collection.
+    /// - Returns: A new collection containing elements from both input collections.
     @inline(__always)
     static func +(lhs: Self, rhs: Self) -> Self {
         return .init(lhs.rawValues + rhs.rawValues)
@@ -104,6 +130,7 @@ public extension SmartItems {
 }
 
 internal extension SmartItems where T == String {
+    /// Converts the key-value pairs into a dictionary, merging duplicate keys by joining their values with commas.
     func mapToResponse() -> [String: String]
     where T == String {
         let keysAndValues: [(String, String)] = rawValues.map { ($0.key, $0.value) }
@@ -115,6 +142,7 @@ internal extension SmartItems where T == String {
 }
 
 internal extension SmartItems where T == String? {
+    /// Converts the key-value pairs into a dictionary, joining multiple values and filtering out nils.
     func mapToDescription() -> [String: String?] {
         let keysAndValues: [(String, String?)] = rawValues.map { ($0.key, $0.value) }
         let fields: [String: String?] = .init(keysAndValues) { a, b in

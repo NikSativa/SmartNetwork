@@ -57,11 +57,14 @@ public struct Parameters {
 }
 
 public extension Parameters {
-    /// Generates a URLRequest representation of the Parameters for a given address.
-    /// - Parameters:
-    ///   - address: The ``Address`` to generate the ``URL`` for the request.
-    /// - Returns: A representation of the ``URLRequest`` based on the Parameters.
-    /// - Throws: An error if ``URL`` creation or request building fails.
+    /// Converts the current `Parameters` instance into a `URLRequestRepresentation` for the specified address.
+    ///
+    /// This method constructs a `URLRequest` using the address's URL, headers, HTTP method, body, cache policy,
+    /// and timeout configuration defined in the `Parameters`. It also applies any body encoding logic if present.
+    ///
+    /// - Parameter address: The destination `Address` from which to derive the request URL.
+    /// - Returns: A `URLRequestRepresentation` that reflects the current parameters and address.
+    /// - Throws: An error if the URL cannot be created or if body encoding fails.
     func urlRequest(for address: Address) throws -> URLRequestRepresentation {
         let url = try address.url()
         var request = URLRequest(url: url,

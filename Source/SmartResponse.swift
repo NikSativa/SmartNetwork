@@ -4,8 +4,10 @@ import os
 @available(*, deprecated, renamed: "SmartResponse", message: "Use 'SmartResponse' instead.")
 typealias RequestResult = SmartResponse
 
-/// A class representing the result of a network request.
-/// It contains the original URLRequest, the body data of the response, the URLResponse, and any error that occurred.
+/// Encapsulates the result of a network request, including request metadata, response data, and error information.
+///
+/// `SmartResponse` provides a structured representation of a completed network transaction, including access to
+/// the original request, response headers, HTTP status code, body content, and any associated error.
 public final class SmartResponse {
     /// The original ``URLRequestRepresentation`` made for the request.
     public let request: URLRequestRepresentation?
@@ -39,13 +41,14 @@ public final class SmartResponse {
     /// Lazily computed property to represent the error as a URLError if it exists.
     public lazy var urlError: URLError? = error as? URLError
 
-    /// Initializes a SmartResponse object with the provided parameters.
+    /// Creates a new instance of `SmartResponse`.
     ///
     /// - Parameters:
-    /// - request: The URLRequest made for the request.
-    /// - body: The body data of the response.
-    /// - response: The URLResponse received.
-    /// - error: Any error that occurred during the request.
+    ///   - request: The original request that initiated the transaction.
+    ///   - body: The response body data.
+    ///   - response: The `URLResponse` returned from the server.
+    ///   - error: Any error encountered during the request.
+    ///   - session: The session that executed the request.
     public init(request: URLRequestRepresentation?,
                 body: Data?,
                 response: URLResponse?,
@@ -65,8 +68,10 @@ public final class SmartResponse {
         self.error = error
     }
 
-    /// The `checkCancellation()` function is designed to check for a cancellation error in an asynchronous operation and handle it appropriately.
-    /// If a cancellation error is detected, the function throws an error
+    /// Throws an error if the response indicates the request was cancelled.
+    ///
+    /// This method checks for both `CancellationError` and `URLError.cancelled` cases and throws `CancellationError`
+    /// if either is found.
     internal func checkCancellation() throws {
         if let error = error as? CancellationError {
             throw error
@@ -80,14 +85,15 @@ public final class SmartResponse {
 // MARK: - CURLConvertible
 
 extension SmartResponse: CURLConvertible {
-    /// cURL representation of the instance.
+    /// Generates a `cURL` command string representing the original request.
     ///
-    /// - Returns: The cURL equivalent of the instance.
-    public func cURLDescription() -> String {
+    /// - Parameter prettyPrinted: If `true`, appends `| json_pp` to format JSON output.
+    /// - Returns: A string containing the cURL representation of the original request, or a fallback message if not available.
+    public func cURLDescription(prettyPrinted: Bool = false) -> String {
         guard let sdk = request?.sdk else {
             return "$ curl command could not be created"
         }
-        return cURLDescription(with: session, request: sdk)
+        return cURLDescription(with: session, request: sdk, prettyPrinted: prettyPrinted)
     }
 }
 

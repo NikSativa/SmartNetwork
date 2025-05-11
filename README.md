@@ -17,7 +17,7 @@
   - `Void` — when you don’t expect data back.
   - `Data` — raw binary responses.
   - `Decodable` — your custom models.
-  - `UIImage` — image fetching made easy.
+  - `UIImage` (or `NSImage`) — image fetching made easy.
   - `Any` — raw JSON as dictionaries or arrays.
 - Custom decoding support with the `Deserializable` protocol.
 - Decode deeply nested JSON with `keyPath`.
@@ -29,51 +29,69 @@
 
 ## 🚀 Usage
 
-### Async/Await
+SmartNetwork offers multiple styles for making requests, allowing you to choose what best fits your coding style or project needs.
+
+### 🔹 Async/await
+
+Perform a request using Swift's modern concurrency syntax:
 
 ```swift
 let result = await manager.decodable.request(TestInfo.self, address: address)
 ```
 
-### Closures
+### 🔹 Closure-based
+
+Use completion handlers for backward compatibility or callback-driven workflows:
 
 ```swift
 manager.decodable.request(TestInfo.self, address: address) { result in
-    // Handle result
+    // Handle result here
 }.start()
 ```
 
-### Fluent API
+### 🔹 Fluent chainable API
+
+Construct readable, chainable network calls using SmartNetwork’s fluent API:
 
 ```swift
 let result = await manager.request(address: address).decodeAsync(TestInfo.self)
 ```
 
 ```swift
-manager.request(address: address).decode(TestInfo.self).complete { result in
-    // Handle result
-}.detach().deferredStart()
+manager.request(address: address)
+    .decode(TestInfo.self)
+    .complete { result in
+        // Handle result here
+    }
+    .detach()
+    .deferredStart()
 ```
 
----
-
-## 🧩 Plugin System
-
-SmartNetwork includes a flexible plugin system that lets you hook into and customize request/response behavior.
-
-- `Plugins.StatusCode` – HTTP status code validation.
-- `Plugins.Basic`, `Plugins.Bearer` – Auth strategies out of the box.
-- `Plugins.TokenPlugin` – Modify headers or query parameters.
-- `Plugins.Log`, `Plugins.LogOS` – Curl-style and OS logging.
-- `Plugins.JSONHeaders` – Auto-inject JSON headers.
-- `PluginPriority` – Control the order plugins execute in.
-- `StopTheLine` – Temporarily halt all requests (e.g. to refresh tokens).
+These patterns offer flexibility whether you're building simple calls or need more granular control over the request lifecycle.
 
 ---
 
-## 🔧 Custom Decoding
+## 🧩 Plugin system
 
-Need to decode deeply nested JSON? No problem.
+SmartNetwork includes a modular plugin system that allows you to customize and extend networking behavior without changing core logic. Plugins can be used to modify requests, inspect responses, or enforce specific policies.
+
+Here are some built-in plugins you can use:
+
+- `Plugins.StatusCode` – Validates HTTP status codes and can trigger custom error handling.
+- `Plugins.Basic`, `Plugins.Bearer` – Easily apply Basic or Bearer authentication headers.
+- `Plugins.TokenPlugin` – Inject custom tokens via headers or query parameters.
+- `Plugins.Log`, `Plugins.LogOS` – Output curl-style debug logs or use system logging.
+- `Plugins.JSONHeaders` – Automatically adds `Content-Type` and `Accept` headers for JSON APIs.
+- `PluginPriority` – Define the order in which plugins execute.
+- `StopTheLine` – Temporarily blocks all requests (e.g. during token refresh or maintenance).
+
+You can combine and prioritize plugins to precisely control the behavior of your networking pipeline.
+
+---
+
+## 🔧 Custom decoding
+
+You can define types that include a decoding key path for nested JSON parsing:
 
 ```swift
 protocol KeyPathDecodable {
@@ -96,7 +114,7 @@ SmartNetwork makes it easy to write fast, isolated unit tests with support for s
 
 ---
 
-## 🖼️ Image Loading
+## 🖼️ Image loading
 
 Need to fetch and display images? Pair SmartNetwork with [`SmartImages`](https://github.com/NikSativa/SmartImages) for async image loading support.
 
@@ -120,10 +138,10 @@ To add SmartNetwork to your project via Swift Package Manager:
 .package(url: "https://github.com/NikSativa/SmartNetwork.git", from: "5.0.0")
 ```
 
-Then include `"SmartNetwork"` as a dependency for your target.
+Then, add `"SmartNetwork"` to your target dependencies.
 
 ---
 
 ## 📄 License
 
-SmartNetwork is available under the MIT License.
+`SmartNetwork` is available under the MIT License.

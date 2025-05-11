@@ -1,25 +1,30 @@
 import Foundation
 
-/// A type representing a query item. It is a key-value pair. The value can be `nil`.
-/// Ex. `https://apple.com?key=value`
+/// Represents a key-value pair used in query strings or HTTP headers.
 ///
-/// - Note: If item is representing a http header field, the values can be combined when the key is the same.
-/// Ex. __`key: value1,value2`__
+/// `SmartItem` is a flexible abstraction for encoding URL query parameters or header fields.
+/// It supports values that may be `nil` and handles formatting nuances for different contexts:
 ///
-/// - Note: If item is representing a query item, the key can be represented multiple times when the values are different.
-/// Ex. __`https://apple.com?key=value1&key=value2`__
+/// - When used in a query string: keys may repeat with different values (e.g., `?key=value1&key=value2`).
+/// - When used as HTTP headers: values for the same key may be concatenated (e.g., `key: value1,value2`).
 public struct SmartItem<T: Hashable>: Hashable {
-    /// The key of the query item.
+    /// The key component of the item (e.g., query parameter or header name).
     public let key: String
-    /// The value of the query item.
+    /// The value component of the item. May be optional or representable as a string.
     public let value: T
 
-    /// Initializes a new instance with the provided key and value.
+    /// Initializes a new `SmartItem` with a specified key and value.
+    ///
+    /// - Parameters:
+    ///   - key: The key of the item.
+    ///   - value: The associated value.
     public init(key: String, value: T) {
         self.key = key
         self.value = value
     }
 
+    /// Returns a readable string representation in the format `key: value`,
+    /// unwrapping optional string values for clarity.
     private var myDescription: String {
         var value = "\(value)"
         if value.hasPrefix("Optional(\"") {

@@ -1,13 +1,16 @@
 import Foundation
 
 public extension Plugins {
-    /// A plugin that checks the http status code of the response.
+    /// A plugin that validates HTTP response status codes and throws errors for unexpected values.
+    ///
+    /// This plugin can be configured to ignore specific status codes or bypass validation entirely
+    /// when previous errors exist or the response is non-HTTP.
     final class StatusCode: Plugin {
         #if swift(>=6.0)
-        /// The status code checker.
+        /// A closure that returns `true` if the given status code should be ignored (i.e., not treated as an error).
         public typealias StatusCodeChecker = @Sendable (_ statusCode: Int?) -> Bool
         #else
-        /// The status code checker.
+        /// A closure that returns `true` if the given status code should be ignored (i.e., not treated as an error).
         public typealias StatusCodeChecker = (_ statusCode: Int?) -> Bool
         #endif
 
@@ -15,12 +18,12 @@ public extension Plugins {
         private let isIgnoring: StatusCodeChecker
         private let shouldIgnorePreviousError: Bool
 
-        /// A plugin that checks the status code of the response.
+        /// Creates a `StatusCode` plugin with a custom status code evaluator.
         ///
         /// - Parameters:
-        ///   - priority: the priority of the plugin.
-        ///   - shouldIgnorePreviousError: ignore previous error tht was thrown by another plugin or the network.
-        ///   - isIgnoring: a closure that returns `true` if the status code should be ignored _(not thrown as an error)_.
+        ///   - priority: The plugin's execution priority in the plugin chain.
+        ///   - shouldIgnorePreviousError: If `true`, bypasses status code checks when an earlier error exists.
+        ///   - isIgnoring: A closure that returns `true` for status codes that should be ignored (not treated as an error).
         public init(priority: PluginPriority = .statusCode,
                     shouldIgnorePreviousError: Bool = false,
                     isIgnoring: @escaping StatusCodeChecker) {
@@ -29,12 +32,12 @@ public extension Plugins {
             self.shouldIgnorePreviousError = shouldIgnorePreviousError
         }
 
-        /// A plugin that checks the status code of the response.
+        /// Convenience initializer for common HTTP status code handling.
         ///
         /// - Parameters:
-        ///   - shouldIgnore200th: ignore status code in range `200..<300` and/or ignore `Nil`
-        ///   - shouldIgnoreNil: ignore `nil` status code. It happens when the response is not an HTTP response.
-        ///   - shouldIgnorePreviousError: ignore previous error tht was thrown by another plugin or the network.
+        ///   - shouldIgnore200th: If `true`, ignores any 2xx status code.
+        ///   - shouldIgnoreNil: If `true`, ignores `nil` status codes (e.g., non-HTTP responses).
+        ///   - shouldIgnorePreviousError: If `true`, bypasses this plugin if a previous error is already present.
         public convenience init(priority: PluginPriority = .statusCode,
                                 shouldIgnore200th: Bool = true,
                                 shouldIgnoreNil: Bool = true,
@@ -56,6 +59,9 @@ public extension Plugins {
             }
         }
 
+        /// Verifies the HTTP response status code and throws an error if it should not be ignored.
+        ///
+        /// - Throws: A status code error or `.none` if the response has no status code.
         public func verify(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) throws {
             if !shouldIgnorePreviousError, data.error != nil {
                 return

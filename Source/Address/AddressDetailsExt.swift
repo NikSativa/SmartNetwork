@@ -1,32 +1,46 @@
 import Foundation
 
 public extension AddressDetails {
-    /// add path component
+    /// Appends a single path component to the address.
     ///
-    ///     a.append("pathComponent")
-    ///     https://some.com  ->  https://some.com/pathComponent
+    /// Example:
+    /// ```swift
+    /// let updated = a.append("pathComponent")
+    /// // https://some.com → https://some.com/pathComponent
+    /// ```
+    /// - Parameter pathComponent: A single path segment to append.
+    /// - Returns: A new `AddressDetails` instance with the component appended.
     func append(_ pathComponent: String) -> Self {
         return self + pathComponent
     }
 
-    /// add path components `[pathComponent1,pathComponent2]`
+    /// Appends multiple path components to the address.
     ///
-    ///     a.append(["pathComponent1", "pathComponent2"])
-    ///
-    ///     https://some.com  ->  https://some.com/pathComponent1/pathComponent2
+    /// Example:
+    /// ```swift
+    /// let updated = a.append(["path1", "path2"])
+    /// // https://some.com → https://some.com/path1/path2
+    /// ```
+    /// - Parameter pathComponents: An array of path segments to append.
+    /// - Returns: A new `AddressDetails` instance with the components appended.
     func append(_ pathComponents: [String]) -> Self {
         return self + pathComponents
     }
 
-    /// add query items
+    /// Appends query items to the address.
     ///
-    ///     a.append(["item1": "1", "item2": 2])
-    ///
-    ///     https://some.com  ->  https://some.com?item1=1&item2=2
+    /// Example:
+    /// ```swift
+    /// let updated = a.append(["key": "value"])
+    /// // https://some.com → https://some.com?key=value
+    /// ```
+    /// - Parameter queryItems: A dictionary of query parameters to append.
+    /// - Returns: A new `AddressDetails` instance with the query items merged.
     func append(_ queryItems: QueryItems) -> Self {
         return self + queryItems
     }
 
+    /// Returns a new `AddressDetails` instance with the given query items merged into the existing ones.
     static func +(lhs: Self, rhs: QueryItems) -> Self {
         return .init(scheme: lhs.scheme,
                      host: lhs.host,
@@ -36,6 +50,7 @@ public extension AddressDetails {
                      fragment: lhs.fragment)
     }
 
+    /// Returns a new `AddressDetails` instance with the given path components appended to the current path.
     static func +(lhs: Self, rhs: [String]) -> Self {
         return .init(scheme: lhs.scheme,
                      host: lhs.host,
@@ -45,6 +60,7 @@ public extension AddressDetails {
                      fragment: lhs.fragment)
     }
 
+    /// Returns a new `AddressDetails` instance with the given path component appended to the current path.
     static func +(lhs: Self, rhs: String) -> Self {
         return .init(scheme: lhs.scheme,
                      host: lhs.host,

@@ -2,10 +2,17 @@ import Foundation
 
 // MARK: - Plugins.JSONHeaders
 
+/// A plugin that automatically sets common HTTP headers for JSON-based requests.
+///
+/// This includes headers such as `Accept`, `Accept-Encoding`, `Connection`, and `Host`,
+/// if they are not already present in the request.
 public extension Plugins {
     struct JSONHeaders {
         public let priority: PluginPriority
 
+        /// Creates a new instance of the JSONHeaders plugin with an optional priority.
+        ///
+        /// - Parameter priority: The plugin's execution priority.
         public init(priority: PluginPriority = .jsonHeaders) {
             self.priority = priority
         }
@@ -15,6 +22,9 @@ public extension Plugins {
 // MARK: - Plugins.JSONHeaders + Plugin
 
 extension Plugins.JSONHeaders: Plugin {
+    /// Ensures standard HTTP headers are present in the request before sending.
+    ///
+    /// Sets the `Host`, `Accept`, `Accept-Encoding`, and `Connection` headers if not already specified.
     public func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async {
         if let host = request.url?.host,
            request.value(forHTTPHeaderField: "Host") == nil {

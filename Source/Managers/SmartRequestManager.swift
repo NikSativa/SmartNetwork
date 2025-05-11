@@ -1,19 +1,11 @@
 import Foundation
 import Threading
 
-/// The ``SmartRequestManager`` class in Swift serves as a crucial component within the system,
-/// managing various aspects related to requests efficiently.
-/// It encompasses functionalities such as handling request states, maintaining task queues,
-/// and managing request attempts. Additionally, the class incorporates plugins and
-/// mechanisms for stopping request processing..
-/// The ``SmartRequestManager`` class plays a pivotal role in orchestrating and
-/// executing request-related tasks within the system,
-/// ensuring streamlined and organized request management.
+/// Manages the orchestration and lifecycle of network requests within SmartNetwork.
 ///
-/// See detailed scheme of network request management:
-/// ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/SmartNetwork.jpg)
-///
-/// - Important: This is a real request manager.
+/// `SmartRequestManager` handles request creation, plugin execution, retry logic, cancellation,
+/// and the `StopTheLine` mechanism. It ensures reliable and testable execution of HTTP workflows,
+/// and supports both async and callback-based request interfaces.
 public final class SmartRequestManager {
     private var isRunning: Bool = true
     private let plugins: [Plugin]
@@ -21,13 +13,13 @@ public final class SmartRequestManager {
     private let stopTheLine: StopTheLine?
     private let retrier: SmartRetrier?
 
-    /// Initializes a new instance of the ``SmartRequestManager`` class with the specified plugins, stopTheLine.
+    /// Initializes a new instance of `SmartRequestManager`.
     ///
     /// - Parameters:
-    ///  - plugins: The ``Plugin`` to be used in the request manager for each request. Default is `[]`.
-    ///  - stopTheLine: The ``StopTheLine`` mechanism to be used in the request manager for each request. Default is `nil`.
-    ///  - retrier: The ``SmartRetrier`` mechanism to be used in the request manager for each request. Default is `nil`.
-    ///  - session: The ``SmartURLSession`` to be used in the request manager for each request. Default is `RequestSettings.sharedSession`.
+    ///   - plugins: Plugins to be applied to each request (e.g., logging, auth).
+    ///   - stopTheLine: Mechanism for interrupting or retrying request flow based on results.
+    ///   - retrier: Logic for retrying failed requests based on response or error.
+    ///   - session: Custom session implementation (defaults to `SmartNetworkSettings.sharedSession`).
     public required init(withPlugins plugins: [Plugin] = [],
                          stopTheLine: StopTheLine? = nil,
                          retrier: SmartRetrier? = nil,
@@ -38,24 +30,10 @@ public final class SmartRequestManager {
         self.session = session
     }
 
-    /// Creates protocol wrapped interface instead of concrete realization
+    /// Convenience factory for protocol-based instantiation and testability.
     ///
-    /// ```swift
-    /// let manager: RequestManager = SmartRequestManager()
-    /// ```
-    /// vs
-    /// ```swift
-    /// let manager = SmartRequestManager.create()
-    /// ```
-    ///
-    /// - Tip: The protocol is useful for mocking and testing request management functionalities in Swift.
-    ///
-    /// - Parameters:
-    ///  - plugins: The ``Plugin`` to be used in the request manager for each request. Default is `[]`.
-    ///  - stopTheLine: The ``StopTheLine`` mechanism to be used in the request manager for each request. Default is `nil`.
-    ///  - retrier: The ``SmartRetrier`` mechanism to be used in the request manager for each request. Default is `nil`.
-    ///  - session: The ``SmartURLSession`` to be used in the request manager for each request. Default is `RequestSettings.sharedSession`.
-    ///  - Returns: A new instance of the ``RequestManager`` protocol.
+    /// - Returns: A new instance conforming to `RequestManager`.
+    /// - SeeAlso: Useful for mocking request management logic in unit tests.
     public static func create(withPlugins plugins: [Plugin] = [],
                               stopTheLine: StopTheLine? = nil,
                               retrier: SmartRetrier? = nil,
@@ -74,7 +52,15 @@ extension SmartRequestManager: RequestManager {
         return await startRequest(address: address, parameters: parameters, userInfo: userInfo)
     }
 
-    /// Sends a request to the specified address with the given parameters.
+    /// Sends a request with callback-based completion handling.
+    ///
+    /// - Parameters:
+    ///   - address: The target endpoint.
+    ///   - parameters: Request configuration.
+    ///   - userInfo: Contextual metadata for the request.
+    ///   - completionQueue: Queue on which to deliver the final result.
+    ///   - completion: A closure called with the `SmartResponse`.
+    /// - Returns: A cancellable task handle.
     public func request(address: Address,
                         parameters: Parameters = .init(),
                         userInfo: UserInfo = .init(),
@@ -104,6 +90,7 @@ extension SmartRequestManager: RequestManager {
 }
 
 private extension SmartRequestManager {
+    /// Executes the request pipeline including plugins, retry logic, and `StopTheLine` handling.
     func startRequest(address: Address, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse {
         func retryAction() async -> SmartResponse {
             return await startRequest(address: address, parameters: parameters, userInfo: userInfo)
@@ -171,6 +158,7 @@ private extension SmartRequestManager {
         return data
     }
 
+    /// Suspends execution until the manager is running, unless bypass is specified.
     func waitUntilRunning(_ shouldIgnoreStopTheLine: Bool) async throws {
         if shouldIgnoreStopTheLine {
             return
@@ -181,6 +169,7 @@ private extension SmartRequestManager {
         }
     }
 
+    /// Merges and prepares plugins for the current request context.
     func prepare(_ parameters: Parameters) -> Parameters {
         var parameters = parameters
 
@@ -189,6 +178,9 @@ private extension SmartRequestManager {
         return parameters
     }
 
+    /// Constructs and configures a `SmartRequest` including plugin preparation.
+    ///
+    /// - Throws: An error if the URLRequest cannot be created.
     func createRequest(address: Address, parameters: Parameters, userInfo: UserInfo) async throws -> SmartRequest {
         var urlRequest = try parameters.urlRequest(for: address)
         for plugin in parameters.plugins {
@@ -203,6 +195,10 @@ private extension SmartRequestManager {
         return request
     }
 
+    /// Evaluates whether request flow should continue, retry, or halt based on response and `StopTheLine` logic.
+    ///
+    /// - Returns: A `StopTheLineResult` controlling how the pipeline proceeds.
+    /// - Throws: Any error surfaced by the stop handler.
     @MainActor
     func checkStopTheLine(_ result: SmartResponse,
                           address: Address,
@@ -241,6 +237,9 @@ private extension SmartRequestManager {
         }
     }
 
+    /// Determines if a failed request should be retried based on the retrier's evaluation.
+    ///
+    /// - Returns: `true` if a retry should occur; otherwise `false`.
     func shouldRetry(_ data: SmartResponse, address: Address, parameters: Parameters, userInfo: UserInfo) async -> Bool {
         let retryOrFinish = retrier?.retryOrFinish(result: data, address: address, parameters: parameters, userInfo: userInfo)
         defer {
@@ -269,6 +268,7 @@ private extension SmartRequestManager {
 }
 
 private extension SmartTask {
+    /// Associates the request address with the userInfo metadata.
     func fillUserInfo(with address: Address) -> Self {
         userInfo.smartRequestAddress = address
         return self
@@ -276,6 +276,7 @@ private extension SmartTask {
 }
 
 private extension SmartResponse {
+    /// Creates a `SmartResponse` from an error and session context.
     convenience init(error: Error, session: SmartURLSession) {
         self.init(request: nil, body: nil, response: nil, error: error, session: session)
     }

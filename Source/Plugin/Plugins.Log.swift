@@ -3,14 +3,16 @@ import Foundation
 // MARK: - Plugins.Log
 
 public extension Plugins {
-    /// A plugin that logs the request lifecycle and helps to convert pure data to standard format.
-    /// example cURL, body as pretty printed and sorted JSON etc.
+    /// A plugin that logs the request lifecycle and formats log data for debugging and analytics.
+    ///
+    /// `Plugins.Log` captures various request/response stages and formats them into structured log entries,
+    /// such as cURL commands and pretty-printed JSON bodies.
     final class Log: Plugin {
         #if swift(>=6.0)
-        /// The logging function.
+        /// A closure used to log structured `DataCollection` produced during request lifecycle events.
         public typealias Logging = @Sendable (_ data: DataCollection) -> Void
         #else
-        /// The logging function.
+        /// A closure used to log structured `DataCollection` produced during request lifecycle events.
         public typealias Logging = (_ data: DataCollection) -> Void
         #endif
 
@@ -142,6 +144,10 @@ public extension Plugins {
             logger(collector)
         }
 
+        /// Attempts to decode and format response body data into a human-readable string.
+        ///
+        /// - Parameter body: The response body data.
+        /// - Returns: A formatted string, or a fallback description if formatting fails.
         private static func makeResponseBody(_ body: Data?) -> String {
             guard let body else {
                 return "< nil >"
@@ -235,7 +241,7 @@ public extension Plugins.Log {
         }
     }
 
-    /// The options for the `Curl` plugin.
+    /// Logging options that determine which request phases should be recorded.
     struct Options: OptionSet, SmartSendable {
         public let rawValue: Int
 
@@ -243,18 +249,21 @@ public extension Plugins.Log {
             self.rawValue = rawValue
         }
 
-        /// Logs the request before sending it.
+        /// Logs the request before it is sent.
         public static let willSend: Self = .init(rawValue: 1 << 0)
-        /// Logs the response after receiving response.
+        /// Logs the response immediately after it is received.
         public static let didReceive: Self = .init(rawValue: 1 << 1)
-        /// Logs the response after the request is finished.
+        /// Logs the response after the request completes.
         public static let didFinish: Self = .init(rawValue: 1 << 2)
-        /// Logs the request after it was cancelled.
+        /// Logs when the request is cancelled.
         public static let wasCancelled: Self = .init(rawValue: 1 << 2)
-        /// Logs all phases.
+        /// Enables logging for all supported phases.
         public static let all: Self = [.willSend, .didFinish, .didReceive, .wasCancelled]
     }
 
+    /// A container for storing and accessing structured log data by component.
+    ///
+    /// Values are stored as lazy closures to avoid unnecessary computation.
     struct DataCollection: Sequence, CustomDebugStringConvertible {
         public typealias Getter<T> = () -> T
 

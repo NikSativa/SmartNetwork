@@ -1,8 +1,13 @@
 import CoreGraphics
 import Foundation
 
-/// Type representing request body. It can be empty, data, image, encodable, form, xform, or json.
+/// Represents an HTTP request body in various formats.
+///
+/// `Body` supports multiple content types, including raw `Data`, `Encodable` models, multipart forms,
+/// x-www-form-urlencoded, JSON, and platform-specific image formats. It provides utilities for encoding
+/// the body and generating appropriate headers for transmission.
 public enum Body: ExpressibleByNilLiteral {
+    /// Represents supported image formats for use in HTTP body payloads.
     public enum ImageFormat: Hashable {
         #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
         case png(SmartImage)
@@ -17,19 +22,19 @@ public enum Body: ExpressibleByNilLiteral {
         static let crlf = "\r\n"
     }
 
-    /// Empty body
+    /// An empty request body.
     case empty
-    /// Data body
+    /// Raw binary body data.
     case data(Data)
-    /// Image body
+    /// An image formatted as PNG or JPEG.
     case image(ImageFormat)
-    /// Encodable body
+    /// A body created from an `Encodable` object and custom encoder.
     case encode(any Encodable, with: () -> JSONEncoder)
-    /// form-data
+    /// A multipart/form-data body.
     case form(MultipartForm)
-    /// x-www-form-urlencoded
+    /// A body encoded using application/x-www-form-urlencoded.
     case xform([String: Any])
-    /// JSONSerialization
+    /// A JSON object to be serialized for the request body.
     case json(Any, options: JSONSerialization.WritingOptions)
 }
 
@@ -49,7 +54,12 @@ public extension Body {
         self = .empty
     }
 
-    /// x-www-form-urlencoded from ``Encodable`` object
+    /// Encodes an `Encodable` object into x-www-form-urlencoded format using an optional encoder.
+    ///
+    /// - Parameters:
+    ///   - object: The object to encode.
+    ///   - encoder: An optional `JSONEncoder` to convert the object before transformation.
+    /// - Throws: `RequestEncodingError.invalidJSON` if the object can't be converted.
     static func xform(_ object: some Encodable, encoder: JSONEncoder? = nil) throws -> Self {
         let encoder = encoder ?? .init()
         let originalData = try encoder.encode(object)
@@ -67,6 +77,7 @@ public extension Body {
     }
 }
 
+/// Encodes an optional `Body` into an `EncodedBody`, returning an empty result if `nil`.
 public extension Optional where Wrapped == Body {
     func encode() throws -> Body.EncodedBody {
         return try (self?.encode()) ?? .init(httpBody: nil, [:])
@@ -74,6 +85,7 @@ public extension Optional where Wrapped == Body {
 }
 
 public extension Body {
+    /// Represents the result of encoding a `Body` instance into data and HTTP headers.
     struct EncodedBody {
         public let httpBody: Data?
         public let headers: HeaderFields
@@ -83,6 +95,9 @@ public extension Body {
             self.headers = headers
         }
 
+        /// Populates the given URL request with the encoded body and its associated headers.
+        ///
+        /// - Parameter request: The request to modify.
         public func fill(_ request: inout URLRequest) {
             request.httpBody = httpBody
             for item in headers {
@@ -93,6 +108,10 @@ public extension Body {
         }
     }
 
+    /// Encodes the body into `Data` and generates the appropriate `Content-Type` and `Content-Length` headers.
+    ///
+    /// - Throws: An error if encoding fails.
+    /// - Returns: An `EncodedBody` containing the HTTP body and headers.
     func encode() throws -> EncodedBody {
         switch self {
         case .empty:

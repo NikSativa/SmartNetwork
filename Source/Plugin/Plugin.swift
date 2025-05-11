@@ -3,12 +3,12 @@ import Foundation
 /// Namespace for plugins. You can create your own plugins and add them to this namespace.
 public enum Plugins {}
 
-/// Protocol that defines the mechanism of request interception and response validation.
+/// Defines a modular plugin interface for request interception and response validation in SmartNetwork.
 ///
-/// See detailed scheme how network works:
+/// Plugins conforming to this protocol can modify requests, validate responses, handle cancellations,
+/// or observe network flow at different stages of a request's lifecycle.
+///
 /// ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/SmartNetwork.jpg)
-///
-/// See the diagram of how the plugins work:
 /// ![Plugins behavior](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/Plugins_behavior.jpg)
 public protocol Plugin: SmartSendable {
     typealias ID = String
@@ -21,27 +21,32 @@ public protocol Plugin: SmartSendable {
     /// The priority in which the plugin will be executed in the list of plugins.
     var priority: PluginPriority { get }
 
-    /// A function that will be called before the request is sent.
+    /// Called before the request is sent, allowing modification of the request or its metadata.
+    ///
+    /// - Parameters:
+    ///   - parameters: The request configuration.
+    ///   - userInfo: User-defined metadata associated with the request.
+    ///   - request: The mutable request representation.
+    ///   - session: The session used to send the request.
     func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async
 
-    /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
+    /// Called right before the request is dispatched. Can be invoked multiple times depending on StopTheLine logic.
     func willSend(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession)
 
-    /// Super internal level which can be called multiple time based on your 'StopTheLine' implementation.
+    /// Called immediately after a response is received. Can be invoked multiple times depending on StopTheLine logic.
     func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, data: SmartResponse)
 
-    /// A function that will be called after the response is received.
+    /// Called after the response is received to perform custom validation.
     ///
-    /// - Note: if the response is not successful, you can throw an error here.
-    /// - Important: only the first error thrown will be passed to the completion block and the rest will be ignored.
+    /// - Throws: An error if the response should be treated as a failure. Only the first thrown error will be passed forward.
     func verify(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) throws
 
-    /// Just before the completion call
+    /// Called once the request completes successfully or fails. Runs just before completion is dispatched.
     func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse)
 
-    /// Just a notification that the request was somehow cancelled. can be called at any time and multiple times. for debug purposes or your own logic
+    /// Called when the request is cancelled. May be invoked multiple times. Used for debugging or cleanup logic.
     ///
-    /// - Note: has an empty default implementation
+    /// - Note: This method has a default empty implementation.
     func wasCancelled(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession)
 }
 
@@ -50,17 +55,21 @@ public extension Plugin {
         return Self.makeHash()
     }
 
-    /// Creates a unique ID for the plugin
+    /// Generates a unique ID for the plugin based on its type.
     static func makeHash() -> ID {
         return makeHashStr()
     }
 
-    /// Creates a unique ID for the plugin with additional hash value.
+    /// Generates a unique ID for the plugin using an additional hash component.
+    ///
+    /// - Parameter hash: A string or integer to include in the plugin's hash identifier.
     static func makeHash(withAdditionalHash hash: ID) -> ID {
         return [makeHashStr(), hash].joined(separator: ".")
     }
 
-    /// Creates a unique ID for the plugin with additional hash value.
+    /// Generates a unique ID for the plugin using an additional hash component.
+    ///
+    /// - Parameter hash: A string or integer to include in the plugin's hash identifier.
     static func makeHash(withAdditionalHash hash: PluginPriority.RawValue) -> ID {
         return makeHash(withAdditionalHash: "\(hash)")
     }
@@ -75,6 +84,7 @@ public extension Plugin {
 }
 
 internal extension [Plugin] {
+    /// Returns a deduplicated list of plugins based on their `id` property.
     func unified() -> [Plugin] {
         var unique: [Plugin] = []
         var s: Set<AnyHashable> = []

@@ -1,98 +1,98 @@
 import Foundation
 import Threading
 
-/// Matcher for testing an *URLRequest's*
+/// A matcher used to evaluate `URLRequestRepresentation` instances against specific URL or HTTP attributes.
 public enum HTTPStubCondition {
-    /// **Addres** of URL
+    /// Matches requests with a URL equal to the given `Address`.
     ///
-    /// - Parameter address: The 'Address' to match
+    /// - Parameter address: The full `Address` to match.
     case isAddress(Address)
 
-    /// **Path** of URL
+    /// Matches requests whose path exactly equals the provided path components.
     ///
-    /// - Parameter path: The path to match, e.g. the path is **[signin]** in *https://api.example.com/signin*.
+    /// - Parameter path: The expected path components (e.g., `["signin"]` for `/signin`).
     case isPath([String])
 
-    /// **Path** of URL
+    /// Creates a matcher for requests whose path exactly equals the given string.
     ///
-    /// - Parameter path: The path to match, e.g. the path is **/signin/** or **/signin** or **signin** in *https://api.example.com/signin*.
+    /// - Parameter path: A string path (e.g., `"/signin"`).
     public static func isPath(_ path: String) -> Self {
         return .isPath(path.toPathComponents)
     }
 
-    /// Prefix of the **path**
+    /// Matches requests whose path begins with the given components.
     ///
-    /// - Parameter path: The path to match, e.g. the path is **[signin]** in *https://api.example.com/signin*.
+    /// - Parameter path: Path components to match.
     case pathStartsWith([String])
 
-    /// Prefix of the **path**
+    /// Matches requests whose path begins with the given components.
     ///
-    /// - Parameter path: The path to match, e.g. the path is **/signin/** or **/signin** or **signin** in *https://api.example.com/signin*.
+    /// - Parameter path: Path components to match.
     public static func pathStartsWith(_ path: String) -> Self {
         return .pathStartsWith(path.toPathComponents)
     }
 
-    /// Suffix of the **path**
+    /// Matches requests whose path ends with the given components.
     ///
-    /// - Parameter path: The path to match, e.g. the path is **[signin]** in *https://api.example.com/signin*.
+    /// - Parameter path: Path components to match.
     case pathEndsWith([String])
 
-    /// Suffix of the **path**
+    /// Matches requests whose path ends with the given components.
     ///
-    /// - Parameter path: The path to match, e.g. the path is **/signin/** or **/signin** or **signin** in *https://api.example.com/signin*.
+    /// - Parameter path: Path components to match.
     public static func pathEndsWith(_ path: String) -> Self {
         return .pathEndsWith(path.toPathComponents)
     }
 
-    /// Partially **Path** of URL
+    /// Matches requests whose path contains the given components.
     ///
-    /// - Parameter path: The path to match, e.g. the path is **[signin]** in *https://api.example.com/signin*.
+    /// - Parameter path: Path components to match.
+    /// - Parameter keepingOrder: If `true`, the components must appear in order.
     case pathContains([String], keepingOrder: Bool)
 
-    /// Partially **Path** of URL
+    /// Matches requests whose path contains the given components.
     ///
-    /// - Parameter path: The path to match, e.g. the path is **/signin/** or **/signin** or **signin** in *https://api.example.com/signin*.
+    /// - Parameter path: Path components to match.
+    /// - Parameter keepingOrder: If `true`, the components must appear in order.
     public static func pathContains(_ path: String, keepingOrder: Bool = true) -> Self {
         return .pathContains(path.toPathComponents, keepingOrder: keepingOrder)
     }
 
-    /// **Host** of URL
+    /// Matches requests whose host exactly equals the given string.
     ///
-    /// - Parameter host: The host to match, e.g. the host part is **api.example.com** in *https://api.example.com/signin*.
+    /// - Parameter host: Host string (e.g., `"api.example.com"`).
     case isHost(String)
 
-    /// Absolute URL string
+    /// Matches requests whose full URL string equals the given string.
     ///
-    /// - Parameter url: The absolute url string to match, e.g. the absolute url string is https://api.example.com/signin?user=foo&password=123#anchor
+    /// - Parameter url: The absolute URL string.
     case isAbsoluteURLString(String)
 
-    /// HTTPMethod of URLRequest
+    /// Matches requests with a specific HTTP method.
     ///
-    /// - Parameter method: The HTTPMethod to match, e.g. *GET* or *POST*
+    /// - Parameter method: HTTP method string (e.g., `"GET"` or `"POST"`).
     case isMethod(String)
 
-    /// **Scheme** of URL
+    /// Matches requests with a specific URL scheme.
     ///
-    /// - Parameter scheme: The scheme to match, e.g. the scheme part is **https** in https://api.example.com/signin
+    /// - Parameter scheme: Scheme string (e.g., `"https"`).
     case isScheme(String)
 
-    /// RegEx matches the **path**
+    /// Matches requests whose path matches the given regular expression.
     ///
-    /// - Parameter regex: The Regular Expression we want the path to match
+    /// - Parameter regex: An `NSRegularExpression` used to match the respective property.
     ///
-    /// - Note: URL paths are usually absolute and thus starts with a '/'
+    /// - Note: URL paths are usually absolute and thus start with a '/'
     case pathNSMatches(NSRegularExpression)
 
-    /// RegEx matches the **absolute atring**
+    /// Matches requests whose absolute string matches the given regular expression.
     ///
-    /// - Parameter regex: The Regular Expression we want the absolute string to match
+    /// - Parameter regex: An `NSRegularExpression` used to match the respective property.
     case absoluteStringNSMatches(NSRegularExpression)
 
-    /// RegEx matches the **path**
+    /// Matches the request path against a Swift regex.
     ///
-    /// - Parameter regex: The Regular Expression we want the path to match
-    ///
-    /// - Note: URL paths are usually absolute and thus starts with a '/'
+    /// - Parameter regex: A Swift `Regex` for matching.
     @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     public static func pathMatches(_ regex: Regex<some Any>) -> Self {
         let regex = USendable(regex)
@@ -106,9 +106,9 @@ public enum HTTPStubCondition {
         }
     }
 
-    /// RegEx matches the **absolute atring**
+    /// Matches the full URL string against a Swift regex.
     ///
-    /// - Parameter regex: The Regular Expression we want the absolute string to match
+    /// - Parameter regex: A Swift `Regex` for matching.
     @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     public static func absoluteStringMatches(_ regex: Regex<some Any>) -> Self {
         let regex = USendable(regex)
@@ -120,6 +120,7 @@ public enum HTTPStubCondition {
         }
     }
 
+    /// Applies a custom matching closure to evaluate the request.
     case custom(TestClosure)
 
     func test(_ request: URLRequestRepresentation) -> Bool {
@@ -224,10 +225,16 @@ private extension String {
 
 #if swift(>=6.0)
 extension HTTPStubCondition: Sendable {
+    /// A closure used to evaluate whether a given `URLRequestRepresentation` matches custom conditions.
+    ///
+    /// Return `true` to indicate a match, or `false` otherwise.
     public typealias TestClosure = @Sendable (_ request: URLRequestRepresentation) -> Bool
 }
 #else
 public extension HTTPStubCondition {
+    /// A closure used to evaluate whether a given `URLRequestRepresentation` matches custom conditions.
+    ///
+    /// Return `true` to indicate a match, or `false` otherwise.
     typealias TestClosure = (_ request: URLRequestRepresentation) -> Bool
 }
 #endif

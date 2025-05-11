@@ -1,18 +1,24 @@
 import Foundation
 
-/// The enum also provides a RequestErrorDescription extension to handle and provide descriptions for each case within the RequestError system.
+/// Represents decoding-related errors that occur while interpreting a network response.
+///
+/// `RequestDecodingError` defines specific failure cases such as missing or malformed response content,
+/// image decoding issues, or broken key paths. It integrates with `RequestErrorDescription` to support
+/// consistent and informative logging.
 public enum RequestDecodingError: Error {
-    /// Wraps another DecodingError within it.
+    /// Wraps a general `DecodingError` returned by Swift's decoding infrastructure.
     case other(DecodingError)
-    /// Indicates errors related to decoding an image.
+    /// Indicates that image data could not be decoded properly.
     case brokenImage
-    /// Indicates errors related to a broken
+    /// Indicates a structurally invalid or corrupted response.
     case brokenResponse
-    /// Indicates errors related to a nil response
+    /// Indicates that the response was unexpectedly `nil`.
     case nilResponse
-    /// Indicates errors related to an empty response
+    /// Indicates that the response body was unexpectedly empty.
     case emptyResponse
-    /// Indicates errors related to a broken keyPath in response.
+    /// Indicates that decoding failed due to an invalid or unreachable key path.
+    ///
+    /// - Parameter key: The key path that caused the decoding failure.
     case brokenKeyPath(String)
 }
 
