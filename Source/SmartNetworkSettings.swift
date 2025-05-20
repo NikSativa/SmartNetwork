@@ -55,8 +55,11 @@ public enum SmartNetworkSettings: Sendable {
     /// A set of headers to exclude from generated `cURL` commands.
     ///
     /// These are typically added automatically by the networking stack or not useful for reproduction.
-    public nonisolated(unsafe) static var curlDisallowedHeaders: Set<String> = [
+    ///
+    /// - Important: `Content-Length` must be removed and always disallowed because `httpBodyData` is modified during cURL formatting
+    public nonisolated(unsafe) static var curlDisallowedHeaders: [String] = [
         "Accept-Encoding",
+        "Content-Length",
         "Connection",
         "Accept",
         "Host"
@@ -113,8 +116,11 @@ public enum SmartNetworkSettings {
     /// A set of headers to exclude from generated `cURL` commands.
     ///
     /// These are typically added automatically by the networking stack or not useful for reproduction.
-    public static var curlDisallowedHeaders: Set<String> = [
+    ///
+    /// - Important: `Content-Length` must be removed and always disallowed because `httpBodyData` is modified during cURL formatting
+    public static var curlDisallowedHeaders: [String] = [
         "Accept-Encoding",
+        "Content-Length",
         "Connection",
         "Accept",
         "Host"

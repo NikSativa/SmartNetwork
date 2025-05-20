@@ -104,12 +104,12 @@ public extension CURLConvertible {
             }
         }
 
-        let curlDisallowedHeaders = SmartNetworkSettings.curlDisallowedHeaders
+        // `Content-Length` must be removed because `httpBodyData` is modified during cURL formatting
+        let curlDisallowedHeaders: Set<String> = Set(SmartNetworkSettings.curlDisallowedHeaders + ["Content-Length"])
         let headerItems = prettyPrinted ? headers.sorted(by: { $0.key < $1.key }) : headers.rawValues
         for header in headerItems {
             if !curlDisallowedHeaders.contains(header.key) {
-                let escapedValue = header.value.replacingOccurrences(of: "\"", with: "\\\"")
-                components.append("-H \"\(header.key): \(escapedValue)\"")
+                components.append("-H '\(header.key): \(header.value)'")
             }
         }
 
@@ -123,13 +123,10 @@ public extension CURLConvertible {
                 httpBody = .init(decoding: httpBodyData, as: UTF8.self)
             }
 
-            var escapedBody = httpBody.replacingOccurrences(of: "\\\"", with: "\\\\\"")
-            escapedBody = escapedBody.replacingOccurrences(of: "\"", with: "\\\"")
-
-            components.append("-d \"\(escapedBody)\"")
+            components.append("-d '\(httpBody)'")
         }
 
-        components.append("\"\(url.absoluteString)\"")
+        components.append("'\(url.absoluteString)'")
 
         var curl = components.joined(separator: " \\\n\t")
         if SmartNetworkSettings.curlAddJSON_PP {

@@ -55,7 +55,7 @@ final class PluginsCurlTests: XCTestCase {
         XCTAssertEqual(actual.value.toTestable(), [
             .phase: "willSend",
             .url: "http://www.some.com",
-            .curl: "$ curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\n  \\\"id\\\" : 2\n}\" \\\n\t\"https://www.some.com?some=value\""
+            .curl: "$ curl -v \\\n\t-X GET \\\n\t-H \'some: value\' \\\n\t-d \'{\n  \"id\" : 2\n}\' \\\n\t\'https://www.some.com?some=value\'"
         ])
         actual.value = .init()
         subject.didReceive(parameters: parameters, userInfo: userInfo, request: requestable, data: .testMake())
@@ -69,7 +69,7 @@ final class PluginsCurlTests: XCTestCase {
         XCTAssertEqual(actual.value.toTestable(), [
             .phase: "didFinish",
             .url: "http://www.some.com",
-            .curl: "$ curl -v \\\n\t-X GET \\\n\t\"http://www.some.com\""
+            .curl: "$ curl -v \\\n\t-X GET \\\n\t'http://www.some.com'"
         ])
 
         subject.wasCancelled(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
@@ -88,8 +88,8 @@ final class PluginsCurlTests: XCTestCase {
 
         XCTAssertEqual(actual.value.toTestable(), [
             .url: "http://www.some.com",
-            .curl: "curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\"",
-            .phase: "willSend"
+            .phase: "willSend",
+            .curl: "curl -v \\\n\t-X GET \\\n\t-H 'some: value' \\\n\t-d '{\"id\":2}' \\\n\t'https://www.some.com?some=value'"
         ])
         actual.value = .init()
 
@@ -105,7 +105,7 @@ final class PluginsCurlTests: XCTestCase {
             .phase: "didFinish",
             .url: "https://www.some.com?some=value",
             .body: "{\n  \"id\" : 2\n}",
-            .curl: "curl -v \\\n\t-X GET \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\""
+            .curl: "curl -v \\\n\t-X GET \\\n\t-d '{\"id\":2}' \\\n\t'https://www.some.com?some=value'"
         ])
 
         subject.wasCancelled(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
@@ -123,8 +123,8 @@ final class PluginsCurlTests: XCTestCase {
 
         XCTAssertEqual(actual.value.toTestable(), [
             .phase: "willSend",
-            .curl: "$ curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some=value\"",
-            .url: "http://www.some.com"
+            .url: "http://www.some.com",
+            .curl: "$ curl -v \\\n\t-X GET \\\n\t-H \'some: value\' \\\n\t-d \'{\"id\":2}\' \\\n\t\'https://www.some.com?some=value\'"
         ])
         actual.value = .init()
 
@@ -137,7 +137,7 @@ final class PluginsCurlTests: XCTestCase {
         XCTAssertNil(data.urlError)
         XCTAssertEqual(actual.value.toTestable(), [
             .phase: "didFinish",
-            .curl: "$ curl -v \\\n\t-X GET \\\n\t-H \"some: value\" \\\n\t-d \"{\\\"id\\\":2}\" \\\n\t\"https://www.some.com?some2=value2\"",
+            .curl: "$ curl -v \\\n\t-X GET \\\n\t-H 'some: value' \\\n\t-d '{\"id\":2}' \\\n\t'https://www.some.com?some2=value2'",
             .error: "generic",
             .requestError: "generic",
             .body: "{\n  \"id\" : 2\n}",
