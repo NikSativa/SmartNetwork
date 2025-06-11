@@ -230,8 +230,10 @@ private extension SmartRequestManager {
                 isRunning = true
                 throw error
             }
+
         case .passOver:
             return .passOver(result)
+
         case .retry:
             return .retry
         }
@@ -250,11 +252,14 @@ private extension SmartRequestManager {
             switch retryOrFinish ?? .doNotRetry {
             case .retry:
                 return true
+
             case .retryWithDelay(let delay):
                 try await Task.sleep(seconds: delay)
                 return true
+
             case .doNotRetry:
                 return false
+
             case .doNotRetryWithError(let error):
                 data.set(error: error)
                 return false

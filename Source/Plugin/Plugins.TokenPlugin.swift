@@ -56,15 +56,18 @@ public extension Plugins {
                 switch operation {
                 case .set(let key):
                     request.setValue(value, forHTTPHeaderField: key)
+
                 case .trySet(let key):
                     if request.value(forHTTPHeaderField: key) == nil {
                         request.setValue(value, forHTTPHeaderField: key)
                     }
+
                 case .add(let key):
                     if let value {
                         request.addValue(value, forHTTPHeaderField: key)
                     }
                 }
+
             case .queryParam(let operation):
                 if let requestURL = request.url, var urlComponents = URLComponents(url: requestURL, resolvingAgainstBaseURL: false) {
                     var queryItems: [URLQueryItem] = urlComponents.queryItems ?? []
@@ -73,10 +76,12 @@ public extension Plugins {
                     case .set(let key):
                         queryItems = queryItems.filter { $0.name != key }
                         queryItems.append(URLQueryItem(name: key, value: value))
+
                     case .trySet(let key):
                         if !queryItems.contains(where: { $0.name == key }) {
                             queryItems.append(URLQueryItem(name: key, value: value))
                         }
+
                     case .add(let key):
                         queryItems.append(URLQueryItem(name: key, value: value))
                     }

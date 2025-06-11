@@ -24,9 +24,11 @@ final class TypedRequestManagerTests: XCTestCase {
         HTTPStubServer.shared.add(condition: .isAddress(address2), response: response2).store(in: &observers)
 
         // `storing` is not necessary, but it is using for test coverage purpose.
-        _ = HTTPStubServer.shared.add(condition: .isAddress(addressEmpty),
-                                      body: .empty,
-                                      delayInSeconds: stubbedTimeoutInSeconds).storing(in: &observers)
+        _ = HTTPStubServer.shared
+            .add(condition: .isAddress(addressEmpty),
+                 body: .empty,
+                 delayInSeconds: stubbedTimeoutInSeconds)
+            .storing(in: &observers)
     }
 
     override func tearDown() {
@@ -55,10 +57,13 @@ final class TypedRequestManagerTests: XCTestCase {
         let exp = expectation(description: #function)
         let manager = SmartRequestManager.create()
 
-        subject(manager).complete { obj in
-            actual.value = obj
-            exp.fulfill()
-        }.deferredStart().store(in: &observers)
+        subject(manager)
+            .complete { obj in
+                actual.value = obj
+                exp.fulfill()
+            }
+            .deferredStart()
+            .store(in: &observers)
 
         wait(for: [exp], timeout: timeoutInSeconds)
         return actual.value

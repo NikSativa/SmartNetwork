@@ -1,7 +1,6 @@
 import Foundation
 import SpryKit
 import XCTest
-
 @testable import SmartNetwork
 
 final class AddressDetailsTests: XCTestCase {

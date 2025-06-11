@@ -24,6 +24,7 @@ public final class HTTPStubProtocol: URLProtocol {
         guard let request = task.originalRequest ?? task.currentRequest else {
             return false
         }
+
         let response = HTTPStubServer.shared.response(for: request)
         return response != nil
     }
@@ -45,7 +46,6 @@ public final class HTTPStubProtocol: URLProtocol {
             assertionFailure("should never happen")
             return
         }
-
         guard let stub = HTTPStubServer.shared.response(for: request) else {
             Queue.background.async { [request] in
                 let error = NSError(domain: "<HTTPStub> no stub for \(request.url?.absoluteString ?? "<broken url>")", code: -1)

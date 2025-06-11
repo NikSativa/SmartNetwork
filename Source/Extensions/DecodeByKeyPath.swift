@@ -61,6 +61,7 @@ private struct ModelResponse<NestedModel: Decodable>: Decodable {
             guard let key = Key(stringValue: key) else {
                 throw RequestDecodingError.brokenKeyPath(key)
             }
+
             targetContainer = try targetContainer.nestedContainer(keyedBy: Key.self, forKey: key)
         }
 
@@ -68,6 +69,7 @@ private struct ModelResponse<NestedModel: Decodable>: Decodable {
         guard let key = Key(stringValue: lastKey) else {
             throw RequestDecodingError.brokenKeyPath(lastKey)
         }
+
         self.nested = try targetContainer.decode(NestedModel.self, forKey: key)
     }
 }

@@ -93,6 +93,7 @@ extension SmartResponse: CURLConvertible {
         guard let sdk = request?.sdk else {
             return "$ curl command could not be created"
         }
+
         return cURLDescription(with: session, request: sdk, prettyPrinted: prettyPrinted)
     }
 }

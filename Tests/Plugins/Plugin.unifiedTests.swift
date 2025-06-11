@@ -1,7 +1,6 @@
 import Combine
 import Foundation
 import XCTest
-
 @testable import SmartNetwork
 
 private final class TestPlugin: Plugin {

@@ -47,6 +47,7 @@ private extension RetryResult {
              .retryWithDelay:
             assertionFailure("Invalid retry result: \(self). Valid options are .doNotRetry and .doNotRetryWithError")
             return .doNotRetry
+
         case .doNotRetry,
              .doNotRetryWithError:
             return self

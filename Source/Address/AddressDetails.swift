@@ -100,12 +100,14 @@ private extension AddressDetails {
             path.isEmpty ? nil : "/",
             path.joined(separator: "/"),
             queryItems.isEmpty ? nil : "?",
-            queryItems.mapToDescription().map {
-                if let value = $0.value {
-                    return "\($0.key)=\(value)"
+            queryItems.mapToDescription()
+                .map {
+                    if let value = $0.value {
+                        return "\($0.key)=\(value)"
+                    }
+                    return $0.key
                 }
-                return $0.key
-            }.joined(separator: "&"),
+                .joined(separator: "&"),
             fragment.map { "#\($0)" }
         ]
 

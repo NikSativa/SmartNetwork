@@ -29,21 +29,29 @@ final class RequestManagerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        HTTPStubServer.shared.add(condition: .isHost(Constant.host1),
-                                  header: .init([.testMake(key: "some", value: "value1"), .testMake(key: "some", value: "value2")]),
-                                  body: .encode(TestInfo(id: 1)),
-                                  delayInSeconds: nil).store(in: &observers)
-        HTTPStubServer.shared.add(condition: .isHost(Constant.host2),
-                                  body: .encode(TestInfo(id: 2)),
-                                  delayInSeconds: Constant.stubbedTimeoutInSeconds).store(in: &observers)
-        HTTPStubServer.shared.add(condition: .isHost(Constant.brokenHost),
-                                  statusCode: 400,
-                                  body: .encode(TestInfo(id: 2)),
-                                  delayInSeconds: Constant.stubbedTimeoutInSeconds).store(in: &observers)
-        HTTPStubServer.shared.add(condition: .isHost(Constant.emptyHost),
-                                  statusCode: 204,
-                                  body: .empty,
-                                  delayInSeconds: Constant.stubbedTimeoutInSeconds).store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isHost(Constant.host1),
+                 header: .init([.testMake(key: "some", value: "value1"), .testMake(key: "some", value: "value2")]),
+                 body: .encode(TestInfo(id: 1)),
+                 delayInSeconds: nil)
+            .store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isHost(Constant.host2),
+                 body: .encode(TestInfo(id: 2)),
+                 delayInSeconds: Constant.stubbedTimeoutInSeconds)
+            .store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isHost(Constant.brokenHost),
+                 statusCode: 400,
+                 body: .encode(TestInfo(id: 2)),
+                 delayInSeconds: Constant.stubbedTimeoutInSeconds)
+            .store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isHost(Constant.emptyHost),
+                 statusCode: 204,
+                 body: .empty,
+                 delayInSeconds: Constant.stubbedTimeoutInSeconds)
+            .store(in: &observers)
     }
 
     override func tearDown() {
@@ -68,10 +76,14 @@ final class RequestManagerTests: XCTestCase {
         let subject = SmartRequestManager.create()
         let response: UnsafeValue<TestInfo> = .init()
         subject
-            .request(address: Constant.address1).decode(TestInfo.self).complete {
+            .request(address: Constant.address1)
+            .decode(TestInfo.self)
+            .complete {
                 response.value = try? $0.get()
                 expectation1.fulfill()
-            }.storing(in: &observers).start()
+            }
+            .storing(in: &observers)
+            .start()
 
         wait(for: [expectation1], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response.value, .init(id: 1))
@@ -80,11 +92,15 @@ final class RequestManagerTests: XCTestCase {
         let expectationReverted = expectation(description: "should not receive response")
         expectationReverted.isInverted = true
         subject.request(address: Constant.address2,
-                        parameters: .testMake()).decode(TestInfo.self).complete {
-            response.value = try? $0.get()
-            expectation2.fulfill()
-            expectationReverted.fulfill()
-        }.storing(in: &observers).start()
+                        parameters: .testMake())
+            .decode(TestInfo.self)
+            .complete {
+                response.value = try? $0.get()
+                expectation2.fulfill()
+                expectationReverted.fulfill()
+            }
+            .storing(in: &observers)
+            .start()
 
         wait(for: [expectationReverted], timeout: Constant.stubbedTimeoutInSeconds - 0.01)
         wait(for: [expectation2], timeout: Constant.timeoutInSeconds - Constant.stubbedTimeoutInSeconds + 0.01)
@@ -94,11 +110,15 @@ final class RequestManagerTests: XCTestCase {
         let expectationReverted2 = expectation(description: "should not receive response")
         expectationReverted2.isInverted = true
         subject.request(address: Constant.emptyAddress,
-                        parameters: .testMake()).decode(TestInfo.self).complete {
-            response.value = try? $0.get()
-            expectation3.fulfill()
-            expectationReverted2.fulfill()
-        }.storing(in: &observers).start()
+                        parameters: .testMake())
+            .decode(TestInfo.self)
+            .complete {
+                response.value = try? $0.get()
+                expectation3.fulfill()
+                expectationReverted2.fulfill()
+            }
+            .storing(in: &observers)
+            .start()
 
         wait(for: [expectationReverted2], timeout: Constant.stubbedTimeoutInSeconds - 0.01)
         wait(for: [expectation3], timeout: Constant.timeoutInSeconds - Constant.stubbedTimeoutInSeconds + 0.01)
@@ -109,11 +129,15 @@ final class RequestManagerTests: XCTestCase {
         let expectationReverted3 = expectation(description: "should not receive response")
         expectationReverted3.isInverted = true
         subject.request(address: Constant.address2,
-                        parameters: .testMake()).decode(TestInfo.self).complete {
-            response.value = try? $0.get()
-            expectation4.fulfill()
-            expectationReverted3.fulfill()
-        }.detach().deferredStart()
+                        parameters: .testMake())
+            .decode(TestInfo.self)
+            .complete {
+                response.value = try? $0.get()
+                expectation4.fulfill()
+                expectationReverted3.fulfill()
+            }
+            .detach()
+            .deferredStart()
 
         wait(for: [expectationReverted3], timeout: Constant.stubbedTimeoutInSeconds - 0.01)
         wait(for: [expectation4], timeout: Constant.timeoutInSeconds - Constant.stubbedTimeoutInSeconds + 0.01)
@@ -124,14 +148,16 @@ final class RequestManagerTests: XCTestCase {
         expectationReverted4.isInverted = true
         response.value = nil
         subject.request(address: Constant.address2,
-                        parameters: .testMake()).decode(TestInfo.self).complete {
-            response.value = try? $0.get()
-            expectationReverted4.fulfill()
-        }
-        // ---> not retained task will released and automaticaly stop the attached request
-        // .detach()
-        // .storing(in: &observers)
-        .start()
+                        parameters: .testMake())
+            .decode(TestInfo.self)
+            .complete {
+                response.value = try? $0.get()
+                expectationReverted4.fulfill()
+            }
+            // ---> not retained task will released and automaticaly stop the attached request
+            // .detach()
+            // .storing(in: &observers)
+            .start()
 
         wait(for: [expectationReverted4], timeout: Constant.stubbedTimeoutInSeconds - 0.01)
         XCTAssertNil(response.value)
@@ -160,10 +186,14 @@ final class RequestManagerTests: XCTestCase {
         let expectation1 = expectation(description: "should receive response")
         subject.request(address: Constant.address1,
                         parameters: .init(plugins: [pluginForParam, pluginStatusCode, pluginForParam, pluginStatusCode],
-                                          cacheSettings: .testMake())).decode(TestInfo.self).complete {
-            response.value = try? $0.get()
-            expectation1.fulfill()
-        }.detach().deferredStart()
+                                          cacheSettings: .testMake()))
+            .decode(TestInfo.self)
+            .complete {
+                response.value = try? $0.get()
+                expectation1.fulfill()
+            }
+            .detach()
+            .deferredStart()
 
         wait(for: [expectation1], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response.value, .init(id: 1))
@@ -184,10 +214,14 @@ final class RequestManagerTests: XCTestCase {
 
         let expectation2 = expectation(description: "should receive response")
         subject.request(address: Constant.address2,
-                        parameters: .init(plugins: [pluginForParam])).decode(TestInfo.self).complete {
-            response.value = try? $0.get()
-            expectation2.fulfill()
-        }.storing(in: &observers).start()
+                        parameters: .init(plugins: [pluginForParam]))
+            .decode(TestInfo.self)
+            .complete {
+                response.value = try? $0.get()
+                expectation2.fulfill()
+            }
+            .storing(in: &observers)
+            .start()
 
         wait(for: [expectation2], timeout: Constant.timeoutInSeconds)
         XCTAssertEqual(response.value, .init(id: 2))
@@ -196,6 +230,7 @@ final class RequestManagerTests: XCTestCase {
             guard let parameters = parameters as? Parameters else {
                 return false
             }
+
             let expected: [Plugin] = [pluginForParam, pluginStatusCode, pluginForManager]
             return parameters.plugins.map(\.id) == expected.map(\.id)
         }
@@ -223,7 +258,9 @@ final class RequestManagerTests: XCTestCase {
             .complete {
                 result.value = $0
                 expectation.fulfill()
-            }.storing(in: &observers).start()
+            }
+            .storing(in: &observers)
+            .start()
 
         wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertThrowsError(try result.value?.get(), RequestEncodingError.invalidJSON)
@@ -240,10 +277,14 @@ final class RequestManagerTests: XCTestCase {
         let expectation: XCTestExpectation = .init(description: "should receive response")
         stopTheLine.stub(.verifyWithResponse_Address_Parameters_Userinfo).andReturn(StopTheLineAction.passOver)
         subject.request(address: Constant.brokenAddress,
-                        parameters: .init(body: .encode(TestInfo(id: 1)))).decode(TestInfo.self).complete {
-            result.value = $0
-            expectation.fulfill()
-        }.storing(in: &observers).start()
+                        parameters: .init(body: .encode(TestInfo(id: 1))))
+            .decode(TestInfo.self)
+            .complete {
+                result.value = $0
+                expectation.fulfill()
+            }
+            .storing(in: &observers)
+            .start()
 
         wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertThrowsError(try result.value?.get(), StatusCode(.badRequest))
@@ -325,6 +366,7 @@ final class RequestManagerTests: XCTestCase {
             guard let result = args[0] as? SmartResponse else {
                 fatalError()
             }
+
             if result.request?.url?.host == Constant.brokenHost {
                 return StopTheLineAction.stopTheLine
             }
@@ -338,7 +380,9 @@ final class RequestManagerTests: XCTestCase {
             .complete {
                 result.value = $0
                 expectation3.fulfill()
-            }.storing(in: &observers).start()
+            }
+            .storing(in: &observers)
+            .start()
 
         let expectation7: XCTestExpectation = .init(description: "should not receive response")
         expectation7.isInverted = true
@@ -351,7 +395,9 @@ final class RequestManagerTests: XCTestCase {
             .decode(TestInfo.self)
             .complete { _ in
                 expectation4.fulfill()
-            }.detach().deferredStart()
+            }
+            .detach()
+            .deferredStart()
 
         // returns response immediately, but in queue while stop the line activated
         let expectation8: XCTestExpectation = .init(description: "should not receive response")

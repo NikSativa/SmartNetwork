@@ -90,7 +90,8 @@ public extension Body {
         }
 
         private func encodeHeaders(for bodyPart: BodyPart) -> Data {
-            let headerText = bodyPart.headers.map { "\($0.name): \($0.value)\(EncodingCharacters.crlf)" }
+            let headerText = bodyPart.headers
+                .map { "\($0.name): \($0.value)\(EncodingCharacters.crlf)" }
                 .joined()
                 + EncodingCharacters.crlf
 

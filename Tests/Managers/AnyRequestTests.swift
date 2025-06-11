@@ -3,7 +3,6 @@ import Foundation
 import SpryKit
 import Threading
 import XCTest
-
 @testable import SmartNetwork
 
 @MainActor

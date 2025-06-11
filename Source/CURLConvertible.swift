@@ -72,6 +72,7 @@ public extension CURLConvertible {
                     guard let user = credential.user, let password = credential.password else {
                         continue
                     }
+
                     components.append("-u \(user):\(password)")
                 }
             }
@@ -114,14 +115,14 @@ public extension CURLConvertible {
         }
 
         if let httpBodyData = request.httpBody {
-            let httpBody: String
-            if prettyPrinted,
-               let json = try? JSONSerialization.jsonObject(with: httpBodyData),
-               let prettyData = try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]) {
-                httpBody = .init(decoding: prettyData, as: UTF8.self)
-            } else {
-                httpBody = .init(decoding: httpBodyData, as: UTF8.self)
-            }
+            let httpBody: String =
+                if prettyPrinted,
+                let json = try? JSONSerialization.jsonObject(with: httpBodyData),
+                let prettyData = try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]) {
+                    .init(decoding: prettyData, as: UTF8.self)
+                } else {
+                    .init(decoding: httpBodyData, as: UTF8.self)
+                }
 
             components.append("-d '\(httpBody)'")
         }

@@ -52,15 +52,15 @@ public extension Plugins {
                      options: options) { [mapID, shouldPrintBody] data in
             let logger = logger.get(data)
 
-            let id: String?
-            if let mapID,
-               let uuid = data.get(safe: .id, ofType: UUID.self)?.uuidString,
-               let url = data.get(safe: .url, ofType: String.self),
-               let str = mapID(uuid, url) {
-                id = str
-            } else {
-                id = nil
-            }
+            let id: String? =
+                if let mapID,
+                let uuid = data.get(safe: .id, ofType: UUID.self)?.uuidString,
+                let url = data.get(safe: .url, ofType: String.self),
+                let str = mapID(uuid, url) {
+                    str
+                } else {
+                    nil
+                }
 
             for (component, value) in data {
                 let text: String

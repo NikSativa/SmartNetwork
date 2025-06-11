@@ -4,7 +4,6 @@ import Foundation
 import SpryKit
 import Threading
 import XCTest
-
 @testable import SmartNetwork
 
 final class SmartRequestTests: XCTestCase {
@@ -38,8 +37,9 @@ final class SmartRequestTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        HTTPStubServer.shared.add(condition: .isAddress(.testMake()),
-                                  response: .init(statusCode: 200, body: .data("data".data(using: .utf8)!)))
+        HTTPStubServer.shared
+            .add(condition: .isAddress(.testMake()),
+                 response: .init(statusCode: 200, body: .data("data".data(using: .utf8)!)))
             .store(in: &observers)
     }
 

@@ -9,17 +9,26 @@ public final class UserInfo {
     /// The internal dictionary used to store user-provided key-value pairs.
     ///
     /// Access is synchronized using an atomic property wrapper to ensure safe concurrent reads and writes.
-    @Atomic(mutex: .unfair, read: .sync, write: .sync)
-    public private(set) var values: [UserInfoKey: Any] = [:]
+    @AtomicValue
+    private var innverValues: [UserInfoKey: Any] = [:]
+
+    public private(set) var values: [UserInfoKey: Any] {
+        get {
+            return $innverValues.syncUnchecked { $0 }
+        }
+        set {
+            $innverValues.syncUnchecked { $0 = newValue }
+        }
+    }
 
     /// Initializes a new instance with the provided values.
     public init(_ values: [UserInfoKey: Any] = [:]) {
-        self.values = values
+        $innverValues.syncUnchecked { $0 = values }
     }
 
     /// Returns `true` if no values are stored in the `UserInfo`.
     public var isEmpty: Bool {
-        return $values.mutate { values in
+        return $innverValues.syncUnchecked { values in
             return values.isEmpty
         }
     }
@@ -29,12 +38,12 @@ public final class UserInfo {
     /// - Note: Use the generic type `T` to cast the value to the expected type.
     public subscript<T>(_ key: UserInfoKey) -> T? {
         get {
-            return $values.mutate { values in
+            return $innverValues.syncUnchecked { values in
                 return values[key] as? T
             }
         }
         set {
-            $values.mutate { values in
+            $innverValues.syncUnchecked { values in
                 values[key] = newValue
             }
         }
@@ -47,7 +56,7 @@ public final class UserInfo {
     ///   - key: The key associated with the value.
     /// - Returns: The typed value, or `nil` if no matching value is found.
     public func value<T>(of _: T.Type = T.self, for key: UserInfoKey) -> T? {
-        return $values.mutate { values in
+        return $innverValues.syncUnchecked { values in
             return values[key] as? T
         }
     }
@@ -101,28 +110,28 @@ private extension Dictionary {
     }
 }
 
-@inline(__always)
 /// Converts a value to a string using a JSON encoder or string protocol conformance.
 ///
 /// - Parameters:
 ///   - value: The value to convert.
 ///   - encoder: A `JSONEncoder` used for encoding `Encodable` values.
 /// - Returns: A string representation of the value.
+@inline(__always)
 private func convert(_ value: Any, encoder: @autoclosure () -> JSONEncoder) -> String {
-    let strValue: String
-    if let str = value as? String {
-        strValue = str
-    } else if let value = value as? Encodable,
-              let data = try? encoder().encode(value),
-              let text = String(data: data, encoding: .utf8) {
-        strValue = text
-    } else if let value = value as? CustomStringConvertible {
-        strValue = value.description
-    } else if let value = value as? CustomDebugStringConvertible {
-        strValue = value.debugDescription
-    } else {
-        strValue = "\(value)"
-    }
+    let strValue: String =
+        if let str = value as? String {
+            str
+        } else if let value = value as? Encodable,
+                  let data = try? encoder().encode(value),
+                  let text = String(data: data, encoding: .utf8) {
+            text
+        } else if let value = value as? CustomStringConvertible {
+            value.description
+        } else if let value = value as? CustomDebugStringConvertible {
+            value.debugDescription
+        } else {
+            "\(value)"
+        }
     return strValue
 }
 

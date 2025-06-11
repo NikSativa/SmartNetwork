@@ -29,7 +29,6 @@ extension Body: Equatable {
             return compare(a, b)
         case (.json(let a, let o1), .json(let b, let o2)):
             return compare(a, b) && o1 == o2
-
         case (.data, _),
              (.empty, _),
              (.encode, _),
@@ -49,6 +48,7 @@ private extension Encodable {
         guard let data = try? encoder.encode(self) else {
             return nil
         }
+
         return String(data: data, encoding: .utf8)
     }
 }

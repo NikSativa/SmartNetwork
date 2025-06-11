@@ -1,6 +1,5 @@
 import Foundation
 import XCTest
-
 @testable import SmartNetwork
 
 final class ConnectionErrorRetrierTests: XCTestCase {

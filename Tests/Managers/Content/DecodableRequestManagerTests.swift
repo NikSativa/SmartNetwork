@@ -15,16 +15,19 @@ final class DecodableRequestManagerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        HTTPStubServer.shared.add(condition: .isAddress(address),
-                                  header: ["": ""],
-                                  body: .encode(info),
-                                  delayInSeconds: stubbedTimeoutInSeconds).store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isAddress(address),
+                 header: ["": ""],
+                 body: .encode(info),
+                 delayInSeconds: stubbedTimeoutInSeconds)
+            .store(in: &observers)
 
         HTTPStubServer.shared
             .add(condition: .isAddress(addressBroken),
                  header: ["": ""],
                  body: .encode(TestInfo2(id2: 2)),
-                 delayInSeconds: stubbedTimeoutInSeconds).store(in: &observers)
+                 delayInSeconds: stubbedTimeoutInSeconds)
+            .store(in: &observers)
     }
 
     override func tearDown() {
@@ -109,7 +112,9 @@ final class DecodableRequestManagerTests: XCTestCase {
         subject(manager) { obj in
             actual.value = obj
             exp.fulfill()
-        }.deferredStart().store(in: &observers)
+        }
+        .deferredStart()
+        .store(in: &observers)
 
         wait(for: [exp], timeout: timeoutInSeconds)
         return actual.value
@@ -124,7 +129,9 @@ final class DecodableRequestManagerTests: XCTestCase {
                         completionQueue: .absent) { obj in
             actual.value = try? obj.get()
             exp.fulfill()
-        }.deferredStart().store(in: &observers)
+        }
+        .deferredStart()
+        .store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
         XCTAssertEqual(info, actual.value)
     }
@@ -138,7 +145,9 @@ final class DecodableRequestManagerTests: XCTestCase {
                         completionQueue: .absent) { obj in
             actual.value = try? obj.get()
             exp.fulfill()
-        }.deferredStart().store(in: &observers)
+        }
+        .deferredStart()
+        .store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
         XCTAssertEqual(info, actual.value)
     }
@@ -153,7 +162,9 @@ final class DecodableRequestManagerTests: XCTestCase {
                         completionQueue: .absent) { obj in
             actual.value = try? obj.get()
             exp.fulfill()
-        }.deferredStart().store(in: &observers)
+        }
+        .deferredStart()
+        .store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
         XCTAssertEqual(actual.value, 1)
     }
@@ -168,7 +179,9 @@ final class DecodableRequestManagerTests: XCTestCase {
                         completionQueue: .absent) { obj in
             actual.value = try? obj.get()
             exp.fulfill()
-        }.deferredStart().store(in: &observers)
+        }
+        .deferredStart()
+        .store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
         XCTAssertEqual(actual.value, 1)
     }
@@ -183,7 +196,9 @@ final class DecodableRequestManagerTests: XCTestCase {
                         completionQueue: .absent) { obj in
             actual.value = try? obj.get()
             exp.fulfill()
-        }.deferredStart().store(in: &observers)
+        }
+        .deferredStart()
+        .store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
         XCTAssertEqual(actual.value, 1)
     }

@@ -78,7 +78,7 @@ public extension Body {
 }
 
 /// Encodes an optional `Body` into an `EncodedBody`, returning an empty result if `nil`.
-public extension Optional where Wrapped == Body {
+public extension Body? {
     func encode() throws -> Body.EncodedBody {
         return try (self?.encode()) ?? .init(httpBody: nil, [:])
     }
@@ -116,10 +116,12 @@ public extension Body {
         switch self {
         case .empty:
             return .init(httpBody: .init(), [:])
+
         case .data(let data):
             return .init(httpBody: data, [
                 "Content-Length": "\(data.count)"
             ])
+
         case .image(let image):
             let data: Data
             switch image {
@@ -137,6 +139,7 @@ public extension Body {
                 "Content-Type": "application/image",
                 "Content-Length": "\(data.count)"
             ])
+
         case .encode(let object, let encoder):
             let encoder = encoder()
             let data = try encoder.encode(object)
@@ -144,22 +147,26 @@ public extension Body {
                 "Content-Type": "application/json",
                 "Content-Length": "\(data.count)"
             ])
+
         case .json(let json, let options):
             // sometimes it crashes the app on 'try JSONSerialization...' without that check
             guard JSONSerialization.isValidJSONObject(json) else {
                 throw RequestEncodingError.invalidJSON
             }
+
             let data = try JSONSerialization.data(withJSONObject: json, options: options)
             return .init(httpBody: data, [
                 "Content-Type": "application/json",
                 "Content-Length": "\(data.count)"
             ])
+
         case .form(let form):
             let data = form.encode()
             return .init(httpBody: data, [
                 "Content-Type": form.contentType,
                 "Content-Length": "\(form.contentLength)"
             ])
+
         case .xform(let parameters):
             let data = Body.XFormEncoder.encodeParameters(parameters: parameters)
             return .init(httpBody: data, [

@@ -382,7 +382,8 @@ public extension Plugins.Log {
         public var debugDescription: String {
             return data.mapValues {
                 return $0()
-            }.debugDescription
+            }
+            .debugDescription
         }
     }
 }

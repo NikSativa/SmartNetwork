@@ -31,14 +31,19 @@ extension RequestEncodingError: RequestErrorDescription {
         case .other(let encodingError):
             let description = (encodingError as NSError).description
             return ".other(\(description))"
+
         case .brokenURL:
             return "brokenURL"
+
         case .brokenAddress:
             return "brokenAddress"
+
         case .brokenHost:
             return "brokenHost"
+
         case .cantEncodeImage:
             return "cantEncodeImage"
+
         case .invalidJSON:
             return "invalidJSON"
         }

@@ -30,14 +30,19 @@ extension RequestDecodingError: RequestErrorDescription {
         case .other(let encodingError):
             let description = (encodingError as NSError).description
             return ".other(\(description))"
+
         case .brokenImage:
             return "brokenImage"
+
         case .brokenResponse:
             return "brokenResponse"
+
         case .nilResponse:
             return "nilResponse"
+
         case .emptyResponse:
             return "emptyResponse"
+
         case .brokenKeyPath(let key):
             return "brokenKeyPath(\(key))"
         }

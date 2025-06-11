@@ -37,8 +37,10 @@ final class HTTPStubProtocolTests: XCTestCase {
     }
 
     func test_stub_data() async throws {
-        HTTPStubServer.shared.add(condition: .isHost(Constant.host),
-                                  body: .encode(TestInfo(id: 1))).store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isHost(Constant.host),
+                 body: .encode(TestInfo(id: 1)))
+            .store(in: &observers)
 
         let result = try await session.data(for: request)
         let info = result.0.info()
@@ -47,9 +49,11 @@ final class HTTPStubProtocolTests: XCTestCase {
     }
 
     func test_stub_error() async {
-        HTTPStubServer.shared.add(condition: .isHost(Constant.host),
-                                  error: RequestError.encoding(.brokenAddress),
-                                  delayInSeconds: Constant.stubbedTimeoutInSeconds).store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isHost(Constant.host),
+                 error: RequestError.encoding(.brokenAddress),
+                 delayInSeconds: Constant.stubbedTimeoutInSeconds)
+            .store(in: &observers)
 
         do {
             let _ = try await session.data(for: request)
@@ -67,8 +71,10 @@ final class HTTPStubProtocolTests: XCTestCase {
     }
 
     func test_stub_empty() async throws {
-        HTTPStubServer.shared.add(condition: .isHost(Constant.host),
-                                  body: .empty).store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isHost(Constant.host),
+                 body: .empty)
+            .store(in: &observers)
 
         let result = try await session.data(for: request)
         XCTAssertEqual(Data(), result.0)

@@ -18,25 +18,35 @@ final class AnyRequestCallChainTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        HTTPStubServer.shared.add(condition: .isAddress(address),
-                                  body: .encode(okObj),
-                                  delayInSeconds: 0.1).store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isAddress(address),
+                 body: .encode(okObj),
+                 delayInSeconds: 0.1)
+            .store(in: &observers)
 
-        HTTPStubServer.shared.add(condition: .isAddress(addressNil),
-                                  body: nil,
-                                  delayInSeconds: 0.1).store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isAddress(addressNil),
+                 body: nil,
+                 delayInSeconds: 0.1)
+            .store(in: &observers)
 
-        HTTPStubServer.shared.add(condition: .isAddress(addressEmpty),
-                                  body: .empty,
-                                  delayInSeconds: 0.1).store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isAddress(addressEmpty),
+                 body: .empty,
+                 delayInSeconds: 0.1)
+            .store(in: &observers)
 
-        HTTPStubServer.shared.add(condition: .isAddress(addressOther),
-                                  body: .encode(okObj2),
-                                  delayInSeconds: 0.1).store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isAddress(addressOther),
+                 body: .encode(okObj2),
+                 delayInSeconds: 0.1)
+            .store(in: &observers)
 
-        HTTPStubServer.shared.add(condition: .isAddress(addressComplex),
-                                  body: .encode(Complex(obj1: okObj, obj2: okObj2)),
-                                  delayInSeconds: 0.1).store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isAddress(addressComplex),
+                 body: .encode(Complex(obj1: okObj, obj2: okObj2)),
+                 delayInSeconds: 0.1)
+            .store(in: &observers)
     }
 
     override func tearDown() {

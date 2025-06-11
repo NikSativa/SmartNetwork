@@ -65,20 +65,25 @@ extension RequestError: RequestErrorDescription {
         switch self {
         case .generic:
             return "generic"
+
         case .other(let error):
-            let description: String
-            if let subname = (error as? RequestErrorDescription)?.subname {
-                description = subname
-            } else {
-                description = (error as NSError).description
-            }
+            let description: String =
+                if let subname = (error as? RequestErrorDescription)?.subname {
+                    subname
+                } else {
+                    (error as NSError).description
+                }
             return "other(\(description))"
+
         case .connection(let error):
             return "connection(URLError \(error.code.rawValue))"
+
         case .encoding(let error):
             return "encoding(.\(error.subname))"
+
         case .decoding(let error):
             return "decoding(.\(error.subname))"
+
         case .statusCode(let error):
             return "statusCode(.\(error.subname))"
         }

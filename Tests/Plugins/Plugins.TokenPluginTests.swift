@@ -2,7 +2,6 @@
 import Foundation
 import SpryKit
 import XCTest
-
 @testable import SmartNetwork
 
 final class PluginsTokenPluginTests: XCTestCase {
@@ -64,6 +63,7 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
         case .trySet(let key):
             request.stub(.setValueWithValue_Forhttpheaderfield).with(value ?? Argument.nil, key).andReturn()
         }
+
     case .queryParam:
         request.stub(.url_get).andReturn(url)
         request.stub(.url_set).andReturn()
@@ -87,11 +87,14 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
             } else {
                 XCTAssertHaveNoRecordedCalls(request, file: file, line: line)
             }
+
         case .set(let key):
             XCTAssertHaveReceived(request, .setValueWithValue_Forhttpheaderfield, with: value, key, countSpecifier: .exactly(1), file: file, line: line)
+
         case .trySet(let key):
             XCTAssertHaveReceived(request, .setValueWithValue_Forhttpheaderfield, with: value, key, countSpecifier: .exactly(1), file: file, line: line)
         }
+
     case .queryParam(let operation):
         let newUrl: String
         switch operation {
@@ -102,6 +105,7 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
             } else {
                 newUrl = url.absoluteString.replacingOccurrences(of: "my_token_key=broken_token_string", with: newParam)
             }
+
         case .trySet(let key):
             let newParam = [key, value].filterNils().joined(separator: "=")
             if url == Constant.url {
@@ -109,6 +113,7 @@ private func XCTAssertCheckToken(_ type: Plugins.TokenType,
             } else {
                 newUrl = url.absoluteString.replacingOccurrences(of: "my_token_key=broken_token_string", with: newParam)
             }
+
         case .add(let key):
             let newParam = [key, value].filterNils().joined(separator: "=")
             if url == Constant.url {

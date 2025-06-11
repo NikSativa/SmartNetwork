@@ -133,18 +133,21 @@ public enum HTTPStubCondition {
             guard let lhs = try? original?.url() else {
                 return false
             }
-
             guard let rhs = try? address.url() else {
                 return false
             }
 
             return lhs == rhs
+
         case .isPath(let string):
             return request.path == string
+
         case .pathStartsWith(let string):
             return Array(request.path.prefix(string.count)) == string
+
         case .pathEndsWith(let string):
             return Array(request.path.suffix(string.count)) == string
+
         case .pathContains(let pathComponents, let keepingOrder):
             let path = request.path
             var pathComponents = pathComponents
@@ -169,31 +172,40 @@ public enum HTTPStubCondition {
                 }
             }
             return false
+
         case .isHost(let string):
             precondition(!string.contains("/"), "The host part of an URL never contains any slash. Only use strings like 'api.example.com' for this value, and not things like 'https://api.example.com/'")
             return request.url?.host == string
+
         case .isAbsoluteURLString(let string):
             return request.absoluteString == string
+
         case .isMethod(let string):
             return request.httpMethod == string
+
         case .isScheme(let string):
             assert(!string.contains("://"), "The scheme part of an URL never contains '://'. Only use strings like 'https' for this value, and not things like 'https://'")
             assert(!string.contains("/"), "The scheme part of an URL never contains any slash. Only use strings like 'https' for this value, and not things like 'https://api.example.com/'")
             return request.url?.scheme == string
+
         case .pathNSMatches(let regex):
             guard let path = request.url?.path else {
                 return false
             }
+
             let range = NSRange(location: 0, length: path.utf16.count)
             let matches = regex.firstMatch(in: path, options: [], range: range)
             return matches != nil
+
         case .absoluteStringNSMatches(let regex):
             guard let absoluteString = request.absoluteString else {
                 return false
             }
+
             let range = NSRange(location: 0, length: absoluteString.utf16.count)
             let matches = regex.firstMatch(in: absoluteString, options: [], range: range)
             return matches != nil
+
         case .custom(let closure):
             return closure(request)
         }
@@ -213,6 +225,7 @@ private extension URLRequestRepresentation {
         guard let path = url?.path else {
             return []
         }
+
         return path.toPathComponents
     }
 }

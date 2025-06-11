@@ -15,9 +15,9 @@ final class RequestMultithreadTests: XCTestCase {
 
     private let testObj = TestInfo(id: 1)
 
-    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
+    @AtomicValue
     private var exps: [XCTestExpectation] = []
-    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
+    @AtomicValue
     private var result: [TestInfo?] = []
 
     private let subject = SmartRequestManager.create()
@@ -25,23 +25,29 @@ final class RequestMultithreadTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        HTTPStubServer.shared.add(condition: .isHost(host1),
-                                  body: .encode(TestInfo(id: 1)),
-                                  delayInSeconds: stubbedTimeoutInSeconds).store(in: &observers)
+        HTTPStubServer.shared
+            .add(condition: .isHost(host1),
+                 body: .encode(TestInfo(id: 1)),
+                 delayInSeconds: stubbedTimeoutInSeconds)
+            .store(in: &observers)
     }
 
     override func tearDown() {
         super.tearDown()
         observers = []
-        result = []
+        $result.sync { $0 = [] }
     }
 
     func test_threads_closure() {
         threads { [self] exp, comp in
-            subject.request(address: address1).decode(TestInfo.self).complete { [exp] obj in
-                comp(try! obj.get())
-                exp.fulfill()
-            }.storing(in: &observers).start()
+            subject.request(address: address1)
+                .decode(TestInfo.self)
+                .complete { [exp] obj in
+                    comp(try! obj.get())
+                    exp.fulfill()
+                }
+                .storing(in: &observers)
+                .start()
         }
     }
 
@@ -58,10 +64,14 @@ final class RequestMultithreadTests: XCTestCase {
     func test_threads() {
         threads { [self] exp, comp in
             if Bool.random() {
-                subject.request(address: address1).decode(TestInfo.self).complete { [exp] obj in
-                    comp(try! obj.get())
-                    exp.fulfill()
-                }.detach().deferredStart()
+                subject.request(address: address1)
+                    .decode(TestInfo.self)
+                    .complete { [exp] obj in
+                        comp(try! obj.get())
+                        exp.fulfill()
+                    }
+                    .detach()
+                    .deferredStart()
             } else {
                 Task {
                     let obj = await subject.request(address: address1).decode(TestInfo.self).async()
@@ -81,13 +91,13 @@ final class RequestMultithreadTests: XCTestCase {
             let randDelay: Double = .init((0...20).randomElement()!) / 100.0
             group.enter()
             Queue.default.asyncAfter(deadline: .now() + randDelay) { [self] in
-                $exps.mutate { exps in
+                $exps.sync { exps in
                     let exp = expectation(description: "request \(i)")
                     exps.append(exp)
                     group.leave()
 
                     processor(exp) { [self] new in
-                        $result.mutate { results in
+                        $result.sync { results in
                             results.append(new)
                         }
                     }
@@ -111,13 +121,13 @@ final class RequestMultithreadTests: XCTestCase {
             let randDelay: Double = .init((0...20).randomElement()!) / 100.0
             group.enter()
             Queue.default.asyncAfter(deadline: .now() + randDelay) { [self] in
-                $exps.mutate { exps in
+                $exps.sync { exps in
                     let exp = expectation(description: "request \(i)")
                     exps.append(exp)
                     group.leave()
 
                     processor(exp) { [self] new in
-                        $result.mutate { results in
+                        $result.sync { results in
                             results.append(new)
                         }
                     }

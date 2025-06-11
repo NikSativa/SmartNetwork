@@ -9,13 +9,13 @@ import Threading
 ///
 /// Use this class to manage request-bound asynchronous work in a way that is composable, testable, and memory-safe.
 public final class SmartTask {
-    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
-    private var cancelAction: (() -> Void)?
+    @AtomicValue
+    private var cancelAction: (() -> Void)? = nil
 
-    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
-    private var runAction: (() -> Void)?
+    @AtomicValue
+    private var runAction: (() -> Void)? = nil
 
-    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
+    @AtomicValue
     private var shouldCancelOnDeinit: Bool = true
 
     /// Arbitrary metadata associated with the task.
@@ -30,8 +30,8 @@ public final class SmartTask {
     ///   - cancelAction: An optional closure to execute if the task is cancelled.
     public init(runAction: @escaping () -> Void,
                 cancelAction: (() -> Void)? = nil) {
-        self.runAction = runAction
-        self.cancelAction = cancelAction
+        self.$runAction.syncUnchecked { $0 = runAction }
+        self.$cancelAction.syncUnchecked { $0 = cancelAction }
     }
 
     deinit {
@@ -50,7 +50,7 @@ extension SmartTask: SmartTasking {
     /// Returns the instance for chaining.
     @discardableResult
     public func detach() -> DetachedTask {
-        shouldCancelOnDeinit = false
+        $shouldCancelOnDeinit.syncUnchecked { $0 = false }
         return self
     }
 }
@@ -60,7 +60,7 @@ extension SmartTask: SmartTasking {
 extension SmartTask: DetachedTask {
     /// Executes the task immediately on the current thread, if not already started.
     public func start() {
-        let runAction = $runAction.mutate { runAction in
+        let runAction = $runAction.syncUnchecked { runAction in
             let action = runAction
             runAction = nil
             return action
@@ -97,9 +97,9 @@ extension SmartTask: DetachedTask {
 extension SmartTask: Cancellable {
     /// Cancels the task and clears associated actions to release resources.
     public func cancel() {
-        runAction = nil
+        $runAction.syncUnchecked { $0 = nil }
 
-        let cancelAction = $cancelAction.mutate { cancelAction in
+        let cancelAction = $cancelAction.syncUnchecked { cancelAction in
             let action = cancelAction
             cancelAction = nil
             return action

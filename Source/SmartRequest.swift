@@ -59,10 +59,12 @@ internal struct SmartRequest {
                  .reloadRevalidatingCacheData:
                 parameters.cacheSettings?.cache.removeCachedResponse(for: sdkRequest)
                 shouldUseCache = false
+
             case .returnCacheDataDontLoad,
                  .returnCacheDataElseLoad,
                  .useProtocolCachePolicy:
                 shouldUseCache = true
+
             @unknown default:
                 shouldUseCache = true
             }
@@ -200,8 +202,8 @@ private final class SessionAdaptor {
         let (asyncBytes, response) = try await session.task(for: request)
         task = asyncBytes.task
 
-        if let progressHandler = progressHandler,
-           let task = task {
+        if let progressHandler,
+           let task {
             observer = task.progress.observe(progressHandler)
         }
 

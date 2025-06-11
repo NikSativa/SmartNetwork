@@ -26,10 +26,13 @@ final class PureRequestManagerTests: XCTestCase {
     func test_api_any() {
         let actual: UnsafeValue<SmartResponse> = .init()
         let exp = expectation(description: #function)
-        subject.request(address: address).complete { obj in
-            actual.value = obj
-            exp.fulfill()
-        }.deferredStart().store(in: &observers)
+        subject.request(address: address)
+            .complete { obj in
+                actual.value = obj
+                exp.fulfill()
+            }
+            .deferredStart()
+            .store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
         XCTAssertEqual(info, actual.value?.body?.info())
     }
@@ -43,7 +46,9 @@ final class PureRequestManagerTests: XCTestCase {
                         completionQueue: .absent) { obj in
             actual.value = obj
             exp.fulfill()
-        }.deferredStart().store(in: &observers)
+        }
+        .deferredStart()
+        .store(in: &observers)
         wait(for: [exp], timeout: timeoutInSeconds)
         XCTAssertEqual(info, actual.value?.body?.info())
     }

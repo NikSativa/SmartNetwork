@@ -38,7 +38,7 @@ public final class HTTPStubServer {
 
     public static let shared: HTTPStubServer = .init()
 
-    @Atomic(mutex: AnyMutex.pthread(.recursive), read: .sync, write: .sync)
+    @AtomicValue
     private var responses: [Info] = []
 
     private init() {
@@ -57,7 +57,7 @@ public final class HTTPStubServer {
     /// - Returns: A `SmartTasking` instance for cancellation.
     public func add(condition: HTTPStubCondition,
                     response: HTTPStubResponse) -> SmartTasking {
-        return $responses.mutate { responses in
+        return $responses.sync { responses in
             let id = UUID().uuidString
             let info = Info(id: id,
                             condition: condition,
@@ -73,7 +73,7 @@ public final class HTTPStubServer {
     }
 
     private func removeAll(withId id: String) {
-        $responses.mutate { responses in
+        $responses.sync { responses in
             responses.removeAll(where: { info in
                 return info.id == id
             })
@@ -82,7 +82,7 @@ public final class HTTPStubServer {
 
     /// Resolves a stubbed response for a given request, falling back to the configured strategy if none match.
     internal func response(for request: URLRequestRepresentation) -> HTTPStubResponse? {
-        return $responses.mutate { responses in
+        return $responses.sync { responses in
             let found = responses.first { info in
                 return info.condition.test(request)
             }

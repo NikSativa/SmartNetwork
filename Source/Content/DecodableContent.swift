@@ -29,12 +29,12 @@ struct DecodableContent<Response: Decodable>: Deserializable {
 
             do {
                 let decoder = decoder?() ?? .init()
-                let result: Response
-                if keyPath.path.isEmpty {
-                    result = try decoder.decode(Response.self, from: data)
-                } else {
-                    result = try data.decode(Response.self, keyPath: keyPath.path, decoder: decoder)
-                }
+                let result: Response =
+                    if keyPath.path.isEmpty {
+                        try decoder.decode(Response.self, from: data)
+                    } else {
+                        try data.decode(Response.self, keyPath: keyPath.path, decoder: decoder)
+                    }
                 return .success(result)
             } catch {
                 switch keyPath.fallback {

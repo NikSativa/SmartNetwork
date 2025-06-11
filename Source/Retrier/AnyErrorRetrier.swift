@@ -39,6 +39,7 @@ public struct AnyErrorRetrier: SmartRetrier {
         guard let error = result.error, userInfo.attemptsCount < attemptsCount else {
             return .doNotRetry
         }
+
         return checker(error)
     }
 }

@@ -38,7 +38,7 @@ internal extension AddressDetails {
             components.queryItems = result
         }
 
-        if let fragment = fragment {
+        if let fragment {
             components.fragment = fragment
         }
 

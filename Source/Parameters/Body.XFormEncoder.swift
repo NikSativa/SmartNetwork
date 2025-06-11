@@ -45,7 +45,8 @@ extension Body {
                 .map { key, value -> String in
                     return [key, percentEscapeString(value)].filterNils().joined(separator: "=")
                 }
-                .joined(separator: "&").data(using: String.Encoding.utf8)
+                .joined(separator: "&")
+                .data(using: String.Encoding.utf8)
         }
     }
 }

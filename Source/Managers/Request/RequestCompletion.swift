@@ -45,7 +45,8 @@ public extension RequestCompletion {
         return complete(in: SmartNetworkSettings.defaultCompletionQueue) { _ in
             // nothing to do
         }
-        .detach().deferredStart()
+        .detach()
+        .deferredStart()
     }
 
     /// Completes the request on the specified queue and invokes a `Void` closure after completion.

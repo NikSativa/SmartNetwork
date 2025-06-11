@@ -53,6 +53,7 @@ extension HTTPStubBody {
             guard let path = bundle.url(forResource: name, withExtension: nil) else {
                 return nil
             }
+
             let data = try? Data(contentsOf: path)
             return data
         case .filePath(let path):
