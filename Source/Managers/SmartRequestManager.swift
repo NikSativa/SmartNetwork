@@ -1,13 +1,36 @@
 import Foundation
 import Threading
 
+/// Represents the possible outcomes of a stop-the-line resolution.
+///
+/// Used to determine how the system should proceed after an interruption or validation check in the request pipeline.
+/// Each case defines a distinct strategy for continuing or retrying the request flow.
+private enum StopTheLineQueueAction: SmartSendable {
+    /// Replaces the original response with a new one and proceeds.
+    ///
+    /// - Parameter response: The alternative `SmartResponse` to use.
+    case passOver
+
+    /// Discards the current response and immediately retries the request.
+    case retry
+
+    /// Discards the current response and retries the request after a delay.
+    ///
+    /// - Parameter delay: The time interval to wait before retrying.
+    case retryWithDelay(TimeInterval)
+}
+
 /// Manages the orchestration and lifecycle of network requests within SmartNetwork.
 ///
 /// `SmartRequestManager` handles request creation, plugin execution, retry logic, cancellation,
 /// and the `StopTheLine` mechanism. It ensures reliable and testable execution of HTTP workflows,
 /// and supports both async and callback-based request interfaces.
 public final class SmartRequestManager {
+    @AtomicValue
     private var isRunning: Bool = true
+    @AtomicValue
+    private var lastStopTheLineQueueAction: StopTheLineQueueAction = .passOver
+
     private let plugins: [Plugin]
     private let session: SmartURLSession
     private let stopTheLine: StopTheLine?
@@ -132,18 +155,30 @@ private extension SmartRequestManager {
 
         do {
             assert(!Thread.isMainThread)
-            try await waitUntilRunning(parameters.shouldIgnoreStopTheLine)
-            let stopTheLineResult = try await checkStopTheLine(data, address: address, parameters: parameters, userInfo: userInfo)
-            switch stopTheLineResult {
-            case .useOriginal:
-                break
-            case .passOver(let newResponse):
-                data = newResponse
-            case .retry:
-                return await retryAction()
-            case .retryWithDelay(let delay):
-                try await Task.sleep(seconds: delay)
-                return await retryAction()
+            let waited = try await waitUntilRunning(parameters.shouldIgnoreStopTheLine)
+            if waited {
+                switch lastStopTheLineQueueAction {
+                case .passOver:
+                    break
+                case .retry:
+                    return await retryAction()
+                case .retryWithDelay(let delay):
+                    try await Task.sleep(seconds: delay)
+                    return await retryAction()
+                }
+            } else {
+                let action = try await checkStopTheLine(data, address: address, parameters: parameters, userInfo: userInfo)
+                switch action {
+                case .useOriginal:
+                    break
+                case .passOver(let newResponse):
+                    data = newResponse
+                case .retry:
+                    return await retryAction()
+                case .retryWithDelay(let delay):
+                    try await Task.sleep(seconds: delay)
+                    return await retryAction()
+                }
             }
         } catch {
             // In the event that the request already has an error, and the plugin throws a new one,
@@ -159,14 +194,19 @@ private extension SmartRequestManager {
     }
 
     /// Suspends execution until the manager is running, unless bypass is specified.
-    func waitUntilRunning(_ shouldIgnoreStopTheLine: Bool) async throws {
+    @discardableResult
+    func waitUntilRunning(_ shouldIgnoreStopTheLine: Bool) async throws -> Bool {
+        var waited = false
+
         if shouldIgnoreStopTheLine {
-            return
+            return waited
         }
 
         while !isRunning {
+            waited = true
             try await Task.sleep(seconds: 0.1)
         }
+        return waited
     }
 
     /// Merges and prepares plugins for the current request context.
@@ -219,14 +259,25 @@ private extension SmartRequestManager {
             isRunning = false
             let newFactory = Self(withPlugins: plugins, stopTheLine: nil, retrier: retrier)
             do {
-                let result = try await stopTheLine.action(with: newFactory,
+                let action = try await stopTheLine.action(with: newFactory,
                                                           response: result,
                                                           address: address,
                                                           parameters: parameters,
                                                           userInfo: userInfo)
+                switch action {
+                case .retry:
+                    lastStopTheLineQueueAction = .retry
+                case .passOver,
+                     .useOriginal:
+                    lastStopTheLineQueueAction = .passOver
+                case .retryWithDelay(let delay):
+                    lastStopTheLineQueueAction = .retryWithDelay(delay)
+                }
+
                 isRunning = true
-                return result
+                return action
             } catch {
+                lastStopTheLineQueueAction = .passOver
                 isRunning = true
                 throw error
             }

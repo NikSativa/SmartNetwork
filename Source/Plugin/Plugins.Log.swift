@@ -1,4 +1,5 @@
 import Foundation
+import Threading
 
 // MARK: - Plugins.Log
 
@@ -20,6 +21,7 @@ public extension Plugins {
         public let priority: PluginPriority
         private let logger: Logging
         private let options: Options
+        private let lock: Locking = AnyLock.default
 
         public init(id: ID? = nil,
                     priority: PluginPriority = .curl,
@@ -54,7 +56,9 @@ public extension Plugins {
                     return curl
                 }
 
-            logger(collector)
+            lock.syncUnchecked {
+                logger(collector)
+            }
         }
 
         public func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, data: SmartResponse) {
@@ -89,7 +93,9 @@ public extension Plugins {
                     return body
                 }
 
-            logger(collector)
+            lock.syncUnchecked {
+                logger(collector)
+            }
         }
 
         public func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) {
@@ -122,7 +128,9 @@ public extension Plugins {
                     return body
                 }
 
-            logger(collector)
+            lock.syncUnchecked {
+                logger(collector)
+            }
         }
 
         public func wasCancelled(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession) {
@@ -141,7 +149,9 @@ public extension Plugins {
                     return curl
                 }
 
-            logger(collector)
+            lock.syncUnchecked {
+                logger(collector)
+            }
         }
 
         /// Attempts to decode and format response body data into a human-readable string.
