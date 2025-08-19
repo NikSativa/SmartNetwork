@@ -57,7 +57,7 @@ public extension AnyRequest {
     ///   - decoder: The JSON decoder or decoding strategy.
     ///   - keyPath: Optional key path for decoding nested values.
     /// - Returns: A `TypedRequest` instance that decodes the response.
-    func decode<T>(_ type: T.Type = T.self, with decoder: JSONDecoder, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T>
+    func decode<T>(_: T.Type = T.self, with decoder: JSONDecoder, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T>
     where T: Decodable {
         return .init(anyRequest: self, decoder: DecodableContent<T>(decoder: { decoder }, keyPath: keyPath))
     }
@@ -69,7 +69,7 @@ public extension AnyRequest {
     ///   - decoder: The JSON decoder or decoding strategy.
     ///   - keyPath: Optional key path for decoding nested values.
     /// - Returns: A `TypedRequest` instance that decodes the response.
-    func decode<T>(_ type: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T>
+    func decode<T>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T>
     where T: Decodable {
         return .init(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath))
     }
@@ -81,7 +81,7 @@ public extension AnyRequest {
     ///   - decoder: The JSON decoder or decoding strategy.
     ///   - keyPath: Optional key path for decoding nested values.
     /// - Returns: A `TypedRequest` instance that decodes the response.
-    func decode<T>(_ type: T.Type = T.self, with decoder: JSONDecoder, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T>
+    func decode<T>(_: T.Type = T.self, with decoder: JSONDecoder, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T>
     where T: Decodable & ExpressibleByNilLiteral {
         return .init(anyRequest: self, decoder: DecodableContent<T>(decoder: { decoder }, keyPath: keyPath))
     }
@@ -93,7 +93,7 @@ public extension AnyRequest {
     ///   - decoder: The JSON decoder or decoding strategy.
     ///   - keyPath: Optional key path for decoding nested values.
     /// - Returns: A `TypedRequest` instance that decodes the response.
-    func decode<T>(_ type: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T>
+    func decode<T>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T>
     where T: Decodable & ExpressibleByNilLiteral {
         return .init(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath))
     }
@@ -105,7 +105,7 @@ public extension AnyRequest {
     ///   - decoder: The decoding strategy or JSON decoder.
     ///   - keyPath: Optional key path for nested decoding.
     /// - Returns: A result containing the decoded value or an error.
-    func decodeAsync<T>(_ type: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async -> Result<T, Error>
+    func decodeAsync<T>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async -> Result<T, Error>
     where T: Decodable {
         return await TypedRequest<T>(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath)).async()
     }
@@ -118,7 +118,7 @@ public extension AnyRequest {
     ///   - keyPath: Optional key path for nested decoding.
     /// - Throws: An error if decoding fails.
     /// - Returns: The decoded result.
-    func decodeAsyncWithThrowing<T>(_ type: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async throws -> T
+    func decodeAsyncWithThrowing<T>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async throws -> T
     where T: Decodable {
         return try await TypedRequest<T>(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath)).asyncWithThrowing()
     }
@@ -130,7 +130,7 @@ public extension AnyRequest {
     ///   - decoder: The decoding strategy or JSON decoder.
     ///   - keyPath: Optional key path for nested decoding.
     /// - Returns: A result containing the decoded value or an error.
-    func decodeAsync<T>(_ type: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async -> Result<T, Error>
+    func decodeAsync<T>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async -> Result<T, Error>
     where T: Decodable & ExpressibleByNilLiteral {
         return await TypedRequest<T>(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath)).async()
     }
@@ -143,7 +143,7 @@ public extension AnyRequest {
     ///   - keyPath: Optional key path for nested decoding.
     /// - Throws: An error if decoding fails.
     /// - Returns: The decoded result.
-    func decodeAsyncWithThrowing<T>(_ type: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async throws -> T
+    func decodeAsyncWithThrowing<T>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async throws -> T
     where T: Decodable & ExpressibleByNilLiteral {
         return try await TypedRequest<T>(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath)).asyncWithThrowing()
     }

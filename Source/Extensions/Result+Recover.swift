@@ -1,6 +1,6 @@
 import Foundation
 
-internal extension Result where Failure: Error {
+public extension Result where Failure: Error {
     /// Returns the original result if successful, or a default value if the error is recoverable.
     ///
     /// - Parameter defaultValue: The value to use when recovering from a recoverable error.

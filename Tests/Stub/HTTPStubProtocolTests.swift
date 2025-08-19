@@ -56,7 +56,7 @@ final class HTTPStubProtocolTests: XCTestCase {
             .store(in: &observers)
 
         do {
-            let _ = try await session.data(for: request)
+            _ = try await session.data(for: request)
             XCTFail("Should throw an error")
         } catch {
             #if os(watchOS)
@@ -83,7 +83,7 @@ final class HTTPStubProtocolTests: XCTestCase {
 
     func test_no_stub() async {
         do {
-            let _ = try await session.data(for: request)
+            _ = try await session.data(for: request)
             XCTFail("Should throw an error")
         } catch {
             XCTAssertEqual((error as NSError).domain, "NSURLErrorDomain", error.localizedDescription)

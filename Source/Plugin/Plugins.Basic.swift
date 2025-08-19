@@ -20,10 +20,10 @@ public extension Plugins {
 
     #if swift(>=6.0)
     /// A closure that provides an `AuthBasicToken` instance or `nil` if credentials are unavailable.
-    typealias AuthBasicTokenProvider = @Sendable () -> AuthBasicToken?
+    typealias AuthBasicTokenProvider = @Sendable () async -> AuthBasicToken?
     #else
     /// A closure that provides an `AuthBasicToken` instance or `nil` if credentials are unavailable.
-    typealias AuthBasicTokenProvider = () -> AuthBasicToken?
+    typealias AuthBasicTokenProvider = () async -> AuthBasicToken?
     #endif
 
     /// Creates a plugin that adds HTTP Basic Authentication to outgoing requests.
@@ -39,7 +39,7 @@ public extension Plugins {
                            priority: .authBasic,
                            type: .header(overrideExisting ? .set("Authorization") : .trySet("Authorization")),
                            tokenProvider: {
-                               return tokenProvider().map { token in
+                               return await tokenProvider().map { token in
                                    let token = Data("\(token.username):\(token.password)".utf8).base64EncodedString()
                                    return "Basic " + token
                                }

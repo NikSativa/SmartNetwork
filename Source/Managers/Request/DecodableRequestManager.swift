@@ -25,7 +25,7 @@ public extension DecodableRequestManager {
     ///   - completionQueue: The queue for delivering the result.
     ///   - completion: A closure called with the decoded result or error.
     /// - Returns: A `SmartTasking` instance representing the request.
-    func request<T>(_ type: T.Type = T.self,
+    func request<T>(_: T.Type = T.self,
                     keyPath: DecodableKeyPath<T> = [],
                     address: Address,
                     parameters: Parameters = .init(),
@@ -57,7 +57,7 @@ public extension DecodableRequestManager {
     ///   - completion: A closure called with the decoded result or error.
     /// - Returns: A `SmartTasking` instance representing the request.
     /// If decoding fails, returns `.success(nil)` instead of an error.
-    func request<T>(_ type: T.Type = T.self,
+    func request<T>(_: T.Type = T.self,
                     keyPath: DecodableKeyPath<T> = [],
                     address: Address,
                     parameters: Parameters = .init(),

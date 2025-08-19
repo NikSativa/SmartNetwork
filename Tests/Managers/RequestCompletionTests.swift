@@ -35,12 +35,12 @@ final class RequestCompletionTests: XCTestCase {
     }
 
     func test_complete_queue_completion() {
-        let _ = subject.complete(in: .async(Queue.main), completion: { _ in })
+        _ = subject.complete(in: .async(Queue.main), completion: { _ in })
         XCTAssertHaveReceived(manager, .requestWithAddress_Parameters_Userinfo_Completionqueue_Completion, with: address, parameters, Argument.anything, DelayedQueue.async(Queue.main), Argument.closure, countSpecifier: .atLeast(1))
     }
 
     func test_extension_complete_completion() {
-        let _ = subject.complete(completion: { _ in })
+        _ = subject.complete(completion: { _ in })
         XCTAssertHaveReceived(manager, .requestWithAddress_Parameters_Userinfo_Completionqueue_Completion, with: address, parameters, Argument.anything, DelayedQueue.async(Queue.main), Argument.closure, countSpecifier: .atLeast(1))
     }
 
@@ -48,7 +48,7 @@ final class RequestCompletionTests: XCTestCase {
         task.stub(.detach).andReturn(task)
         task.stub(.deferredStart).andReturn(task)
 
-        let _ = subject.oneWay()
+        _ = subject.oneWay()
         XCTAssertHaveReceived(manager, .requestWithAddress_Parameters_Userinfo_Completionqueue_Completion, with: address, parameters, Argument.anything, DelayedQueue.async(Queue.main), Argument.closure, countSpecifier: .atLeast(1))
 
         XCTAssertHaveReceived(task, .detach, countSpecifier: .atLeast(1))
@@ -56,17 +56,17 @@ final class RequestCompletionTests: XCTestCase {
     }
 
     func test_extension_complete_void() {
-        let _ = subject.complete(completion: {})
+        _ = subject.complete(completion: {})
         XCTAssertHaveReceived(manager, .requestWithAddress_Parameters_Userinfo_Completionqueue_Completion, with: address, parameters, Argument.anything, DelayedQueue.async(Queue.main), Argument.closure, countSpecifier: .atLeast(1))
     }
 
     func test_extension_async() async {
-        let _ = await subject.async()
+        _ = await subject.async()
         XCTAssertHaveReceived(manager, .requestWithAddress_Parameters_Userinfo, with: address, parameters, Argument.anything, countSpecifier: .atLeast(1))
     }
 
     func test_extension_asyncWithThrowing() async throws {
-        let _ = try? await subject.asyncWithThrowing()
+        _ = try? await subject.asyncWithThrowing()
         XCTAssertHaveReceived(manager, .requestWithAddress_Parameters_Userinfo, with: address, parameters, Argument.anything, countSpecifier: .atLeast(1))
     }
 }
