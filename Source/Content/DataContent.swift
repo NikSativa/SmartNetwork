@@ -13,7 +13,7 @@ import Foundation
 public struct DataContent: Deserializable {
     /// Creates a new `DataContent` deserializer.
     public init() {}
-    
+
     /// Attempts to extract the raw body `Data` from a `SmartResponse`.
     ///
     /// Error precedence is as follows:

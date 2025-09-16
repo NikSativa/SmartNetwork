@@ -101,7 +101,7 @@ final class DeserializableTests: XCTestCase {
     private func custom<T: Deserializable>(_ strategy: T, body: Data? = nil, error: Error? = nil) -> Result<T.Object?, Error> {
         let result = strategy.decode(with: .testMake(url: .spry.testMake(),
                                                      statusCode: 200,
-                                                     body: body.map(Body.data),
+                                                     body: body.map(HTTPBody.data),
                                                      error: error),
                                      parameters: .init())
         switch result {

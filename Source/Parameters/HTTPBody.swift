@@ -1,12 +1,15 @@
 import CoreGraphics
 import Foundation
 
+@available(*, deprecated, renamed: "HTTPBody", message: "Please use HTTPBody instead.")
+public typealias Body = HTTPBody
+
 /// Represents an HTTP request body in various formats.
 ///
 /// `Body` supports multiple content types, including raw `Data`, `Encodable` models, multipart forms,
 /// x-www-form-urlencoded, JSON, and platform-specific image formats. It provides utilities for encoding
 /// the body and generating appropriate headers for transmission.
-public enum Body: ExpressibleByNilLiteral {
+public enum HTTPBody: ExpressibleByNilLiteral {
     /// Represents supported image formats for use in HTTP body payloads.
     public enum ImageFormat: Hashable {
         #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
@@ -38,7 +41,7 @@ public enum Body: ExpressibleByNilLiteral {
     case json(Any, options: JSONSerialization.WritingOptions)
 }
 
-public extension Body {
+public extension HTTPBody {
     /// Encodable body
     static func encode(_ encodable: some Encodable) -> Self {
         return .encode(encodable, with: { .init() })
@@ -78,13 +81,13 @@ public extension Body {
 }
 
 /// Encodes an optional `Body` into an `EncodedBody`, returning an empty result if `nil`.
-public extension Body? {
-    func encode() throws -> Body.EncodedBody {
+public extension HTTPBody? {
+    func encode() throws -> HTTPBody.EncodedBody {
         return try (self?.encode()) ?? .init(httpBody: nil, [:])
     }
 }
 
-public extension Body {
+public extension HTTPBody {
     /// Represents the result of encoding a `Body` instance into data and HTTP headers.
     struct EncodedBody {
         public let httpBody: Data?
@@ -168,7 +171,7 @@ public extension Body {
             ])
 
         case .xform(let parameters):
-            let data = Body.XFormEncoder.encodeParameters(parameters: parameters)
+            let data = HTTPBody.XFormEncoder.encodeParameters(parameters: parameters)
             return .init(httpBody: data, [
                 "Content-Type": "application/x-www-form-urlencoded",
                 "Content-Length": "\(data?.count ?? 0)"
@@ -178,7 +181,7 @@ public extension Body {
 }
 
 #if swift(>=6.0)
-extension Body: @unchecked Sendable {}
-extension Body.ImageFormat: @unchecked Sendable {}
-extension Body.EncodedBody: Sendable {}
+extension HTTPBody: @unchecked Sendable {}
+extension HTTPBody.ImageFormat: @unchecked Sendable {}
+extension HTTPBody.EncodedBody: Sendable {}
 #endif

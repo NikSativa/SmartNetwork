@@ -8,7 +8,7 @@ import XCTest
 final class PluginsCurlTests: XCTestCase {
     let url = URL.spry.testMake("https://www.some.com?some=value")
     let headerFields: [String: String] = ["some": "value"]
-    lazy var body: Body = .encode(TestInfo(id: 2))
+    lazy var body: HTTPBody = .encode(TestInfo(id: 2))
 
     let userInfo: UserInfo = .testMake()
     let parameters: Parameters = .testMake()

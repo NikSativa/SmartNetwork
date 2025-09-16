@@ -16,7 +16,7 @@ import Foundation
 public struct JSONContent: Deserializable {
     /// Creates a new `JSONContent` deserializer.
     public init() {}
-    
+
     /// Decodes the response body into a Foundation JSON value using `JSONSerialization`.
     ///
     /// Error precedence is as follows:
@@ -48,7 +48,7 @@ public struct JSONContent: Deserializable {
             if data.isEmpty {
                 return .failure(RequestDecodingError.emptyResponse)
             }
-            
+
             do {
                 return try .success(JSONSerialization.jsonObject(with: data))
             } catch {

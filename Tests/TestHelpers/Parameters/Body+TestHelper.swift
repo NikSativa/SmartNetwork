@@ -4,7 +4,7 @@ import SpryKit
 
 // MARK: - Body + Equatable
 
-extension Body: Equatable {
+extension HTTPBody: Equatable {
     private static func compare(_ lhs: Any, _ rhs: Any) -> Bool {
         return isAnyEqual(lhs, rhs)
     }
@@ -13,7 +13,7 @@ extension Body: Equatable {
         return isAnyEqual(lhs, rhs)
     }
 
-    public static func ==(lhs: Body, rhs: Body) -> Bool {
+    public static func ==(lhs: HTTPBody, rhs: HTTPBody) -> Bool {
         switch (lhs, rhs) {
         case (.empty, .empty):
             return true

@@ -12,7 +12,7 @@ public struct Parameters {
     public let method: HTTPMethod?
 
     /// The body of the request.
-    public let body: Body?
+    public let body: HTTPBody?
 
     /// The timeout interval for the request. Default is 30 seconds. Change it using `RequestSettings.timeoutInterval`.
     public let timeoutInterval: TimeInterval
@@ -37,7 +37,7 @@ public struct Parameters {
     /// Initializes a new Parameters object.
     public init(header: HeaderFields = [:],
                 method: HTTPMethod? = .get,
-                body: Body? = nil,
+                body: HTTPBody? = nil,
                 plugins: [Plugin] = [],
                 cacheSettings: CacheSettings? = nil,
                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,

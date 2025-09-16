@@ -9,7 +9,7 @@ extension SmartResponse: Equatable, SpryEquatable {
                                 statusCode: Int,
                                 httpVersion: String? = nil,
                                 headerFields: [String: String]? = nil,
-                                body: Body? = nil,
+                                body: HTTPBody? = nil,
                                 error: Error? = nil,
                                 session: SmartURLSession = SmartNetworkSettings.sharedSession) -> Self {
         var request = URLRequest(url: url)
@@ -28,7 +28,7 @@ extension SmartResponse: Equatable, SpryEquatable {
     }
 
     public static func testMake(request: URLRequestRepresentation? = nil,
-                                body: Body? = nil,
+                                body: HTTPBody? = nil,
                                 response: URLResponse? = nil,
                                 error: Error? = nil,
                                 session: SmartURLSession = SmartNetworkSettings.sharedSession) -> Self {

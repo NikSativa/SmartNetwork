@@ -1,6 +1,6 @@
 import Foundation
 
-extension Body {
+extension HTTPBody {
     /// Encodes a dictionary of key-value pairs into `application/x-www-form-urlencoded` format.
     ///
     /// Used to serialize request bodies for form submissions. Percent-encodes keys and values according to standard rules.

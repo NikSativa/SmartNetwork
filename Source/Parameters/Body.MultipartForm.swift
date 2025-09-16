@@ -6,7 +6,7 @@ import Foundation
 ///
 /// This class builds a multipart body using configurable boundaries and headers, allowing
 /// the inclusion of multiple parts (e.g., files or fields) with appropriate MIME types and metadata.
-public extension Body {
+public extension HTTPBody {
     final class MultipartForm {
         /// The `Content-Type` header string used for multipart/form-data requests.
         ///
@@ -131,15 +131,15 @@ public extension Body {
 
 // MARK: - Body.MultipartForm + Equatable
 
-extension Body.MultipartForm: Equatable {
-    public static func ==(lhs: Body.MultipartForm, rhs: Body.MultipartForm) -> Bool {
+extension HTTPBody.MultipartForm: Equatable {
+    public static func ==(lhs: HTTPBody.MultipartForm, rhs: HTTPBody.MultipartForm) -> Bool {
         return lhs.boundary == rhs.boundary && lhs.bodyParts == rhs.bodyParts
     }
 }
 
 // MARK: - Body.MultipartForm.Boundary
 
-public extension Body.MultipartForm {
+public extension HTTPBody.MultipartForm {
     /// Represents the boundary string used to separate parts in multipart data.
     struct Boundary: RawRepresentable, ExpressibleByStringLiteral, Hashable {
         public var rawValue: String
@@ -246,7 +246,7 @@ public extension Body.MultipartForm {
     }
 }
 
-private extension Body.MultipartForm {
+private extension HTTPBody.MultipartForm {
     enum BoundaryGenerator {
         enum BoundaryType {
             case initial
@@ -257,7 +257,7 @@ private extension Body.MultipartForm {
         static func boundaryData(forBoundaryType boundaryType: BoundaryType, boundary: Boundary) -> Data {
             let boundary: String = boundary.rawValue
             let boundaryText: String
-            let crlf = Body.EncodingCharacters.crlf
+            let crlf = HTTPBody.EncodingCharacters.crlf
 
             switch boundaryType {
             case .initial:
@@ -288,18 +288,18 @@ private extension Body.MultipartForm {
             self.data = data
         }
 
-        static func ==(lhs: Body.MultipartForm.BodyPart, rhs: Body.MultipartForm.BodyPart) -> Bool {
+        static func ==(lhs: HTTPBody.MultipartForm.BodyPart, rhs: HTTPBody.MultipartForm.BodyPart) -> Bool {
             return lhs.headers == rhs.headers && lhs.data == rhs.data
         }
     }
 }
 
 #if swift(>=6.0)
-extension Body.MultipartForm: @unchecked Sendable {}
-extension Body.MultipartForm.Name: Sendable {}
-extension Body.MultipartForm.Header: Sendable {}
-extension Body.MultipartForm.MimeType: Sendable {}
-extension Body.MultipartForm.Boundary: Sendable {}
-extension Body.MultipartForm.DataContent: Sendable {}
-extension Body.MultipartForm.BodyPart: @unchecked Sendable {}
+extension HTTPBody.MultipartForm: @unchecked Sendable {}
+extension HTTPBody.MultipartForm.Name: Sendable {}
+extension HTTPBody.MultipartForm.Header: Sendable {}
+extension HTTPBody.MultipartForm.MimeType: Sendable {}
+extension HTTPBody.MultipartForm.Boundary: Sendable {}
+extension HTTPBody.MultipartForm.DataContent: Sendable {}
+extension HTTPBody.MultipartForm.BodyPart: @unchecked Sendable {}
 #endif

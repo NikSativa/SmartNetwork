@@ -17,7 +17,7 @@ public enum HTTPStubBody {
     /// Encodes an `Encodable` object using the given `JSONEncoder`.
     case encodable(any Encodable, with: JSONEncoder)
     /// Encodes an image using the specified image format (e.g., PNG, JPEG).
-    case image(Body.ImageFormat)
+    case image(HTTPBody.ImageFormat)
 
     /// Convenience method to encode an `Encodable` object using a default `JSONEncoder`.
     /// Encodable body.

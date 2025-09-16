@@ -7,7 +7,7 @@ import SpryKit
 extension Parameters: SpryEquatable {
     public static func testMake(header: HeaderFields = [:],
                                 method: HTTPMethod? = .get,
-                                body: Body = .empty,
+                                body: HTTPBody = .empty,
                                 plugins: [Plugin] = [],
                                 cacheSettings: CacheSettings? = nil,
                                 requestPolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,

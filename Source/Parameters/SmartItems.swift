@@ -6,6 +6,15 @@ public typealias QueryItems = SmartItems<String?>
 /// The header fields of a network request.
 public typealias HeaderFields = SmartItems<String>
 
+#if swift(>=6.0)
+/// A collection of key-value pairs represented as an array of `SmartItem` elements.
+///
+/// `SmartItems` is a generic structure used for organizing, accessing, and transforming ordered key-value data.
+/// It is commonly used for headers, query items, and other key-value use cases within SmartNetwork.
+public struct SmartItems<T: Hashable & Sendable>: Hashable {
+    public private(set) var rawValues: [SmartItem<T>]
+}
+#else
 /// A collection of key-value pairs represented as an array of `SmartItem` elements.
 ///
 /// `SmartItems` is a generic structure used for organizing, accessing, and transforming ordered key-value data.
@@ -13,6 +22,7 @@ public typealias HeaderFields = SmartItems<String>
 public struct SmartItems<T: Hashable>: Hashable {
     public private(set) var rawValues: [SmartItem<T>]
 }
+#endif
 
 public extension SmartItems {
     /// Creates a new instance from an array of `SmartItem` values.
