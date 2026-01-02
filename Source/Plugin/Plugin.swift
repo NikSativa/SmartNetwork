@@ -8,8 +8,8 @@ public enum Plugins {}
 /// Plugins conforming to this protocol can modify requests, validate responses, handle cancellations,
 /// or observe network flow at different stages of a request's lifecycle.
 ///
-/// ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/SmartNetwork.jpg)
-/// ![Plugins behavior](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/Plugins_behavior.jpg)
+/// - SeeAlso: [Architecture Overview](https://github.com/NikSativa/SmartNetwork#architecture-overview)
+/// - SeeAlso: [Plugin System Lifecycle](https://github.com/NikSativa/SmartNetwork#plugin-system-lifecycle)
 public protocol Plugin: SmartSendable {
     typealias ID = String
 

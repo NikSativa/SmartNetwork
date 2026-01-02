@@ -5,7 +5,7 @@ import Foundation
 /// `StopTheLine` allows you to intercept the flow of request execution based on the contents of a response.
 /// This can be used for custom validation, centralized error handling, or automated retry logic.
 ///
-/// See diagram: ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/SmartNetwork.jpg)
+/// - SeeAlso: [Architecture Overview](https://github.com/NikSativa/SmartNetwork#architecture-overview)
 public protocol StopTheLine: SmartSendable {
     /// Determines the result of a stop-the-line evaluation by inspecting the full request context.
     ///

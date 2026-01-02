@@ -1,0 +1,33 @@
+# .mailmap file maps author/committer names and emails
+# This allows GitHub to correctly group contributors without rewriting history
+# Format: Proper Name <proper@email.com> <old@email.com>
+# Format: Proper Name <proper@email.com> Old Name <old@email.com>
+# Format: Proper Name <proper@email.com> Old Name <old@email.com> Old Name2 <old2@email.com>
+
+# Main account - all commits should be attributed to this
+Mykyta Konopelko <nik.sativa@gmail.com>
+
+# Map all variations of your name to main account
+Mykyta Konopelko <nik.sativa@gmail.com> Nikita Konopelko <nik.sativa@gmail.com>
+Mykyta Konopelko <nik.sativa@gmail.com> Mykyta <nik.sativa@gmail.com>
+Mykyta Konopelko <nik.sativa@gmail.com> Nikita <nik.sativa@gmail.com>
+
+# Map bozongiggsa account (alekseiismirnovv@gmail.com)
+Mykyta Konopelko <nik.sativa@gmail.com> <alekseiismirnovv@gmail.com>
+Mykyta Konopelko <nik.sativa@gmail.com> Aleksei <alekseiismirnovv@gmail.com>
+Mykyta Konopelko <nik.sativa@gmail.com> Aleksei Smirnov <alekseiismirnovv@gmail.com>
+Mykyta Konopelko <nik.sativa@gmail.com> bozongiggsa <alekseiismirnovv@gmail.com>
+
+# Map smirnovaleksei account (GitHub noreply and other possible emails)
+Mykyta Konopelko <nik.sativa@gmail.com> <smirnovaleksei@users.noreply.github.com>
+Mykyta Konopelko <nik.sativa@gmail.com> Aleksei <smirnovaleksei@users.noreply.github.com>
+Mykyta Konopelko <nik.sativa@gmail.com> smirnovaleksei <smirnovaleksei@users.noreply.github.com>
+Mykyta Konopelko <nik.sativa@gmail.com> Aleksei Smirnov <smirnovaleksei@users.noreply.github.com>
+
+# Map GitHub noreply emails (merge commits, etc.) - keep as is or map to main
+# GitHub <noreply@github.com> - leave merge commits as GitHub (they're automated)
+
+# Additional possible email variations (add more if found on GitHub)
+# If you find other emails on GitHub that need mapping, add them here in format:
+# Mykyta Konopelko <nik.sativa@gmail.com> <other@email.com>
+# Mykyta Konopelko <nik.sativa@gmail.com> Other Name <other@email.com>

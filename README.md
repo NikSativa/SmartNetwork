@@ -122,11 +122,150 @@ Need to fetch and display images? Pair SmartNetwork with [`SmartImages`](https:/
 
 ## 📚 Documentation
 
-- [SmartNetwork Overview (PDF)](./.instructions/SmartNetwork.pdf)  
-  <img src="./.instructions/SmartNetwork.jpg" alt="SmartNetwork Overview Preview" width="300" />
+<a id="architecture-overview"></a>
+### Architecture Overview
 
-- [Plugins Behavior (PDF)](./.instructions/Plugins_behavior.pdf)  
-  <img src="./.instructions/Plugins_behavior.jpg" alt="Plugins Behavior Preview" width="300" />
+SmartNetwork follows a modular architecture with a clear request lifecycle:
+
+```mermaid
+graph TB
+    subgraph Manager["SmartRequestManager"]
+        Plugins["Plugins System"]
+        StopTheLine["StopTheLine Mechanism"]
+        Retrier["Retrier Logic"]
+    end
+    
+    Start([Request Created]) --> Prepare[Plugin: prepare]
+    Prepare --> WillSend[Plugin: willSend]
+    WillSend --> Network[Network Request<br/>SmartURLSession → URLSession]
+    Network --> DidReceive[Plugin: didReceive]
+    DidReceive --> StopTheLineCheck{StopTheLine<br/>Verification}
+    StopTheLineCheck -->|Pass| Verify[Plugin: verify]
+    StopTheLineCheck -->|Retry| WillSend
+    StopTheLineCheck -->|Replace| Verify
+    Verify --> DidFinish[Plugin: didFinish]
+    DidFinish --> Decode[Response Decoding<br/>Decodable/Data/Image/JSON/Void]
+    Decode --> RetryCheck{Retrier<br/>Evaluation}
+    RetryCheck -->|Retry| WillSend
+    RetryCheck -->|Complete| End([Completion<br/>Result or Handler])
+    
+    Manager -.-> Prepare
+    Manager -.-> StopTheLineCheck
+    Manager -.-> RetryCheck
+```
+
+<a id="plugin-system-lifecycle"></a>
+### Plugin System Lifecycle
+
+Plugins execute at specific points in the request lifecycle, allowing you to intercept and modify requests/responses:
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Manager as SmartRequestManager
+    participant Plugins as Plugin System
+    participant StopTheLine as StopTheLine
+    participant Network as URLSession
+    participant Decoder as Response Decoder
+    
+    Client->>Manager: Create Request
+    Manager->>Plugins: prepare() [Async]
+    Plugins-->>Manager: Modified Request
+    Manager->>Plugins: willSend()
+    Plugins-->>Manager: Request Validated
+    Manager->>Network: Execute HTTP Request
+    Network-->>Manager: Raw Response
+    Manager->>Plugins: didReceive()
+    Plugins-->>Manager: Response Processed
+    Manager->>StopTheLine: verify()
+    alt Pass
+        StopTheLine-->>Manager: .pass
+    else Retry
+        StopTheLine-->>Manager: .retry
+        Manager->>Plugins: willSend() [Retry]
+    else Replace
+        StopTheLine-->>Manager: .replace
+    end
+    Manager->>Plugins: verify() [Throws on failure]
+    Plugins-->>Manager: Validation Result
+    Manager->>Plugins: didFinish()
+    Plugins-->>Manager: Cleanup Complete
+    Manager->>Decoder: Decode Response
+    Decoder-->>Manager: Typed Result
+    Manager-->>Client: Return Result<T>
+```
+
+### Component Structure
+
+```mermaid
+graph TD
+    SN[SmartNetwork]
+    
+    SN --> Core[Core Components]
+    Core --> SRM[SmartRequestManager<br/>Main Orchestrator]
+    Core --> SR[SmartRequest<br/>Lifecycle Handler]
+    Core --> SResp[SmartResponse<br/>Response Wrapper]
+    Core --> SUS[SmartURLSession<br/>URLSession Abstraction]
+    
+    SN --> Request[Request Building]
+    Request --> Addr[Address<br/>URL Construction]
+    Request --> Params[Parameters<br/>Request Config]
+    Request --> UI[UserInfo<br/>Metadata]
+    
+    SN --> PluginSys[Plugin System]
+    PluginSys --> Plugin[Plugin Protocol]
+    PluginSys --> Priority[PluginPriority<br/>Execution Order]
+    PluginSys --> BuiltIn[Built-in Plugins]
+    BuiltIn --> Basic[Plugins.Basic<br/>Basic Auth]
+    BuiltIn --> Bearer[Plugins.Bearer<br/>Bearer Token]
+    BuiltIn --> Token[Plugins.TokenPlugin<br/>Custom Tokens]
+    BuiltIn --> Status[Plugins.StatusCode<br/>Status Validation]
+    BuiltIn --> Log[Plugins.Log<br/>cURL Logging]
+    BuiltIn --> LogOS[Plugins.LogOS<br/>System Logging]
+    BuiltIn --> JSON[Plugins.JSONHeaders<br/>JSON Headers]
+    
+    SN --> Response[Response Handling]
+    Response --> Content[Content Types]
+    Content --> Decodable[DecodableContent<br/>Decodable]
+    Content --> Data[DataContent<br/>Raw Data]
+    Content --> Image[ImageContent<br/>UIImage/NSImage]
+    Content --> JSONContent[JSONContent<br/>Any Dictionary/Array]
+    Content --> Void[VoidContent<br/>No Body]
+    Response --> KeyPath[DecodeByKeyPath<br/>Nested JSON]
+    
+    SN --> Advanced[Advanced Features]
+    Advanced --> STL[StopTheLine<br/>Flow Control]
+    Advanced --> Retrier[SmartRetrier<br/>Retry Logic]
+    Advanced --> Task[SmartTask<br/>Cancellation]
+    Advanced --> Stub[HTTPStubServer<br/>Testing]
+    
+    SN --> Managers[Request Managers]
+    Managers --> RM[RequestManager<br/>Base Protocol]
+    Managers --> TRM[TypedRequestManager<br/>Type-safe]
+    Managers --> DRM[DecodableRequestManager<br/>Decodable-specific]
+```
+
+### Request Manager Types
+
+SmartNetwork provides multiple request manager interfaces for different use cases:
+
+| Manager Type | Purpose | Example |
+|-------------|---------|---------|
+| `RequestManager` | Base protocol for raw requests | `manager.request(address:params:userInfo:)` |
+| `TypedRequestManager<T>` | Type-safe requests with generic response | `manager.decodable.request(Model.self, address:)` |
+| `DecodableRequestManager` | Specialized for `Decodable` types | `manager.decodable.request(User.self, address:)` |
+
+### Built-in Plugins Reference
+
+| Plugin | Priority | Purpose |
+|--------|----------|---------|
+| `Plugins.Basic` | Configurable | Adds Basic Authentication header |
+| `Plugins.Bearer` | Configurable | Adds Bearer token authentication |
+| `Plugins.TokenPlugin` | Configurable | Injects custom tokens (header/query) |
+| `Plugins.StatusCode` | Configurable | Validates HTTP status codes |
+| `Plugins.Log` | Configurable | Logs requests as cURL commands |
+| `Plugins.LogOS` | Configurable | Logs using OSLog/system logging |
+| `Plugins.JSONHeaders` | Configurable | Adds JSON Content-Type headers |
 
 ---
 

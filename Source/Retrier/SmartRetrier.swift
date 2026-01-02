@@ -23,7 +23,7 @@ public enum RetryResult: SmartSendable {
 /// `SmartRetrier` allows network clients to inspect the response and context of a failed request and decide whether to retry it,
 /// delay the retry, or propagate the failure. Integrates with `SmartRequestManager`.
 ///
-/// See diagram: ![Network scheme](https://github.com/NikSativa/SmartNetwork/raw/main/.instructions/SmartNetwork.jpg)
+/// - SeeAlso: [Architecture Overview](https://github.com/NikSativa/SmartNetwork#architecture-overview)
 public protocol SmartRetrier: SmartSendable {
     /// Determines whether the request should be retried based on the response and associated metadata.
     ///
