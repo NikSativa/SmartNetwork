@@ -13,6 +13,7 @@ public struct HTTPStubResponse: SmartSendable {
     public let body: HTTPStubBody?
     /// The error that occurred during the request, if any.
     public let error: Error?
+    /// Optional artificial delay before this stubbed response is delivered.
     public let delayInSeconds: TimeInterval?
 
     /// Creates a new stubbed response with an explicit status code.

@@ -12,6 +12,7 @@ public typealias HeaderFields = SmartItems<String>
 /// `SmartItems` is a generic structure used for organizing, accessing, and transforming ordered key-value data.
 /// It is commonly used for headers, query items, and other key-value use cases within SmartNetwork.
 public struct SmartItems<T: Hashable & Sendable>: Hashable {
+    /// Ordered storage of key-value elements.
     public private(set) var rawValues: [SmartItem<T>]
 }
 #else
@@ -20,6 +21,7 @@ public struct SmartItems<T: Hashable & Sendable>: Hashable {
 /// `SmartItems` is a generic structure used for organizing, accessing, and transforming ordered key-value data.
 /// It is commonly used for headers, query items, and other key-value use cases within SmartNetwork.
 public struct SmartItems<T: Hashable>: Hashable {
+    /// Ordered storage of key-value elements.
     public private(set) var rawValues: [SmartItem<T>]
 }
 #endif

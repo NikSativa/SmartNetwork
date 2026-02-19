@@ -10,7 +10,7 @@ typealias Request = SmartRequest
 /// `SmartRequest` encapsulates all logic required to prepare, send, and manage HTTP requests using the SmartNetwork stack.
 internal struct SmartRequest {
     private let sessionAdaptor: SessionAdaptor
-    private let address: Address
+    private let url: SmartURL
 
     let session: SmartURLSession
     let parameters: Parameters
@@ -21,12 +21,21 @@ internal struct SmartRequest {
         return parameters.plugins
     }
 
-    init(address: Address,
+    @available(*, deprecated, renamed: "init(url:parameters:userInfo:urlRequestable:session:)", message: "Please use init(url:parameters:userInfo:urlRequestable:session:) instead.")
+    init(address: SmartURL,
          parameters: Parameters,
          userInfo: UserInfo,
          urlRequestable: URLRequestRepresentation,
          session: SmartURLSession) {
-        self.address = address
+        self.init(url: address, parameters: parameters, userInfo: userInfo, urlRequestable: urlRequestable, session: session)
+    }
+
+    init(url: SmartURL,
+         parameters: Parameters,
+         userInfo: UserInfo,
+         urlRequestable: URLRequestRepresentation,
+         session: SmartURLSession) {
+        self.url = url
         self.parameters = parameters
         self.userInfo = userInfo
         self.request = urlRequestable
@@ -34,8 +43,66 @@ internal struct SmartRequest {
         self.sessionAdaptor = .init(session: session, progressHandler: parameters.progressHandler)
     }
 
+    init(url: URL,
+         parameters: Parameters,
+         userInfo: UserInfo,
+         urlRequestable: URLRequestRepresentation,
+         session: SmartURLSession) {
+        self.init(url: .url(url),
+                  parameters: parameters,
+                  userInfo: userInfo,
+                  urlRequestable: urlRequestable,
+                  session: session)
+    }
+
     private func startRealRequest() async throws -> SmartResponse {
         let sdkRequest = request.sdk
+
+        if let cacheSettings = parameters.cacheSettings {
+            let shouldUseCache: Bool
+            let shouldFailOnCacheMiss: Bool
+            switch parameters.requestPolicy {
+            case .reloadIgnoringLocalAndRemoteCacheData,
+                 .reloadIgnoringLocalCacheData,
+                 .reloadRevalidatingCacheData:
+                cacheSettings.cache.removeCachedResponse(for: sdkRequest)
+                shouldUseCache = false
+                shouldFailOnCacheMiss = false
+
+            case .returnCacheDataDontLoad:
+                shouldUseCache = true
+                shouldFailOnCacheMiss = true
+
+            case .returnCacheDataElseLoad,
+                 .useProtocolCachePolicy:
+                shouldUseCache = true
+                shouldFailOnCacheMiss = false
+
+            @unknown default:
+                shouldUseCache = true
+                shouldFailOnCacheMiss = false
+            }
+
+            if shouldUseCache {
+                if let cached = cacheSettings.cache.cachedResponse(for: sdkRequest) {
+                    let responseData = SmartResponse(request: request,
+                                                     body: cached.data,
+                                                     response: cached.response,
+                                                     error: nil,
+                                                     session: session)
+                    return responseData
+                }
+
+                if shouldFailOnCacheMiss {
+                    return SmartResponse(request: request,
+                                         body: nil,
+                                         response: nil,
+                                         error: URLError(.cannotLoadFromNetwork),
+                                         session: session)
+                }
+            }
+        }
+
         if let stub = HTTPStubServer.shared.response(for: sdkRequest) {
             let response: URLResponse? = sdkRequest.url.map {
                 return stub.urlResponse(url: $0)
@@ -49,34 +116,6 @@ internal struct SmartRequest {
                 try await Task.sleep(seconds: delay)
             }
             return responseData
-        }
-
-        if let cacheSettings = parameters.cacheSettings {
-            let shouldUseCache: Bool
-            switch parameters.requestPolicy {
-            case .reloadIgnoringLocalAndRemoteCacheData,
-                 .reloadIgnoringLocalCacheData,
-                 .reloadRevalidatingCacheData:
-                parameters.cacheSettings?.cache.removeCachedResponse(for: sdkRequest)
-                shouldUseCache = false
-
-            case .returnCacheDataDontLoad,
-                 .returnCacheDataElseLoad,
-                 .useProtocolCachePolicy:
-                shouldUseCache = true
-
-            @unknown default:
-                shouldUseCache = true
-            }
-
-            if shouldUseCache, let cached = cacheSettings.cache.cachedResponse(for: sdkRequest) {
-                let responseData = SmartResponse(request: request,
-                                                 body: cached.data,
-                                                 response: cached.response,
-                                                 error: nil,
-                                                 session: session)
-                return responseData
-            }
         }
 
         let (data, response) = try await sessionAdaptor.dataTask(with: sdkRequest)
@@ -232,7 +271,7 @@ private extension SmartRequest {
     ///
     /// Includes method, URL, and headers (if present).
     func makeDescription() -> String {
-        let url = try? address.url()
+        let url = try? url.url()
         let text = url?.absoluteString ?? "broken url"
         let method: String = (parameters.method ?? .other("`No method`")).toString()
         return "<\(method) request: \(text)" + (parameters.header.isEmpty ? "" : " headers: \(parameters.header)") + ">"

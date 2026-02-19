@@ -7,7 +7,7 @@ final class PureRequestManagerTests: XCTestCase {
     private let stubbedTimeoutInSeconds: TimeInterval = 0.1
     private let timeoutInSeconds: TimeInterval = 1
     private var observers: [AnyCancellable] = []
-    private let address: Address = .testMake(string: "http://example1.com/signin")
+    private let url: SmartURL = .testMake(string: "http://example1.com/signin")
     private let subject = SmartRequestManager.create()
     private let info = TestInfo(id: 1)
 
@@ -15,7 +15,7 @@ final class PureRequestManagerTests: XCTestCase {
         super.setUp()
 
         let response = HTTPStubResponse(statusCode: .accepted, header: HeaderFields(), body: .encodable(info), error: nil, delayInSeconds: stubbedTimeoutInSeconds)
-        HTTPStubServer.shared.add(condition: .isAddress(address), response: response).store(in: &observers)
+        HTTPStubServer.shared.add(condition: .isAddress(url), response: response).store(in: &observers)
     }
 
     override func tearDown() {
@@ -26,7 +26,36 @@ final class PureRequestManagerTests: XCTestCase {
     func test_api_any() {
         let actual: UnsafeValue<SmartResponse> = .init()
         let exp = expectation(description: #function)
-        subject.request(address: address)
+        subject.request(url: url)
+            .complete { obj in
+                actual.value = obj
+                exp.fulfill()
+            }
+            .deferredStart()
+            .store(in: &observers)
+        wait(for: [exp], timeout: timeoutInSeconds)
+        XCTAssertEqual(info, actual.value?.body?.info())
+    }
+
+    func test_api_any_url_smart_url() {
+        let actual: UnsafeValue<SmartResponse> = .init()
+        let exp = expectation(description: #function)
+        subject.request(url: url)
+            .complete { obj in
+                actual.value = obj
+                exp.fulfill()
+            }
+            .deferredStart()
+            .store(in: &observers)
+        wait(for: [exp], timeout: timeoutInSeconds)
+        XCTAssertEqual(info, actual.value?.body?.info())
+    }
+
+    func test_api_any_url() throws {
+        let actual: UnsafeValue<SmartResponse> = .init()
+        let exp = expectation(description: #function)
+        let url = try url.url()
+        subject.request(url: url)
             .complete { obj in
                 actual.value = obj
                 exp.fulfill()
@@ -40,7 +69,24 @@ final class PureRequestManagerTests: XCTestCase {
     func test_api_main() {
         let actual: UnsafeValue<SmartResponse> = .init()
         let exp = expectation(description: #function)
-        subject.request(address: address,
+        subject.request(url: url,
+                        parameters: .testMake(),
+                        userInfo: .testMake(),
+                        completionQueue: .absent) { obj in
+            actual.value = obj
+            exp.fulfill()
+        }
+        .deferredStart()
+        .store(in: &observers)
+        wait(for: [exp], timeout: timeoutInSeconds)
+        XCTAssertEqual(info, actual.value?.body?.info())
+    }
+
+    func test_api_main_url() throws {
+        let actual: UnsafeValue<SmartResponse> = .init()
+        let exp = expectation(description: #function)
+        let url = try url.url()
+        subject.request(url: url,
                         parameters: .testMake(),
                         userInfo: .testMake(),
                         completionQueue: .absent) { obj in
@@ -54,7 +100,13 @@ final class PureRequestManagerTests: XCTestCase {
     }
 
     func test_api_async() async {
-        let result = await subject.request(address: address, parameters: .testMake())
+        let result = await subject.request(url: url, parameters: .testMake())
+        XCTAssertEqual(info, result.body?.info())
+    }
+
+    func test_api_async_url() async throws {
+        let url = try url.url()
+        let result = await subject.request(url: url, parameters: .testMake())
         XCTAssertEqual(info, result.body?.info())
     }
 }

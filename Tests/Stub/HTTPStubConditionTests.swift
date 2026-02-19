@@ -5,14 +5,14 @@ import XCTest
 
 final class HTTPStubTest_Tests: XCTestCase {
     private let request: URLRequest = {
-        let address: Address = .testMake(scheme: .https,
-                                         host: "api.example.com",
-                                         path: ["signin", "v1.0"],
-                                         queryItems: ["user": "foo"],
-                                         shouldAddSlashAfterEndpoint: true)
+        let url: SmartURL = .testMake(scheme: .https,
+                                      host: "api.example.com",
+                                      path: ["signin", "v1.0"],
+                                      queryItems: ["user": "foo"],
+                                      shouldAddSlashAfterEndpoint: true)
         let parameter = Parameters.testMake(header: .init(["key": "value"]),
                                             method: .get)
-        let repr = try! parameter.urlRequest(for: address)
+        let repr = try! parameter.urlRequest(for: url)
         return repr.sdk
     }()
 

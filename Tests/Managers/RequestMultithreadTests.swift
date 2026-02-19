@@ -11,7 +11,7 @@ final class RequestMultithreadTests: XCTestCase {
     private let stubbedTimeoutInSeconds: TimeInterval = 0.1
 
     private let host1 = "example1.com"
-    private let address1: Address = .testMake(string: "http://example1.com/signin")
+    private let url1: SmartURL = .testMake(string: "http://example1.com/signin")
 
     private let testObj = TestInfo(id: 1)
 
@@ -40,7 +40,7 @@ final class RequestMultithreadTests: XCTestCase {
 
     func test_threads_closure() {
         threads { [self] exp, comp in
-            subject.request(address: address1)
+            subject.request(url: url1)
                 .decode(TestInfo.self)
                 .complete { [exp] obj in
                     comp(try! obj.get())
@@ -54,7 +54,7 @@ final class RequestMultithreadTests: XCTestCase {
     func test_threads_async() {
         threads { [self] exp, comp in
             Task {
-                let obj = await subject.request(address: address1).decode(TestInfo.self).async()
+                let obj = await subject.request(url: url1).decode(TestInfo.self).async()
                 comp(try! obj.get())
                 exp.fulfill()
             }
@@ -64,7 +64,7 @@ final class RequestMultithreadTests: XCTestCase {
     func test_threads() {
         threads { [self] exp, comp in
             if Bool.random() {
-                subject.request(address: address1)
+                subject.request(url: url1)
                     .decode(TestInfo.self)
                     .complete { [exp] obj in
                         comp(try! obj.get())
@@ -74,7 +74,7 @@ final class RequestMultithreadTests: XCTestCase {
                     .deferredStart()
             } else {
                 Task {
-                    let obj = await subject.request(address: address1).decode(TestInfo.self).async()
+                    let obj = await subject.request(url: url1).decode(TestInfo.self).async()
                     comp(try! obj.get())
                     exp.fulfill()
                 }

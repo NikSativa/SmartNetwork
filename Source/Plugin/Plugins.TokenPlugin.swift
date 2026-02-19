@@ -11,6 +11,7 @@ public extension Plugins {
 
     /// Defines where and how a token should be applied to an outgoing request.
     enum TokenType: SmartSendable {
+        /// Defines operation applied to target header/query field.
         public enum Operation: SmartSendable {
             /// Sets the token unconditionally, replacing any existing value.
             case set(String)
@@ -37,6 +38,13 @@ public extension Plugins {
         private let tokenProvider: TokenProvider
         private let type: TokenType
 
+        /// Creates token plugin.
+        ///
+        /// - Parameters:
+        ///   - id: Unique plugin identifier.
+        ///   - priority: Plugin execution priority.
+        ///   - type: Where and how token should be inserted.
+        ///   - tokenProvider: Async token source closure.
         public init(id: ID,
                     priority: PluginPriority,
                     type: TokenType,

@@ -64,24 +64,22 @@ final class DecodeByKeyPathTests: XCTestCase {
         try run_test(String.self, json: "{ \"name\": \"John\", \"person\": \"abc\" }", keyPath: ["1111", "2222", "3333"], expected: nil)
     }
 
-    private func run_test<T>(_ type: T.Type,
-                             json: String,
-                             keyPath: String,
-                             expected: T?,
-                             file: StaticString = #filePath,
-                             line: UInt = #line) throws
-    where T: Decodable & Equatable {
+    private func run_test<T: Decodable & Equatable>(_ type: T.Type,
+                                                    json: String,
+                                                    keyPath: String,
+                                                    expected: T?,
+                                                    file: StaticString = #filePath,
+                                                    line: UInt = #line) throws {
         let data = json.data(using: .utf8) ?? Data()
         XCTAssertEqual(try? data.decode(type, keyPath: keyPath, decoder: Bool.random() ? nil : .init()), expected, file: file, line: line)
     }
 
-    private func run_test<T>(_ type: T.Type,
-                             json: String,
-                             keyPath: [String],
-                             expected: T?,
-                             file: StaticString = #filePath,
-                             line: UInt = #line) throws
-    where T: Decodable & Equatable {
+    private func run_test<T: Decodable & Equatable>(_ type: T.Type,
+                                                    json: String,
+                                                    keyPath: [String],
+                                                    expected: T?,
+                                                    file: StaticString = #filePath,
+                                                    line: UInt = #line) throws {
         let data = json.data(using: .utf8) ?? Data()
         XCTAssertEqual(try? data.decode(type, keyPath: keyPath, decoder: Bool.random() ? nil : .init()), expected, file: file, line: line)
     }

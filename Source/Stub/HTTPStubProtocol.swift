@@ -7,6 +7,33 @@ import Threading
 /// When registered with `URLProtocol`, it checks whether a stubbed response exists for a request and delivers it
 /// with optional delay, body, and error simulation.
 public final class HTTPStubProtocol: URLProtocol {
+    private let stateLock = NSLock()
+    private var stopped = false
+    private var responseWorkItem: DispatchWorkItem?
+
+    private func isStopped() -> Bool {
+        stateLock.lock()
+        defer {
+            stateLock.unlock()
+        }
+        return stopped
+    }
+
+    private func setWorkItem(_ item: DispatchWorkItem?) {
+        stateLock.lock()
+        responseWorkItem = item
+        stateLock.unlock()
+    }
+
+    private func stopAndGetWorkItem() -> DispatchWorkItem? {
+        stateLock.lock()
+        stopped = true
+        let item = responseWorkItem
+        responseWorkItem = nil
+        stateLock.unlock()
+        return item
+    }
+
     /// Determines whether this protocol can handle the specified request.
     ///
     /// - Parameter request: The request to evaluate.
@@ -42,6 +69,10 @@ public final class HTTPStubProtocol: URLProtocol {
     /// Delivers a simulated response to the client, optionally including data, delay, or error.
     /// If no stub is found, a descriptive error is returned.
     override public func startLoading() {
+        stateLock.lock()
+        stopped = false
+        stateLock.unlock()
+
         guard let client else {
             assertionFailure("should never happen")
             return
@@ -62,19 +93,43 @@ public final class HTTPStubProtocol: URLProtocol {
         client.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
 
         let delayInSeconds = stub.delayInSeconds ?? 0
-        Queue.background.asyncAfter(deadline: .now() + delayInSeconds) { [self, client] in
+        let workItem = DispatchWorkItem { [weak self, client] in
+            guard let self else {
+                return
+            }
+            guard !isStopped() else {
+                return
+            }
+
             if let error = stub.error {
+                guard !isStopped() else {
+                    return
+                }
+
                 client.urlProtocol(self, didFailWithError: error)
             } else if let data = stub.body?.data {
+                guard !isStopped() else {
+                    return
+                }
+
                 client.urlProtocol(self, didLoad: data)
+            }
+
+            guard !isStopped() else {
+                return
             }
 
             client.urlProtocolDidFinishLoading(self)
         }
+        setWorkItem(workItem)
+        DispatchQueue.global().asyncAfter(deadline: .now() + delayInSeconds, execute: workItem)
     }
 
-    /// Stops handling the request. No-op in the stubbed implementation.
-    override public func stopLoading() {}
+    /// Stops handling the request.
+    override public func stopLoading() {
+        let workItem = stopAndGetWorkItem()
+        workItem?.cancel()
+    }
 }
 
 #if swift(>=6.0)

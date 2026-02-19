@@ -10,12 +10,12 @@ final class FakePlugin: Plugin {
     @SpryableVar
     var priority: PluginPriority
 
-    public init(id: Int, priority: PluginPriority) {
+    init(id: Int, priority: PluginPriority) {
         stub(.id).andReturn("\(id)")
         stub(.priority).andReturn(priority)
     }
 
-    public init(id: ID, priority: PluginPriority) {
+    init(id: ID, priority: PluginPriority) {
         stub(.id).andReturn(id)
         stub(.priority).andReturn(priority)
     }

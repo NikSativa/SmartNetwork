@@ -4,14 +4,23 @@ import Foundation
 ///
 /// Used in `Parameters` to indicate the desired request action, such as `GET`, `POST`, or a custom method via `.other`.
 public enum HTTPMethod: Hashable, SmartSendable {
+    /// `GET` request method.
     case get
+    /// `HEAD` request method.
     case head
+    /// `POST` request method.
     case post
+    /// `PUT` request method.
     case put
+    /// `DELETE` request method.
     case delete
+    /// `CONNECT` request method.
     case connect
+    /// `OPTIONS` request method.
     case options
+    /// `TRACE` request method.
     case trace
+    /// `PATCH` request method.
     case patch
     /// A custom HTTP method not covered by standard cases.
     case other(String)

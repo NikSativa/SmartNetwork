@@ -2,12 +2,11 @@ import Foundation
 import XCTest
 
 @inline(__always)
-func XCTAssertEqual<T>(_ lhs: Result<T, Error>,
-                       _ rhs: T,
-                       _ message: @autoclosure () -> String? = nil,
-                       file: StaticString = #filePath,
-                       line: UInt = #line)
-where T: Equatable {
+func XCTAssertEqual<T: Equatable>(_ lhs: Result<T, Error>,
+                                  _ rhs: T,
+                                  _ message: @autoclosure () -> String? = nil,
+                                  file: StaticString = #filePath,
+                                  line: UInt = #line) {
     let result: Bool =
         switch (lhs, rhs) {
         case (.success(let l), let r):
@@ -35,12 +34,11 @@ func XCTAssertEqual<T>(_ lhs: Result<T, Error>,
 }
 
 @inline(__always)
-func XCTAssertEqual<T>(_ lhs: Result<T, Error>,
-                       _ rhs: Result<T, Error>,
-                       _ message: @autoclosure () -> String? = nil,
-                       file: StaticString = #filePath,
-                       line: UInt = #line)
-where T: Equatable {
+func XCTAssertEqual<T: Equatable>(_ lhs: Result<T, Error>,
+                                  _ rhs: Result<T, Error>,
+                                  _ message: @autoclosure () -> String? = nil,
+                                  file: StaticString = #filePath,
+                                  line: UInt = #line) {
     let result: Bool =
         switch (lhs, rhs) {
         case (.failure(let l), .failure(let r)):

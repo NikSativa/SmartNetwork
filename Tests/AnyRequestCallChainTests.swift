@@ -6,11 +6,11 @@ import XCTest
 
 final class AnyRequestCallChainTests: XCTestCase {
     private var observers: [AnyCancellable] = []
-    private let address: Address = .testMake(string: "http://example1.com/signin")
-    private let addressNil: Address = .testMake(string: "http://example1.com/nil")
-    private let addressEmpty: Address = .testMake(string: "http://example1.com/empty")
-    private let addressOther: Address = .testMake(string: "http://example1.com/other")
-    private let addressComplex: Address = .testMake(string: "http://example1.com/complex")
+    private let url: SmartURL = .testMake(string: "http://example1.com/signin")
+    private let urlNil: SmartURL = .testMake(string: "http://example1.com/nil")
+    private let urlEmpty: SmartURL = .testMake(string: "http://example1.com/empty")
+    private let urlOther: SmartURL = .testMake(string: "http://example1.com/other")
+    private let urlComplex: SmartURL = .testMake(string: "http://example1.com/complex")
 
     private let requestManager: SmartRequestManager = .init()
     private let okObj = TestInfo(id: 1)
@@ -19,31 +19,31 @@ final class AnyRequestCallChainTests: XCTestCase {
     override func setUp() {
         super.setUp()
         HTTPStubServer.shared
-            .add(condition: .isAddress(address),
+            .add(condition: .isAddress(url),
                  body: .encode(okObj),
                  delayInSeconds: 0.1)
             .store(in: &observers)
 
         HTTPStubServer.shared
-            .add(condition: .isAddress(addressNil),
+            .add(condition: .isAddress(urlNil),
                  body: nil,
                  delayInSeconds: 0.1)
             .store(in: &observers)
 
         HTTPStubServer.shared
-            .add(condition: .isAddress(addressEmpty),
+            .add(condition: .isAddress(urlEmpty),
                  body: .empty,
                  delayInSeconds: 0.1)
             .store(in: &observers)
 
         HTTPStubServer.shared
-            .add(condition: .isAddress(addressOther),
+            .add(condition: .isAddress(urlOther),
                  body: .encode(okObj2),
                  delayInSeconds: 0.1)
             .store(in: &observers)
 
         HTTPStubServer.shared
-            .add(condition: .isAddress(addressComplex),
+            .add(condition: .isAddress(urlComplex),
                  body: .encode(Complex(obj1: okObj, obj2: okObj2)),
                  delayInSeconds: 0.1)
             .store(in: &observers)
@@ -69,138 +69,138 @@ final class AnyRequestCallChainTests: XCTestCase {
         }
 
         // nil
-        run_test(decodable(TestInfo.self, address: addressNil)) {
+        run_test(decodable(TestInfo.self, url: urlNil)) {
             XCTAssertEqual($0, RequestDecodingError.nilResponse, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo2.self, address: addressNil)) {
+        run_test(decodable(TestInfo2.self, url: urlNil)) {
             XCTAssertEqual($0, RequestDecodingError.nilResponse, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo?.self, address: addressNil)) {
+        run_test(decodable(TestInfo?.self, url: urlNil)) {
             XCTAssertEqual($0, .success(nil), "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo2?.self, address: addressNil)) {
+        run_test(decodable(TestInfo2?.self, url: urlNil)) {
             XCTAssertEqual($0, .success(nil), "\($0)", file: $1, line: $2)
         }
 
         // empty
-        run_test(decodable(TestInfo.self, address: addressEmpty)) {
+        run_test(decodable(TestInfo.self, url: urlEmpty)) {
             XCTAssertEqual($0, RequestDecodingError.nilResponse, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo2.self, address: addressEmpty)) {
+        run_test(decodable(TestInfo2.self, url: urlEmpty)) {
             XCTAssertEqual($0, RequestDecodingError.nilResponse, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo?.self, address: addressEmpty)) {
+        run_test(decodable(TestInfo?.self, url: urlEmpty)) {
             XCTAssertEqual($0, .success(nil), "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo2?.self, address: addressEmpty)) {
+        run_test(decodable(TestInfo2?.self, url: urlEmpty)) {
             XCTAssertEqual($0, .success(nil), "\($0)", file: $1, line: $2)
         }
 
         // other
-        run_test(decodable(TestInfo.self, address: addressOther)) {
+        run_test(decodable(TestInfo.self, url: urlOther)) {
             XCTAssertTrue($0.error is DecodingError, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo2.self, address: addressOther)) {
+        run_test(decodable(TestInfo2.self, url: urlOther)) {
             XCTAssertEqual($0, okObj2, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo?.self, address: addressOther)) {
+        run_test(decodable(TestInfo?.self, url: urlOther)) {
             XCTAssertEqual($0, .success(nil), "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo2?.self, address: addressOther)) {
+        run_test(decodable(TestInfo2?.self, url: urlOther)) {
             XCTAssertEqual($0, okObj2, "\($0)", file: $1, line: $2)
         }
 
         // unknown keypath
-        run_test(decodable(TestInfo.self, keyPath: ["any"], address: addressComplex)) {
+        run_test(decodable(TestInfo.self, keyPath: ["any"], url: urlComplex)) {
             XCTAssertTrue($0.error is DecodingError, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo2.self, keyPath: ["any"], address: addressComplex)) {
+        run_test(decodable(TestInfo2.self, keyPath: ["any"], url: urlComplex)) {
             XCTAssertTrue($0.error is DecodingError, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo?.self, keyPath: ["any"], address: addressComplex)) {
+        run_test(decodable(TestInfo?.self, keyPath: ["any"], url: urlComplex)) {
             XCTAssertEqual($0, .success(nil), "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo2?.self, keyPath: ["any"], address: addressComplex)) {
+        run_test(decodable(TestInfo2?.self, keyPath: ["any"], url: urlComplex)) {
             XCTAssertEqual($0, .success(nil), "\($0)", file: $1, line: $2)
         }
 
         // keypath - ok
-        run_test(decodable(TestInfo.self, keyPath: ["obj1"], address: addressComplex)) {
+        run_test(decodable(TestInfo.self, keyPath: ["obj1"], url: urlComplex)) {
             XCTAssertEqual($0, okObj, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo2.self, keyPath: ["obj2"], address: addressComplex)) {
+        run_test(decodable(TestInfo2.self, keyPath: ["obj2"], url: urlComplex)) {
             XCTAssertEqual($0, okObj2, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo?.self, keyPath: ["obj1"], address: addressComplex)) {
+        run_test(decodable(TestInfo?.self, keyPath: ["obj1"], url: urlComplex)) {
             XCTAssertEqual($0, okObj, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo2?.self, keyPath: ["obj2"], address: addressComplex)) {
+        run_test(decodable(TestInfo2?.self, keyPath: ["obj2"], url: urlComplex)) {
             XCTAssertEqual($0, okObj2, "\($0)", file: $1, line: $2)
         }
 
         // keypath - exists but fail
-        run_test(decodable(TestInfo.self, keyPath: ["obj2"], address: addressComplex)) {
+        run_test(decodable(TestInfo.self, keyPath: ["obj2"], url: urlComplex)) {
             XCTAssertTrue($0.error is DecodingError, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo2.self, keyPath: ["obj1"], address: addressComplex)) {
+        run_test(decodable(TestInfo2.self, keyPath: ["obj1"], url: urlComplex)) {
             XCTAssertTrue($0.error is DecodingError, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo?.self, keyPath: ["obj2"], address: addressComplex)) {
+        run_test(decodable(TestInfo?.self, keyPath: ["obj2"], url: urlComplex)) {
             XCTAssertEqual($0, .success(nil), "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(TestInfo2?.self, keyPath: ["obj1"], address: addressComplex)) {
+        run_test(decodable(TestInfo2?.self, keyPath: ["obj1"], url: urlComplex)) {
             XCTAssertEqual($0, .success(nil), "\($0)", file: $1, line: $2)
         }
 
         // keypath - fail int
-        run_test(decodable(Int.self, keyPath: ["obj2"], address: addressComplex)) {
+        run_test(decodable(Int.self, keyPath: ["obj2"], url: urlComplex)) {
             XCTAssertTrue($0.error is DecodingError, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(Int.self, keyPath: ["obj1"], address: addressComplex)) {
+        run_test(decodable(Int.self, keyPath: ["obj1"], url: urlComplex)) {
             XCTAssertTrue($0.error is DecodingError, "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(Int?.self, keyPath: ["obj2"], address: addressComplex)) {
+        run_test(decodable(Int?.self, keyPath: ["obj2"], url: urlComplex)) {
             XCTAssertEqual($0, .success(nil), "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(Int?.self, keyPath: ["obj1"], address: addressComplex)) {
+        run_test(decodable(Int?.self, keyPath: ["obj1"], url: urlComplex)) {
             XCTAssertEqual($0, .success(nil), "\($0)", file: $1, line: $2)
         }
 
         // keypath - ok int
-        run_test(decodable(Int.self, keyPath: ["obj2", "id2"], address: addressComplex)) {
+        run_test(decodable(Int.self, keyPath: ["obj2", "id2"], url: urlComplex)) {
             XCTAssertEqual($0, .success(2), "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(Int.self, keyPath: ["obj1", "id"], address: addressComplex)) {
+        run_test(decodable(Int.self, keyPath: ["obj1", "id"], url: urlComplex)) {
             XCTAssertEqual($0, .success(1), "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(Int?.self, keyPath: ["obj2", "id2"], address: addressComplex)) {
+        run_test(decodable(Int?.self, keyPath: ["obj2", "id2"], url: urlComplex)) {
             XCTAssertEqual($0, .success(2), "\($0)", file: $1, line: $2)
         }
 
-        run_test(decodable(Int?.self, keyPath: ["obj1", "id"], address: addressComplex)) {
+        run_test(decodable(Int?.self, keyPath: ["obj1", "id"], url: urlComplex)) {
             XCTAssertEqual($0, .success(1), "\($0)", file: $1, line: $2)
         }
     }
@@ -221,17 +221,16 @@ final class AnyRequestCallChainTests: XCTestCase {
         expected(result.value, file, line)
     }
 
-    private func decodable<T>(_ type: T.Type, keyPath: DecodableKeyPath<T> = [], address: Address? = nil) -> any RequestCompletion<Result<T, Error>>
-    where T: Decodable & Equatable {
+    private func decodable<T: Decodable & Equatable>(_ type: T.Type, keyPath: DecodableKeyPath<T> = [], url: SmartURL? = nil) -> any RequestCompletion<Result<T, Error>> {
         return requestManager
-            .request(address: address ?? self.address)
+            .request(url: url ?? self.url)
             .decode(type, keyPath: keyPath)
     }
 
-    private func decodable<T>(_ type: T.Type, keyPath: DecodableKeyPath<T> = [], address: Address? = nil) -> any RequestCompletion<Result<T, Error>>
+    private func decodable<T>(_ type: T.Type, keyPath: DecodableKeyPath<T> = [], url: SmartURL? = nil) -> any RequestCompletion<Result<T, Error>>
     where T: Decodable & Equatable & ExpressibleByNilLiteral {
         return requestManager
-            .request(address: address ?? self.address)
+            .request(url: url ?? self.url)
             .decode(type, keyPath: keyPath)
     }
 }

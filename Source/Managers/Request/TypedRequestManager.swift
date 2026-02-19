@@ -44,12 +44,35 @@ public struct TypedRequestManager<Output> {
     ///   - parameters: Configuration parameters for the request. Defaults to an empty instance.
     ///   - userInfo: Additional metadata to pass along with the request. Defaults to empty.
     /// - Returns: A `TypedRequest` configured to decode its result into `Output`.
-    public func request(address: Address, with parameters: Parameters = .init(), userInfo: UserInfo = .init()) -> TypedRequest<Output> {
+    @available(*, deprecated, renamed: "request(url:with:userInfo:)", message: "Please use request(url:with:userInfo:) instead.")
+    public func request(address: SmartURL, with parameters: Parameters = .init(), userInfo: UserInfo = .init()) -> TypedRequest<Output> {
+        return request(url: address, with: parameters, userInfo: userInfo)
+    }
+
+    /// Builds a `TypedRequest` that sends a request and decodes the response into the expected output type.
+    ///
+    /// - Parameters:
+    ///   - url: The endpoint to which the request should be sent.
+    ///   - parameters: Configuration parameters for the request. Defaults to an empty instance.
+    ///   - userInfo: Additional metadata to pass along with the request. Defaults to empty.
+    /// - Returns: A `TypedRequest` configured to decode its result into `Output`.
+    public func request(url: SmartURL, with parameters: Parameters = .init(), userInfo: UserInfo = .init()) -> TypedRequest<Output> {
         return TypedRequest(anyRequest: .init(pure: base,
-                                              address: address,
+                                              url: url,
                                               parameters: parameters,
                                               userInfo: userInfo),
                             decoder: decoder)
+    }
+
+    /// Builds a `TypedRequest` that sends a request and decodes the response into the expected output type.
+    ///
+    /// - Parameters:
+    ///   - url: The endpoint to which the request should be sent.
+    ///   - parameters: Configuration parameters for the request. Defaults to an empty instance.
+    ///   - userInfo: Additional metadata to pass along with the request. Defaults to empty.
+    /// - Returns: A `TypedRequest` configured to decode its result into `Output`.
+    public func request(url: URL, with parameters: Parameters = .init(), userInfo: UserInfo = .init()) -> TypedRequest<Output> {
+        return request(url: .url(url), with: parameters, userInfo: userInfo)
     }
 }
 

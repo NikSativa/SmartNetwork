@@ -4,7 +4,9 @@ import Foundation
 ///
 /// This enum supports standard schemes as well as custom or empty values through the `.other` case.
 public enum Scheme: Hashable, SmartSendable {
+    /// Standard `http` URL scheme.
     case http
+    /// Standard `https` URL scheme.
     case https
 
     /// A custom or empty scheme value.

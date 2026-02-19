@@ -78,7 +78,7 @@ final class DeserializableTests: XCTestCase {
             try custom(decoder, body: emptyData).get()
         }
         XCTAssertNil(try custom(decoder).get())
-        XCTAssertEqual(try custom(decoder, body: bodyData).get() as! [String: Int], ["id": 1])
+        XCTAssertEqual(try custom(decoder, body: bodyData).get() as? [String: Int], ["id": 1])
         XCTAssertThrowsError(try custom(decoder, error: StatusCode(.lengthRequired)).get(), StatusCode(.lengthRequired))
         XCTAssertThrowsError(try custom(decoder, error: StatusCode(.badRequest)).get(), StatusCode(.badRequest))
         XCTAssertThrowsError(try custom(decoder, body: bodyData, error: RequestEncodingError.invalidJSON).get(), RequestEncodingError.invalidJSON)

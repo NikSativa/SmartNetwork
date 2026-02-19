@@ -7,6 +7,7 @@ import Foundation
 /// This includes headers such as `Accept`, `Accept-Encoding`, `Connection`, and `Host`,
 /// if they are not already present in the request.
 public extension Plugins {
+    /// Plugin that injects standard JSON-related request headers.
     struct JSONHeaders {
         public let priority: PluginPriority
 

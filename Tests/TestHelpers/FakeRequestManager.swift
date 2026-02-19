@@ -8,10 +8,10 @@ import XCTest
 @Spryable
 final class FakeRequestManager: RequestManager, @unchecked Sendable {
     @SpryableFunc
-    func request(address: Address, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse
+    func request(url: SmartURL, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse
 
     @SpryableFunc
-    func request(address: Address,
+    func request(url: SmartURL,
                  parameters: Parameters,
                  userInfo: UserInfo,
                  completionQueue: DelayedQueue,

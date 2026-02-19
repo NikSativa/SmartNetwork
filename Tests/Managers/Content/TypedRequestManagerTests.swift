@@ -8,9 +8,9 @@ final class TypedRequestManagerTests: XCTestCase {
     private let stubbedTimeoutInSeconds: TimeInterval = 0.1
     private let timeoutInSeconds: TimeInterval = 1
     private var observers: Set<AnyCancellable> = []
-    private let address: Address = .testMake(string: "http://example1.com/signin")
-    private let address2: Address = .testMake(string: "http://example2.com/signin")
-    private let addressEmpty: Address = .testMake(string: "http://exampleEmpty.com/signin")
+    private let url: SmartURL = .testMake(string: "http://example1.com/signin")
+    private let url2: SmartURL = .testMake(string: "http://example2.com/signin")
+    private let urlEmpty: SmartURL = .testMake(string: "http://exampleEmpty.com/signin")
     private let info = TestInfo(id: 1)
     private let info2 = TestInfo2(id2: 2)
 
@@ -18,14 +18,14 @@ final class TypedRequestManagerTests: XCTestCase {
         super.setUp()
 
         let response = HTTPStubResponse(statusCode: .accepted, header: [:], body: .encodable(info), error: nil, delayInSeconds: stubbedTimeoutInSeconds)
-        HTTPStubServer.shared.add(condition: .isAddress(address), response: response).store(in: &observers)
+        HTTPStubServer.shared.add(condition: .isAddress(url), response: response).store(in: &observers)
 
         let response2 = HTTPStubResponse(statusCode: .accepted, header: [:], body: .encodable(info2), error: nil, delayInSeconds: stubbedTimeoutInSeconds)
-        HTTPStubServer.shared.add(condition: .isAddress(address2), response: response2).store(in: &observers)
+        HTTPStubServer.shared.add(condition: .isAddress(url2), response: response2).store(in: &observers)
 
         // `storing` is not necessary, but it is using for test coverage purpose.
         _ = HTTPStubServer.shared
-            .add(condition: .isAddress(addressEmpty),
+            .add(condition: .isAddress(urlEmpty),
                  body: .empty,
                  delayInSeconds: stubbedTimeoutInSeconds)
             .storing(in: &observers)
@@ -40,14 +40,14 @@ final class TypedRequestManagerTests: XCTestCase {
 
     func test_api_data() {
         let result = run_test(Data.self) { subject in
-            return subject.data.request(address: address)
+            return subject.data.request(url: url)
         }
         XCTAssertEqual(result.info(), info)
     }
 
     func test_api_dataOptional() {
         let result = run_test(Data?.self) { subject in
-            return subject.dataOptional.request(address: address)
+            return subject.dataOptional.request(url: url)
         }
         XCTAssertEqual(result.info(), info)
     }
@@ -73,14 +73,14 @@ final class TypedRequestManagerTests: XCTestCase {
 
     func test_api_async_data() async {
         let result = await run_async_test(Data.self) { subject in
-            return await subject.data.request(address: address).async()
+            return await subject.data.request(url: url).async()
         }
         XCTAssertEqual(result.info(), info)
     }
 
     func test_api_async_dataOptional() async {
         let result = await run_async_test(Data?.self) { subject in
-            return await subject.dataOptional.request(address: address).async()
+            return await subject.dataOptional.request(url: url).async()
         }
         XCTAssertEqual(result.info(), info)
     }
@@ -95,18 +95,18 @@ final class TypedRequestManagerTests: XCTestCase {
 
     func test_api_asyncWithThrowing_data() async throws {
         let result = try await run_asyncWithThrowing_test(Data.self) { subject in
-            return try await subject.data.request(address: address).async().get()
+            return try await subject.data.request(url: url).async().get()
         }
         XCTAssertTrue(result.info() == info)
 
         let result2 = try await run_asyncWithThrowing_test(Data.self) { subject in
-            return try await subject.data.request(address: address2).async().get()
+            return try await subject.data.request(url: url2).async().get()
         }
         XCTAssertTrue(result2.info2() == info2)
 
         do {
             let result3 = try await run_asyncWithThrowing_test(Data?.self) { subject in
-                return try await subject.data.request(address: addressEmpty).async().get()
+                return try await subject.data.request(url: urlEmpty).async().get()
             }
             XCTAssertNil(result3)
         } catch {
@@ -116,7 +116,7 @@ final class TypedRequestManagerTests: XCTestCase {
 
     func test_api_asyncWithThrowing_dataOptional() async throws {
         let result = try await run_asyncWithThrowing_test(Data?.self) { subject in
-            return try await subject.dataOptional.request(address: address).asyncWithThrowing()
+            return try await subject.dataOptional.request(url: url).asyncWithThrowing()
         }
         XCTAssertTrue(result?.info() == info)
     }

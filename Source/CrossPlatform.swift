@@ -73,13 +73,20 @@ public enum Screen {
 ///
 /// Supports initialization from system symbols or raw image data and provides data conversion utilities like PNG or JPEG encoding.
 public struct PlatformImage {
+    /// Underlying platform-specific image object (`UIImage` or `NSImage`).
     public let sdk: SmartImage
 
+    /// Wraps a platform image into ``PlatformImage``.
+    ///
+    /// - Parameter image: Platform-specific image instance.
     public init(_ image: SmartImage) {
         self.sdk = image
     }
 
     #if os(macOS)
+    /// Creates image from SF Symbol name.
+    ///
+    /// - Parameter systemSymbolName: Symbol name used by system symbol catalog.
     public init?(systemSymbolName: String) {
         if let image = NSImage(systemSymbolName: systemSymbolName, accessibilityDescription: nil) {
             self.init(image)
@@ -88,6 +95,9 @@ public struct PlatformImage {
         }
     }
 
+    /// Creates image from raw bytes.
+    ///
+    /// - Parameter data: Encoded image data.
     public init?(data: Data) {
         if let image = NSImage(data: data) {
             self.init(image)
@@ -96,11 +106,15 @@ public struct PlatformImage {
         }
     }
 
+    /// Encodes wrapped image to PNG data.
     public func pngData() -> Data? {
         return sdk.pngData()
     }
 
     #elseif supportsVisionOS
+    /// Creates image from SF Symbol name.
+    ///
+    /// - Parameter systemSymbolName: Symbol name used by system symbol catalog.
     public init?(systemSymbolName: String) {
         if let image = UIImage(systemName: systemSymbolName) {
             self.init(image)
@@ -109,6 +123,9 @@ public struct PlatformImage {
         }
     }
 
+    /// Creates image from raw bytes.
+    ///
+    /// - Parameter data: Encoded image data.
     public init?(data: Data) {
         let scale = Queue.isolatedMain.sync { Screen.scale }
 
@@ -122,6 +139,7 @@ public struct PlatformImage {
         }
     }
 
+    /// Encodes wrapped image to PNG data.
     public func pngData() -> Data? {
         return sdk.pngData()
     }
@@ -131,6 +149,9 @@ public struct PlatformImage {
     }
 
     #elseif os(iOS) || os(tvOS) || os(watchOS)
+    /// Creates image from SF Symbol name.
+    ///
+    /// - Parameter systemSymbolName: Symbol name used by system symbol catalog.
     public init?(systemSymbolName: String) {
         if let image = UIImage(systemName: systemSymbolName) {
             self.init(image)
@@ -139,6 +160,9 @@ public struct PlatformImage {
         }
     }
 
+    /// Creates image from raw bytes.
+    ///
+    /// - Parameter data: Encoded image data.
     public init?(data: Data) {
         let scale = Queue.isolatedMain.sync { Screen.scale }
 
@@ -149,6 +173,7 @@ public struct PlatformImage {
         }
     }
 
+    /// Encodes wrapped image to PNG data.
     public func pngData() -> Data? {
         return sdk.pngData()
     }
@@ -163,11 +188,15 @@ public struct PlatformImage {
 
 #if os(macOS)
 private extension NSBitmapImageRep {
-    var png: Data? { representation(using: .png, properties: [:]) }
+    var png: Data? {
+        representation(using: .png, properties: [:])
+    }
 }
 
 private extension Data {
-    var bitmap: NSBitmapImageRep? { NSBitmapImageRep(data: self) }
+    var bitmap: NSBitmapImageRep? {
+        NSBitmapImageRep(data: self)
+    }
 }
 
 private extension NSImage {

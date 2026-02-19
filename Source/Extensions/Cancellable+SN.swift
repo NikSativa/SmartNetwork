@@ -16,8 +16,8 @@ public extension Cancellable {
     /// - Parameter collection: A mutable collection in which to store this `Cancellable`.
     /// - Returns: The cancellable instance, allowing for fluent chaining.
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    func storing<C>(in collection: inout C) -> Self
-    where C: RangeReplaceableCollection, C.Element == AnyCancellable {
+    func storing<C: RangeReplaceableCollection>(in collection: inout C) -> Self
+    where C.Element == AnyCancellable {
         store(in: &collection)
         return self
     }

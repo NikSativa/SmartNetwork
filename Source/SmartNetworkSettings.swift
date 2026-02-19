@@ -1,6 +1,7 @@
 import Foundation
 import Threading
 
+/// Deprecated alias for ``SmartNetworkSettings``.
 @available(*, deprecated, renamed: "SmartNetworkSettings", message: "Use 'SmartNetworkSettings' instead.")
 public typealias RequestSettings = SmartNetworkSettings
 

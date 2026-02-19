@@ -12,6 +12,7 @@ public final class UserInfo {
     @AtomicValue
     private var innverValues: [UserInfoKey: Any] = [:]
 
+    /// Snapshot of stored key-value pairs.
     public private(set) var values: [UserInfoKey: Any] {
         get {
             return $innverValues.syncUnchecked { $0 }

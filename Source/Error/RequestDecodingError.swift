@@ -25,6 +25,7 @@ public enum RequestDecodingError: Error {
 // MARK: - RequestErrorDescription
 
 extension RequestDecodingError: RequestErrorDescription {
+    /// Structured short name used for logs and diagnostics.
     public var subname: String {
         switch self {
         case .other(let encodingError):

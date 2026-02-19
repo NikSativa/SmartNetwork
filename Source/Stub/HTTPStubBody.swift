@@ -17,7 +17,7 @@ public enum HTTPStubBody {
     /// Encodes an `Encodable` object using the given `JSONEncoder`.
     case encodable(any Encodable, with: JSONEncoder)
     /// Encodes an image using the specified image format (e.g., PNG, JPEG).
-    case image(HTTPBody.ImageFormat)
+    case image(ImageFormat)
 
     /// Convenience method to encode an `Encodable` object using a default `JSONEncoder`.
     /// Encodable body.
@@ -49,6 +49,7 @@ extension HTTPStubBody {
         switch self {
         case .empty:
             return nil
+
         case .file(let name, let bundle):
             guard let path = bundle.url(forResource: name, withExtension: nil) else {
                 return nil
@@ -56,6 +57,7 @@ extension HTTPStubBody {
 
             let data = try? Data(contentsOf: path)
             return data
+
         case .filePath(let path):
             if Self.iOSVerificationEnabled, #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
                 let path = URL(filePath: path)
@@ -66,26 +68,17 @@ extension HTTPStubBody {
                 let data = try? Data(contentsOf: path)
                 return data
             }
+
         case .data(let data):
             return data
+
         case .encodable(let encodable, let encoder):
             encoder.outputFormatting = encoder.outputFormatting.union([.sortedKeys, .prettyPrinted])
             let data = try? encoder.encode(encodable)
             return data
-        case .image(let image):
-            let data: Data?
-            switch image {
-            #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-            case .png(let image):
-                data = try? PlatformImage(image).pngData().unwrap(orThrow: RequestEncodingError.cantEncodeImage)
-            #endif
 
-            #if os(iOS) || os(tvOS) || os(watchOS) || supportsVisionOS
-            case .jpeg(let image, let quality):
-                data = try? PlatformImage(image).jpegData(compressionQuality: quality).unwrap(orThrow: RequestEncodingError.cantEncodeImage)
-            #endif
-            }
-            return data
+        case .image(let image):
+            return try? image.encode().httpBody
         }
     }
 }

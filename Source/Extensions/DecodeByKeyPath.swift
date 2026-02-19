@@ -44,7 +44,7 @@ public extension Data {
 private struct ModelResponse<NestedModel: Decodable>: Decodable {
     let nested: NestedModel
 
-    public init(from decoder: Decoder) throws {
+    init(from decoder: Decoder) throws {
         // Split nested paths with '.'
         guard var keyPaths: [String] = decoder.userInfo[.keyPath] as? [String] else {
             throw RequestDecodingError.brokenKeyPath("KeyPath not found")

@@ -7,6 +7,7 @@ import Foundation
 /// This class builds a multipart body using configurable boundaries and headers, allowing
 /// the inclusion of multiple parts (e.g., files or fields) with appropriate MIME types and metadata.
 public extension HTTPBody {
+    /// Builder for `multipart/form-data` request bodies.
     final class MultipartForm {
         /// The `Content-Type` header string used for multipart/form-data requests.
         ///
@@ -17,7 +18,11 @@ public extension HTTPBody {
 
         /// The total size in bytes of the body content, excluding boundary markers.
         var contentLength: UInt64 {
-            return bodyParts.reduce(0) { $0 + UInt64($1.data.count) }
+            return bodyParts.reduce(0) { partialResult, part in
+                let headersLength = UInt64(encodeHeaders(for: part).count)
+                let bodyLength = UInt64(part.data.count)
+                return partialResult + headersLength + bodyLength
+            }
         }
 
         /// The boundary used to separate the body parts in the encoded form data.
@@ -152,11 +157,17 @@ public extension HTTPBody.MultipartForm {
             self.rawValue = value
         }
 
+        /// Generates a random boundary string suitable for multipart requests.
         public static func generateRandom() -> Self {
             let name = ["smartnetwork", "boundary", randomBoundaryKey()].joined(separator: ".")
             return .init(rawValue: name)
         }
 
+        /// Builds a boundary from a partial prefix.
+        ///
+        /// - Parameters:
+        ///   - part: Prefix part for the boundary.
+        ///   - hasRandomLastPart: Appends random suffix when `true`.
         public static func partial(_ part: String, hasRandomLastPart: Bool = true) -> Self {
             var parts = [part, "boundary"]
             if hasRandomLastPart {
@@ -166,6 +177,11 @@ public extension HTTPBody.MultipartForm {
             return .init(rawValue: name)
         }
 
+        /// Builds a boundary from custom parts.
+        ///
+        /// - Parameters:
+        ///   - parts: Ordered boundary parts.
+        ///   - hasRandomLastPart: Appends random suffix when `true`.
         public static func full(_ parts: [String], hasRandomLastPart: Bool = true) -> Self {
             var parts = parts
             if hasRandomLastPart {
@@ -195,8 +211,11 @@ public extension HTTPBody.MultipartForm {
             self.rawValue = value
         }
 
+        /// Conventional multipart field name used for generic file uploads.
         public static let file: Self = "file"
+        /// Conventional multipart field name used for photos.
         public static let photo: Self = "photo"
+        /// Conventional multipart field name used for images.
         public static let image: Self = "image"
     }
 
@@ -212,18 +231,32 @@ public extension HTTPBody.MultipartForm {
             self.rawValue = value
         }
 
+        /// Generic binary payload MIME type.
         public static let binary: Self = "application/x-binary"
+        /// JPEG image MIME type.
         public static let jpg: Self = "image/jpg"
+        /// PNG image MIME type.
         public static let png: Self = "image/png"
     }
 
     /// Represents a single unit of data to include in a multipart form upload.
     struct DataContent: Hashable {
+        /// Form field name.
         public let name: Name
+        /// Optional filename advertised in `Content-Disposition`.
         public let fileName: String?
+        /// Optional MIME type for part content.
         public let mimeType: MimeType?
+        /// Raw part payload.
         public let data: Data
 
+        /// Creates multipart part metadata using strongly typed name and MIME type.
+        ///
+        /// - Parameters:
+        ///   - name: Form field name.
+        ///   - fileName: Optional filename.
+        ///   - mimeType: Optional MIME type.
+        ///   - data: Raw payload bytes.
         public init(name: Name,
                     fileName: String? = nil,
                     mimeType: MimeType? = nil,
@@ -234,6 +267,13 @@ public extension HTTPBody.MultipartForm {
             self.data = data
         }
 
+        /// Creates multipart part metadata using raw string name and MIME type.
+        ///
+        /// - Parameters:
+        ///   - name: Form field name.
+        ///   - fileName: Optional filename.
+        ///   - mimeType: Optional MIME type string.
+        ///   - data: Raw payload bytes.
         public init(name: String,
                     fileName: String? = nil,
                     mimeType: String? = nil,

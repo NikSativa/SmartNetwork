@@ -11,6 +11,7 @@ public enum Plugins {}
 /// - SeeAlso: [Architecture Overview](https://github.com/NikSativa/SmartNetwork#architecture-overview)
 /// - SeeAlso: [Plugin System Lifecycle](https://github.com/NikSativa/SmartNetwork#plugin-system-lifecycle)
 public protocol Plugin: SmartSendable {
+    /// String identifier type used to uniquely deduplicate plugins.
     typealias ID = String
 
     /// A unique ID that guarantees that plugins are not duplicated

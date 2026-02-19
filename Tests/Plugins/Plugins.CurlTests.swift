@@ -45,6 +45,12 @@ final class PluginsCurlTests: XCTestCase {
         actual.value = .init()
     }
 
+    func test_options_flags_are_unique() {
+        XCTAssertNotEqual(Plugins.Log.Options.didFinish.rawValue, Plugins.Log.Options.wasCancelled.rawValue)
+        XCTAssertFalse(Plugins.Log.Options([.wasCancelled]).contains(.didFinish))
+        XCTAssertFalse(Plugins.Log.Options([.didFinish]).contains(.wasCancelled))
+    }
+
     func test_empty() async throws {
         SmartNetworkSettings.curlStartsWithDollar = true
         SmartNetworkSettings.curlPrettyPrinted = true

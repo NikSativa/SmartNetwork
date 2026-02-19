@@ -6,6 +6,7 @@ import Threading
 /// Conforming types provide mechanisms to complete requests either asynchronously using `async/await`,
 /// or via closure-based completion handlers. Also supports one-way execution and optional error throwing.
 public protocol RequestCompletion<Object> {
+    /// Result type produced by this completion-capable request.
     associatedtype Object
 
     /// Asynchronously completes the request and returns the response object.

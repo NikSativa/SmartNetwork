@@ -35,16 +35,21 @@ final class HTTPBodyTests: XCTestCase {
     #if !supportsVisionOS
     func test_image_png() {
         let image = Image.spry.testImage
+        let pngData = image.testData()
         XCTAssertNoThrowError(try HTTPBody.image(.png(image)).fill(&request))
-        XCTAssertEqual(request.httpBody, image.testData())
+        XCTAssertEqual(request.httpBody, pngData)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "image/png")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Length"), "\(pngData?.count ?? 0)")
     }
     #endif
 
     #if !os(macOS)
     func test_image_jpeg() {
         let image = Image.spry.testImage
-        XCTAssertNoThrowError(try Body.image(.jpeg(image, compressionQuality: 1)).fill(&request))
+        XCTAssertNoThrowError(try HTTPBody.image(.jpeg(image, compressionQuality: 1)).fill(&request))
         XCTAssertEqual(request.httpBody, image.jpegData(compressionQuality: 1))
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "image/jpeg")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Length"), "\(image.jpegData(compressionQuality: 1)?.count ?? 0)")
     }
     #endif
 

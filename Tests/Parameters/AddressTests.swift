@@ -8,120 +8,120 @@ final class AddressTests: XCTestCase {
         var actualURL: URL?
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address("//some.com") + "endpoint"
+            let subject = try SmartURL("//some.com") + "endpoint"
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("//some.com/endpoint"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address("my://some.com") + "endpoint"
+            let subject = try SmartURL("my://some.com") + "endpoint"
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("my://some.com/endpoint"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address("http://some.com/asd") + "endpoint"
+            let subject = try SmartURL("http://some.com/asd") + "endpoint"
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd/endpoint"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address("http://some.com/asd") + ["endpoint1", "endpoint2"]
+            let subject = try SmartURL("http://some.com/asd") + ["endpoint1", "endpoint2"]
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd/endpoint1/endpoint2"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address("http://some.com/asd").append("endpoint")
+            let subject = try SmartURL("http://some.com/asd").append("endpoint")
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd/endpoint"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address("http://some.com/asd").append(["endpoint1", "endpoint2"])
+            let subject = try SmartURL("http://some.com/asd").append(["endpoint1", "endpoint2"])
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd/endpoint1/endpoint2"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address("http://some.com/asd").append(["param": "value"])
+            let subject = try SmartURL("http://some.com/asd").append(["param": "value"])
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://some.com/asd?param=value"))
 
-        XCTAssertThrowsError(try Address(host: "").url(), RequestEncodingError.brokenAddress)
+        XCTAssertThrowsError(try SmartURL(host: "").url(), RequestEncodingError.brokenAddress)
 
         actualURL = XCTAssertNoThrowError {
-            let subject = Address(scheme: .other(""), host: "some.com", shouldRemoveSlashesForEmptyScheme: true)
+            let subject = SmartURL(scheme: .other(""), host: "some.com", shouldRemoveSlashesForEmptyScheme: true)
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("some.com"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = Address(scheme: nil, host: "some.com", shouldRemoveSlashesForEmptyScheme: true)
+            let subject = SmartURL(scheme: nil, host: "some.com", shouldRemoveSlashesForEmptyScheme: true)
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("some.com"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address("http://www.some.com/asd").append(["param": "value"])
+            let subject = try SmartURL("http://www.some.com/asd").append(["param": "value"])
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(.details(.init(scheme: .http, host: "www.some.com", path: ["asd"]))).append(["param": "value"])
+            let subject = try SmartURL.components(.init(scheme: .http, host: "www.some.com", path: ["asd"])).append(["param": "value"])
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(.init(scheme: .http, host: "www.some.com", path: ["asd"])).append(["param": "value"])
+            let subject = try SmartURL(scheme: .http, host: "www.some.com", path: ["asd"]).append(["param": "value"])
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(.url(.spry.testMake("http://www.some.com/asd"))).append(["param": "value"])
+            let subject = try SmartURL.url(.spry.testMake("http://www.some.com/asd")).append(["param": "value"])
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(.spry.testMake("http://www.some.com/asd")).append(["param": "value"])
-            return try subject.url()
-        }
-        XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
-
-        actualURL = XCTAssertNoThrowError {
-            let components = URLComponents(string: "http://www.some.com/asd")!
-            let subject = try Address(.components(components)).append(["param": "value"])
+            let subject = try SmartURL(.spry.testMake("http://www.some.com/asd")).append(["param": "value"])
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
 
         actualURL = XCTAssertNoThrowError {
             let components = URLComponents(string: "http://www.some.com/asd")!
-            let subject = try Address(components).append(["param": "value"])
+            let subject = try SmartURL.components(components).append(["param": "value"])
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
 
         actualURL = XCTAssertNoThrowError {
             let components = URLComponents(string: "http://www.some.com/asd")!
-            let subject = Address(components)
+            let subject = try SmartURL(components).append(["param": "value"])
+            return try subject.url()
+        }
+        XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
+
+        actualURL = XCTAssertNoThrowError {
+            let components = URLComponents(string: "http://www.some.com/asd")!
+            let subject = SmartURL(components)
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(scheme: .http, host: "www.some.com", path: ["asd"]).append(["param": "value"])
+            let subject = try SmartURL(scheme: .http, host: "www.some.com", path: ["asd"]).append(["param": "value"])
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("http://www.some.com/asd?param=value"))
 
         actualURL = XCTAssertNoThrowError {
-            let subject = try Address(scheme: "abc", host: "www.some.com", path: ["asd"], queryItems: ["some": nil]).append(["param": "value"])
+            let subject = try SmartURL(scheme: "abc", host: "www.some.com", path: ["asd"], queryItems: ["some": nil]).append(["param": "value"])
             return try subject.url()
         }
         XCTAssertEqual(actualURL, .spry.testMake("abc://www.some.com/asd?some&param=value"))
@@ -163,6 +163,55 @@ final class AddressTests: XCTestCase {
                          queryItems: ["key": "value", "key1": "value1"],
                          fragment: "page")
     }
+
+    func test_flags_are_applied_only_for_components_source() {
+        let withSlashFromDetails = XCTAssertNoThrowError {
+            return try SmartURL(scheme: .https, host: "some.com", shouldAddSlashAfterEndpoint: true).url().absoluteString
+        }
+        XCTAssertEqual(withSlashFromDetails, "https://some.com/")
+
+        let withSlashFromString = XCTAssertNoThrowError {
+            return try SmartURL("https://some.com").url().absoluteString
+        }
+        XCTAssertEqual(withSlashFromString, "https://some.com")
+
+        let withSlashFromURL = XCTAssertNoThrowError {
+            return try SmartURL(URL(string: "https://some.com").unsafelyUnwrapped)
+                .url()
+                .absoluteString
+        }
+        XCTAssertEqual(withSlashFromURL, "https://some.com")
+
+        let withSlashFromComponents = XCTAssertNoThrowError {
+            let components = URLComponents(string: "https://some.com").unsafelyUnwrapped
+            return try SmartURL(components).url().absoluteString
+        }
+        XCTAssertEqual(withSlashFromComponents, "https://some.com")
+
+        let noSchemeFromDetails = XCTAssertNoThrowError {
+            return try SmartURL(scheme: nil, host: "some.com", shouldRemoveSlashesForEmptyScheme: true).url().absoluteString
+        }
+        XCTAssertEqual(noSchemeFromDetails, "some.com")
+
+        let noSchemeFromString = XCTAssertNoThrowError {
+            return try SmartURL("//some.com").url().absoluteString
+        }
+        XCTAssertEqual(noSchemeFromString, "//some.com")
+
+        let noSchemeFromURL = XCTAssertNoThrowError {
+            return try SmartURL(URL(string: "//some.com").unsafelyUnwrapped)
+                .url()
+                .absoluteString
+        }
+        XCTAssertEqual(noSchemeFromURL, "//some.com")
+
+        let noSchemeFromComponents = XCTAssertNoThrowError {
+            var components = URLComponents()
+            components.host = "some.com"
+            return try SmartURL(components).url().absoluteString
+        }
+        XCTAssertEqual(noSchemeFromComponents, "//some.com")
+    }
 }
 
 private func XCTAssertAddress(expected: String,
@@ -173,14 +222,14 @@ private func XCTAssertAddress(expected: String,
                               shouldRemoveSlashesForEmptyScheme: Bool = false,
                               file: StaticString = #filePath,
                               line: UInt = #line) {
-    let subject = Address(scheme: .https,
-                          host: "some.com",
-                          port: 11,
-                          path: path,
-                          queryItems: queryItems,
-                          fragment: fragment,
-                          shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
-                          shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
+    let subject = SmartURL(scheme: .https,
+                           host: "some.com",
+                           port: 11,
+                           path: path,
+                           queryItems: queryItems,
+                           fragment: fragment,
+                           shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
+                           shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
     let mainUrl = XCTAssertNoThrowError(file: file, line: line) {
         return try subject.url()
     }
@@ -188,17 +237,13 @@ private func XCTAssertAddress(expected: String,
     XCTAssertEqual(mainUrl, expectedURL, mainUrl?.absoluteString ?? expected, file: file, line: line)
 
     let urlURL = XCTAssertNoThrowError(file: file, line: line) {
-        let subject = Address(expectedURL,
-                              shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
-                              shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
+        let subject = SmartURL(expectedURL)
         return try subject.url()
     }
     XCTAssertEqual(urlURL, mainUrl, file: file, line: line)
 
     let stringURL = XCTAssertNoThrowError(file: file, line: line) {
-        let subject = Address(expected,
-                              shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
-                              shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
+        let subject = SmartURL(expected)
         return try subject.url()
     }
     XCTAssertEqual(stringURL, mainUrl, file: file, line: line)

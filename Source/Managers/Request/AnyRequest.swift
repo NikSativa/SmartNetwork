@@ -8,29 +8,48 @@ import Threading
 public struct AnyRequest {
     // all properties are only for `internal` uasge
     internal let base: RequestManager
-    internal let address: Address
+    internal let url: SmartURL
     internal let parameters: Parameters
     internal let userInfo: UserInfo
 
+    @available(*, deprecated, renamed: "init(pure:url:parameters:userInfo:)", message: "Please use init(pure:url:parameters:userInfo:) instead.")
     internal init(pure: RequestManager,
-                  address: Address,
+                  address: SmartURL,
+                  parameters: Parameters,
+                  userInfo: UserInfo) {
+        self.init(pure: pure, url: address, parameters: parameters, userInfo: userInfo)
+    }
+
+    internal init(pure: RequestManager,
+                  url: SmartURL,
                   parameters: Parameters,
                   userInfo: UserInfo) {
         self.base = pure
-        self.address = address
+        self.url = url
         self.parameters = parameters
         self.userInfo = userInfo
+    }
+
+    internal init(pure: RequestManager,
+                  url: URL,
+                  parameters: Parameters,
+                  userInfo: UserInfo) {
+        self.init(pure: pure,
+                  url: .url(url),
+                  parameters: parameters,
+                  userInfo: userInfo)
     }
 }
 
 // MARK: - RequestCompletion
 
 extension AnyRequest: RequestCompletion {
+    /// Completion object type for ``AnyRequest`` (`SmartResponse`).
     public typealias Object = SmartResponse
 
     /// Asynchronously performs the request and returns the raw `SmartResponse`.
     public func async() async -> SmartResponse {
-        return await base.request(address: address, parameters: parameters, userInfo: userInfo)
+        return await base.request(url: url, parameters: parameters, userInfo: userInfo)
     }
 
     /// Performs the request using a completion closure.
@@ -41,7 +60,7 @@ extension AnyRequest: RequestCompletion {
     /// - Returns: A `SmartTasking` instance representing the running request.
     public func complete(in completionQueue: DelayedQueue = SmartNetworkSettings.defaultCompletionQueue,
                          completion: @escaping CompletionClosure) -> SmartTasking {
-        return base.request(address: address,
+        return base.request(url: url,
                             parameters: parameters,
                             userInfo: userInfo,
                             completionQueue: completionQueue,
@@ -57,8 +76,7 @@ public extension AnyRequest {
     ///   - decoder: The JSON decoder or decoding strategy.
     ///   - keyPath: Optional key path for decoding nested values.
     /// - Returns: A `TypedRequest` instance that decodes the response.
-    func decode<T>(_: T.Type = T.self, with decoder: JSONDecoder, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T>
-    where T: Decodable {
+    func decode<T: Decodable>(_: T.Type = T.self, with decoder: JSONDecoder, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T> {
         return .init(anyRequest: self, decoder: DecodableContent<T>(decoder: { decoder }, keyPath: keyPath))
     }
 
@@ -69,8 +87,7 @@ public extension AnyRequest {
     ///   - decoder: The JSON decoder or decoding strategy.
     ///   - keyPath: Optional key path for decoding nested values.
     /// - Returns: A `TypedRequest` instance that decodes the response.
-    func decode<T>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T>
-    where T: Decodable {
+    func decode<T: Decodable>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T> {
         return .init(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath))
     }
 
@@ -81,8 +98,7 @@ public extension AnyRequest {
     ///   - decoder: The JSON decoder or decoding strategy.
     ///   - keyPath: Optional key path for decoding nested values.
     /// - Returns: A `TypedRequest` instance that decodes the response.
-    func decode<T>(_: T.Type = T.self, with decoder: JSONDecoder, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T>
-    where T: Decodable & ExpressibleByNilLiteral {
+    func decode<T: Decodable & ExpressibleByNilLiteral>(_: T.Type = T.self, with decoder: JSONDecoder, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T> {
         return .init(anyRequest: self, decoder: DecodableContent<T>(decoder: { decoder }, keyPath: keyPath))
     }
 
@@ -93,8 +109,7 @@ public extension AnyRequest {
     ///   - decoder: The JSON decoder or decoding strategy.
     ///   - keyPath: Optional key path for decoding nested values.
     /// - Returns: A `TypedRequest` instance that decodes the response.
-    func decode<T>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T>
-    where T: Decodable & ExpressibleByNilLiteral {
+    func decode<T: Decodable & ExpressibleByNilLiteral>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) -> TypedRequest<T> {
         return .init(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath))
     }
 
@@ -105,8 +120,7 @@ public extension AnyRequest {
     ///   - decoder: The decoding strategy or JSON decoder.
     ///   - keyPath: Optional key path for nested decoding.
     /// - Returns: A result containing the decoded value or an error.
-    func decodeAsync<T>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async -> Result<T, Error>
-    where T: Decodable {
+    func decodeAsync<T: Decodable>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async -> Result<T, Error> {
         return await TypedRequest<T>(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath)).async()
     }
 
@@ -118,8 +132,7 @@ public extension AnyRequest {
     ///   - keyPath: Optional key path for nested decoding.
     /// - Throws: An error if decoding fails.
     /// - Returns: The decoded result.
-    func decodeAsyncWithThrowing<T>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async throws -> T
-    where T: Decodable {
+    func decodeAsyncWithThrowing<T: Decodable>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async throws -> T {
         return try await TypedRequest<T>(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath)).asyncWithThrowing()
     }
 
@@ -130,8 +143,7 @@ public extension AnyRequest {
     ///   - decoder: The decoding strategy or JSON decoder.
     ///   - keyPath: Optional key path for nested decoding.
     /// - Returns: A result containing the decoded value or an error.
-    func decodeAsync<T>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async -> Result<T, Error>
-    where T: Decodable & ExpressibleByNilLiteral {
+    func decodeAsync<T: Decodable & ExpressibleByNilLiteral>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async -> Result<T, Error> {
         return await TypedRequest<T>(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath)).async()
     }
 
@@ -143,8 +155,7 @@ public extension AnyRequest {
     ///   - keyPath: Optional key path for nested decoding.
     /// - Throws: An error if decoding fails.
     /// - Returns: The decoded result.
-    func decodeAsyncWithThrowing<T>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async throws -> T
-    where T: Decodable & ExpressibleByNilLiteral {
+    func decodeAsyncWithThrowing<T: Decodable & ExpressibleByNilLiteral>(_: T.Type = T.self, with decoder: JSONDecoding? = nil, keyPath: DecodableKeyPath<T> = []) async throws -> T {
         return try await TypedRequest<T>(anyRequest: self, decoder: DecodableContent<T>(decoder: decoder, keyPath: keyPath)).asyncWithThrowing()
     }
 

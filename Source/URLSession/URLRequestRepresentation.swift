@@ -63,7 +63,7 @@ extension URLRequest: URLRequestRepresentation {
 public extension URLRequestRepresentation {
     /// Generates a `cURL` command string representing this request instance.
     ///
-    /// This method uses the `sdk` property to extract request details and generate an equivalent `cURL` command.
+    /// This method uses the `sdk` property to extract request components and generate an equivalent `cURL` command.
     /// It supports optional pretty-printing for JSON responses and uses the shared session by default.
     ///
     /// - Parameters:

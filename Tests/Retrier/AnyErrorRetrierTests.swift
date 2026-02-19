@@ -34,7 +34,7 @@ private extension AnyErrorRetrier {
         userInfo.attemptsCount = attemptsCount
         let error: (any Error)? = isGenericError ? RequestError.generic : nil
         return retryOrFinish(result: .testMake(error: error),
-                             address: .testMake(),
+                             url: .testMake(),
                              parameters: .testMake(),
                              userInfo: userInfo)
     }

@@ -5,6 +5,7 @@ import Foundation
 /// Conforming types must supply a `subname` string, which is used to generate the `description`
 /// and `debugDescription` for the error. This is useful for error logging and categorization.
 public protocol RequestErrorDescription: Error, CustomDebugStringConvertible, CustomStringConvertible {
+    /// Short, case-specific identifier appended to error type name.
     var subname: String { get }
 }
 

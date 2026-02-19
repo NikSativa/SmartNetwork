@@ -3,10 +3,10 @@ import Threading
 
 /// A matcher used to evaluate `URLRequestRepresentation` instances against specific URL or HTTP attributes.
 public enum HTTPStubCondition {
-    /// Matches requests with a URL equal to the given `Address`.
+    /// Matches requests with a URL equal to the given `SmartURL`.
     ///
-    /// - Parameter address: The full `Address` to match.
-    case isAddress(Address)
+    /// - Parameter url: The full `SmartURL` to match.
+    case isAddress(SmartURL)
 
     /// Matches requests whose path exactly equals the provided path components.
     ///
@@ -125,15 +125,15 @@ public enum HTTPStubCondition {
 
     func test(_ request: URLRequestRepresentation) -> Bool {
         switch self {
-        case .isAddress(let address):
-            let original = request.url.flatMap {
-                return Address($0)
+        case .isAddress(let url):
+            let original: SmartURL? = request.url.flatMap {
+                return .url($0)
             }
 
             guard let lhs = try? original?.url() else {
                 return false
             }
-            guard let rhs = try? address.url() else {
+            guard let rhs = try? url.url() else {
                 return false
             }
 

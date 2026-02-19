@@ -50,11 +50,11 @@ final class UserInfoTests: XCTestCase {
         XCTAssertEqual(subject.description, "{}")
         XCTAssertEqual(subject.debugDescription, "{}")
 
-        subject.smartRequestAddress = "address"
+        subject.smartRequestAddress = "url"
         var expected =
             """
             {
-              "SmartNetwork.SmartTask.Request.Address.Key" : "address"
+              "SmartNetwork.SmartTask.Request.Address.Key" : "url"
             }
             """
         XCTAssertEqual(subject.description, expected)
@@ -77,7 +77,7 @@ final class UserInfoTests: XCTestCase {
         XCTAssertEqual(subject.debugDescription, expected)
 
         subject = [:]
-        subject.smartRequestAddress = Address.testMake()
+        subject.smartRequestAddress = SmartURL.testMake()
         expected =
             """
             {

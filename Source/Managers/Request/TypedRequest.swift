@@ -54,6 +54,7 @@ public struct TypedRequest<T> {
 // MARK: - RequestCompletion
 
 extension TypedRequest: RequestCompletion {
+    /// Completion object type for ``TypedRequest`` (`Result<T, Error>`).
     public typealias Object = Result<T, Error>
 
     /// Executes the request asynchronously and returns a decoded result.

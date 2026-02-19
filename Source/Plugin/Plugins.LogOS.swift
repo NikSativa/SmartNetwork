@@ -24,9 +24,13 @@ public extension Plugins {
 
     /// A strategy for selecting the `os.Logger` used to emit log messages.
     enum LoggerProvider: SmartSendable {
+        /// Uses the shared default logger (`Plugins.LogOS` category).
         case `default`
+        /// Uses explicitly provided logger instance.
         case custom(os.Logger)
+        /// Creates logger dynamically from current log data.
         case generator(LoggerGenerator)
+        /// Creates logger category based on request identity (URL + UUID prefix).
         case identifiable
     }
 
@@ -53,10 +57,10 @@ public extension Plugins {
             let logger = logger.get(data)
 
             let id: String? =
-                if let mapID,
-                let uuid = data.get(safe: .id, ofType: UUID.self)?.uuidString,
-                let url = data.get(safe: .url, ofType: String.self),
-                let str = mapID(uuid, url) {
+                    if let mapID,
+                    let uuid = data.get(safe: .id, ofType: UUID.self)?.uuidString,
+                    let url = data.get(safe: .url, ofType: String.self),
+                    let str = mapID(uuid, url) {
                     str
                 } else {
                     nil
@@ -129,7 +133,7 @@ public extension Plugins.LoggerProvider {
 /// - Returns: A string combining the parsed path and a shortened UUID prefix.
 @inline(__always)
 public func PluginsLogIdentity(_ uuid: String, _ url: String) -> String {
-    let path: String = ((try? AddressDetails(string: url))?.path).map { $0.isEmpty ? "< root >" : $0.joined(separator: "/") } ?? "< unknown path >"
+    let path: String = ((try? SmartUrlComponents(string: url))?.path).map { $0.isEmpty ? "< root >" : $0.joined(separator: "/") } ?? "< unknown path >"
     let id: String = uuid.components(separatedBy: "-").first ?? uuid
     let identity = path + " " + id
     return identity

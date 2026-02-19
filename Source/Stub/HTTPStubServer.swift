@@ -36,6 +36,7 @@ public final class HTTPStubServer {
     public static var strategy: HTTPStubStrategy = .transparent
     #endif
 
+    /// Shared singleton instance used by `HTTPStubProtocol`.
     public static let shared: HTTPStubServer = .init()
 
     @AtomicValue
@@ -137,10 +138,12 @@ private extension HTTPStubServer {
 extension HTTPStubServer: @unchecked Sendable {}
 extension HTTPStubServer.Info: Sendable {}
 extension HTTPStubStrategy: Sendable {
+    /// Closure used to resolve unmatched requests dynamically.
     public typealias CustomStrategy = @Sendable (URLRequestRepresentation) -> HTTPStubResponse?
 }
 #else
 public extension HTTPStubStrategy {
+    /// Closure used to resolve unmatched requests dynamically.
     typealias CustomStrategy = (URLRequestRepresentation) -> HTTPStubResponse?
 }
 #endif

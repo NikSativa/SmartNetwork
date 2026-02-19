@@ -28,8 +28,7 @@ private extension ConnectionErrorRetrier {
         let userInfo = UserInfo()
         userInfo.attemptsCount = attemptsCount
         let error: (any Error)? = isConnectionError ? URLError(.notConnectedToInternet) : nil
-        return retryOrFinish(result: .testMake(error: error),
-                             address: .testMake(),
+        return retryOrFinish(result: .testMake(error: error), url: .testMake(),
                              parameters: .testMake(),
                              userInfo: userInfo)
     }

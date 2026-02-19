@@ -23,6 +23,13 @@ public extension Plugins {
         private let options: Options
         private let lock: Locking = AnyLock.default
 
+        /// Creates a logging plugin instance.
+        ///
+        /// - Parameters:
+        ///   - id: Optional unique plugin identifier. If `nil`, a generated one is used.
+        ///   - priority: Execution priority among plugins.
+        ///   - options: Logging phases to include.
+        ///   - logger: Closure that receives structured log data.
         public init(id: ID? = nil,
                     priority: PluginPriority = .curl,
                     options: Options = .all,
@@ -211,17 +218,29 @@ public extension Plugins.Log {
             self.sortingOrder = sortingOrder
         }
 
+        /// Logging phase (`willSend`, `didReceive`, etc.).
         public static let phase: Self = .init(rawValue: "phase", sortingOrder: 0)
+        /// Request URL string.
         public static let url: Self = .init(rawValue: "url", sortingOrder: 10)
+        /// cURL representation of the request.
         public static let curl: Self = .init(rawValue: "curl", sortingOrder: 20)
+        /// Raw error object.
         public static let error: Self = .init(rawValue: "error", sortingOrder: 30)
+        /// String representation of the normalized request error.
         public static let requestError: Self = .init(rawValue: "requestError", sortingOrder: 40)
+        /// Response body payload.
         public static let body: Self = .init(rawValue: "body", sortingOrder: 50)
+        /// Request identifier.
         public static let id: Self = "id"
+        /// Request headers.
         public static let headers: Self = "headers"
+        /// Request user info metadata.
         public static let userInfo: Self = "userInfo"
+        /// Request parameters.
         public static let parameters: Self = "parameters"
+        /// Request object.
         public static let request: Self = "request"
+        /// Response/result object.
         public static let result: Self = "result"
 
         public var debugDescription: String {
@@ -241,9 +260,13 @@ public extension Plugins.Log {
             self.rawValue = value
         }
 
+        /// Phase emitted before request dispatch.
         public static let willSend: Self = "willSend"
+        /// Phase emitted after response is received.
         public static let didReceive: Self = "didReceive"
+        /// Phase emitted when request processing is complete.
         public static let didFinish: Self = "didFinish"
+        /// Phase emitted when request was cancelled.
         public static let wasCancelled: Self = "wasCancelled"
 
         public var debugDescription: String {
@@ -266,7 +289,7 @@ public extension Plugins.Log {
         /// Logs the response after the request completes.
         public static let didFinish: Self = .init(rawValue: 1 << 2)
         /// Logs when the request is cancelled.
-        public static let wasCancelled: Self = .init(rawValue: 1 << 2)
+        public static let wasCancelled: Self = .init(rawValue: 1 << 3)
         /// Enables logging for all supported phases.
         public static let all: Self = [.willSend, .didFinish, .didReceive, .wasCancelled]
     }
@@ -275,26 +298,50 @@ public extension Plugins.Log {
     ///
     /// Values are stored as lazy closures to avoid unnecessary computation.
     struct DataCollection: Sequence, CustomDebugStringConvertible {
+        /// Lazy value provider used to defer expensive log value construction.
         public typealias Getter<T> = () -> T
 
+        /// Stored log values indexed by ``Plugins.Log/Component``.
         public let data: [Component: Getter<Any>]
 
+        /// Creates a collection from prebuilt values.
+        ///
+        /// - Parameter data: Existing storage dictionary.
         public init(data: [Component: Getter<Any>] = [:]) {
             self.data = data
         }
 
+        /// Adds a lazily-evaluated value under a component key.
+        ///
+        /// - Parameters:
+        ///   - key: Target component key.
+        ///   - value: Autoclosure used to produce value on demand.
+        /// - Returns: Updated collection.
         public func add(_ key: Component, _ value: @autoclosure @escaping Getter<Any>) -> Self {
             var data = data
             data[key] = value
             return .init(data: data)
         }
 
+        /// Adds a value-producing closure under a component key.
+        ///
+        /// - Parameters:
+        ///   - key: Target component key.
+        ///   - value: Closure used to produce value on demand.
+        /// - Returns: Updated collection.
         public func add(_ key: Component, _ value: @escaping Getter<Any>) -> Self {
             var data = data
             data[key] = value
             return .init(data: data)
         }
 
+        /// Adds a value-producing closure only when condition is `true`.
+        ///
+        /// - Parameters:
+        ///   - key: Target component key.
+        ///   - condition: Guard condition for insertion.
+        ///   - value: Closure used to produce value on demand.
+        /// - Returns: Updated collection.
         public func add(_ key: Component, if condition: Bool, _ value: @escaping Getter<Any>) -> Self {
             guard condition else {
                 return self
@@ -305,14 +352,28 @@ public extension Plugins.Log {
             return .init(data: data)
         }
 
+        /// Returns stored closure for a key if present.
+        ///
+        /// - Parameter key: Component key.
+        /// - Returns: Value closure or `nil`.
         public func getClosure(safe key: Component) -> Getter<Any>? {
             return data[key]
         }
 
+        /// Returns stored closure for a key.
+        ///
+        /// - Parameter key: Component key.
+        /// - Returns: Value closure.
         public func getClosure(_ key: Component) -> Getter<Any> {
             return data[key]!
         }
 
+        /// Returns typed closure result for a key if type matches.
+        ///
+        /// - Parameters:
+        ///   - key: Component key.
+        ///   - ofType: Expected value type.
+        /// - Returns: Typed value closure or `nil`.
         public func getClosure<T>(safe key: Component, ofType: T.Type) -> Getter<T>? {
             if let value = data[key]?() as? T {
                 return { [value] in
@@ -322,32 +383,62 @@ public extension Plugins.Log {
             return nil
         }
 
+        /// Returns typed closure for a key, force-casting to the requested type.
+        ///
+        /// - Parameters:
+        ///   - key: Component key.
+        ///   - ofType: Expected value type.
+        /// - Returns: Typed value closure.
         public func getClosure<T>(_ key: Component, ofType: T.Type) -> Getter<T> {
             return { [data] in
                 return data[key]!() as! T
             }
         }
 
+        /// Returns evaluated value for a key if present.
+        ///
+        /// - Parameter key: Component key.
+        /// - Returns: Stored value or `nil`.
         public func get(safe key: Component) -> Any? {
             return data[key]?()
         }
 
+        /// Returns evaluated value for a key.
+        ///
+        /// - Parameter key: Component key.
+        /// - Returns: Stored value.
         public func get(_ key: Component) -> Any {
             return data[key]!()
         }
 
+        /// Returns evaluated typed value for a key if type matches.
+        ///
+        /// - Parameters:
+        ///   - key: Component key.
+        ///   - ofType: Expected value type.
+        /// - Returns: Typed value or `nil`.
         public func get<T>(safe key: Component, ofType: T.Type) -> T? {
             return data[key]?() as? T
         }
 
+        /// Returns evaluated typed value for a key, force-casting to requested type.
+        ///
+        /// - Parameters:
+        ///   - key: Component key.
+        ///   - ofType: Expected value type.
+        /// - Returns: Typed value.
         public func get<T>(_ key: Component, ofType: T.Type) -> T {
             return data[key]?() as! T
         }
 
+        /// Safe typed subscript accessor.
+        ///
+        /// Returns `nil` when key is missing or type mismatch occurs.
         public subscript<T>(safe key: Component, ofType type: T.Type) -> T? {
             return get(safe: key, ofType: type)
         }
 
+        /// Typed subscript accessor with force cast semantics.
         public subscript<T>(_ key: Component, ofType type: T.Type) -> T {
             return get(key, ofType: type)
         }

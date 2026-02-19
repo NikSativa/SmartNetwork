@@ -68,55 +68,171 @@ public final class SmartRequestManager {
     }
 }
 
+private final class RequestCompletionState: @unchecked Sendable {
+    @AtomicValue
+    private var networkTask: Task<SmartResponse, Never>? = nil
+
+    @AtomicValue
+    private var completionTask: Task<Void, Never>? = nil
+
+    @AtomicValue
+    private var isCancelled: Bool = false
+
+    var cancelled: Bool {
+        return $isCancelled.syncUnchecked { $0 }
+    }
+
+    func setNetworkTask(_ task: Task<SmartResponse, Never>) {
+        $networkTask.syncUnchecked { $0 = task }
+    }
+
+    func setCompletionTask(_ task: Task<Void, Never>) {
+        $completionTask.syncUnchecked { $0 = task }
+    }
+
+    func finishCompletion() {
+        $completionTask.syncUnchecked { $0 = nil }
+        $networkTask.syncUnchecked { $0 = nil }
+    }
+
+    func cancelAll() {
+        $isCancelled.syncUnchecked { $0 = true }
+
+        let network = $networkTask.syncUnchecked { stored in
+            let current = stored
+            stored = nil
+            return current
+        }
+        let completion = $completionTask.syncUnchecked { stored in
+            let current = stored
+            stored = nil
+            return current
+        }
+
+        network?.cancel()
+        completion?.cancel()
+    }
+}
+
 // MARK: - RequestManager
 
 extension SmartRequestManager: RequestManager {
-    public func request(address: Address, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse {
-        return await startRequest(address: address, parameters: parameters, userInfo: userInfo)
+    /// Sends a request asynchronously.
+    ///
+    /// - Parameters:
+    ///   - url: Target request URL.
+    ///   - parameters: Request configuration.
+    ///   - userInfo: Request metadata.
+    /// - Returns: Raw network response.
+    public func request(url: SmartURL, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse {
+        return await startRequest(url: url, parameters: parameters, userInfo: userInfo)
+    }
+
+    /// Sends a request asynchronously using native ``URL`` value.
+    ///
+    /// - Parameters:
+    ///   - url: Target request URL.
+    ///   - parameters: Request configuration.
+    ///   - userInfo: Request metadata.
+    /// - Returns: Raw network response.
+    public func request(url: URL, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse {
+        return await request(url: .url(url), parameters: parameters, userInfo: userInfo)
+    }
+
+    /// Deprecated overload that uses `address` label.
+    ///
+    /// - Parameters:
+    ///   - address: Target request URL.
+    ///   - parameters: Request configuration.
+    ///   - userInfo: Request metadata.
+    /// - Returns: Raw network response.
+    @available(*, deprecated, renamed: "request(url:parameters:userInfo:)", message: "Please use request(url:parameters:userInfo:) instead.")
+    public func request(address: SmartURL, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse {
+        return await request(url: address, parameters: parameters, userInfo: userInfo)
     }
 
     /// Sends a request with callback-based completion handling.
     ///
     /// - Parameters:
-    ///   - address: The target endpoint.
+    ///   - url: The target endpoint.
     ///   - parameters: Request configuration.
     ///   - userInfo: Contextual metadata for the request.
     ///   - completionQueue: Queue on which to deliver the final result.
     ///   - completion: A closure called with the `SmartResponse`.
     /// - Returns: A cancellable task handle.
-    public func request(address: Address,
+    public func request(url: SmartURL,
                         parameters: Parameters = .init(),
                         userInfo: UserInfo = .init(),
                         completionQueue: DelayedQueue = SmartNetworkSettings.defaultCompletionQueue,
                         completion: @escaping ResponseClosure) -> SmartTasking {
-        let task = Task.detached {
-            return await self.request(address: address, parameters: parameters, userInfo: userInfo)
-        }
+        let state = RequestCompletionState()
         return SmartTask {
             let unsendable = USendable(completion)
-            Task.detached { [unsendable] in
-                let data = await task.value
+            let networkTask = Task.detached {
+                return await self.request(url: url, parameters: parameters, userInfo: userInfo)
+            }
+            state.setNetworkTask(networkTask)
+
+            let completionTask = Task.detached { [state, unsendable] in
+                defer {
+                    state.finishCompletion()
+                }
+
+                let data = await networkTask.value
+                if state.cancelled {
+                    return
+                }
+
                 do {
                     try data.checkCancellation()
+                    if state.cancelled {
+                        return
+                    }
+
                     completionQueue.fire {
+                        if state.cancelled {
+                            return
+                        }
                         unsendable.value(data)
                     }
                 } catch {
                     // nothing to do. request was cancelled.
                 }
             }
+            state.setCompletionTask(completionTask)
         } cancelAction: {
-            task.cancel()
+            state.cancelAll()
         }
-        .fillUserInfo(with: address)
+        .fillUserInfo(with: url)
+    }
+
+    /// Sends a request with callback-based completion handling using native ``URL``.
+    ///
+    /// - Parameters:
+    ///   - url: The target endpoint.
+    ///   - parameters: Request configuration.
+    ///   - userInfo: Contextual metadata for the request.
+    ///   - completionQueue: Queue on which to deliver the final result.
+    ///   - completion: A closure called with the `SmartResponse`.
+    /// - Returns: A cancellable task handle.
+    public func request(url: URL,
+                        parameters: Parameters = .init(),
+                        userInfo: UserInfo = .init(),
+                        completionQueue: DelayedQueue = SmartNetworkSettings.defaultCompletionQueue,
+                        completion: @escaping ResponseClosure) -> SmartTasking {
+        return request(url: .url(url),
+                       parameters: parameters,
+                       userInfo: userInfo,
+                       completionQueue: completionQueue,
+                       completion: completion)
     }
 }
 
 private extension SmartRequestManager {
     /// Executes the request pipeline including plugins, retry logic, and `StopTheLine` handling.
-    func startRequest(address: Address, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse {
+    func startRequest(url: SmartURL, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse {
         func retryAction() async -> SmartResponse {
-            return await startRequest(address: address, parameters: parameters, userInfo: userInfo)
+            return await startRequest(url: url, parameters: parameters, userInfo: userInfo)
         }
 
         do {
@@ -130,7 +246,7 @@ private extension SmartRequestManager {
 
         var data: SmartResponse
         do {
-            let request = try await createRequest(address: address, parameters: parameters, userInfo: userInfo)
+            let request = try await createRequest(url: url, parameters: parameters, userInfo: userInfo)
 
             try await waitUntilRunning(parameters.shouldIgnoreStopTheLine)
             data = await request.start()
@@ -149,7 +265,7 @@ private extension SmartRequestManager {
             data.set(error: error)
         }
 
-        if await shouldRetry(data, address: address, parameters: parameters, userInfo: userInfo) {
+        if await shouldRetry(data, url: url, parameters: parameters, userInfo: userInfo) {
             return await retryAction()
         }
 
@@ -167,7 +283,7 @@ private extension SmartRequestManager {
                     return await retryAction()
                 }
             } else {
-                let action = try await checkStopTheLine(data, address: address, parameters: parameters, userInfo: userInfo)
+                let action = try await checkStopTheLine(data, url: url, parameters: parameters, userInfo: userInfo)
                 switch action {
                 case .useOriginal:
                     break
@@ -221,13 +337,13 @@ private extension SmartRequestManager {
     /// Constructs and configures a `SmartRequest` including plugin preparation.
     ///
     /// - Throws: An error if the URLRequest cannot be created.
-    func createRequest(address: Address, parameters: Parameters, userInfo: UserInfo) async throws -> SmartRequest {
-        var urlRequest = try parameters.urlRequest(for: address)
+    func createRequest(url: SmartURL, parameters: Parameters, userInfo: UserInfo) async throws -> SmartRequest {
+        var urlRequest = try parameters.urlRequest(for: url)
         for plugin in parameters.plugins {
             await plugin.prepare(parameters: parameters, userInfo: userInfo, request: &urlRequest, session: session)
         }
 
-        let request = SmartRequest(address: address,
+        let request = SmartRequest(url: url,
                                    parameters: parameters,
                                    userInfo: userInfo,
                                    urlRequestable: urlRequest,
@@ -241,7 +357,7 @@ private extension SmartRequestManager {
     /// - Throws: Any error surfaced by the stop handler.
     @MainActor
     func checkStopTheLine(_ result: SmartResponse,
-                          address: Address,
+                          url: SmartURL,
                           parameters: Parameters,
                           userInfo: UserInfo) async throws -> StopTheLineResult {
         assert(Thread.isMainThread)
@@ -251,17 +367,17 @@ private extension SmartRequestManager {
         }
 
         let verificationResult = stopTheLine.verify(response: result,
-                                                    address: address,
+                                                    url: url,
                                                     parameters: parameters,
                                                     userInfo: userInfo)
         switch verificationResult {
         case .stopTheLine:
             isRunning = false
-            let newFactory = Self(withPlugins: plugins, stopTheLine: nil, retrier: retrier)
+            let newFactory = Self(withPlugins: plugins, stopTheLine: nil, retrier: retrier, session: session)
             do {
                 let action = try await stopTheLine.action(with: newFactory,
                                                           response: result,
-                                                          address: address,
+                                                          url: url,
                                                           parameters: parameters,
                                                           userInfo: userInfo)
                 switch action {
@@ -293,8 +409,8 @@ private extension SmartRequestManager {
     /// Determines if a failed request should be retried based on the retrier's evaluation.
     ///
     /// - Returns: `true` if a retry should occur; otherwise `false`.
-    func shouldRetry(_ data: SmartResponse, address: Address, parameters: Parameters, userInfo: UserInfo) async -> Bool {
-        let retryOrFinish = retrier?.retryOrFinish(result: data, address: address, parameters: parameters, userInfo: userInfo)
+    func shouldRetry(_ data: SmartResponse, url: SmartURL, parameters: Parameters, userInfo: UserInfo) async -> Bool {
+        let retryOrFinish = retrier?.retryOrFinish(result: data, url: url, parameters: parameters, userInfo: userInfo)
         defer {
             userInfo.attemptsCount += 1
         }
@@ -324,9 +440,9 @@ private extension SmartRequestManager {
 }
 
 private extension SmartTask {
-    /// Associates the request address with the userInfo metadata.
-    func fillUserInfo(with address: Address) -> Self {
-        userInfo.smartRequestAddress = address
+    /// Associates the request url with the userInfo metadata.
+    func fillUserInfo(with url: SmartURL) -> Self {
+        userInfo.smartRequestAddress = url
         return self
     }
 }

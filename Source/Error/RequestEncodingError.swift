@@ -2,7 +2,7 @@ import Foundation
 
 /// Represents common encoding errors encountered during request construction.
 ///
-/// `RequestEncodingError` categorizes failures that occur while encoding URLs, addresses,
+/// `RequestEncodingError` categorizes failures that occur while encoding URLs, urles,
 /// hosts, images, or JSON for a request. These errors are integrated into the `RequestError` system
 /// via the `RequestErrorDescription` protocol.
 public enum RequestEncodingError: Error {
@@ -10,7 +10,7 @@ public enum RequestEncodingError: Error {
     case other(EncodingError)
     /// Indicates a malformed or invalid URL that failed during encoding.
     case brokenURL
-    /// Indicates that the request address could not be correctly encoded.
+    /// Indicates that the request url could not be correctly encoded.
     case brokenAddress
     /// Indicates failure to encode the host component of the URL.
     case brokenHost

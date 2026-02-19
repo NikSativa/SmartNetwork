@@ -5,10 +5,11 @@ import Foundation
 /// `AnyErrorRetrier` is useful for defining centralized retry policies based on error inspection logic.
 /// It supports a configurable maximum retry count and uses a user-provided closure to evaluate each error.
 public struct AnyErrorRetrier: SmartRetrier {
-    // A closure that evaluates an error and returns a `RetryResult`.
     #if swift(>=6.0)
+    /// Closure type that maps an error to ``RetryResult``.
     public typealias Checker = @Sendable (any Error) -> RetryResult
     #else
+    /// Closure type that maps an error to ``RetryResult``.
     public typealias Checker = (any Error) -> RetryResult
     #endif
 
@@ -31,15 +32,40 @@ public struct AnyErrorRetrier: SmartRetrier {
     ///
     /// - Parameters:
     ///   - result: The response from the failed request.
-    ///   - address: The address of the request.
+    ///   - address: The url of the request.
     ///   - parameters: The parameters of the request.
     ///   - userInfo: Metadata including the current retry attempt count.
     /// - Returns: A `RetryResult` indicating whether the request should be retried or not.
-    public func retryOrFinish(result: SmartResponse, address: Address, parameters: Parameters, userInfo: UserInfo) -> RetryResult {
+    @available(*, deprecated, renamed: "retryOrFinish(result:url:parameters:userInfo:)", message: "Please use retryOrFinish(result:url:parameters:userInfo:) instead.")
+    public func retryOrFinish(result: SmartResponse, address: SmartURL, parameters: Parameters, userInfo: UserInfo) -> RetryResult {
+        return retryOrFinish(result: result, url: address, parameters: parameters, userInfo: userInfo)
+    }
+
+    /// Determines whether to retry based on the current error and retry count.
+    ///
+    /// - Parameters:
+    ///   - result: The response from the failed request.
+    ///   - url: The url of the request.
+    ///   - parameters: The parameters of the request.
+    ///   - userInfo: Metadata including the current retry attempt count.
+    /// - Returns: A `RetryResult` indicating whether the request should be retried or not.
+    public func retryOrFinish(result: SmartResponse, url: SmartURL, parameters: Parameters, userInfo: UserInfo) -> RetryResult {
         guard let error = result.error, userInfo.attemptsCount < attemptsCount else {
             return .doNotRetry
         }
 
         return checker(error)
+    }
+
+    /// Determines whether to retry based on the current error and retry count.
+    ///
+    /// - Parameters:
+    ///   - result: The response from the failed request.
+    ///   - url: The url of the request.
+    ///   - parameters: The parameters of the request.
+    ///   - userInfo: Metadata including the current retry attempt count.
+    /// - Returns: A `RetryResult` indicating whether the request should be retried or not.
+    public func retryOrFinish(result: SmartResponse, url: URL, parameters: Parameters, userInfo: UserInfo) -> RetryResult {
+        return retryOrFinish(result: result, url: .url(url), parameters: parameters, userInfo: userInfo)
     }
 }

@@ -33,11 +33,11 @@ public extension UserInfo {
         }
     }
 
-    /// Identifies the logical address or route associated with the network task.
+    /// Identifies the logical url or route associated with the network task.
     ///
     /// This value is assigned by `SmartRequestManager` and should not be manually modified.
     /// It helps associate the task with its originating request configuration.
-    internal(set) var smartRequestAddress: Address? {
+    internal(set) var smartRequestAddress: SmartURL? {
         get {
             return self[.smartTaskRequestAddressKey]
         }

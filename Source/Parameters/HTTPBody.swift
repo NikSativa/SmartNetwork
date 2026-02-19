@@ -1,6 +1,7 @@
 import CoreGraphics
 import Foundation
 
+/// Deprecated alias for ``HTTPBody``.
 @available(*, deprecated, renamed: "HTTPBody", message: "Please use HTTPBody instead.")
 public typealias Body = HTTPBody
 
@@ -10,25 +11,15 @@ public typealias Body = HTTPBody
 /// x-www-form-urlencoded, JSON, and platform-specific image formats. It provides utilities for encoding
 /// the body and generating appropriate headers for transmission.
 public enum HTTPBody: ExpressibleByNilLiteral {
-    /// Represents supported image formats for use in HTTP body payloads.
-    public enum ImageFormat: Hashable {
-        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-        case png(SmartImage)
-        #endif
-
-        #if os(iOS) || os(tvOS) || os(watchOS) || supportsVisionOS
-        case jpeg(SmartImage, compressionQuality: CGFloat)
-        #endif
-    }
-
-    enum EncodingCharacters {
+    /// Internal encoding control characters.
+    public enum EncodingCharacters {
         static let crlf = "\r\n"
     }
 
     /// An empty request body.
     case empty
     /// Raw binary body data.
-    case data(Data)
+    case data(Data, contentType: String?)
     /// An image formatted as PNG or JPEG.
     case image(ImageFormat)
     /// A body created from an `Encodable` object and custom encoder.
@@ -44,12 +35,16 @@ public enum HTTPBody: ExpressibleByNilLiteral {
 public extension HTTPBody {
     /// Encodable body
     static func encode(_ encodable: some Encodable) -> Self {
-        return .encode(encodable, with: { .init() })
+        return .encode(encodable, with: JSONEncoder.init)
     }
 
     /// Encodable body
     static func encode(_ encodable: some Encodable, with encoding: @escaping @autoclosure () -> JSONEncoder) -> Self {
         return .encode(encodable, with: encoding)
+    }
+
+    static func data(_ data: Data) -> Self {
+        return .data(data, contentType: nil)
     }
 
     /// ExpressibleByNilLiteral
@@ -74,6 +69,9 @@ public extension HTTPBody {
         throw RequestEncodingError.invalidJSON
     }
 
+    /// Deprecated shorthand initializer for `Encodable` payloads.
+    ///
+    /// - Parameter encodable: Value to encode as request body.
     @available(*, deprecated, renamed: "encode", message: "Use 'encode' instead.")
     init(_ encodable: some Encodable) {
         self = .encode(encodable)
@@ -82,35 +80,15 @@ public extension HTTPBody {
 
 /// Encodes an optional `Body` into an `EncodedBody`, returning an empty result if `nil`.
 public extension HTTPBody? {
-    func encode() throws -> HTTPBody.EncodedBody {
+    /// Encodes optional body value into concrete body bytes and headers.
+    ///
+    /// Returns an empty body when optional is `nil`.
+    func encode() throws -> EncodedBody {
         return try (self?.encode()) ?? .init(httpBody: nil, [:])
     }
 }
 
 public extension HTTPBody {
-    /// Represents the result of encoding a `Body` instance into data and HTTP headers.
-    struct EncodedBody {
-        public let httpBody: Data?
-        public let headers: HeaderFields
-
-        public init(httpBody: Data?, _ headers: HeaderFields) {
-            self.httpBody = httpBody
-            self.headers = headers
-        }
-
-        /// Populates the given URL request with the encoded body and its associated headers.
-        ///
-        /// - Parameter request: The request to modify.
-        public func fill(_ request: inout URLRequest) {
-            request.httpBody = httpBody
-            for item in headers {
-                if request.value(forHTTPHeaderField: item.key) == nil {
-                    request.setValue(item.value, forHTTPHeaderField: item.key)
-                }
-            }
-        }
-    }
-
     /// Encodes the body into `Data` and generates the appropriate `Content-Type` and `Content-Length` headers.
     ///
     /// - Throws: An error if encoding fails.
@@ -120,28 +98,19 @@ public extension HTTPBody {
         case .empty:
             return .init(httpBody: .init(), [:])
 
-        case .data(let data):
+        case .data(let data, let contentType):
+            if let contentType {
+                return .init(httpBody: data, [
+                    "Content-Type": contentType,
+                    "Content-Length": "\(data.count)"
+                ])
+            }
             return .init(httpBody: data, [
                 "Content-Length": "\(data.count)"
             ])
 
         case .image(let image):
-            let data: Data
-            switch image {
-            #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-            case .png(let image):
-                data = try PlatformImage(image).pngData().unwrap(orThrow: RequestEncodingError.cantEncodeImage)
-            #endif
-
-            #if os(iOS) || os(tvOS) || os(watchOS) || supportsVisionOS
-            case .jpeg(let image, let quality):
-                data = try PlatformImage(image).jpegData(compressionQuality: quality).unwrap(orThrow: RequestEncodingError.cantEncodeImage)
-            #endif
-            }
-            return .init(httpBody: data, [
-                "Content-Type": "application/image",
-                "Content-Length": "\(data.count)"
-            ])
+            return try image.encode()
 
         case .encode(let object, let encoder):
             let encoder = encoder()
@@ -182,6 +151,4 @@ public extension HTTPBody {
 
 #if swift(>=6.0)
 extension HTTPBody: @unchecked Sendable {}
-extension HTTPBody.ImageFormat: @unchecked Sendable {}
-extension HTTPBody.EncodedBody: Sendable {}
 #endif

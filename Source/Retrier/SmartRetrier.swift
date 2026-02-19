@@ -31,9 +31,42 @@ public protocol SmartRetrier: SmartSendable {
     ///
     /// - Parameters:
     ///   - result: The ``SmartResponse`` of the network request.
-    ///   - address: The ``Address`` of the network request.
+    ///   - url: The ``SmartURL`` of the network request.
     ///   - parameters: The ``Parameters`` of the network request.
     ///   - userInfo: The ``UserInfo`` associated with the network request.
     /// - Returns: The decision whether to retry the network request or finish. See ``RetryResult``
-    func retryOrFinish(result: SmartResponse, address: Address, parameters: Parameters, userInfo: UserInfo) -> RetryResult
+    func retryOrFinish(result: SmartResponse, url: SmartURL, parameters: Parameters, userInfo: UserInfo) -> RetryResult
+}
+
+public extension SmartRetrier {
+    /// Determines whether the request should be retried based on the response and associated metadata.
+    ///
+    /// - Parameters:
+    ///   - result: The ``SmartResponse`` of the network request.
+    ///   - address: The ``SmartURL`` of the network request.
+    ///   - parameters: The ``Parameters`` of the network request.
+    ///   - userInfo: The ``UserInfo`` associated with the network request.
+    /// - Returns: The decision whether to retry the network request or finish. See ``RetryResult``
+    @available(*, deprecated, renamed: "retryOrFinish(result:url:parameters:userInfo:)", message: "Please use retryOrFinish(result:url:parameters:userInfo:) instead.")
+    func retryOrFinish(result: SmartResponse,
+                       address: SmartURL,
+                       parameters: Parameters,
+                       userInfo: UserInfo) -> RetryResult {
+        return retryOrFinish(result: result,
+                             url: address,
+                             parameters: parameters,
+                             userInfo: userInfo)
+    }
+
+    /// Determines whether the request should be retried based on the response and associated metadata.
+    ///
+    /// - Parameters:
+    ///   - result: The ``SmartResponse`` of the network request.
+    ///   - url: The ``URL`` of the network request.
+    ///   - parameters: The ``Parameters`` of the network request.
+    ///   - userInfo: The ``UserInfo`` associated with the network request.
+    /// - Returns: The decision whether to retry the network request or finish. See ``RetryResult``
+    func retryOrFinish(result: SmartResponse, url: URL, parameters: Parameters, userInfo: UserInfo) -> RetryResult {
+        return retryOrFinish(result: result, url: .url(url), parameters: parameters, userInfo: userInfo)
+    }
 }

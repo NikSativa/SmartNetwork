@@ -10,9 +10,9 @@ final class SmartRequestTests: XCTestCase {
     let session = SmartNetworkSettings.sharedSession
     var observers: Set<AnyCancellable> = []
 
-    let address: Address = .testMake()
+    let url: SmartURL = .testMake()
     let cache: FakeRequestCache = .init()
-    lazy var sdkRequest = URLRequest.spry.testMake(url: try! address.url())
+    lazy var sdkRequest = URLRequest.spry.testMake(url: try! url.url())
 
     lazy var cacheSettings: CacheSettings = .testMake(cache: cache)
 
@@ -28,7 +28,7 @@ final class SmartRequestTests: XCTestCase {
     var subject: SmartRequest!
 
     lazy var setUpSubject: () -> Void = { [self] in
-        subject = SmartRequest(address: .testMake(),
+        subject = SmartRequest(url: .testMake(),
                                parameters: parameters,
                                userInfo: .testMake(),
                                urlRequestable: urlRequestable,
@@ -72,9 +72,25 @@ final class SmartRequestTests: XCTestCase {
         XCTAssertEqual(data, .testMake(request: sdkRequest, body: .data(strData), response: urlResponse))
     }
 
+    func test_returnCacheDataDontLoad_with_cache_miss_does_not_load_network() async {
+        parameters = .testMake(cacheSettings: cacheSettings,
+                               requestPolicy: .returnCacheDataDontLoad)
+        setUpSubject()
+
+        cache.stub(.cachedResponse).andReturn(nil)
+
+        let data = await subject.start()
+        XCTAssertNil(data.body)
+        XCTAssertNil(data.response)
+        XCTAssertEqual((data.error as? URLError)?.code, .cannotLoadFromNetwork)
+
+        XCTAssertHaveReceived(cache, .cachedResponse, countSpecifier: .exactly(1))
+        XCTAssertHaveNotReceived(cache, .storeCachedResponse)
+    }
+
     func test_description() {
         let urlRequestable: FakeURLRequestRepresentation = .init()
-        var subject: SmartRequest = .init(address: .testMake(),
+        var subject: SmartRequest = .init(url: .testMake(),
                                           parameters: .testMake(method: .get),
                                           userInfo: .testMake(),
                                           urlRequestable: urlRequestable,
@@ -83,7 +99,7 @@ final class SmartRequestTests: XCTestCase {
         XCTAssertEqual(subject.description, "<GET request: https://www.apple.com>")
         XCTAssertEqual(subject.debugDescription, "<GET request: https://www.apple.com>")
 
-        subject = SmartRequest(address: .testMake(),
+        subject = SmartRequest(url: .testMake(),
                                parameters: .testMake(header: ["some": "a"], method: nil),
                                userInfo: .testMake(),
                                urlRequestable: urlRequestable,

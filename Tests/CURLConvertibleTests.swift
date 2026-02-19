@@ -9,9 +9,9 @@ final class CURLConvertibleTests: XCTestCase {
         SmartNetworkSettings.curlAddJSON_PP = false
     }
 
-    func testBasicGetRequest() {
+    func testBasicGetRequest() throws {
         let session = URLSession(configuration: .ephemeral)
-        var request = URLRequest(url: URL(string: "https://example.com")!)
+        var request = try URLRequest(url: XCTUnwrap(URL(string: "https://example.com")))
         request.httpMethod = "GET"
 
         let curl = DummyConvertible().cURLDescription(with: session, request: request, prettyPrinted: false)
@@ -21,9 +21,9 @@ final class CURLConvertibleTests: XCTestCase {
         XCTAssertTrue(curl.contains("'https://example.com'"))
     }
 
-    func testRequestWithHeaders() {
+    func testRequestWithHeaders() throws {
         let session = URLSession(configuration: .ephemeral)
-        var request = URLRequest(url: URL(string: "https://example.com")!)
+        var request = try URLRequest(url: XCTUnwrap(URL(string: "https://example.com")))
         request.httpMethod = "GET"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
@@ -32,9 +32,9 @@ final class CURLConvertibleTests: XCTestCase {
         XCTAssertTrue(curl.contains("-H 'Content-Type: application/json'"))
     }
 
-    func testPostRequestWithBody() {
+    func testPostRequestWithBody() throws {
         let session = URLSession(configuration: .ephemeral)
-        var request = URLRequest(url: URL(string: "https://example.com/api")!)
+        var request = try URLRequest(url: XCTUnwrap(URL(string: "https://example.com/api")))
         request.httpMethod = "POST"
         request.httpBody = "{\"key\":\"value\"}".data(using: .utf8)
 
@@ -44,10 +44,10 @@ final class CURLConvertibleTests: XCTestCase {
         XCTAssertTrue(curl.contains("-d '{\"key\":\"value\"}'"))
     }
 
-    func testPrettyPrintedJSON() {
+    func testPrettyPrintedJSON() throws {
         SmartNetworkSettings.curlAddJSON_PP = true
         let session = URLSession(configuration: .ephemeral)
-        var request = URLRequest(url: URL(string: "https://example.com")!)
+        var request = try URLRequest(url: XCTUnwrap(URL(string: "https://example.com")))
         request.httpMethod = "POST"
         request.httpBody = try? JSONSerialization.data(withJSONObject: ["foo": "bar"], options: [])
 

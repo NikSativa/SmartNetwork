@@ -2,9 +2,9 @@ import Foundation
 
 /// Represents the components of a URL such as scheme, host, port, path, query items, and fragment.
 ///
-/// `AddressDetails` provides a structured way to represent and manipulate URLs in a composable and testable form,
+/// `SmartUrlComponents` provides a structured way to represent and manipulate URLs in a composable and testable form,
 /// useful for constructing requests or parsing existing URLs.
-public struct AddressDetails: Hashable, SmartSendable {
+public struct SmartUrlComponents: Hashable, SmartSendable {
     /// The URL scheme (e.g., http, https, or custom).
     public let scheme: Scheme?
     /// The host portion of the URL (e.g., "example.com").
@@ -18,6 +18,15 @@ public struct AddressDetails: Hashable, SmartSendable {
     /// The fragment identifier, if present.
     public let fragment: String?
 
+    /// Creates URL components from individual parts.
+    ///
+    /// - Parameters:
+    ///   - scheme: URL scheme.
+    ///   - host: URL host.
+    ///   - port: Optional port.
+    ///   - path: Path components.
+    ///   - queryItems: URL query items.
+    ///   - fragment: Optional URL fragment.
     public init(scheme: Scheme? = .https,
                 host: String,
                 port: Int? = nil,
@@ -33,8 +42,8 @@ public struct AddressDetails: Hashable, SmartSendable {
     }
 }
 
-public extension AddressDetails {
-    /// Initializes `AddressDetails` from a `URLComponents` instance.
+public extension SmartUrlComponents {
+    /// Initializes `SmartUrlComponents` from a `URLComponents` instance.
     ///
     /// - Parameter components: A parsed URL components object.
     /// - Throws: `RequestEncodingError.brokenHost` if the host is missing.
@@ -51,7 +60,7 @@ public extension AddressDetails {
         self.queryItems = .init(items)
     }
 
-    /// Initializes `AddressDetails` from a `URL`.
+    /// Initializes `SmartUrlComponents` from a `URL`.
     ///
     /// - Parameter url: A complete URL to parse.
     /// - Throws: `RequestEncodingError.brokenURL` if URL components cannot be resolved.
@@ -60,7 +69,7 @@ public extension AddressDetails {
         try self.init(components: components)
     }
 
-    /// Initializes `AddressDetails` from a URL string.
+    /// Initializes `SmartUrlComponents` from a URL string.
     ///
     /// - Parameter string: The string representation of a URL.
     /// - Throws: `RequestEncodingError.brokenURL` if the string is invalid.
@@ -72,8 +81,8 @@ public extension AddressDetails {
 
 // MARK: - CustomDebugStringConvertible
 
-extension AddressDetails: CustomDebugStringConvertible {
-    /// A debug-friendly string representation of the address.
+extension SmartUrlComponents: CustomDebugStringConvertible {
+    /// A debug-friendly string representation of the url.
     public var debugDescription: String {
         return makeDescription()
     }
@@ -81,15 +90,15 @@ extension AddressDetails: CustomDebugStringConvertible {
 
 // MARK: - CustomStringConvertible
 
-extension AddressDetails: CustomStringConvertible {
-    /// A user-friendly string representation of the address.
+extension SmartUrlComponents: CustomStringConvertible {
+    /// A user-friendly string representation of the url.
     public var description: String {
         return makeDescription()
     }
 }
 
-private extension AddressDetails {
-    /// Constructs a readable string representation from the address components.
+private extension SmartUrlComponents {
+    /// Constructs a readable string representation from the url components.
     ///
     /// Includes scheme, host, port, path, query, and fragment if available.
     private func makeDescription() -> String {

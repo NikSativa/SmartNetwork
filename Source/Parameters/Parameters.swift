@@ -6,7 +6,7 @@ import Threading
 /// - Note: You can use ``UserInfo`` to pass data between any part of the network layer like ``Plugin``, ``Stopper`` etc.
 public struct Parameters {
     /// The header fields for the request.
-    public let header: HeaderFields
+    public private(set) var header: HeaderFields
 
     /// The HTTP method for the request.
     public let method: HTTPMethod?
@@ -57,17 +57,17 @@ public struct Parameters {
 }
 
 public extension Parameters {
-    /// Converts the current `Parameters` instance into a `URLRequestRepresentation` for the specified address.
+    /// Converts the current `Parameters` instance into a `URLRequestRepresentation` for the specified URL.
     ///
-    /// This method constructs a `URLRequest` using the address's URL, headers, HTTP method, body, cache policy,
+    /// This method constructs a `URLRequest` using the URL, headers, HTTP method, body, cache policy,
     /// and timeout configuration defined in the `Parameters`. It also applies any body encoding logic if present.
     ///
-    /// - Parameter address: The destination `Address` from which to derive the request URL.
-    /// - Returns: A `URLRequestRepresentation` that reflects the current parameters and address.
+    /// - Parameter url: The destination URL from which to derive the request URL.
+    /// - Returns: A `URLRequestRepresentation` that reflects the current parameters and URL.
     /// - Throws: An error if the URL cannot be created or if body encoding fails.
-    func urlRequest(for address: Address) throws -> URLRequestRepresentation {
-        let url = try address.url()
-        var request = URLRequest(url: url,
+    func urlRequest(for url: SmartURL) throws -> URLRequestRepresentation {
+        let sdkUrl = try url.url()
+        var request = URLRequest(url: sdkUrl,
                                  cachePolicy: requestPolicy,
                                  timeoutInterval: timeoutInterval)
         request.httpMethod = method?.toString()
@@ -81,30 +81,32 @@ public extension Parameters {
         return request
     }
 
+    /// Converts the current `Parameters` instance into a `URLRequestRepresentation` for the specified URL.
+    ///
+    /// This method constructs a `URLRequest` using the URL, headers, HTTP method, body, cache policy,
+    /// and timeout configuration defined in the `Parameters`. It also applies any body encoding logic if present.
+    ///
+    /// - Parameter url: The destination URL from which to derive the request URL.
+    /// - Returns: A `URLRequestRepresentation` that reflects the current parameters and URL.
+    /// - Throws: An error if the URL cannot be created or if body encoding fails.
+    func urlRequest(for url: URL) throws -> URLRequestRepresentation {
+        return try urlRequest(for: .url(url))
+    }
+
     /// Adds headers to the parameters.
     @inline(__always)
     static func +(lhs: Self, rhs: HeaderFields) -> Self {
-        return .init(header: lhs.header + rhs,
-                     method: lhs.method,
-                     body: lhs.body,
-                     plugins: lhs.plugins,
-                     cacheSettings: lhs.cacheSettings,
-                     requestPolicy: lhs.requestPolicy,
-                     timeoutInterval: lhs.timeoutInterval,
-                     progressHandler: lhs.progressHandler)
+        var new = lhs
+        new.header = lhs.header + rhs
+        return new
     }
 
     /// Adds plugins to the parameters.
     @inline(__always)
     static func +(lhs: Self, rhs: [Plugin]) -> Self {
-        return .init(header: lhs.header,
-                     method: lhs.method,
-                     body: lhs.body,
-                     plugins: lhs.plugins + rhs,
-                     cacheSettings: lhs.cacheSettings,
-                     requestPolicy: lhs.requestPolicy,
-                     timeoutInterval: lhs.timeoutInterval,
-                     progressHandler: lhs.progressHandler)
+        var new = lhs
+        new.plugins = lhs.plugins + rhs
+        return new
     }
 }
 

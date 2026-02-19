@@ -9,13 +9,13 @@ final class FakeStopTheLine: StopTheLine {
     @SpryableFunc
     func action(with manager: SmartRequestManager,
                 response: SmartResponse,
-                address: Address,
+                url: SmartURL,
                 parameters: Parameters,
                 userInfo: UserInfo) async throws -> StopTheLineResult
 
     @SpryableFunc
     func verify(response: SmartResponse,
-                address: Address,
+                url: SmartURL,
                 parameters: Parameters,
                 userInfo: UserInfo) -> StopTheLineAction
 }

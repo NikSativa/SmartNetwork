@@ -13,16 +13,16 @@ final class RequestManagerTests: XCTestCase {
 
         /// requirement: returns response immediately
         static let host1 = "example1.com"
-        static let address1: Address = .testMake(string: "http://example1.com/signin")
+        static let url1: SmartURL = .testMake(string: "http://example1.com/signin")
 
         static let host2 = "example2.com"
-        static let address2: Address = .testMake(string: "http://example2.com/signin")
+        static let url2: SmartURL = .testMake(string: "http://example2.com/signin")
 
         static let brokenHost = "broken.com"
-        static let brokenAddress: Address = .testMake(string: "http://broken.com/signin")
+        static let brokenAddress: SmartURL = .testMake(string: "http://broken.com/signin")
 
         static let emptyHost = "empty.com"
-        static let emptyAddress: Address = .testMake(string: "http://empty.com/signin")
+        static let emptyAddress: SmartURL = .testMake(string: "http://empty.com/signin")
     }
 
     private var observers: [AnyCancellable] = []
@@ -76,7 +76,7 @@ final class RequestManagerTests: XCTestCase {
         let subject = SmartRequestManager.create()
         let response: UnsafeValue<TestInfo> = .init()
         subject
-            .request(address: Constant.address1)
+            .request(url: Constant.url1)
             .decode(TestInfo.self)
             .complete {
                 response.value = try? $0.get()
@@ -91,7 +91,7 @@ final class RequestManagerTests: XCTestCase {
         let expectation2 = expectation(description: "should receive response")
         let expectationReverted = expectation(description: "should not receive response")
         expectationReverted.isInverted = true
-        subject.request(address: Constant.address2,
+        subject.request(url: Constant.url2,
                         parameters: .testMake())
             .decode(TestInfo.self)
             .complete {
@@ -109,7 +109,7 @@ final class RequestManagerTests: XCTestCase {
         let expectation3 = expectation(description: "should receive response")
         let expectationReverted2 = expectation(description: "should not receive response")
         expectationReverted2.isInverted = true
-        subject.request(address: Constant.emptyAddress,
+        subject.request(url: Constant.emptyAddress,
                         parameters: .testMake())
             .decode(TestInfo.self)
             .complete {
@@ -128,7 +128,7 @@ final class RequestManagerTests: XCTestCase {
         let expectation4 = expectation(description: "should receive response")
         let expectationReverted3 = expectation(description: "should not receive response")
         expectationReverted3.isInverted = true
-        subject.request(address: Constant.address2,
+        subject.request(url: Constant.url2,
                         parameters: .testMake())
             .decode(TestInfo.self)
             .complete {
@@ -147,7 +147,7 @@ final class RequestManagerTests: XCTestCase {
         let expectationReverted4 = expectation(description: "should not receive response")
         expectationReverted4.isInverted = true
         response.value = nil
-        subject.request(address: Constant.address2,
+        subject.request(url: Constant.url2,
                         parameters: .testMake())
             .decode(TestInfo.self)
             .complete {
@@ -184,7 +184,7 @@ final class RequestManagerTests: XCTestCase {
 
         let response: UnsafeValue<TestInfo> = .init()
         let expectation1 = expectation(description: "should receive response")
-        subject.request(address: Constant.address1,
+        subject.request(url: Constant.url1,
                         parameters: .init(plugins: [pluginForParam, pluginStatusCode, pluginForParam, pluginStatusCode],
                                           cacheSettings: .testMake()))
             .decode(TestInfo.self)
@@ -213,7 +213,7 @@ final class RequestManagerTests: XCTestCase {
         pluginForParam.resetCalls()
 
         let expectation2 = expectation(description: "should receive response")
-        subject.request(address: Constant.address2,
+        subject.request(url: Constant.url2,
                         parameters: .init(plugins: [pluginForParam]))
             .decode(TestInfo.self)
             .complete {
@@ -253,7 +253,7 @@ final class RequestManagerTests: XCTestCase {
         let subject = SmartRequestManager.create()
         let result: UnsafeResult<TestInfo> = .init()
         subject
-            .request(address: Constant.address1, parameters: .init(body: .encode(BrokenTestInfo(id: 1))))
+            .request(url: Constant.url1, parameters: .init(body: .encode(BrokenTestInfo(id: 1))))
             .decode(TestInfo.self)
             .complete {
                 result.value = $0
@@ -275,8 +275,8 @@ final class RequestManagerTests: XCTestCase {
 
         // passOver
         let expectation: XCTestExpectation = .init(description: "should receive response")
-        stopTheLine.stub(.verifyWithResponse_Address_Parameters_Userinfo).andReturn(StopTheLineAction.passOver)
-        subject.request(address: Constant.brokenAddress,
+        stopTheLine.stub(.verifyWithResponse_Url_Parameters_Userinfo).andReturn(StopTheLineAction.passOver)
+        subject.request(url: Constant.brokenAddress,
                         parameters: .init(body: .encode(TestInfo(id: 1))))
             .decode(TestInfo.self)
             .complete {
@@ -299,8 +299,8 @@ final class RequestManagerTests: XCTestCase {
 
         // passOver
         let expectation: XCTestExpectation = .init(description: "should receive response")
-        stopTheLine.stub(.verifyWithResponse_Address_Parameters_Userinfo).andReturn(StopTheLineAction.stopTheLine)
-        subject.request(address: Constant.brokenAddress, parameters: .init(shouldIgnoreStopTheLine: true))
+        stopTheLine.stub(.verifyWithResponse_Url_Parameters_Userinfo).andReturn(StopTheLineAction.stopTheLine)
+        subject.request(url: Constant.brokenAddress, parameters: .init(shouldIgnoreStopTheLine: true))
             .decode(TestInfo.self)
             .complete {
                 result.value = $0
@@ -311,7 +311,7 @@ final class RequestManagerTests: XCTestCase {
 
         wait(for: [expectation], timeout: Constant.timeoutInSeconds)
         XCTAssertThrowsError(try result.value?.get(), StatusCode(.badRequest))
-        XCTAssertHaveNotReceived(stopTheLine, .verifyWithResponse_Address_Parameters_Userinfo)
+        XCTAssertHaveNotReceived(stopTheLine, .verifyWithResponse_Url_Parameters_Userinfo)
     }
 
     func test_stop_the_line_verify_retry() {
@@ -324,8 +324,8 @@ final class RequestManagerTests: XCTestCase {
         let expectation1: XCTestExpectation = .init(description: "should not receive response")
         let expectation2: XCTestExpectation = .init(description: "should receive response")
         expectation1.isInverted = true
-        stopTheLine.stubAgain(.verifyWithResponse_Address_Parameters_Userinfo).andReturn(StopTheLineAction.retry)
-        let req = subject.request(address: Constant.brokenAddress, parameters: .init(body: .encode(TestInfo(id: 1))))
+        stopTheLine.stubAgain(.verifyWithResponse_Url_Parameters_Userinfo).andReturn(StopTheLineAction.retry)
+        let req = subject.request(url: Constant.brokenAddress, parameters: .init(body: .encode(TestInfo(id: 1))))
             .decode(TestInfo.self)
             .complete {
                 result.value = $0
@@ -335,7 +335,7 @@ final class RequestManagerTests: XCTestCase {
 
         req.start()
         wait(for: [expectation1], timeout: Constant.timeoutInSeconds)
-        stopTheLine.stubAgain(.verifyWithResponse_Address_Parameters_Userinfo).andReturn(StopTheLineAction.passOver)
+        stopTheLine.stubAgain(.verifyWithResponse_Url_Parameters_Userinfo).andReturn(StopTheLineAction.passOver)
 
         wait(for: [expectation2], timeout: Constant.timeoutInSeconds)
         XCTAssertThrowsError(try result.value?.get(), StatusCode(.badRequest))
@@ -353,6 +353,45 @@ final class RequestManagerTests: XCTestCase {
         stop_the_line(.passOver(.testMake(statusCode: StatusCode.Kind.badGateway.rawValue, error: StatusCode(.badGateway))), newCode: .badGateway)
     }
 
+    func test_stop_the_line_action_uses_same_custom_session_for_internal_manager() {
+        let tracker = SessionTracker()
+        let session = FakeSmartURLSession()
+        let pluginStatusCode = Plugins.StatusCode()
+        let plugin: Plugin = SessionCapturePlugin(priority: -100) { session in
+            tracker.append(session)
+        }
+
+        let stopTheLine = SessionAwareStopTheLine { manager in
+            _ = await manager.request(url: Constant.url1,
+                                      parameters: .init(shouldIgnoreStopTheLine: true),
+                                      userInfo: .init())
+            return .useOriginal
+        }
+
+        let subject = SmartRequestManager.create(withPlugins: [pluginStatusCode, plugin],
+                                                 stopTheLine: stopTheLine,
+                                                 session: session)
+
+        let expectation = expectation(description: "should receive response")
+        let result: UnsafeResult<TestInfo> = .init()
+        subject.request(url: Constant.brokenAddress)
+            .decode(TestInfo.self)
+            .complete {
+                result.value = $0
+                expectation.fulfill()
+            }
+            .storing(in: &observers)
+            .start()
+
+        wait(for: [expectation], timeout: Constant.timeoutInSeconds)
+        XCTAssertThrowsError(try result.value?.get(), StatusCode(.badRequest))
+
+        let expectedIdentity = ObjectIdentifier(session)
+        let identities = tracker.ids
+        XCTAssertGreaterThanOrEqual(identities.count, 2)
+        XCTAssertTrue(identities.allSatisfy { $0 == expectedIdentity })
+    }
+
     private func stop_the_line(_ action: StopTheLineResult, newCode: StatusCode.Kind? = nil) {
         let stopTheLine: FakeStopTheLine = .init()
         let subject = SmartRequestManager.create(withPlugins: [Plugins.StatusCode()],
@@ -361,8 +400,8 @@ final class RequestManagerTests: XCTestCase {
 
         // stopTheLine
         stopTheLine.resetCallsAndStubs()
-        stopTheLine.stub(.actionWithWith_Response_Address_Parameters_Userinfo).andReturn(action)
-        stopTheLine.stub(.verifyWithResponse_Address_Parameters_Userinfo).andDo { args in
+        stopTheLine.stub(.actionWithWith_Response_Url_Parameters_Userinfo).andReturn(action)
+        stopTheLine.stub(.verifyWithResponse_Url_Parameters_Userinfo).andDo { args in
             guard let result = args[0] as? SmartResponse else {
                 fatalError()
             }
@@ -374,7 +413,7 @@ final class RequestManagerTests: XCTestCase {
         }
 
         let expectation3: XCTestExpectation = .init(description: "should receive response")
-        subject.request(address: Constant.brokenAddress,
+        subject.request(url: Constant.brokenAddress,
                         parameters: .init(body: .encode(TestInfo(id: 1))))
             .decode(TestInfo.self)
             .complete {
@@ -390,7 +429,7 @@ final class RequestManagerTests: XCTestCase {
 
         // waiter
         let expectation4: XCTestExpectation = .init(description: "should receive response")
-        subject.request(address: Constant.address1,
+        subject.request(url: Constant.url1,
                         parameters: .init(body: .empty))
             .decode(TestInfo.self)
             .complete { _ in
@@ -405,11 +444,82 @@ final class RequestManagerTests: XCTestCase {
         wait(for: [expectation8], timeout: Constant.stubbedTimeoutInSeconds)
 
         stopTheLine.resetCallsAndStubs()
-        stopTheLine.stub(.actionWithWith_Response_Address_Parameters_Userinfo).andReturn(action)
-        stopTheLine.stub(.verifyWithResponse_Address_Parameters_Userinfo).andReturn(StopTheLineAction.passOver)
+        stopTheLine.stub(.actionWithWith_Response_Url_Parameters_Userinfo).andReturn(action)
+        stopTheLine.stub(.verifyWithResponse_Url_Parameters_Userinfo).andReturn(StopTheLineAction.passOver)
 
         wait(for: [expectation3, expectation4], timeout: Constant.timeoutInSeconds * 3)
         XCTAssertThrowsError(try result.value?.get(), StatusCode(newCode ?? .badRequest))
+    }
+}
+
+private final class SessionTracker: @unchecked Sendable {
+    @AtomicValue
+    private var values: [ObjectIdentifier] = []
+
+    var ids: [ObjectIdentifier] {
+        return $values.syncUnchecked { $0 }
+    }
+
+    func append(_ session: SmartURLSession) {
+        let id = ObjectIdentifier(session as AnyObject)
+        $values.syncUnchecked { $0.append(id) }
+    }
+}
+
+private struct SessionCapturePlugin: Plugin {
+    let id: ID
+    let priority: PluginPriority
+
+    #if swift(>=6.0)
+    typealias PrepareClosure = @Sendable (SmartURLSession) -> Void
+    #else
+    typealias PrepareClosure = (SmartURLSession) -> Void
+    #endif
+    private let onPrepare: PrepareClosure
+
+    init(id: ID = UUID().uuidString,
+         priority: PluginPriority,
+         onPrepare: @escaping PrepareClosure) {
+        self.id = id
+        self.priority = priority
+        self.onPrepare = onPrepare
+    }
+
+    func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async {
+        onPrepare(session)
+    }
+
+    func willSend(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession) {}
+    func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, data: SmartResponse) {}
+    func verify(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) throws {}
+    func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) {}
+}
+
+private struct SessionAwareStopTheLine: StopTheLine {
+    #if swift(>=6.0)
+    typealias ActionBlock = @Sendable (SmartRequestManager) async throws -> StopTheLineResult
+    #else
+    typealias ActionBlock = (SmartRequestManager) async throws -> StopTheLineResult
+    #endif
+    private let actionBlock: ActionBlock
+
+    init(actionBlock: @escaping ActionBlock) {
+        self.actionBlock = actionBlock
+    }
+
+    func verify(response: SmartResponse,
+                url: SmartURL,
+                parameters: Parameters,
+                userInfo: UserInfo) -> StopTheLineAction {
+        return response.request?.url?.host == "broken.com" ? .stopTheLine : .passOver
+    }
+
+    func action(with manager: SmartRequestManager,
+                response: SmartResponse,
+                url: SmartURL,
+                parameters: Parameters,
+                userInfo: UserInfo) async throws -> StopTheLineResult {
+        return try await actionBlock(manager)
     }
 }
 #endif

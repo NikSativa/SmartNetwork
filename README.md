@@ -36,7 +36,7 @@ SmartNetwork offers multiple styles for making requests, allowing you to choose 
 Perform a request using Swift's modern concurrency syntax:
 
 ```swift
-let result = await manager.decodable.request(TestInfo.self, address: address)
+let result = await manager.decodable.request(TestInfo.self, url: url)
 ```
 
 ### 🔹 Closure-based
@@ -44,7 +44,7 @@ let result = await manager.decodable.request(TestInfo.self, address: address)
 Use completion handlers for backward compatibility or callback-driven workflows:
 
 ```swift
-manager.decodable.request(TestInfo.self, address: address) { result in
+manager.decodable.request(TestInfo.self, url: url) { result in
     // Handle result here
 }.start()
 ```
@@ -54,11 +54,11 @@ manager.decodable.request(TestInfo.self, address: address) { result in
 Construct readable, chainable network calls using SmartNetwork’s fluent API:
 
 ```swift
-let result = await manager.request(address: address).decodeAsync(TestInfo.self)
+let result = await manager.request(url: url).decodeAsync(TestInfo.self)
 ```
 
 ```swift
-manager.request(address: address)
+manager.request(url: url)
     .decode(TestInfo.self)
     .complete { result in
         // Handle result here
@@ -94,13 +94,17 @@ You can combine and prioritize plugins to precisely control the behavior of your
 You can define types that include a decoding key path for nested JSON parsing:
 
 ```swift
-protocol KeyPathDecodable {
-    associatedtype Response: Decodable
-    static var keyPath: [String] { get }
+protocol MyCustomDecodable: Decodable {
+}
+
+struct KeyPathDecodableContent<Object: MyCustomDecodable>: Deserializable {
+    func decode(with data: SmartResponse, parameters: Parameters) -> Result<Object, Error> {
+        fatalError("do your magic")
+    }
 }
 
 extension SmartRequestManager {
-    func keyPathed<T: KeyPathDecodable>(_ type: T.Type = T.self) -> TypedRequestManager<T.Response?> {
+    func myCustomDeserializer<T: MyCustomDecodable>(_ type: T.Type = T.self) -> TypedRequestManager<T> {
         return custom(KeyPathDecodableContent<T>())
     }
 }
@@ -208,7 +212,7 @@ graph TD
     Core --> SUS[SmartURLSession<br/>URLSession Abstraction]
     
     SN --> Request[Request Building]
-    Request --> Addr[Address<br/>URL Construction]
+    Request --> Addr[SmartURL<br/>URL Construction]
     Request --> Params[Parameters<br/>Request Config]
     Request --> UI[UserInfo<br/>Metadata]
     
@@ -251,9 +255,9 @@ SmartNetwork provides multiple request manager interfaces for different use case
 
 | Manager Type | Purpose | Example |
 |-------------|---------|---------|
-| `RequestManager` | Base protocol for raw requests | `manager.request(address:params:userInfo:)` |
-| `TypedRequestManager<T>` | Type-safe requests with generic response | `manager.decodable.request(Model.self, address:)` |
-| `DecodableRequestManager` | Specialized for `Decodable` types | `manager.decodable.request(User.self, address:)` |
+| `RequestManager` | Base protocol for raw requests | `manager.request(url:parameters:userInfo:)` |
+| `TypedRequestManager<T>` | Type-safe requests with generic response | `manager.decodable.request(Model.self, url:)` |
+| `DecodableRequestManager` | Specialized for `Decodable` types | `manager.decodable.request(User.self, url:)` |
 
 ### Built-in Plugins Reference
 

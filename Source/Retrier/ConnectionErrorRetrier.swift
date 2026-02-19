@@ -25,16 +25,41 @@ public struct ConnectionErrorRetrier: SmartRetrier {
     ///
     /// - Parameters:
     ///   - result: The response received from the request.
-    ///   - address: The request address.
+    ///   - address: The request url.
     ///   - parameters: The request parameters.
     ///   - userInfo: Metadata including the current attempt count.
     /// - Returns: A `RetryResult` indicating whether to retry or not.
-    public func retryOrFinish(result: SmartResponse, address: Address, parameters: Parameters, userInfo: UserInfo) -> RetryResult {
+    @available(*, deprecated, renamed: "retryOrFinish(result:url:parameters:userInfo:)", message: "Please use retryOrFinish(result:url:parameters:userInfo:) instead.")
+    public func retryOrFinish(result: SmartResponse, address: SmartURL, parameters: Parameters, userInfo: UserInfo) -> RetryResult {
+        return retryOrFinish(result: result, url: address, parameters: parameters, userInfo: userInfo)
+    }
+
+    /// Determines whether to retry the request based on connection error type and attempt count.
+    ///
+    /// - Parameters:
+    ///   - result: The response received from the request.
+    ///   - url: The request url.
+    ///   - parameters: The request parameters.
+    ///   - userInfo: Metadata including the current attempt count.
+    /// - Returns: A `RetryResult` indicating whether to retry or not.
+    public func retryOrFinish(result: SmartResponse, url: SmartURL, parameters: Parameters, userInfo: UserInfo) -> RetryResult {
         if case .connection = result.error?.requestError,
            userInfo.attemptsCount < attemptsCount {
             return .retry
         }
         return self.result
+    }
+
+    /// Determines whether to retry the request based on connection error type and attempt count.
+    ///
+    /// - Parameters:
+    ///   - result: The response received from the request.
+    ///   - url: The request url.
+    ///   - parameters: The request parameters.
+    ///   - userInfo: Metadata including the current attempt count.
+    /// - Returns: A `RetryResult` indicating whether to retry or not.
+    public func retryOrFinish(result: SmartResponse, url: URL, parameters: Parameters, userInfo: UserInfo) -> RetryResult {
+        return retryOrFinish(result: result, url: .url(url), parameters: parameters, userInfo: userInfo)
     }
 }
 

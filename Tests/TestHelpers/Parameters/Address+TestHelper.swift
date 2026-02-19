@@ -4,7 +4,7 @@ import SpryKit
 
 // MARK: - Address + SpryEquatable
 
-public extension Address {
+public extension SmartURL {
     static func testMake(scheme: Scheme? = .https,
                          host: String = "www.apple.com",
                          path: [String] = [],
