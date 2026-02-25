@@ -4,7 +4,7 @@ import Threading
 /// A type-safe wrapper for sending requests and decoding responses into `Decodable` types.
 ///
 /// `DecodableRequestManager` supports both completion-based and async workflows, with optional decoding customization.
-public struct DecodableRequestManager {
+public struct DecodableRequestManager: SmartSendable {
     private let base: RequestManager
 
     /// Creates decodable manager backed by given request manager.

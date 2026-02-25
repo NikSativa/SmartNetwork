@@ -6,7 +6,7 @@ import Threading
 /// `TypedRequestManager` enables decoding of network responses into specific Swift types using a
 /// provided `Deserializable` implementation. It simplifies handling of structured response data
 /// by encapsulating decoding logic.
-public struct TypedRequestManager<Output> {
+public struct TypedRequestManager<Output>: SmartSendable {
     private let base: RequestManager
     private let decoder: TypedRequest<Output>.DecodingClosure
 
