@@ -26,24 +26,24 @@ final class Plugins_JSONHeadersTests: XCTestCase {
         requestable.stub(.valueWithForhttpheaderfield).with("Connection").andReturn(nil)
         requestable.stub(.setValueWithValue_Forhttpheaderfield).with("keep-alive", "Connection").andReturn()
 
-        await subject.prepare(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
+        try await subject.prepare(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
         XCTAssertHaveReceived(requestable, .setValueWithValue_Forhttpheaderfield, countSpecifier: .atLeast(4))
         requestable.resetCallsAndStubs()
 
         XCTAssertNoThrowError {
-            try subject.verify(parameters: parameters, userInfo: userInfo, data: .testMake())
+            try await subject.verify(parameters: parameters, userInfo: userInfo, response: .testMake())
         }
         XCTAssertTrue(userInfo.isEmpty)
 
-        subject.willSend(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
-        subject.didReceive(parameters: parameters, userInfo: userInfo, request: requestable, data: .testMake())
+        await subject.willSend(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
+        await subject.didReceive(parameters: parameters, userInfo: userInfo, request: requestable, response: .testMake())
 
-        let data: SmartResponse = .testMake(url: .spry.testMake(), statusCode: 222)
-        try subject.verify(parameters: parameters, userInfo: userInfo, data: data)
-        subject.didFinish(parameters: parameters, userInfo: userInfo, data: data)
+        let response: SmartResponse = .testMake(url: .spry.testMake(), statusCode: 222)
+        try await subject.verify(parameters: parameters, userInfo: userInfo, response: response)
+        await subject.didFinish(parameters: parameters, userInfo: userInfo, response: response)
 
-        XCTAssertEqual(data.url, .spry.testMake())
-        XCTAssertNil(data.urlError)
+        XCTAssertEqual(response.url, .spry.testMake())
+        XCTAssertNil(response.urlError)
 
         XCTAssertHaveNotReceived(requestable, .setValueWithValue_Forhttpheaderfield)
     }

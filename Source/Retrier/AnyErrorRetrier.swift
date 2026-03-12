@@ -4,7 +4,7 @@ import Foundation
 ///
 /// `AnyErrorRetrier` is useful for defining centralized retry policies based on error inspection logic.
 /// It supports a configurable maximum retry count and uses a user-provided closure to evaluate each error.
-public struct AnyErrorRetrier: SmartRetrier {
+public actor AnyErrorRetrier: SmartRetrier {
     #if swift(>=6.0)
     /// Closure type that maps an error to ``RetryResult``.
     public typealias Checker = @Sendable (any Error) -> RetryResult
@@ -26,19 +26,6 @@ public struct AnyErrorRetrier: SmartRetrier {
     public init(attemptsCount: Int = 3, checker: @escaping Checker) {
         self.attemptsCount = attemptsCount
         self.checker = checker
-    }
-
-    /// Determines whether to retry based on the current error and retry count.
-    ///
-    /// - Parameters:
-    ///   - result: The response from the failed request.
-    ///   - address: The url of the request.
-    ///   - parameters: The parameters of the request.
-    ///   - userInfo: Metadata including the current retry attempt count.
-    /// - Returns: A `RetryResult` indicating whether the request should be retried or not.
-    @available(*, deprecated, renamed: "retryOrFinish(result:url:parameters:userInfo:)", message: "Please use retryOrFinish(result:url:parameters:userInfo:) instead.")
-    public func retryOrFinish(result: SmartResponse, address: SmartURL, parameters: Parameters, userInfo: UserInfo) -> RetryResult {
-        return retryOrFinish(result: result, url: address, parameters: parameters, userInfo: userInfo)
     }
 
     /// Determines whether to retry based on the current error and retry count.

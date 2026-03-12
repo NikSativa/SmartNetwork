@@ -64,7 +64,7 @@ internal extension HTTPMethod {
             return "TRACE"
         case .patch:
             return "PATCH"
-        case .other(let str):
+        case let .other(str):
             return str
         }
     }

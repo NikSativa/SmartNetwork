@@ -3,17 +3,18 @@ import Foundation
 import XCTest
 @testable import SmartNetwork
 
-private final class TestPlugin: Plugin {
+private actor TestPlugin: Plugin {
     private let input: PluginPriority.RawValue
-    lazy var id: ID = TestPlugin.makeHash(withAdditionalHash: input)
-    let priority: PluginPriority
+    nonisolated let id: ID
+    nonisolated let priority: PluginPriority
 
     init(input: PluginPriority.RawValue) {
         self.input = input
+        self.id = TestPlugin.makeHash(withAdditionalHash: input)
         self.priority = .init(rawValue: input)
     }
 
-    func prepare(parameters: SmartNetwork.Parameters, userInfo: SmartNetwork.UserInfo, request: inout SmartNetwork.URLRequestRepresentation, session: SmartNetwork.SmartURLSession) async {
+    func prepare(parameters: SmartNetwork.Parameters, userInfo: SmartNetwork.UserInfo, request: inout SmartNetwork.URLRequestRepresentation, session: SmartNetwork.SmartURLSession) async throws {
         fatalError("not used in that test")
     }
 
@@ -21,15 +22,15 @@ private final class TestPlugin: Plugin {
         fatalError("not used in that test")
     }
 
-    func didReceive(parameters: SmartNetwork.Parameters, userInfo: SmartNetwork.UserInfo, request: SmartNetwork.URLRequestRepresentation, data: SmartNetwork.SmartResponse) {
+    func didReceive(parameters: SmartNetwork.Parameters, userInfo: SmartNetwork.UserInfo, request: SmartNetwork.URLRequestRepresentation, response: SmartNetwork.SmartResponse) {
         fatalError("not used in that test")
     }
 
-    func verify(parameters: SmartNetwork.Parameters, userInfo: SmartNetwork.UserInfo, data: SmartNetwork.SmartResponse) throws {
+    func verify(parameters: SmartNetwork.Parameters, userInfo: SmartNetwork.UserInfo, response: SmartNetwork.SmartResponse) async throws {
         fatalError("not used in that test")
     }
 
-    func didFinish(parameters: SmartNetwork.Parameters, userInfo: SmartNetwork.UserInfo, data: SmartNetwork.SmartResponse) {
+    func didFinish(parameters: SmartNetwork.Parameters, userInfo: SmartNetwork.UserInfo, response: SmartNetwork.SmartResponse) {
         fatalError("not used in that test")
     }
 }

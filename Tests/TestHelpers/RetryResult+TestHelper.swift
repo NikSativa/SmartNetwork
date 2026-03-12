@@ -9,9 +9,9 @@ extension RetryResult: Equatable {
         case (.doNotRetry, .doNotRetry),
              (.retry, .retry):
             return true
-        case (.retryWithDelay(let a), .retryWithDelay(let b)):
+        case let (.retryWithDelay(a), .retryWithDelay(b)):
             return a == b
-        case (.doNotRetryWithError(let a), .doNotRetryWithError(let b)):
+        case let (.doNotRetryWithError(a), .doNotRetryWithError(b)):
             return (a as NSError) == (b as NSError)
         case (.doNotRetry, _),
              (.doNotRetryWithError, _),

@@ -57,10 +57,10 @@ public extension Plugins {
             let logger = logger.get(data)
 
             let id: String? =
-                    if let mapID,
-                    let uuid = data.get(safe: .id, ofType: UUID.self)?.uuidString,
-                    let url = data.get(safe: .url, ofType: String.self),
-                    let str = mapID(uuid, url) {
+                if let mapID,
+                let uuid = data.get(safe: .id, ofType: UUID.self)?.uuidString,
+                let url = data.get(safe: .url, ofType: String.self),
+                let str = mapID(uuid, url) {
                     str
                 } else {
                     nil
@@ -112,9 +112,9 @@ public extension Plugins.LoggerProvider {
         switch self {
         case .default:
             return Self.defaultLogger
-        case .custom(let logger):
+        case let .custom(logger):
             return logger
-        case .generator(let generator):
+        case let .generator(generator):
             return generator(data)
         case .identifiable:
             let url = data[.url, ofType: String.self]

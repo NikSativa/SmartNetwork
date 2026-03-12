@@ -5,7 +5,7 @@ import Foundation
 /// `ConnectionErrorRetrier` evaluates whether a failed request should be retried based on the error type and the number
 /// of previous attempts. It specifically checks for connection errors and allows a configurable maximum retry count.
 ///
-public struct ConnectionErrorRetrier: SmartRetrier {
+public actor ConnectionErrorRetrier: SmartRetrier {
     /// The fallback result to return if retry conditions are not met.
     public let result: RetryResult
     /// The maximum number of retry attempts allowed for a connection-related failure.
@@ -19,19 +19,6 @@ public struct ConnectionErrorRetrier: SmartRetrier {
     public init(attemptsCount: Int = 3, result: RetryResult = .doNotRetry) {
         self.attemptsCount = attemptsCount
         self.result = result.validate()
-    }
-
-    /// Determines whether to retry the request based on connection error type and attempt count.
-    ///
-    /// - Parameters:
-    ///   - result: The response received from the request.
-    ///   - address: The request url.
-    ///   - parameters: The request parameters.
-    ///   - userInfo: Metadata including the current attempt count.
-    /// - Returns: A `RetryResult` indicating whether to retry or not.
-    @available(*, deprecated, renamed: "retryOrFinish(result:url:parameters:userInfo:)", message: "Please use retryOrFinish(result:url:parameters:userInfo:) instead.")
-    public func retryOrFinish(result: SmartResponse, address: SmartURL, parameters: Parameters, userInfo: UserInfo) -> RetryResult {
-        return retryOrFinish(result: result, url: address, parameters: parameters, userInfo: userInfo)
     }
 
     /// Determines whether to retry the request based on connection error type and attempt count.

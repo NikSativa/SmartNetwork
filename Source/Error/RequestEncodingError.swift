@@ -28,7 +28,7 @@ extension RequestEncodingError: RequestErrorDescription {
     /// Used by the `RequestErrorDescription` protocol to generate meaningful output for each error case.
     public var subname: String {
         switch self {
-        case .other(let encodingError):
+        case let .other(encodingError):
             let description = (encodingError as NSError).description
             return ".other(\(description))"
 

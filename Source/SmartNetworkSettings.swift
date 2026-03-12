@@ -1,10 +1,6 @@
 import Foundation
 import Threading
 
-/// Deprecated alias for ``SmartNetworkSettings``.
-@available(*, deprecated, renamed: "SmartNetworkSettings", message: "Use 'SmartNetworkSettings' instead.")
-public typealias RequestSettings = SmartNetworkSettings
-
 #if swift(>=6.0)
 /// Centralized configuration for default networking behavior used by SmartNetwork.
 ///

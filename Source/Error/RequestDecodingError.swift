@@ -28,7 +28,7 @@ extension RequestDecodingError: RequestErrorDescription {
     /// Structured short name used for logs and diagnostics.
     public var subname: String {
         switch self {
-        case .other(let encodingError):
+        case let .other(encodingError):
             let description = (encodingError as NSError).description
             return ".other(\(description))"
 
@@ -44,7 +44,7 @@ extension RequestDecodingError: RequestErrorDescription {
         case .emptyResponse:
             return "emptyResponse"
 
-        case .brokenKeyPath(let key):
+        case let .brokenKeyPath(key):
             return "brokenKeyPath(\(key))"
         }
     }

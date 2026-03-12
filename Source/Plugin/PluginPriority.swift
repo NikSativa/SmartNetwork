@@ -30,15 +30,10 @@ public struct PluginPriority: Comparable, Hashable, RawRepresentable, SmartSenda
     /// Executes after `authBasic`.
     public static let authBearer: Self = .init(rawValue: 200)
 
-    /// Default priority for the `Plugins.StatusCode` plugin.
-    ///
-    /// Typically used for handling response validation.
-    public static let statusCode: Self = .init(rawValue: 300)
-
     /// Default priority for the `Plugins.Log` plugin.
     ///
     /// Executes late in the pipeline to capture final request state.
-    public static let curl: Self = .init(rawValue: .max - 200)
+    public static let curl: Self = .init(rawValue: 250)
 
     /// Default priority for the `Plugins.LogOS` plugin (Apple OS logging).
     ///
@@ -49,7 +44,12 @@ public struct PluginPriority: Comparable, Hashable, RawRepresentable, SmartSenda
     /// Default priority for the `Plugins.JSONHeaders` plugin.
     ///
     /// Uses a very high value to ensure headers are added after other plugins have executed.
-    public static let jsonHeaders: Self = .init(rawValue: .max - 100)
+    public static let jsonHeaders: Self = .init(rawValue: 225)
+
+    /// Default priority for the `Plugins.StatusCode` plugin.
+    ///
+    /// Typically used for handling response validation.
+    public static let statusCode: Self = .init(rawValue: 300)
 
     public static func <(lhs: Self, rhs: Self) -> Bool {
         return lhs.rawValue < rhs.rawValue

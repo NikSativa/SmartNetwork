@@ -24,7 +24,7 @@ public enum RetryResult: SmartSendable {
 /// delay the retry, or propagate the failure. Integrates with `SmartRequestManager`.
 ///
 /// - SeeAlso: [Architecture Overview](https://github.com/NikSativa/SmartNetwork#architecture-overview)
-public protocol SmartRetrier: SmartSendable {
+public protocol SmartRetrier: SmartActor {
     /// Determines whether the request should be retried based on the response and associated metadata.
     ///
     /// Uses the response, request configuration, and user info—including retry count—to decide the next step.
@@ -39,25 +39,6 @@ public protocol SmartRetrier: SmartSendable {
 }
 
 public extension SmartRetrier {
-    /// Determines whether the request should be retried based on the response and associated metadata.
-    ///
-    /// - Parameters:
-    ///   - result: The ``SmartResponse`` of the network request.
-    ///   - address: The ``SmartURL`` of the network request.
-    ///   - parameters: The ``Parameters`` of the network request.
-    ///   - userInfo: The ``UserInfo`` associated with the network request.
-    /// - Returns: The decision whether to retry the network request or finish. See ``RetryResult``
-    @available(*, deprecated, renamed: "retryOrFinish(result:url:parameters:userInfo:)", message: "Please use retryOrFinish(result:url:parameters:userInfo:) instead.")
-    func retryOrFinish(result: SmartResponse,
-                       address: SmartURL,
-                       parameters: Parameters,
-                       userInfo: UserInfo) -> RetryResult {
-        return retryOrFinish(result: result,
-                             url: address,
-                             parameters: parameters,
-                             userInfo: userInfo)
-    }
-
     /// Determines whether the request should be retried based on the response and associated metadata.
     ///
     /// - Parameters:

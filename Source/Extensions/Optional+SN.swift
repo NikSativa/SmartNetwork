@@ -10,7 +10,7 @@ public extension Optional {
         switch self {
         case .none:
             throw error
-        case .some(let value):
+        case let .some(value):
             return value
         }
     }

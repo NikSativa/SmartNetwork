@@ -3,23 +3,33 @@ import XCTest
 @testable import SmartNetwork
 
 final class ConnectionErrorRetrierTests: XCTestCase {
-    func test_subject() {
+    func test_subject() async {
         let subject = ConnectionErrorRetrier(attemptsCount: 3, result: .doNotRetry)
 
-        XCTAssertEqual(subject.retryOrFinish(attemptsCount: 0, isConnectionError: false), .doNotRetry)
-        XCTAssertEqual(subject.retryOrFinish(attemptsCount: 0, isConnectionError: true), .retry)
+        let result00 = await subject.retryOrFinish(attemptsCount: 0, isConnectionError: false)
+        let result01 = await subject.retryOrFinish(attemptsCount: 0, isConnectionError: true)
+        XCTAssertEqual(result00, .doNotRetry)
+        XCTAssertEqual(result01, .retry)
 
-        XCTAssertEqual(subject.retryOrFinish(attemptsCount: 1, isConnectionError: false), .doNotRetry)
-        XCTAssertEqual(subject.retryOrFinish(attemptsCount: 1, isConnectionError: true), .retry)
+        let result10 = await subject.retryOrFinish(attemptsCount: 1, isConnectionError: false)
+        let result11 = await subject.retryOrFinish(attemptsCount: 1, isConnectionError: true)
+        XCTAssertEqual(result10, .doNotRetry)
+        XCTAssertEqual(result11, .retry)
 
-        XCTAssertEqual(subject.retryOrFinish(attemptsCount: 2, isConnectionError: false), .doNotRetry)
-        XCTAssertEqual(subject.retryOrFinish(attemptsCount: 2, isConnectionError: true), .retry)
+        let result20 = await subject.retryOrFinish(attemptsCount: 2, isConnectionError: false)
+        let result21 = await subject.retryOrFinish(attemptsCount: 2, isConnectionError: true)
+        XCTAssertEqual(result20, .doNotRetry)
+        XCTAssertEqual(result21, .retry)
 
-        XCTAssertEqual(subject.retryOrFinish(attemptsCount: 3, isConnectionError: false), .doNotRetry)
-        XCTAssertEqual(subject.retryOrFinish(attemptsCount: 3, isConnectionError: true), .doNotRetry)
+        let result30 = await subject.retryOrFinish(attemptsCount: 3, isConnectionError: false)
+        let result31 = await subject.retryOrFinish(attemptsCount: 3, isConnectionError: true)
+        XCTAssertEqual(result30, .doNotRetry)
+        XCTAssertEqual(result31, .doNotRetry)
 
-        XCTAssertEqual(subject.retryOrFinish(attemptsCount: 333, isConnectionError: false), .doNotRetry)
-        XCTAssertEqual(subject.retryOrFinish(attemptsCount: 333, isConnectionError: true), .doNotRetry)
+        let result3330 = await subject.retryOrFinish(attemptsCount: 333, isConnectionError: false)
+        let result3331 = await subject.retryOrFinish(attemptsCount: 333, isConnectionError: true)
+        XCTAssertEqual(result3330, .doNotRetry)
+        XCTAssertEqual(result3331, .doNotRetry)
     }
 }
 

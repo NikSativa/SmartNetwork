@@ -31,9 +31,9 @@ public extension Plugins {
     ///
     /// Tokens can be injected into HTTP headers or query parameters using various strategies.
     /// The plugin fetches the token asynchronously and modifies the request before it is sent.
-    final class TokenPlugin: Plugin {
-        public let id: ID
-        public let priority: PluginPriority
+    actor TokenPlugin: Plugin {
+        public nonisolated let id: ID
+        public nonisolated let priority: PluginPriority
 
         private let tokenProvider: TokenProvider
         private let type: TokenType
@@ -56,41 +56,41 @@ public extension Plugins {
         }
 
         /// Modifies the request by attaching a token to its header or query string, based on the configured type and operation.
-        public func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async {
+        public func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async throws {
             let value = await tokenProvider()
 
             switch type {
-            case .header(let operation):
+            case let .header(operation):
                 switch operation {
-                case .set(let key):
+                case let .set(key):
                     request.setValue(value, forHTTPHeaderField: key)
 
-                case .trySet(let key):
+                case let .trySet(key):
                     if request.value(forHTTPHeaderField: key) == nil {
                         request.setValue(value, forHTTPHeaderField: key)
                     }
 
-                case .add(let key):
+                case let .add(key):
                     if let value {
                         request.addValue(value, forHTTPHeaderField: key)
                     }
                 }
 
-            case .queryParam(let operation):
+            case let .queryParam(operation):
                 if let requestURL = request.url, var urlComponents = URLComponents(url: requestURL, resolvingAgainstBaseURL: false) {
                     var queryItems: [URLQueryItem] = urlComponents.queryItems ?? []
 
                     switch operation {
-                    case .set(let key):
+                    case let .set(key):
                         queryItems = queryItems.filter { $0.name != key }
                         queryItems.append(URLQueryItem(name: key, value: value))
 
-                    case .trySet(let key):
+                    case let .trySet(key):
                         if !queryItems.contains(where: { $0.name == key }) {
                             queryItems.append(URLQueryItem(name: key, value: value))
                         }
 
-                    case .add(let key):
+                    case let .add(key):
                         queryItems.append(URLQueryItem(name: key, value: value))
                     }
 
@@ -104,8 +104,8 @@ public extension Plugins {
         }
 
         public func willSend(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession) {}
-        public func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, data: SmartResponse) {}
-        public func verify(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) throws {}
-        public func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) {}
+        public func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, response: SmartResponse) {}
+        public func verify(parameters: Parameters, userInfo: UserInfo, response: SmartResponse) async throws {}
+        public func didFinish(parameters: Parameters, userInfo: UserInfo, response: SmartResponse) {}
     }
 }

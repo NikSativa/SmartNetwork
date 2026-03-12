@@ -8,8 +8,8 @@ import Foundation
 /// if they are not already present in the request.
 public extension Plugins {
     /// Plugin that injects standard JSON-related request headers.
-    struct JSONHeaders {
-        public let priority: PluginPriority
+    actor JSONHeaders {
+        public nonisolated let priority: PluginPriority
 
         /// Creates a new instance of the JSONHeaders plugin with an optional priority.
         ///
@@ -26,7 +26,7 @@ extension Plugins.JSONHeaders: Plugin {
     /// Ensures standard HTTP headers are present in the request before sending.
     ///
     /// Sets the `Host`, `Accept`, `Accept-Encoding`, and `Connection` headers if not already specified.
-    public func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async {
+    public func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async throws {
         if let host = request.url?.host,
            request.value(forHTTPHeaderField: "Host") == nil {
             request.setValue(host, forHTTPHeaderField: "Host")
@@ -46,7 +46,7 @@ extension Plugins.JSONHeaders: Plugin {
     }
 
     public func willSend(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession) {}
-    public func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, data: SmartResponse) {}
-    public func verify(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) throws {}
-    public func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) {}
+    public func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, response: SmartResponse) {}
+    public func verify(parameters: Parameters, userInfo: UserInfo, response: SmartResponse) async throws {}
+    public func didFinish(parameters: Parameters, userInfo: UserInfo, response: SmartResponse) {}
 }

@@ -4,7 +4,7 @@ import XCTest
 @testable import SmartNetwork
 
 final class HTTPBodyTests: XCTestCase {
-    var request: URLRequest!
+    private var request: URLRequest!
 
     override func setUp() {
         super.setUp()

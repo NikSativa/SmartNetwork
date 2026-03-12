@@ -3,18 +3,18 @@ import Foundation
 public extension SmartURL {
     private func modify(_ modifier: (SmartUrlComponents) throws -> SmartUrlComponents) throws -> Self {
         switch self {
-        case .smartComponents(let components, let shouldAddSlashAfterEndpoint, let shouldRemoveSlashesForEmptyScheme):
+        case let .smartComponents(components, shouldAddSlashAfterEndpoint, shouldRemoveSlashesForEmptyScheme):
             return try .smartComponents(modifier(components), shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint, shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
 
-        case .string(let str):
+        case let .string(str):
             let components: SmartUrlComponents = try .init(string: str)
             return try .components(modifier(components))
 
-        case .url(let url):
+        case let .url(url):
             let components: SmartUrlComponents = try .init(url: url)
             return try .components(modifier(components))
 
-        case .components(let components):
+        case let .components(components):
             let components: SmartUrlComponents = try components.url.map(SmartUrlComponents.init).unwrap(orThrow: RequestEncodingError.brokenURL)
             return try .components(modifier(components))
         }

@@ -12,14 +12,6 @@ public struct AnyRequest {
     internal let parameters: Parameters
     internal let userInfo: UserInfo
 
-    @available(*, deprecated, renamed: "init(pure:url:parameters:userInfo:)", message: "Please use init(pure:url:parameters:userInfo:) instead.")
-    internal init(pure: RequestManager,
-                  address: SmartURL,
-                  parameters: Parameters,
-                  userInfo: UserInfo) {
-        self.init(pure: pure, url: address, parameters: parameters, userInfo: userInfo)
-    }
-
     internal init(pure: RequestManager,
                   url: SmartURL,
                   parameters: Parameters,

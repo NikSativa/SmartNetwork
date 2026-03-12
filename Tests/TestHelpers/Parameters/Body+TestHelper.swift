@@ -17,17 +17,17 @@ extension HTTPBody: Equatable {
         switch (lhs, rhs) {
         case (.empty, .empty):
             return true
-        case (.data(let a, let contentTypeA), .data(let b, let contentTypeB)):
+        case let (.data(a, contentTypeA), .data(b, contentTypeB)):
             return a == b && contentTypeA == contentTypeB
-        case (.image(let a), .image(let b)):
+        case let (.image(a), .image(b)):
             return a.contentType == b.contentType && (try? a.data()) == (try? b.data())
-        case (.encode(let a, _), .encode(let b, _)):
+        case let (.encode(a, _), .encode(b, _)):
             return compare(a, b)
-        case (.form(let a), .form(let b)):
+        case let (.form(a), .form(b)):
             return a == b
-        case (.xform(let a), .xform(let b)):
+        case let (.xform(a), .xform(b)):
             return compare(a, b)
-        case (.json(let a, let o1), .json(let b, let o2)):
+        case let (.json(a, o1), .json(b, o2)):
             return compare(a, b) && o1 == o2
         case (.data, _),
              (.empty, _),

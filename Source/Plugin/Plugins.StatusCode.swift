@@ -5,7 +5,7 @@ public extension Plugins {
     ///
     /// This plugin can be configured to ignore specific status codes or bypass validation entirely
     /// when previous errors exist or the response is non-HTTP.
-    final class StatusCode: Plugin {
+    actor StatusCode: Plugin {
         #if swift(>=6.0)
         /// A closure that returns `true` if the given status code should be ignored (i.e., not treated as an error).
         public typealias StatusCodeChecker = @Sendable (_ statusCode: Int?) -> Bool
@@ -14,7 +14,7 @@ public extension Plugins {
         public typealias StatusCodeChecker = (_ statusCode: Int?) -> Bool
         #endif
 
-        public let priority: PluginPriority
+        public nonisolated let priority: PluginPriority
         private let isIgnoring: StatusCodeChecker
         private let shouldIgnorePreviousError: Bool
 
@@ -38,11 +38,13 @@ public extension Plugins {
         ///   - shouldIgnore200th: If `true`, ignores any 2xx status code.
         ///   - shouldIgnoreNil: If `true`, ignores `nil` status codes (e.g., non-HTTP responses).
         ///   - shouldIgnorePreviousError: If `true`, bypasses this plugin if a previous error is already present.
-        public convenience init(priority: PluginPriority = .statusCode,
-                                shouldIgnore200th: Bool = true,
-                                shouldIgnoreNil: Bool = true,
-                                shouldIgnorePreviousError: Bool = false) {
-            self.init(priority: priority, shouldIgnorePreviousError: shouldIgnorePreviousError) { statusCode in
+        public init(priority: PluginPriority = .statusCode,
+                    shouldIgnore200th: Bool = true,
+                    shouldIgnoreNil: Bool = true,
+                    shouldIgnorePreviousError: Bool = false) {
+            self.priority = priority
+            self.shouldIgnorePreviousError = shouldIgnorePreviousError
+            self.isIgnoring = { statusCode in
                 guard let statusCode else {
                     return shouldIgnoreNil
                 }
@@ -62,25 +64,25 @@ public extension Plugins {
         /// Verifies the HTTP response status code and throws an error if it should not be ignored.
         ///
         /// - Throws: A status code error or `.none` if the response has no status code.
-        public func verify(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) throws {
-            if !shouldIgnorePreviousError, data.error != nil {
+        public func verify(parameters: Parameters, userInfo: UserInfo, response: SmartResponse) async throws {
+            if !shouldIgnorePreviousError, response.error != nil {
                 return
             }
 
-            if isIgnoring(data.statusCodeInt) {
+            if isIgnoring(response.statusCodeInt) {
                 return
             }
 
-            if let error = data.statusCode {
+            if let error = response.statusCode {
                 throw error
             } else {
                 throw SmartNetwork.StatusCode.none
             }
         }
 
-        public func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async {}
+        public func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async throws {}
         public func willSend(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession) {}
-        public func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, data: SmartResponse) {}
-        public func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) {}
+        public func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, response: SmartResponse) {}
+        public func didFinish(parameters: Parameters, userInfo: UserInfo, response: SmartResponse) {}
     }
 }

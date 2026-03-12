@@ -34,7 +34,7 @@ internal extension Scheme {
             return "http"
         case .https:
             return "https"
-        case .other(let string):
+        case let .other(string):
             // scheme can be represented as empty string
             return string.nilIfEmpty
         }

@@ -3,8 +3,8 @@ import SmartNetwork
 import SpryKit
 
 extension Plugin {
-    func prepare(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession) async {
+    func prepare(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession) async throws {
         var request: URLRequestRepresentation = request
-        await prepare(parameters: parameters, userInfo: userInfo, request: &request, session: session)
+        try await prepare(parameters: parameters, userInfo: userInfo, request: &request, session: session)
     }
 }

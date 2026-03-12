@@ -133,9 +133,9 @@ private extension Result<Data, Error>? {
         switch self {
         case .none:
             return .failure(RequestError.generic)
-        case .success(let data):
+        case let .success(data):
             return data.info().map(Result.success) ?? .failure(RequestError.generic)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
@@ -146,9 +146,9 @@ private extension Result<Data?, Error>? {
         switch self {
         case .none:
             return .failure(RequestError.generic)
-        case .success(let data):
+        case let .success(data):
             return data?.info().map(Result.success) ?? .failure(RequestError.generic)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }

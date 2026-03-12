@@ -21,44 +21,6 @@ public protocol RequestManager: SmartSendable {
 }
 
 public extension RequestManager {
-    // MARK: - Deprecated `url` API
-
-    /// Deprecated overload that uses `address` parameter label.
-    ///
-    /// - Parameters:
-    ///   - address: The target request URL.
-    ///   - parameters: Request configuration.
-    ///   - userInfo: Request metadata.
-    ///   - completionQueue: Queue for callback execution.
-    ///   - completion: Completion handler receiving `SmartResponse`.
-    /// - Returns: Running task handle.
-    @available(*, deprecated, renamed: "request(url:parameters:userInfo:completionQueue:completion:)", message: "Please use request(url:parameters:userInfo:completionQueue:completion:) instead.")
-    func request(address: SmartURL,
-                 parameters: Parameters,
-                 userInfo: UserInfo,
-                 completionQueue: DelayedQueue,
-                 completion: @escaping ResponseClosure) -> SmartTasking {
-        return request(url: address,
-                       parameters: parameters,
-                       userInfo: userInfo,
-                       completionQueue: completionQueue,
-                       completion: completion)
-    }
-
-    /// Wraps the request in a generic, untyped `AnyRequest` for flexible usage.
-    @available(*, deprecated, renamed: "request(url:parameters:userInfo:)", message: "Please use request(url:parameters:userInfo:) instead.")
-    func request(address: SmartURL, parameters: Parameters = .init(), userInfo: UserInfo = .init()) -> AnyRequest {
-        return request(url: address, parameters: parameters, userInfo: userInfo)
-    }
-
-    /// Asynchronously sends a request using default parameters and user info.
-    @available(*, deprecated, renamed: "request(url:parameters:userInfo:)", message: "Please use request(url:parameters:userInfo:) instead.")
-    func request(address: SmartURL, parameters: Parameters = .init(), userInfo: UserInfo = .init()) async -> SmartResponse {
-        return await request(url: address,
-                             parameters: parameters,
-                             userInfo: userInfo)
-    }
-
     // MARK: - Completion helpers
 
     /// Sends a request using a completion handler, executed on the specified queue.

@@ -46,7 +46,7 @@ internal extension Optional where Wrapped: Collection {
         switch self {
         case .none:
             return nil
-        case .some(let wrapped):
+        case let .some(wrapped):
             return wrapped.isEmpty ? nil : wrapped
         }
     }

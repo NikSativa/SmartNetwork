@@ -21,37 +21,6 @@ public extension DecodableRequestManager {
     /// - Parameters:
     ///   - type: The expected response type conforming to `Decodable`.
     ///   - keyPath: Optional key path for decoding nested structures.
-    ///   - address: The request target.
-    ///   - parameters: Configuration values for the request.
-    ///   - userInfo: Additional request metadata.
-    ///   - decoding: An optional JSON decoding strategy.
-    ///   - completionQueue: The queue for delivering the result.
-    ///   - completion: A closure called with the decoded result or error.
-    /// - Returns: A `SmartTasking` instance representing the request.
-    @available(*, deprecated, renamed: "request(_:keyPath:url:parameters:userInfo:decoding:completionQueue:completion:)", message: "Please use request(_:keyPath:url:parameters:userInfo:decoding:completionQueue:completion:) instead.")
-    func request<T: Decodable>(_: T.Type = T.self,
-                               keyPath: DecodableKeyPath<T> = [],
-                               address: SmartURL,
-                               parameters: Parameters = .init(),
-                               userInfo: UserInfo = .init(),
-                               decoding: JSONDecoding? = nil,
-                               completionQueue: DelayedQueue = SmartNetworkSettings.defaultCompletionQueue,
-                               completion: @escaping (Result<T, Error>) -> Void) -> SmartTasking {
-        return request(T.self,
-                       keyPath: keyPath,
-                       url: address,
-                       parameters: parameters,
-                       userInfo: userInfo,
-                       decoding: decoding,
-                       completionQueue: completionQueue,
-                       completion: completion)
-    }
-
-    /// Sends a request and decodes the response into the specified `Decodable` type.
-    ///
-    /// - Parameters:
-    ///   - type: The expected response type conforming to `Decodable`.
-    ///   - keyPath: Optional key path for decoding nested structures.
     ///   - url: The request target.
     ///   - parameters: Configuration values for the request.
     ///   - userInfo: Additional request metadata.
@@ -100,38 +69,6 @@ public extension DecodableRequestManager {
         return request(T.self,
                        keyPath: keyPath,
                        url: .url(url),
-                       parameters: parameters,
-                       userInfo: userInfo,
-                       decoding: decoding,
-                       completionQueue: completionQueue,
-                       completion: completion)
-    }
-
-    /// Sends a request and decodes the response into the specified `Decodable` type.
-    ///
-    /// - Parameters:
-    ///   - type: The expected response type conforming to `Decodable`.
-    ///   - keyPath: Optional key path for decoding nested structures.
-    ///   - address: The request target.
-    ///   - parameters: Configuration values for the request.
-    ///   - userInfo: Additional request metadata.
-    ///   - decoding: An optional JSON decoding strategy.
-    ///   - completionQueue: The queue for delivering the result.
-    ///   - completion: A closure called with the decoded result or error.
-    /// - Returns: A `SmartTasking` instance representing the request.
-    /// If decoding fails, returns `.success(nil)` instead of an error.
-    @available(*, deprecated, renamed: "request(_:keyPath:url:parameters:userInfo:decoding:completionQueue:completion:)", message: "Please use request(_:keyPath:url:parameters:userInfo:decoding:completionQueue:completion:) instead.")
-    func request<T: Decodable & ExpressibleByNilLiteral>(_: T.Type = T.self,
-                                                         keyPath: DecodableKeyPath<T> = [],
-                                                         address: SmartURL,
-                                                         parameters: Parameters = .init(),
-                                                         userInfo: UserInfo = .init(),
-                                                         decoding: JSONDecoding? = nil,
-                                                         completionQueue: DelayedQueue = SmartNetworkSettings.defaultCompletionQueue,
-                                                         completion: @escaping (Result<T, Error>) -> Void) -> SmartTasking {
-        return request(T.self,
-                       keyPath: keyPath,
-                       url: address,
                        parameters: parameters,
                        userInfo: userInfo,
                        decoding: decoding,
@@ -209,31 +146,6 @@ public extension DecodableRequestManager {
     /// - Parameters:
     ///   - type: The expected response type.
     ///   - keyPath: Optional key path for decoding nested structures.
-    ///   - address: The request target.
-    ///   - parameters: Request configuration.
-    ///   - userInfo: Metadata to pass through the request pipeline.
-    ///   - decoding: Optional decoding customization.
-    /// - Returns: A `Result` containing the decoded value or an error.
-    @available(*, deprecated, renamed: "request(_:keyPath:url:parameters:userInfo:decoding:)", message: "Please use request(_:keyPath:url:parameters:userInfo:decoding:) instead.")
-    func request<T: Decodable>(_ type: T.Type = T.self,
-                               keyPath: DecodableKeyPath<T> = [],
-                               address: SmartURL,
-                               parameters: Parameters = .init(),
-                               userInfo: UserInfo = .init(),
-                               decoding: JSONDecoding? = nil) async -> Result<T, Error> {
-        return await request(type,
-                             keyPath: keyPath,
-                             url: address,
-                             parameters: parameters,
-                             userInfo: userInfo,
-                             decoding: decoding)
-    }
-
-    /// Sends a request asynchronously and decodes the result into the expected type.
-    ///
-    /// - Parameters:
-    ///   - type: The expected response type.
-    ///   - keyPath: Optional key path for decoding nested structures.
     ///   - url: The request target.
     ///   - parameters: Request configuration.
     ///   - userInfo: Metadata to pass through the request pipeline.
@@ -268,31 +180,6 @@ public extension DecodableRequestManager {
         return await request(type,
                              keyPath: keyPath,
                              url: .url(url),
-                             parameters: parameters,
-                             userInfo: userInfo,
-                             decoding: decoding)
-    }
-
-    /// Sends a request asynchronously and decodes the result into the expected type.
-    ///
-    /// - Parameters:
-    ///   - type: The expected response type.
-    ///   - keyPath: Optional key path for decoding nested structures.
-    ///   - address: The request target.
-    ///   - parameters: Request configuration.
-    ///   - userInfo: Metadata to pass through the request pipeline.
-    ///   - decoding: Optional decoding customization.
-    /// - Returns: A `Result` containing the decoded value or an error.
-    @available(*, deprecated, renamed: "request(_:keyPath:url:parameters:userInfo:decoding:)", message: "Please use request(_:keyPath:url:parameters:userInfo:decoding:) instead.")
-    func request<T: Decodable & ExpressibleByNilLiteral>(_ type: T.Type = T.self,
-                                                         keyPath: DecodableKeyPath<T> = [],
-                                                         address: SmartURL,
-                                                         parameters: Parameters = .init(),
-                                                         userInfo: UserInfo = .init(),
-                                                         decoding: JSONDecoding? = nil) async -> Result<T, Error> {
-        return await request(type,
-                             keyPath: keyPath,
-                             url: address,
                              parameters: parameters,
                              userInfo: userInfo,
                              decoding: decoding)
@@ -349,32 +236,6 @@ public extension DecodableRequestManager {
     /// - Parameters:
     ///   - type: The expected response type.
     ///   - keyPath: Optional key path to extract the nested result.
-    ///   - address: The request target.
-    ///   - parameters: Request configuration.
-    ///   - userInfo: Metadata to pass through the request pipeline.
-    ///   - decoding: Optional decoding configuration.
-    /// - Returns: The successfully decoded object.
-    /// - Throws: An error if the request fails or decoding is unsuccessful.
-    @available(*, deprecated, renamed: "requestWithThrowing(_:keyPath:url:parameters:userInfo:decoding:)", message: "Please use requestWithThrowing(_:keyPath:url:parameters:userInfo:decoding:) instead.")
-    func requestWithThrowing<T: Decodable>(_ type: T.Type = T.self,
-                                           keyPath: DecodableKeyPath<T> = [],
-                                           address: SmartURL,
-                                           parameters: Parameters = .init(),
-                                           userInfo: UserInfo = .init(),
-                                           decoding: JSONDecoding? = nil) async throws -> T {
-        return try await requestWithThrowing(type,
-                                             keyPath: keyPath,
-                                             url: address,
-                                             parameters: parameters,
-                                             userInfo: userInfo,
-                                             decoding: decoding)
-    }
-
-    /// Sends a request asynchronously and throws if decoding fails.
-    ///
-    /// - Parameters:
-    ///   - type: The expected response type.
-    ///   - keyPath: Optional key path to extract the nested result.
     ///   - url: The request target.
     ///   - parameters: Request configuration.
     ///   - userInfo: Metadata to pass through the request pipeline.
@@ -411,32 +272,6 @@ public extension DecodableRequestManager {
         return try await requestWithThrowing(type,
                                              keyPath: keyPath,
                                              url: .url(url),
-                                             parameters: parameters,
-                                             userInfo: userInfo,
-                                             decoding: decoding)
-    }
-
-    /// Sends a request asynchronously and throws if decoding fails.
-    ///
-    /// - Parameters:
-    ///   - type: The expected response type.
-    ///   - keyPath: Optional key path to extract the nested result.
-    ///   - address: The request target.
-    ///   - parameters: Request configuration.
-    ///   - userInfo: Metadata to pass through the request pipeline.
-    ///   - decoding: Optional decoding configuration.
-    /// - Returns: The successfully decoded object.
-    /// - Throws: An error if the request fails or decoding is unsuccessful.
-    @available(*, deprecated, renamed: "requestWithThrowing(_:keyPath:url:parameters:userInfo:decoding:)", message: "Please use requestWithThrowing(_:keyPath:url:parameters:userInfo:decoding:) instead.")
-    func requestWithThrowing<T: Decodable & ExpressibleByNilLiteral>(_ type: T.Type = T.self,
-                                                                     keyPath: DecodableKeyPath<T> = [],
-                                                                     address: SmartURL,
-                                                                     parameters: Parameters = .init(),
-                                                                     userInfo: UserInfo = .init(),
-                                                                     decoding: JSONDecoding? = nil) async throws -> T {
-        return try await requestWithThrowing(type,
-                                             keyPath: keyPath,
-                                             url: address,
                                              parameters: parameters,
                                              userInfo: userInfo,
                                              decoding: decoding)

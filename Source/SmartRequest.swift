@@ -2,9 +2,6 @@ import Combine
 import Foundation
 import Threading
 
-@available(*, deprecated, renamed: "SmartRequest", message: "Use 'SmartRequest' instead.")
-typealias Request = SmartRequest
-
 /// Represents a complete network request lifecycle including execution, cancellation, caching, and plugin handling.
 ///
 /// `SmartRequest` encapsulates all logic required to prepare, send, and manage HTTP requests using the SmartNetwork stack.
@@ -19,15 +16,6 @@ internal struct SmartRequest {
 
     private var plugins: [Plugin] {
         return parameters.plugins
-    }
-
-    @available(*, deprecated, renamed: "init(url:parameters:userInfo:urlRequestable:session:)", message: "Please use init(url:parameters:userInfo:urlRequestable:session:) instead.")
-    init(address: SmartURL,
-         parameters: Parameters,
-         userInfo: UserInfo,
-         urlRequestable: URLRequestRepresentation,
-         session: SmartURLSession) {
-        self.init(url: address, parameters: parameters, userInfo: userInfo, urlRequestable: urlRequestable, session: session)
     }
 
     init(url: SmartURL,
@@ -138,21 +126,21 @@ internal struct SmartRequest {
         return responseData
     }
 
-    private func didReceiveNotification(_ data: SmartResponse) {
+    private func didReceiveNotification(_ data: SmartResponse) async {
         for plugin in plugins {
-            plugin.didReceive(parameters: parameters, userInfo: userInfo, request: request, data: data)
+            await plugin.didReceive(parameters: parameters, userInfo: userInfo, request: request, response: data)
         }
     }
 
-    private func notifyWillSend() {
+    private func notifyWillSend() async {
         for plugin in plugins {
-            plugin.willSend(parameters: parameters, userInfo: userInfo, request: request, session: session)
+            await plugin.willSend(parameters: parameters, userInfo: userInfo, request: request, session: session)
         }
     }
 
-    private func notifyCancelation() {
+    private func notifyCancelation() async {
         for plugin in plugins {
-            plugin.wasCancelled(parameters: parameters, userInfo: userInfo, request: request, session: session)
+            await plugin.wasCancelled(parameters: parameters, userInfo: userInfo, request: request, session: session)
         }
     }
 }
@@ -164,7 +152,7 @@ extension SmartRequest {
     func start() async -> SmartResponse {
         do {
             return try await withTaskCancellationHandler {
-                notifyWillSend()
+                await notifyWillSend()
 
                 try Task.checkCancellation()
 
@@ -172,12 +160,13 @@ extension SmartRequest {
 
                 try Task.checkCancellation()
 
-                didReceiveNotification(data)
+                await didReceiveNotification(data)
 
                 return data
             } onCancel: {
-                notifyCancelation()
-                return
+                Task {
+                    await notifyCancelation()
+                }
             }
         } catch {
             return .init(request: request,
@@ -191,7 +180,9 @@ extension SmartRequest {
     /// Cancels the in-flight request and notifies plugins of the cancellation event.
     func cancel() {
         sessionAdaptor.stop()
-        notifyCancelation()
+        Task {
+            await notifyCancelation()
+        }
     }
 }
 

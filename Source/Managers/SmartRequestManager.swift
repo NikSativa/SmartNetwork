@@ -139,18 +139,6 @@ extension SmartRequestManager: RequestManager {
         return await request(url: .url(url), parameters: parameters, userInfo: userInfo)
     }
 
-    /// Deprecated overload that uses `address` label.
-    ///
-    /// - Parameters:
-    ///   - address: Target request URL.
-    ///   - parameters: Request configuration.
-    ///   - userInfo: Request metadata.
-    /// - Returns: Raw network response.
-    @available(*, deprecated, renamed: "request(url:parameters:userInfo:)", message: "Please use request(url:parameters:userInfo:) instead.")
-    public func request(address: SmartURL, parameters: Parameters, userInfo: UserInfo) async -> SmartResponse {
-        return await request(url: address, parameters: parameters, userInfo: userInfo)
-    }
-
     /// Sends a request with callback-based completion handling.
     ///
     /// - Parameters:
@@ -257,7 +245,7 @@ private extension SmartRequestManager {
 
         do {
             for plugin in parameters.plugins {
-                try plugin.verify(parameters: parameters, userInfo: userInfo, data: data)
+                try await plugin.verify(parameters: parameters, userInfo: userInfo, response: data)
             }
         } catch {
             // In the event that the request already has an error, and the plugin throws a new one,
@@ -278,7 +266,7 @@ private extension SmartRequestManager {
                     break
                 case .retry:
                     return await retryAction()
-                case .retryWithDelay(let delay):
+                case let .retryWithDelay(delay):
                     try await Task.sleep(seconds: delay)
                     return await retryAction()
                 }
@@ -287,11 +275,11 @@ private extension SmartRequestManager {
                 switch action {
                 case .useOriginal:
                     break
-                case .passOver(let newResponse):
+                case let .passOver(newResponse):
                     data = newResponse
                 case .retry:
                     return await retryAction()
-                case .retryWithDelay(let delay):
+                case let .retryWithDelay(delay):
                     try await Task.sleep(seconds: delay)
                     return await retryAction()
                 }
@@ -303,7 +291,7 @@ private extension SmartRequestManager {
         }
 
         for plugin in parameters.plugins {
-            plugin.didFinish(parameters: parameters, userInfo: userInfo, data: data)
+            await plugin.didFinish(parameters: parameters, userInfo: userInfo, response: data)
         }
 
         return data
@@ -340,7 +328,7 @@ private extension SmartRequestManager {
     func createRequest(url: SmartURL, parameters: Parameters, userInfo: UserInfo) async throws -> SmartRequest {
         var urlRequest = try parameters.urlRequest(for: url)
         for plugin in parameters.plugins {
-            await plugin.prepare(parameters: parameters, userInfo: userInfo, request: &urlRequest, session: session)
+            try await plugin.prepare(parameters: parameters, userInfo: userInfo, request: &urlRequest, session: session)
         }
 
         let request = SmartRequest(url: url,
@@ -366,10 +354,10 @@ private extension SmartRequestManager {
             return .passOver(result)
         }
 
-        let verificationResult = stopTheLine.verify(response: result,
-                                                    url: url,
-                                                    parameters: parameters,
-                                                    userInfo: userInfo)
+        let verificationResult = await stopTheLine.verify(response: result,
+                                                          url: url,
+                                                          parameters: parameters,
+                                                          userInfo: userInfo)
         switch verificationResult {
         case .stopTheLine:
             isRunning = false
@@ -386,7 +374,7 @@ private extension SmartRequestManager {
                 case .passOver,
                      .useOriginal:
                     lastStopTheLineQueueAction = .passOver
-                case .retryWithDelay(let delay):
+                case let .retryWithDelay(delay):
                     lastStopTheLineQueueAction = .retryWithDelay(delay)
                 }
 
@@ -410,7 +398,7 @@ private extension SmartRequestManager {
     ///
     /// - Returns: `true` if a retry should occur; otherwise `false`.
     func shouldRetry(_ data: SmartResponse, url: SmartURL, parameters: Parameters, userInfo: UserInfo) async -> Bool {
-        let retryOrFinish = retrier?.retryOrFinish(result: data, url: url, parameters: parameters, userInfo: userInfo)
+        let retryOrFinish = await retrier?.retryOrFinish(result: data, url: url, parameters: parameters, userInfo: userInfo)
         defer {
             userInfo.attemptsCount += 1
         }
@@ -420,14 +408,14 @@ private extension SmartRequestManager {
             case .retry:
                 return true
 
-            case .retryWithDelay(let delay):
+            case let .retryWithDelay(delay):
                 try await Task.sleep(seconds: delay)
                 return true
 
             case .doNotRetry:
                 return false
 
-            case .doNotRetryWithError(let error):
+            case let .doNotRetryWithError(error):
                 data.set(error: error)
                 return false
             }

@@ -1,9 +1,6 @@
 import Foundation
 import os
 
-@available(*, deprecated, renamed: "SmartResponse", message: "Use 'SmartResponse' instead.")
-typealias RequestResult = SmartResponse
-
 /// Encapsulates the result of a network request, including request metadata, response data, and error information.
 ///
 /// `SmartResponse` provides a structured representation of a completed network transaction, including access to

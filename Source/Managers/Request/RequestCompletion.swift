@@ -72,9 +72,9 @@ public extension RequestCompletion {
     where Object == Result<T, Error> {
         let result = await async()
         switch result {
-        case .success(let value):
+        case let .success(value):
             return value
-        case .failure(let error):
+        case let .failure(error):
             throw error
         }
     }

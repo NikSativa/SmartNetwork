@@ -26,7 +26,7 @@ public indirect enum RequestError: Error {
     /// it is automatically wrapped in the appropriate `RequestError` case.
     public init(_ error: Swift.Error) {
         switch error {
-        case RequestError.other(let newError):
+        case let RequestError.other(newError):
             self = .init(newError)
         case let error as Self:
             self = error
@@ -66,7 +66,7 @@ extension RequestError: RequestErrorDescription {
         case .generic:
             return "generic"
 
-        case .other(let error):
+        case let .other(error):
             let description: String =
                 if let subname = (error as? RequestErrorDescription)?.subname {
                     subname
@@ -75,16 +75,16 @@ extension RequestError: RequestErrorDescription {
                 }
             return "other(\(description))"
 
-        case .connection(let error):
+        case let .connection(error):
             return "connection(URLError \(error.code.rawValue))"
 
-        case .encoding(let error):
+        case let .encoding(error):
             return "encoding(.\(error.subname))"
 
-        case .decoding(let error):
+        case let .decoding(error):
             return "decoding(.\(error.subname))"
 
-        case .statusCode(let error):
+        case let .statusCode(error):
             return "statusCode(.\(error.subname))"
         }
     }

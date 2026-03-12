@@ -77,6 +77,7 @@ public final class HTTPStubProtocol: URLProtocol {
             assertionFailure("should never happen")
             return
         }
+
         guard let stub = HTTPStubServer.shared.response(for: request) else {
             Queue.background.async { [request] in
                 let error = NSError(domain: "<HTTPStub> no stub for \(request.url?.absoluteString ?? "<broken url>")", code: -1)
@@ -97,6 +98,7 @@ public final class HTTPStubProtocol: URLProtocol {
             guard let self else {
                 return
             }
+
             guard !isStopped() else {
                 return
             }

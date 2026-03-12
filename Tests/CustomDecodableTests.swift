@@ -105,11 +105,11 @@ final class DeserializableTests: XCTestCase {
                                                      error: error),
                                      parameters: .init())
         switch result {
-        case .success(let obj):
+        case let .success(obj):
             return .success(obj)
         case .failure(RequestDecodingError.nilResponse):
             return .success(nil)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }

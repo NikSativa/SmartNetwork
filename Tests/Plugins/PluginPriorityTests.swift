@@ -30,9 +30,9 @@ final class PluginPriorityTests: XCTestCase {
             Plugins.AuthBearer(with: {
                 return "AuthBearer"
             }),
-            Plugins.StatusCode(),
+            Plugins.JSONHeaders(),
             Plugins.Log(logger: { _ in }),
-            Plugins.JSONHeaders()
+            Plugins.StatusCode()
         ]
 
         XCTAssertEqual(actual.map(\.id), expected.map(\.id))
@@ -66,10 +66,10 @@ final class PluginPriorityTests: XCTestCase {
             Plugins.AuthBearer(with: {
                 return "AuthBearer"
             }),
-            Plugins.StatusCode(),
+            Plugins.JSONHeaders(),
             Plugins.LogOS(),
             Plugins.Log(logger: { _ in }),
-            Plugins.JSONHeaders()
+            Plugins.StatusCode()
         ]
 
         XCTAssertEqual(actual.map(\.id), expected.map(\.id))
@@ -106,10 +106,10 @@ final class PluginPriorityTests: XCTestCase {
             Plugins.AuthBearer(with: {
                 return "AuthBearer"
             }),
+            Plugins.Log(logger: { _ in }),
             Plugins.StatusCode(),
             FakePlugin(id: "fake_310", priority: 310),
-            FakePlugin(id: "fake_1000", priority: 1000),
-            Plugins.Log(logger: { _ in })
+            FakePlugin(id: "fake_1000", priority: 1000)
         ]
 
         XCTAssertEqual(actual.map(\.id), expected.map(\.id), actual.map(\.id).map { "\($0)" }.joined(separator: ", "))

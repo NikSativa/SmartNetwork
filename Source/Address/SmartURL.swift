@@ -1,9 +1,5 @@
 import Foundation
 
-/// Deprecated alias for ``SmartURL``.
-@available(*, deprecated, renamed: "SmartURL", message: "Please use SmartURL instead.")
-public typealias Address = SmartURL
-
 /// Encapsulates flexible construction of URLs from various source types.
 ///
 /// `SmartURL` supports initialization from raw strings, `URL`, `URLComponents`, or custom `SmartUrlComponents`.
@@ -25,16 +21,16 @@ public enum SmartURL: Hashable, SmartSendable {
     /// - Throws: `RequestEncodingError.brokenURL` or similar if the URL cannot be formed.
     public func url() throws -> URL {
         switch self {
-        case .url(let url):
+        case let .url(url):
             return url
 
-        case .string(let str):
+        case let .string(str):
             return try URL(string: str).unwrap(orThrow: RequestEncodingError.brokenURL)
 
-        case .components(let components):
+        case let .components(components):
             return try components.url.unwrap(orThrow: RequestEncodingError.brokenURL)
 
-        case .smartComponents(let components, let shouldAddSlashAfterEndpoint, let shouldRemoveSlashesForEmptyScheme):
+        case let .smartComponents(components, shouldAddSlashAfterEndpoint, shouldRemoveSlashesForEmptyScheme):
             return try components.url(shouldAddSlashAfterEndpoint: shouldAddSlashAfterEndpoint,
                                       shouldRemoveSlashesForEmptyScheme: shouldRemoveSlashesForEmptyScheme)
         }
@@ -121,13 +117,13 @@ public extension SmartURL {
         }
 
         switch self {
-        case .url(let url):
+        case let .url(url):
             return url.description
-        case .string(let str):
+        case let .string(str):
             return str
-        case .components(let components):
+        case let .components(components):
             return components.description
-        case .smartComponents(let components, let shouldAddSlashAfterEndpoint, let shouldRemoveSlashesForEmptyScheme):
+        case let .smartComponents(components, shouldAddSlashAfterEndpoint, shouldRemoveSlashesForEmptyScheme):
             return components.description + " shouldAddSlashAfterEndpoint: \(shouldAddSlashAfterEndpoint), shouldRemoveSlashesForEmptyScheme: \(shouldRemoveSlashesForEmptyScheme)"
         }
     }

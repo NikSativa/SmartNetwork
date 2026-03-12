@@ -8,7 +8,7 @@ public extension Plugins {
     ///
     /// `Plugins.Log` captures various request/response stages and formats them into structured log entries,
     /// such as cURL commands and pretty-printed JSON bodies.
-    final class Log: Plugin {
+    actor Log: Plugin {
         #if swift(>=6.0)
         /// A closure used to log structured `DataCollection` produced during request lifecycle events.
         public typealias Logging = @Sendable (_ data: DataCollection) -> Void
@@ -17,8 +17,8 @@ public extension Plugins {
         public typealias Logging = (_ data: DataCollection) -> Void
         #endif
 
-        public let id: ID
-        public let priority: PluginPriority
+        public nonisolated let id: ID
+        public nonisolated let priority: PluginPriority
         private let logger: Logging
         private let options: Options
         private let lock: Locking = AnyLock.default
@@ -40,8 +40,8 @@ public extension Plugins {
             self.options = options
         }
 
-        public func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async {}
-        public func verify(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) throws {}
+        public func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async throws {}
+        public func verify(parameters: Parameters, userInfo: UserInfo, response: SmartResponse) async throws {}
 
         public func willSend(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession) {
             guard options.contains(.willSend) else {
@@ -68,7 +68,7 @@ public extension Plugins {
             }
         }
 
-        public func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, data: SmartResponse) {
+        public func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, response: SmartResponse) {
             guard options.contains(.didReceive) else {
                 return
             }
@@ -79,24 +79,24 @@ public extension Plugins {
                 .add(.userInfo, userInfo)
                 .add(.parameters, parameters)
                 .add(.request, request)
-                .add(.result, data)
+                .add(.result, response)
                 .add(.headers, request.allHTTPHeaderFields ?? [:])
                 .add(.url) {
                     return (try? userInfo.smartRequestAddress?.url() ?? request.url)?.absoluteString ?? "< no url >"
                 }
                 .add(.curl) {
-                    let curl = data.cURLDescription()
+                    let curl = response.cURLDescription()
                     return curl
                 }
-                .add(.error, if: data.error != nil) {
-                    return data.error ?? RequestError.generic // generic will never happen
+                .add(.error, if: response.error != nil) {
+                    return response.error ?? RequestError.generic // generic will never happen
                 }
-                .add(.requestError, if: data.error != nil) {
-                    let error = data.error?.requestError.subname
+                .add(.requestError, if: response.error != nil) {
+                    let error = response.error?.requestError.subname
                     return error ?? "< no error >"
                 }
-                .add(.body, if: data.body != nil) {
-                    let body = Self.makeResponseBody(data.body)
+                .add(.body, if: response.body != nil) {
+                    let body = Self.makeResponseBody(response.body)
                     return body
                 }
 
@@ -105,7 +105,7 @@ public extension Plugins {
             }
         }
 
-        public func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) {
+        public func didFinish(parameters: Parameters, userInfo: UserInfo, response: SmartResponse) {
             guard options.contains(.didFinish) else {
                 return
             }
@@ -114,24 +114,24 @@ public extension Plugins {
                 .add(.id, userInfo.uniqueID)
                 .add(.phase, Phase.didFinish)
                 .add(.userInfo, userInfo)
-                .add(.result, data)
-                .add(.headers, data.request?.allHTTPHeaderFields ?? [:])
+                .add(.result, response)
+                .add(.headers, response.request?.allHTTPHeaderFields ?? [:])
                 .add(.url) {
-                    return (try? userInfo.smartRequestAddress?.url() ?? data.url)?.absoluteString ?? "< no url >"
+                    return (try? userInfo.smartRequestAddress?.url() ?? response.url)?.absoluteString ?? "< no url >"
                 }
                 .add(.curl) {
-                    let curl = data.cURLDescription()
+                    let curl = response.cURLDescription()
                     return curl
                 }
-                .add(.error, if: data.error != nil) {
-                    return data.error ?? RequestError.generic // generic will never happen
+                .add(.error, if: response.error != nil) {
+                    return response.error ?? RequestError.generic // generic will never happen
                 }
-                .add(.requestError, if: data.error != nil) {
-                    let error = data.error?.requestError.subname
+                .add(.requestError, if: response.error != nil) {
+                    let error = response.error?.requestError.subname
                     return error ?? "< no error >"
                 }
-                .add(.body, if: data.body != nil) {
-                    let body = Self.makeResponseBody(data.body)
+                .add(.body, if: response.body != nil) {
+                    let body = Self.makeResponseBody(response.body)
                     return body
                 }
 

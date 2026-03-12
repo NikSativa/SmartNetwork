@@ -9,7 +9,7 @@ func XCTAssertEqual<T: Equatable>(_ lhs: Result<T, Error>,
                                   line: UInt = #line) {
     let result: Bool =
         switch (lhs, rhs) {
-        case (.success(let l), let r):
+        case let (.success(l), r):
             l == r
         case (.failure, _):
             false
@@ -25,7 +25,7 @@ func XCTAssertEqual<T>(_ lhs: Result<T, Error>,
                        line: UInt = #line) {
     let result: Bool =
         switch (lhs, rhs) {
-        case (.failure(let l), let r):
+        case let (.failure(l), r):
             (l as NSError) == (r as NSError)
         case (.success, _):
             false
@@ -41,9 +41,9 @@ func XCTAssertEqual<T: Equatable>(_ lhs: Result<T, Error>,
                                   line: UInt = #line) {
     let result: Bool =
         switch (lhs, rhs) {
-        case (.failure(let l), .failure(let r)):
+        case let (.failure(l), .failure(r)):
             (l as NSError) == (r as NSError)
-        case (.success(let l), .success(let r)):
+        case let (.success(l), .success(r)):
             l == r
         case (.failure, _),
              (.success, _):
@@ -57,14 +57,14 @@ extension Result {
         switch self {
         case .success:
             return nil
-        case .failure(let failure):
+        case let .failure(failure):
             return failure
         }
     }
 
     func value<T>() -> T? where Success == T? {
         switch self {
-        case .success(let success):
+        case let .success(success):
             return success
         case .failure:
             return nil

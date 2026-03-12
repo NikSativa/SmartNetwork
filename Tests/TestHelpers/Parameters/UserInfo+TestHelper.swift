@@ -18,6 +18,7 @@ extension UserInfo: Equatable {
             assertionFailure("can't camopare")
             return false
         }
+
         guard JSONSerialization.isValidJSONObject(rhs.values) else {
             assertionFailure("can't camopare")
             return false

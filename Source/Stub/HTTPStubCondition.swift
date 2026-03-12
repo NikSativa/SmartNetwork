@@ -125,7 +125,7 @@ public enum HTTPStubCondition {
 
     func test(_ request: URLRequestRepresentation) -> Bool {
         switch self {
-        case .isAddress(let url):
+        case let .isAddress(url):
             let original: SmartURL? = request.url.flatMap {
                 return .url($0)
             }
@@ -133,22 +133,23 @@ public enum HTTPStubCondition {
             guard let lhs = try? original?.url() else {
                 return false
             }
+
             guard let rhs = try? url.url() else {
                 return false
             }
 
             return lhs == rhs
 
-        case .isPath(let string):
+        case let .isPath(string):
             return request.path == string
 
-        case .pathStartsWith(let string):
+        case let .pathStartsWith(string):
             return Array(request.path.prefix(string.count)) == string
 
-        case .pathEndsWith(let string):
+        case let .pathEndsWith(string):
             return Array(request.path.suffix(string.count)) == string
 
-        case .pathContains(let pathComponents, let keepingOrder):
+        case let .pathContains(pathComponents, keepingOrder):
             let path = request.path
             var pathComponents = pathComponents
 
@@ -173,22 +174,22 @@ public enum HTTPStubCondition {
             }
             return false
 
-        case .isHost(let string):
+        case let .isHost(string):
             precondition(!string.contains("/"), "The host part of an URL never contains any slash. Only use strings like 'api.example.com' for this value, and not things like 'https://api.example.com/'")
             return request.url?.host == string
 
-        case .isAbsoluteURLString(let string):
+        case let .isAbsoluteURLString(string):
             return request.absoluteString == string
 
-        case .isMethod(let string):
+        case let .isMethod(string):
             return request.httpMethod == string
 
-        case .isScheme(let string):
+        case let .isScheme(string):
             assert(!string.contains("://"), "The scheme part of an URL never contains '://'. Only use strings like 'https' for this value, and not things like 'https://'")
             assert(!string.contains("/"), "The scheme part of an URL never contains any slash. Only use strings like 'https' for this value, and not things like 'https://api.example.com/'")
             return request.url?.scheme == string
 
-        case .pathNSMatches(let regex):
+        case let .pathNSMatches(regex):
             guard let path = request.url?.path else {
                 return false
             }
@@ -197,7 +198,7 @@ public enum HTTPStubCondition {
             let matches = regex.firstMatch(in: path, options: [], range: range)
             return matches != nil
 
-        case .absoluteStringNSMatches(let regex):
+        case let .absoluteStringNSMatches(regex):
             guard let absoluteString = request.absoluteString else {
                 return false
             }
@@ -206,7 +207,7 @@ public enum HTTPStubCondition {
             let matches = regex.firstMatch(in: absoluteString, options: [], range: range)
             return matches != nil
 
-        case .custom(let closure):
+        case let .custom(closure):
             return closure(request)
         }
     }

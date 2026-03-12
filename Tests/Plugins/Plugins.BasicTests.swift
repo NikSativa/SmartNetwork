@@ -15,25 +15,25 @@ final class PluginsBasicTests: XCTestCase {
         let userInfo: UserInfo = .testMake()
         let requestable: FakeURLRequestRepresentation = .init()
         requestable.stub(.setValueWithValue_Forhttpheaderfield).andReturn()
-        await subject.prepare(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
+        try await subject.prepare(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
         let token = "Basic bXlfdG9rZW5fdXNlcm5hbWU6bXlfdG9rZW5fcGFzc3dvcmQ="
         XCTAssertHaveReceived(requestable, .setValueWithValue_Forhttpheaderfield, with: token, "Authorization", countSpecifier: .exactly(1))
         XCTAssertNoThrowError {
-            try subject.verify(parameters: parameters, userInfo: userInfo, data: .testMake())
+            try await subject.verify(parameters: parameters, userInfo: userInfo, response: .testMake())
         }
         XCTAssertTrue(userInfo.isEmpty)
 
         // should nothing happen
-        let data: SmartResponse = .testMake(url: .spry.testMake(), statusCode: 222)
+        let response: SmartResponse = .testMake(url: .spry.testMake(), statusCode: 222)
         requestable.resetCallsAndStubs()
 
-        subject.willSend(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
-        subject.didReceive(parameters: parameters, userInfo: userInfo, request: requestable, data: data)
-        try subject.verify(parameters: parameters, userInfo: userInfo, data: .testMake())
-        subject.didFinish(parameters: parameters, userInfo: userInfo, data: data)
+        await subject.willSend(parameters: parameters, userInfo: userInfo, request: requestable, session: session)
+        await subject.didReceive(parameters: parameters, userInfo: userInfo, request: requestable, response: response)
+        try await subject.verify(parameters: parameters, userInfo: userInfo, response: .testMake())
+        await subject.didFinish(parameters: parameters, userInfo: userInfo, response: response)
 
-        XCTAssertEqual(data.url, .spry.testMake())
-        XCTAssertNil(data.urlError)
+        XCTAssertEqual(response.url, .spry.testMake())
+        XCTAssertNil(response.urlError)
     }
 }
 #endif

@@ -50,7 +50,7 @@ extension HTTPStubBody {
         case .empty:
             return nil
 
-        case .file(let name, let bundle):
+        case let .file(name, bundle):
             guard let path = bundle.url(forResource: name, withExtension: nil) else {
                 return nil
             }
@@ -58,7 +58,7 @@ extension HTTPStubBody {
             let data = try? Data(contentsOf: path)
             return data
 
-        case .filePath(let path):
+        case let .filePath(path):
             if Self.iOSVerificationEnabled, #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
                 let path = URL(filePath: path)
                 let data = try? Data(contentsOf: path)
@@ -69,15 +69,15 @@ extension HTTPStubBody {
                 return data
             }
 
-        case .data(let data):
+        case let .data(data):
             return data
 
-        case .encodable(let encodable, let encoder):
+        case let .encodable(encodable, encoder):
             encoder.outputFormatting = encoder.outputFormatting.union([.sortedKeys, .prettyPrinted])
             let data = try? encoder.encode(encodable)
             return data
 
-        case .image(let image):
+        case let .image(image):
             return try? image.encode().httpBody
         }
     }

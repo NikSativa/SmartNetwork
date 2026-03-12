@@ -7,9 +7,9 @@ public extension Result where Failure: Error {
     /// - Returns: A `.success` result containing the original or default value, or `.failure` if the error is not recoverable.
     func recoverResult(_ defaultValue: Success) -> Result<Success, Failure> {
         switch self {
-        case .success(let obj):
+        case let .success(obj):
             return .success(obj)
-        case .failure(let error):
+        case let .failure(error):
             return error.isRecoverable ? .success(defaultValue) : .failure(error)
         }
     }
@@ -21,9 +21,9 @@ public extension Result where Failure: Error {
     /// - Returns: A `.success` result containing the original value or `nil`, or `.failure` if the error is not recoverable.
     func recoverResult() -> Result<Success?, Failure> {
         switch self {
-        case .success(let obj):
+        case let .success(obj):
             return .success(obj)
-        case .failure(let error):
+        case let .failure(error):
             return error.isRecoverable ? .success(nil) : .failure(error)
         }
     }

@@ -80,9 +80,9 @@ public struct DecodableContent<Response: Decodable>: Deserializable {
                 return .success(result)
             } catch {
                 switch keyPath.fallback {
-                case .error(let error):
+                case let .error(error):
                     return .failure(error)
-                case .value(let value):
+                case let .value(value):
                     return .success(value)
                 case .none:
                     return .failure(error)

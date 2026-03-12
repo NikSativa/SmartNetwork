@@ -95,9 +95,9 @@ public final class HTTPStubServer {
             switch Self.strategy {
             case .transparent:
                 return nil
-            case .blockWithResponse(let response):
+            case let .blockWithResponse(response):
                 return response
-            case .custom(let block):
+            case let .custom(block):
                 return block(request)
             }
         }

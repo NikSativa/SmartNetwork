@@ -10,17 +10,17 @@ public enum Plugins {}
 ///
 /// - SeeAlso: [Architecture Overview](https://github.com/NikSativa/SmartNetwork#architecture-overview)
 /// - SeeAlso: [Plugin System Lifecycle](https://github.com/NikSativa/SmartNetwork#plugin-system-lifecycle)
-public protocol Plugin: SmartSendable {
+public protocol Plugin: SmartActor {
     /// String identifier type used to uniquely deduplicate plugins.
     typealias ID = String
 
     /// A unique ID that guarantees that plugins are not duplicated
     ///
     /// - Note: you can use helpers **makeHash()** or **makeHash(withAdditionalHash:...)** to generate a unique ID
-    var id: ID { get }
+    nonisolated var id: ID { get }
 
     /// The priority in which the plugin will be executed in the list of plugins.
-    var priority: PluginPriority { get }
+    nonisolated var priority: PluginPriority { get }
 
     /// Called before the request is sent, allowing modification of the request or its metadata.
     ///
@@ -29,21 +29,21 @@ public protocol Plugin: SmartSendable {
     ///   - userInfo: User-defined metadata associated with the request.
     ///   - request: The mutable request representation.
     ///   - session: The session used to send the request.
-    func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async
+    func prepare(parameters: Parameters, userInfo: UserInfo, request: inout URLRequestRepresentation, session: SmartURLSession) async throws
 
     /// Called right before the request is dispatched. Can be invoked multiple times depending on StopTheLine logic.
     func willSend(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, session: SmartURLSession)
 
     /// Called immediately after a response is received. Can be invoked multiple times depending on StopTheLine logic.
-    func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, data: SmartResponse)
+    func didReceive(parameters: Parameters, userInfo: UserInfo, request: URLRequestRepresentation, response: SmartResponse)
 
     /// Called after the response is received to perform custom validation.
     ///
     /// - Throws: An error if the response should be treated as a failure. Only the first thrown error will be passed forward.
-    func verify(parameters: Parameters, userInfo: UserInfo, data: SmartResponse) throws
+    func verify(parameters: Parameters, userInfo: UserInfo, response: SmartResponse) async throws
 
     /// Called once the request completes successfully or fails. Runs just before completion is dispatched.
-    func didFinish(parameters: Parameters, userInfo: UserInfo, data: SmartResponse)
+    func didFinish(parameters: Parameters, userInfo: UserInfo, response: SmartResponse)
 
     /// Called when the request is cancelled. May be invoked multiple times. Used for debugging or cleanup logic.
     ///
@@ -52,7 +52,7 @@ public protocol Plugin: SmartSendable {
 }
 
 public extension Plugin {
-    var id: ID {
+    nonisolated var id: ID {
         return Self.makeHash()
     }
 

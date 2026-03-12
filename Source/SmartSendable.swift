@@ -6,8 +6,10 @@ import Foundation
 /// In Swift 6.0 and later, `SmartSendable` conforms to `Sendable`, enabling concurrency safety checks.
 /// In earlier versions, it acts as a placeholder with no requirements, ensuring backward compatibility.
 public protocol SmartSendable: Sendable {}
+public protocol SmartActor: Actor {}
 #else
 /// Conforms to the Sendable protocol if Swift version is 6.0 or later.
 /// or just empty conformance
 public protocol SmartSendable {}
+public protocol SmartActor: Actor {}
 #endif

@@ -1,10 +1,6 @@
 import CoreGraphics
 import Foundation
 
-/// Deprecated alias for ``HTTPBody``.
-@available(*, deprecated, renamed: "HTTPBody", message: "Please use HTTPBody instead.")
-public typealias Body = HTTPBody
-
 /// Represents an HTTP request body in various formats.
 ///
 /// `Body` supports multiple content types, including raw `Data`, `Encodable` models, multipart forms,
@@ -68,14 +64,6 @@ public extension HTTPBody {
         }
         throw RequestEncodingError.invalidJSON
     }
-
-    /// Deprecated shorthand initializer for `Encodable` payloads.
-    ///
-    /// - Parameter encodable: Value to encode as request body.
-    @available(*, deprecated, renamed: "encode", message: "Use 'encode' instead.")
-    init(_ encodable: some Encodable) {
-        self = .encode(encodable)
-    }
 }
 
 /// Encodes an optional `Body` into an `EncodedBody`, returning an empty result if `nil`.
@@ -98,7 +86,7 @@ public extension HTTPBody {
         case .empty:
             return .init(httpBody: .init(), [:])
 
-        case .data(let data, let contentType):
+        case let .data(data, contentType):
             if let contentType {
                 return .init(httpBody: data, [
                     "Content-Type": contentType,
@@ -109,10 +97,10 @@ public extension HTTPBody {
                 "Content-Length": "\(data.count)"
             ])
 
-        case .image(let image):
+        case let .image(image):
             return try image.encode()
 
-        case .encode(let object, let encoder):
+        case let .encode(object, encoder):
             let encoder = encoder()
             let data = try encoder.encode(object)
             return .init(httpBody: data, [
@@ -120,7 +108,7 @@ public extension HTTPBody {
                 "Content-Length": "\(data.count)"
             ])
 
-        case .json(let json, let options):
+        case let .json(json, options):
             // sometimes it crashes the app on 'try JSONSerialization...' without that check
             guard JSONSerialization.isValidJSONObject(json) else {
                 throw RequestEncodingError.invalidJSON
@@ -132,14 +120,14 @@ public extension HTTPBody {
                 "Content-Length": "\(data.count)"
             ])
 
-        case .form(let form):
+        case let .form(form):
             let data = form.encode()
             return .init(httpBody: data, [
                 "Content-Type": form.contentType,
                 "Content-Length": "\(form.contentLength)"
             ])
 
-        case .xform(let parameters):
+        case let .xform(parameters):
             let data = HTTPBody.XFormEncoder.encodeParameters(parameters: parameters)
             return .init(httpBody: data, [
                 "Content-Type": "application/x-www-form-urlencoded",
