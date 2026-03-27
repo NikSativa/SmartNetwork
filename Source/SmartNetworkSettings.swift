@@ -61,6 +61,13 @@ public enum SmartNetworkSettings: Sendable {
         "Accept",
         "Host"
     ]
+
+    /// Enables conditional request support using `ETag` and `Last-Modified` headers.
+    ///
+    /// When enabled, requests with cached responses will include `If-None-Match` and/or
+    /// `If-Modified-Since` headers, and `304 Not Modified` responses will reuse cached data.
+    /// Both this flag and ``CacheSettings/useConditionalRequests`` must be `true` for conditional headers to be attached.
+    public nonisolated(unsafe) static var isConditionalRequestsEnabled: Bool = false
 }
 #else
 /// Centralized configuration for default networking behavior used by SmartNetwork.
@@ -122,5 +129,12 @@ public enum SmartNetworkSettings {
         "Accept",
         "Host"
     ]
+
+    /// Enables conditional request support using `ETag` and `Last-Modified` headers.
+    ///
+    /// When enabled, requests with cached responses will include `If-None-Match` and/or
+    /// `If-Modified-Since` headers, and `304 Not Modified` responses will reuse cached data.
+    /// Both this flag and ``CacheSettings/useConditionalRequests`` must be `true` for conditional headers to be attached.
+    public static var isConditionalRequestsEnabled: Bool = false
 }
 #endif

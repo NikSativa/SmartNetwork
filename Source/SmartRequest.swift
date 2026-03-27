@@ -44,15 +44,26 @@ internal struct SmartRequest {
     }
 
     private func startRealRequest() async throws -> SmartResponse {
-        let sdkRequest = request.sdk
+        var sdkRequest = request.sdk
+        var conditionalCachedResponse: CachedURLResponse?
 
         if let cacheSettings = parameters.cacheSettings {
+            let isConditionalEnabled = cacheSettings.useConditionalRequests
+                && SmartNetworkSettings.isConditionalRequestsEnabled
+
             let shouldUseCache: Bool
             let shouldFailOnCacheMiss: Bool
             switch parameters.requestPolicy {
             case .reloadIgnoringLocalAndRemoteCacheData,
-                 .reloadIgnoringLocalCacheData,
-                 .reloadRevalidatingCacheData:
+                 .reloadIgnoringLocalCacheData:
+                cacheSettings.cache.removeCachedResponse(for: sdkRequest)
+                shouldUseCache = false
+                shouldFailOnCacheMiss = false
+
+            case .reloadRevalidatingCacheData:
+                if isConditionalEnabled {
+                    conditionalCachedResponse = extractConditionalHeaders(from: cacheSettings.cache, for: sdkRequest, into: &sdkRequest)
+                }
                 cacheSettings.cache.removeCachedResponse(for: sdkRequest)
                 shouldUseCache = false
                 shouldFailOnCacheMiss = false
@@ -89,12 +100,35 @@ internal struct SmartRequest {
                                          session: session)
                 }
             }
+
+            // For policies that didn't return from cache and didn't already extract conditional headers
+            if isConditionalEnabled, conditionalCachedResponse == nil {
+                conditionalCachedResponse = extractConditionalHeaders(from: cacheSettings.cache, for: sdkRequest, into: &sdkRequest)
+            }
         }
 
         if let stub = HTTPStubServer.shared.response(for: sdkRequest) {
             let response: URLResponse? = sdkRequest.url.map {
                 return stub.urlResponse(url: $0)
             }
+
+            // Handle 304 Not Modified from stub: reuse cached body
+            if stub.statusCode.code == 304,
+               let conditionalCachedResponse {
+                if let cacheSettings = parameters.cacheSettings {
+                    cacheSettings.cache.storeCachedResponse(conditionalCachedResponse, for: sdkRequest)
+                }
+                let responseData = SmartResponse(request: request,
+                                                 body: conditionalCachedResponse.data,
+                                                 response: conditionalCachedResponse.response,
+                                                 error: nil,
+                                                 session: session)
+                if let delay = stub.delayInSeconds, delay > 0 {
+                    try await Task.sleep(seconds: delay)
+                }
+                return responseData
+            }
+
             let responseData = SmartResponse(request: request,
                                              body: stub.body?.data,
                                              response: response,
@@ -108,6 +142,20 @@ internal struct SmartRequest {
 
         let (data, response) = try await sessionAdaptor.dataTask(with: sdkRequest)
         try Task.checkCancellation()
+
+        // Handle 304 Not Modified: reuse cached body
+        if let httpResponse = response as? HTTPURLResponse,
+           httpResponse.statusCode == 304,
+           let conditionalCachedResponse {
+            if let cacheSettings = parameters.cacheSettings {
+                cacheSettings.cache.storeCachedResponse(conditionalCachedResponse, for: sdkRequest)
+            }
+            return SmartResponse(request: request,
+                                 body: conditionalCachedResponse.data,
+                                 response: conditionalCachedResponse.response,
+                                 error: nil,
+                                 session: session)
+        }
 
         if let cacheSettings = parameters.cacheSettings {
             let cached = CachedURLResponse(response: response,
@@ -124,6 +172,33 @@ internal struct SmartRequest {
                                          session: session)
 
         return responseData
+    }
+
+    /// Extracts `ETag` and `Last-Modified` headers from a cached response and injects
+    /// the corresponding conditional headers (`If-None-Match`, `If-Modified-Since`) into the request.
+    ///
+    /// - Returns: The cached response if any conditional headers were injected, otherwise `nil`.
+    private func extractConditionalHeaders(from cache: RequestCache,
+                                           for request: URLRequest,
+                                           into mutableRequest: inout URLRequest) -> CachedURLResponse? {
+        guard let cached = cache.cachedResponse(for: request),
+              let httpResponse = cached.response as? HTTPURLResponse else {
+            return nil
+        }
+
+        var hasConditionalHeaders = false
+
+        if let etag = httpResponse.value(forHTTPHeaderField: "ETag") {
+            mutableRequest.setValue(etag, forHTTPHeaderField: "If-None-Match")
+            hasConditionalHeaders = true
+        }
+
+        if let lastModified = httpResponse.value(forHTTPHeaderField: "Last-Modified") {
+            mutableRequest.setValue(lastModified, forHTTPHeaderField: "If-Modified-Since")
+            hasConditionalHeaders = true
+        }
+
+        return hasConditionalHeaders ? cached : nil
     }
 
     private func didReceiveNotification(_ data: SmartResponse) async {

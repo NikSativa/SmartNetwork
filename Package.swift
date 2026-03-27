@@ -5,12 +5,12 @@ import PackageDescription
 let package = Package(
     name: "SmartNetwork",
     platforms: [
-        .iOS(.v15),
-        .macOS(.v12),
-        .macCatalyst(.v13),
+        .iOS(.v16),
+        .macOS(.v14),
+        .macCatalyst(.v16),
         .visionOS(.v1),
-        .tvOS(.v15),
-        .watchOS(.v8)
+        .tvOS(.v16),
+        .watchOS(.v9)
     ],
     products: [
         .library(name: "SmartNetwork", targets: ["SmartNetwork"])

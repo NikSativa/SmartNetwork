@@ -34,15 +34,23 @@ public struct CacheSettings: SmartSendable {
     public let cache: RequestCache
     /// Storage policy applied when saving responses.
     public let storagePolicy: URLCache.StoragePolicy
+    /// Controls whether conditional request headers (`ETag`/`Last-Modified`) are sent for this request.
+    ///
+    /// Both this flag and ``SmartNetworkSettings/isConditionalRequestsEnabled`` must be `true`
+    /// for conditional headers to be attached. Defaults to `true`.
+    public let useConditionalRequests: Bool
 
     /// Creates a new `CacheSettings` instance with a specified cache and storage policy.
     ///
     /// - Parameters:
     ///   - cache: An object conforming to `RequestCache` used to store and retrieve responses.
     ///   - storagePolicy: The policy that determines how the cached response is stored (default is `.allowedInMemoryOnly`).
+    ///   - useConditionalRequests: Whether to use `ETag`/`Last-Modified` conditional headers (default is `true`).
     public init(cache: RequestCache,
-                storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly) {
+                storagePolicy: URLCache.StoragePolicy = .allowedInMemoryOnly,
+                useConditionalRequests: Bool = true) {
         self.cache = cache
         self.storagePolicy = storagePolicy
+        self.useConditionalRequests = useConditionalRequests
     }
 }
