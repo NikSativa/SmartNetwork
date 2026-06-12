@@ -39,7 +39,5 @@ struct BrokenTestInfo: Codable, Equatable {
     }
 }
 
-#if swift(>=6.0)
 extension TestInfo: Sendable {}
 extension BrokenTestInfo: Sendable {}
-#endif

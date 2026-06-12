@@ -66,6 +66,4 @@ final class PluginUnifiedTests: XCTestCase {
     }
 }
 
-#if swift(>=6.0)
 extension TestPlugin: @unchecked Sendable {}
-#endif

@@ -4,13 +4,8 @@ import SmartNetwork
 import Threading
 
 actor FakeStopTheLine: StopTheLine {
-    #if swift(>=6.0)
     typealias VerifyHandler = @Sendable (SmartResponse, SmartURL, Parameters, UserInfo) -> StopTheLineAction
     typealias ActionHandler = @Sendable (SmartRequestManager, SmartResponse, SmartURL, Parameters, UserInfo) async throws -> StopTheLineResult
-    #else
-    typealias VerifyHandler = (SmartResponse, SmartURL, Parameters, UserInfo) -> StopTheLineAction
-    typealias ActionHandler = (SmartRequestManager, SmartResponse, SmartURL, Parameters, UserInfo) async throws -> StopTheLineResult
-    #endif
 
     @AtomicValue
     private var verifyCountValue: Int = 0

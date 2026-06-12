@@ -1,4 +1,4 @@
-#if swift(>=6.0) && canImport(SwiftSyntax600)
+#if canImport(SwiftSyntax600)
 import Combine
 import Foundation
 import SpryKit
@@ -112,6 +112,10 @@ final class SmartRequestTests: XCTestCase {
     // MARK: - Conditional Requests (ETag / Last-Modified)
 
     func test_conditionalRequest_returns_cached_body_on_304() async {
+        let previousValue = SmartNetworkSettings.isConditionalRequestsEnabled
+        SmartNetworkSettings.isConditionalRequestsEnabled = true
+        defer { SmartNetworkSettings.isConditionalRequestsEnabled = previousValue }
+
         // Register a 304 stub instead of the default 200
         observers = []
         HTTPStubServer.shared
@@ -254,6 +258,10 @@ final class SmartRequestTests: XCTestCase {
     }
 
     func test_conditionalRequest_with_lastModified_returns_cached_body_on_304() async {
+        let previousValue = SmartNetworkSettings.isConditionalRequestsEnabled
+        SmartNetworkSettings.isConditionalRequestsEnabled = true
+        defer { SmartNetworkSettings.isConditionalRequestsEnabled = previousValue }
+
         // Register a 304 stub
         observers = []
         HTTPStubServer.shared

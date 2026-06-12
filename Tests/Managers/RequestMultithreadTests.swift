@@ -82,7 +82,6 @@ final class RequestMultithreadTests: XCTestCase {
         }
     }
 
-    #if swift(>=6.0)
     private func threads(_ processor: @escaping @Sendable (XCTestExpectation, @escaping @Sendable (TestInfo) -> Void) -> Void,
                          file: StaticString = #filePath,
                          line: UInt = #line) {
@@ -112,39 +111,6 @@ final class RequestMultithreadTests: XCTestCase {
         XCTAssertEqual(result.count, maxRequests, "results", file: file, line: line)
         XCTAssertEqual(exps.count, maxRequests, "exps", file: file, line: line)
     }
-    #else
-    private func threads(_ processor: @escaping (XCTestExpectation, @escaping (TestInfo) -> Void) -> Void,
-                         file: StaticString = #filePath,
-                         line: UInt = #line) {
-        let group = DispatchGroup()
-        for i in 0..<maxRequests {
-            let randDelay: Double = .init((0...20).randomElement()!) / 100.0
-            group.enter()
-            Queue.default.asyncAfter(deadline: .now() + randDelay) { [self] in
-                $exps.sync { exps in
-                    let exp = expectation(description: "request \(i)")
-                    exps.append(exp)
-                    group.leave()
-
-                    processor(exp) { [self] new in
-                        $result.sync { results in
-                            results.append(new)
-                        }
-                    }
-                }
-            }
-        }
-
-        XCTAssertEqual(group.wait(timeout: .now() + 2), .success, file: file, line: line)
-        wait(for: exps, timeout: timoutInSeconds)
-
-        XCTAssertEqual(result, .init(repeating: testObj, count: result.count), file: file, line: line)
-        XCTAssertEqual(result.count, maxRequests, "results", file: file, line: line)
-        XCTAssertEqual(exps.count, maxRequests, "exps", file: file, line: line)
-    }
-    #endif
 }
 
-#if swift(>=6.0)
 extension RequestMultithreadTests: @unchecked Sendable {}
-#endif

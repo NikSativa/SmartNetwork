@@ -1,4 +1,4 @@
-#if swift(>=6.0) && canImport(SwiftSyntax600)
+#if canImport(SwiftSyntax600)
 import Foundation
 import SmartNetwork
 import SpryKit

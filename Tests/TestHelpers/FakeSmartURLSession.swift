@@ -24,6 +24,4 @@ public final class FakeSmartURLSession: SmartURLSession, Spryable {
     }
 }
 
-#if swift(>=6.0)
 extension FakeSmartURLSession: @unchecked Sendable {}
-#endif

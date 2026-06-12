@@ -24,7 +24,5 @@ final class UnsafeResult<T> {
     }
 }
 
-#if swift(>=6.0)
 extension UnsafeResult: @unchecked Sendable {}
 extension UnsafeValue: @unchecked Sendable {}
-#endif

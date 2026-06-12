@@ -127,7 +127,7 @@ final class PluginPriorityTests: XCTestCase {
         XCTAssertEqual(PluginPriority.authBasic - 30, .init(rawValue: 70))
     }
 
-    #if swift(>=6.0) && os(macOS)
+    #if os(macOS)
     @available(macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
     func test_overflows() {
         XCTAssertThrowsAssertion {

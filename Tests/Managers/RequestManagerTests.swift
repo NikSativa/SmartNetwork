@@ -473,11 +473,7 @@ private actor SessionCapturePlugin: Plugin {
     nonisolated let id: ID
     nonisolated let priority: PluginPriority
 
-    #if swift(>=6.0)
     typealias PrepareClosure = @Sendable (SmartURLSession) -> Void
-    #else
-    typealias PrepareClosure = (SmartURLSession) -> Void
-    #endif
     private let onPrepare: PrepareClosure
 
     init(id: ID = UUID().uuidString,
@@ -499,11 +495,7 @@ private actor SessionCapturePlugin: Plugin {
 }
 
 private actor SessionAwareStopTheLine: StopTheLine {
-    #if swift(>=6.0)
     typealias ActionBlock = @Sendable (SmartRequestManager) async throws -> StopTheLineResult
-    #else
-    typealias ActionBlock = (SmartRequestManager) async throws -> StopTheLineResult
-    #endif
     private let actionBlock: ActionBlock
 
     init(actionBlock: @escaping ActionBlock) {
