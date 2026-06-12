@@ -95,6 +95,4 @@ extension SmartResponse: CURLConvertible {
     }
 }
 
-#if swift(>=6.0)
 extension SmartResponse: @unchecked Sendable {}
-#endif

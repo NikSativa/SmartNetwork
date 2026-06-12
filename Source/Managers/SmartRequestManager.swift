@@ -442,6 +442,4 @@ private extension SmartResponse {
     }
 }
 
-#if swift(>=6.0)
 extension SmartRequestManager: @unchecked Sendable {}
-#endif

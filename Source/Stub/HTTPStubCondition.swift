@@ -237,18 +237,9 @@ private extension String {
     }
 }
 
-#if swift(>=6.0)
 extension HTTPStubCondition: Sendable {
     /// A closure used to evaluate whether a given `URLRequestRepresentation` matches custom conditions.
     ///
     /// Return `true` to indicate a match, or `false` otherwise.
     public typealias TestClosure = @Sendable (_ request: URLRequestRepresentation) -> Bool
 }
-#else
-public extension HTTPStubCondition {
-    /// A closure used to evaluate whether a given `URLRequestRepresentation` matches custom conditions.
-    ///
-    /// Return `true` to indicate a match, or `false` otherwise.
-    typealias TestClosure = (_ request: URLRequestRepresentation) -> Bool
-}
-#endif

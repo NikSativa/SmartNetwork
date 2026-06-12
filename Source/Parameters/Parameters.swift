@@ -110,6 +110,4 @@ public extension Parameters {
     }
 }
 
-#if swift(>=6.0)
 extension Parameters: Sendable {}
-#endif

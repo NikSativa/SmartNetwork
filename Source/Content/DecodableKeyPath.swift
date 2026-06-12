@@ -69,7 +69,5 @@ extension DecodableKeyPath: ExpressibleByStringLiteral {
     }
 }
 
-#if swift(>=6.0)
 extension DecodableKeyPath: Sendable where T: Sendable {}
 extension DecodableKeyPath.Fallback: Sendable where T: Sendable {}
-#endif

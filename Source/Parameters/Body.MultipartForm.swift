@@ -334,7 +334,6 @@ private extension HTTPBody.MultipartForm {
     }
 }
 
-#if swift(>=6.0)
 extension HTTPBody.MultipartForm: @unchecked Sendable {}
 extension HTTPBody.MultipartForm.Name: Sendable {}
 extension HTTPBody.MultipartForm.Header: Sendable {}
@@ -342,4 +341,3 @@ extension HTTPBody.MultipartForm.MimeType: Sendable {}
 extension HTTPBody.MultipartForm.Boundary: Sendable {}
 extension HTTPBody.MultipartForm.DataContent: Sendable {}
 extension HTTPBody.MultipartForm.BodyPart: @unchecked Sendable {}
-#endif

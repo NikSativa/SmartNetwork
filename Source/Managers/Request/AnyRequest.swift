@@ -180,6 +180,4 @@ public extension AnyRequest {
     }
 }
 
-#if swift(>=6.0)
 extension AnyRequest: Sendable {}
-#endif

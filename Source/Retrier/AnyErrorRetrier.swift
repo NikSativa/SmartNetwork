@@ -5,13 +5,8 @@ import Foundation
 /// `AnyErrorRetrier` is useful for defining centralized retry policies based on error inspection logic.
 /// It supports a configurable maximum retry count and uses a user-provided closure to evaluate each error.
 public actor AnyErrorRetrier: SmartRetrier {
-    #if swift(>=6.0)
     /// Closure type that maps an error to ``RetryResult``.
     public typealias Checker = @Sendable (any Error) -> RetryResult
-    #else
-    /// Closure type that maps an error to ``RetryResult``.
-    public typealias Checker = (any Error) -> RetryResult
-    #endif
 
     /// The user-defined closure used to evaluate retry logic based on the encountered error.
     public let checker: Checker

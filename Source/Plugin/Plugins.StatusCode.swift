@@ -6,13 +6,8 @@ public extension Plugins {
     /// This plugin can be configured to ignore specific status codes or bypass validation entirely
     /// when previous errors exist or the response is non-HTTP.
     actor StatusCode: Plugin {
-        #if swift(>=6.0)
         /// A closure that returns `true` if the given status code should be ignored (i.e., not treated as an error).
         public typealias StatusCodeChecker = @Sendable (_ statusCode: Int?) -> Bool
-        #else
-        /// A closure that returns `true` if the given status code should be ignored (i.e., not treated as an error).
-        public typealias StatusCodeChecker = (_ statusCode: Int?) -> Bool
-        #endif
 
         public nonisolated let priority: PluginPriority
         private let isIgnoring: StatusCodeChecker

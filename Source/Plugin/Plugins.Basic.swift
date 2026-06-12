@@ -18,13 +18,8 @@ public extension Plugins {
         }
     }
 
-    #if swift(>=6.0)
     /// A closure that provides an `AuthBasicToken` instance or `nil` if credentials are unavailable.
     typealias AuthBasicTokenProvider = @Sendable () async -> AuthBasicToken?
-    #else
-    /// A closure that provides an `AuthBasicToken` instance or `nil` if credentials are unavailable.
-    typealias AuthBasicTokenProvider = () async -> AuthBasicToken?
-    #endif
 
     /// Creates a plugin that adds HTTP Basic Authentication to outgoing requests.
     ///

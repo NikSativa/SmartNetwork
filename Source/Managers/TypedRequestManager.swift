@@ -64,6 +64,4 @@ public struct TypedRequestManager<Output>: SmartSendable {
     }
 }
 
-#if swift(>=6.0)
 extension TypedRequestManager: @unchecked Sendable {}
-#endif

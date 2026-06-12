@@ -137,6 +137,4 @@ public extension HTTPBody {
     }
 }
 
-#if swift(>=6.0)
 extension HTTPBody: @unchecked Sendable {}
-#endif

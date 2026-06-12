@@ -27,32 +27,20 @@ public typealias SmartImage = NSImage
 
 #if os(iOS) || os(tvOS)
 private enum Screen {
-    #if swift(>=6.0)
     @MainActor
     static var scale: CGFloat {
         return UIScreen.main.scale
     }
-    #else
-    static var scale: CGFloat {
-        return UIScreen.main.scale
-    }
-    #endif
 }
 
 #elseif os(watchOS)
 import WatchKit
 
 private enum Screen {
-    #if swift(>=6.0)
     @MainActor
     static var scale: CGFloat {
         return WKInterfaceDevice.current().screenScale
     }
-    #else
-    static var scale: CGFloat {
-        return WKInterfaceDevice.current().screenScale
-    }
-    #endif
 }
 
 #elseif supportsVisionOS
@@ -60,12 +48,8 @@ public enum Screen {
     // Returns the display scale factor for rendering images.
     //
     // visionOS doesn't expose a screen scale, so a fallback (e.g., 2.0) can be used in tests or set manually.
-    #if swift(>=6.0)
     @MainActor
     public static var scale: CGFloat?
-    #else
-    public static var scale: CGFloat?
-    #endif
 }
 #endif
 

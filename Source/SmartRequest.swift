@@ -356,6 +356,4 @@ internal extension Progress {
     }
 }
 
-#if swift(>=6.0)
 extension SmartRequest: @unchecked Sendable {}
-#endif

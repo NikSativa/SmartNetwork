@@ -4,7 +4,6 @@ import os
 
 @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 public extension Plugins {
-    #if swift(>=6.0)
     /// A closure that maps a request ID and URL to a loggable string.
     ///
     /// If `nil` is returned, the log entry will be skipped.
@@ -12,15 +11,6 @@ public extension Plugins {
 
     /// A closure that generates a custom `os.Logger` instance for a given logging data context.
     typealias LoggerGenerator = @Sendable (_ data: Plugins.Log.DataCollection) -> os.Logger
-    #else
-    /// A closure that maps a request ID and URL to a loggable string.
-    ///
-    /// If `nil` is returned, the log entry will be skipped.
-    typealias CurlOSMapper = (_ id: String, _ url: String) -> String?
-
-    /// A closure that generates a custom `os.Logger` instance for a given logging data context.
-    typealias LoggerGenerator = (_ data: Plugins.Log.DataCollection) -> os.Logger
-    #endif
 
     /// A strategy for selecting the `os.Logger` used to emit log messages.
     enum LoggerProvider: SmartSendable {

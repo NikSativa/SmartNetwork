@@ -1,13 +1,8 @@
 import Foundation
 
 public extension Plugins {
-    #if swift(>=6.0)
     /// A closure that asynchronously provides a token string to be added to the request.
     typealias TokenProvider = @Sendable () async -> String?
-    #else
-    /// A closure that asynchronously provides a token string to be added to the request.
-    typealias TokenProvider = () async -> String?
-    #endif
 
     /// Defines where and how a token should be applied to an outgoing request.
     enum TokenType: SmartSendable {

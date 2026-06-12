@@ -50,6 +50,4 @@ extension SmartItem: CustomDebugStringConvertible {
     }
 }
 
-#if swift(>=6.0)
 extension SmartItem: Sendable where T: Sendable {}
-#endif

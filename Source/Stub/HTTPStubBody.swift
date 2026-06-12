@@ -37,11 +37,7 @@ public enum HTTPStubBody {
         return .encodable(obj, with: encoder)
     }
 
-    #if swift(>=6.0)
     internal nonisolated(unsafe) static var iOSVerificationEnabled: Bool = true
-    #else
-    internal static var iOSVerificationEnabled: Bool = true
-    #endif
 }
 
 extension HTTPStubBody {
@@ -83,6 +79,4 @@ extension HTTPStubBody {
     }
 }
 
-#if swift(>=6.0)
 extension HTTPStubBody: @unchecked Sendable {}
-#endif

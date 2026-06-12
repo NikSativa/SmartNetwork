@@ -72,7 +72,7 @@ public extension PluginPriority {
     ///
     /// Performs overflow-safe addition on supported platforms.
     static func +(lhs: Self, rhs: Self) -> PluginPriority {
-        #if swift(>=6.0) && !supportsVisionOS
+        #if !supportsVisionOS
         if #available(macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *) {
             assert(Int128(lhs.rawValue) + Int128(rhs.rawValue) <= Int128(RawValue.max), "Cannot add two values that overflow.")
         }
@@ -84,7 +84,7 @@ public extension PluginPriority {
     ///
     /// Performs overflow-safe subtraction on supported platforms.
     static func -(lhs: Self, rhs: Self) -> PluginPriority {
-        #if swift(>=6.0) && !supportsVisionOS
+        #if !supportsVisionOS
         if #available(macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *) {
             assert(Int128(lhs.rawValue) - Int128(rhs.rawValue) >= Int128(RawValue.min), "Cannot subtract two values that overflow.")
         }

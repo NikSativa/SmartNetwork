@@ -134,7 +134,5 @@ public final class HTTPStubProtocol: URLProtocol {
     }
 }
 
-#if swift(>=6.0)
 /// Marks the protocol implementation as unchecked `Sendable` for use in Swift concurrency contexts.
 extension HTTPStubProtocol: @unchecked Sendable {}
-#endif

@@ -108,6 +108,4 @@ extension SmartTask: Cancellable {
     }
 }
 
-#if swift(>=6.0)
 extension SmartTask: @unchecked Sendable {}
-#endif

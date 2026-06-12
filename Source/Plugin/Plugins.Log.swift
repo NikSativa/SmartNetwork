@@ -9,13 +9,8 @@ public extension Plugins {
     /// `Plugins.Log` captures various request/response stages and formats them into structured log entries,
     /// such as cURL commands and pretty-printed JSON bodies.
     actor Log: Plugin {
-        #if swift(>=6.0)
         /// A closure used to log structured `DataCollection` produced during request lifecycle events.
         public typealias Logging = @Sendable (_ data: DataCollection) -> Void
-        #else
-        /// A closure used to log structured `DataCollection` produced during request lifecycle events.
-        public typealias Logging = (_ data: DataCollection) -> Void
-        #endif
 
         public nonisolated let id: ID
         public nonisolated let priority: PluginPriority

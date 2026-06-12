@@ -1,12 +1,7 @@
 import Foundation
 
-#if swift(>=6.0)
 /// A type representing the progress of a task.
 public typealias ProgressHandler = @Sendable (Progress) -> Void
-#else
-/// A type representing the progress of a task.
-public typealias ProgressHandler = (Progress) -> Void
-#endif
 
 /// An abstraction over URL session behavior, allowing custom implementations of network sessions.
 ///

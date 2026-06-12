@@ -22,19 +22,11 @@ public enum HTTPStubStrategy {
 /// It supports Combine-based task management, configurable default strategies for unmatched requests, and
 /// integration with `URLProtocol` for intercepting system-level networking.
 public final class HTTPStubServer {
-    #if swift(>=6.0)
     /// Default queue for stubs
     public nonisolated(unsafe) static var defaultCompletionQueue: Queueable = Queue.main
 
     /// Strategy for requests without stubs
     public nonisolated(unsafe) static var strategy: HTTPStubStrategy = .transparent
-    #else
-    /// Default queue for stubs
-    public static var defaultCompletionQueue: Queueable = Queue.main
-
-    /// Strategy for requests without stubs
-    public static var strategy: HTTPStubStrategy = .transparent
-    #endif
 
     /// Shared singleton instance used by `HTTPStubProtocol`.
     public static let shared: HTTPStubServer = .init()
@@ -134,16 +126,9 @@ private extension HTTPStubServer {
     }
 }
 
-#if swift(>=6.0)
 extension HTTPStubServer: @unchecked Sendable {}
 extension HTTPStubServer.Info: Sendable {}
 extension HTTPStubStrategy: Sendable {
     /// Closure used to resolve unmatched requests dynamically.
     public typealias CustomStrategy = @Sendable (URLRequestRepresentation) -> HTTPStubResponse?
 }
-#else
-public extension HTTPStubStrategy {
-    /// Closure used to resolve unmatched requests dynamically.
-    typealias CustomStrategy = (URLRequestRepresentation) -> HTTPStubResponse?
-}
-#endif

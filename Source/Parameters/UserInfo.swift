@@ -136,6 +136,4 @@ private func convert(_ value: Any, encoder: @autoclosure () -> JSONEncoder) -> S
     return strValue
 }
 
-#if swift(>=6.0)
 extension UserInfo: @unchecked Sendable {}
-#endif

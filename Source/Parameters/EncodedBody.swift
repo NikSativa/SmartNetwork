@@ -30,6 +30,4 @@ public struct EncodedBody {
     }
 }
 
-#if swift(>=6.0)
 extension EncodedBody: Sendable {}
-#endif

@@ -37,6 +37,4 @@ public struct ImageFormat {
     }
 }
 
-#if swift(>=6.0)
 extension ImageFormat: @unchecked Sendable {}
-#endif
