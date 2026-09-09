@@ -16,7 +16,7 @@ let package = Package(
         .library(name: "SmartNetwork", targets: ["SmartNetwork"])
     ],
     dependencies: [
-        .package(url: "https://github.com/NikSativa/SpryKit.git", from: "3.2.3"),
+        .package(url: "https://github.com/NikSativa/SpryKit.git", from: "3.2.4"),
         .package(url: "https://github.com/NikSativa/Threading.git", from: "2.3.4")
     ],
     targets: [
